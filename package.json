@@ -4,8 +4,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:dev": "cp manifest.json dist/ && esbuild src/content-script.js --bundle --sourcemap --outfile=dist/content-script.js --watch",
-    "build": "cp manifest.json dist/ && esbuild src/content-script.js --bundle --minify --outfile=dist/content-script.js"
+    "build:dev": "esbuild manifest.json src/content-script.js --loader:.json=copy --entry-names=[name] --bundle --sourcemap --outdir=dist --watch",
+    "prebuild": "pnpm run clean",
+    "build": "esbuild manifest.json src/content-script.js --loader:.json=copy --entry-names=[name] --bundle --sourcemap --outdir=dist",
+    "clean": "rm -r dist/*"
   },
   "author": "",
   "license": "ISC",
