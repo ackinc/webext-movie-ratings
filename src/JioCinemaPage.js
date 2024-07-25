@@ -24,7 +24,17 @@ class JioCinemaPage {
   }
 
   async initialize() {
-    this.contentContainer = await waitFor(() => document.querySelector("main"));
+    this.contentContainer = await waitFor(
+      () => document.querySelector("main"),
+      // if a logged-in user visits the jiocinema website,
+      //   jio presents them with an account-choosing UI
+      //   which blocks the loading of the main page until
+      //   the user selects an account
+      // since the user may take any amount of time to do this,
+      //   and we want the extension to work regardless, we have
+      //   no option but to wait indefinitely
+      Infinity
+    );
     this._injectStyles();
   }
 
