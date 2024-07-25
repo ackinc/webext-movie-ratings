@@ -8,7 +8,7 @@
   "content_scripts": [
     {
       "js": ["content-script.js"],
-      "matches": ["https://www.jiocinema.com/"]
+      "matches": ["https://*.jiocinema.com/*"]
     }
   ]
 }
