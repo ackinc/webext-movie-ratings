@@ -1,3 +1,5 @@
+export const IMDB_RATING_NODE_CLASS = "webext-imdb-rating";
+
 export function delayMs(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
