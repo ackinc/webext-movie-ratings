@@ -21,23 +21,30 @@ async function main() {
   }
 
   await page.initialize();
-  page.watchForNewPrograms(fetchAndAddRating);
+  page.watchForNewPrograms(fetchAndAddIMDBData);
 
   // ensure we add ratings for programs that were
   //   already on the page when the watcher was
   //   initialized
-  page.findPrograms().forEach(fetchAndAddRating);
+  page.findPrograms().forEach(fetchAndAddIMDBData);
 }
 
-async function fetchAndAddRating(program) {
-  const rating = await fetchRating(program);
-  page.addRating(program, rating);
+async function fetchAndAddIMDBData(program) {
+  const imdbData = await fetchIMDBData(program);
+  if (imdbData.error) {
+    console.error(
+      `Error fetching IMDB data for ${program.title}`,
+      imdbData.error
+    );
+  } else {
+    page.addIMDBData(program, imdbData);
+  }
 }
 
-async function fetchRating(program) {
+async function fetchIMDBData(program) {
   const response = await chrome.runtime.sendMessage({
     type: "fetchIMDBRating",
     data: pick(program, ["title", "type", "year"]),
   });
-  return response.rating;
+  return response;
 }

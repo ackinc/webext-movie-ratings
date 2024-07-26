@@ -1,3 +1,4 @@
+import { omit } from "lodash";
 import { ONE_DAY_IN_MS, TWO_WEEKS_IN_MS } from "./common";
 
 const OMDB_API_KEY = "d7991986";
@@ -6,7 +7,7 @@ chrome.runtime.onMessage.addListener(handleMessage);
 
 function handleMessage(request, sender, sendResponse) {
   if (request.type === "fetchIMDBRating") {
-    fetchIMDBRating(request.data).then((rating) => sendResponse({ rating }));
+    fetchIMDBData(request.data).then((data) => sendResponse(data));
   } else {
     throw new Error(`Unknown message type: ${request.type}`);
   }
@@ -14,33 +15,54 @@ function handleMessage(request, sender, sendResponse) {
   return true;
 }
 
-async function fetchIMDBRating({ title, type, year }) {
+async function fetchIMDBData({ title, type, year }) {
   const key = btoa([title, type, year].filter(Boolean).join("|"));
 
-  const result = await chrome.storage.local.get(key);
-  if (result && result.expiry > +new Date()) return result.imdbRating;
+  const cached = await chrome.storage.local.get(key);
+  if (checkCachedDataIsUsable(cached)) {
+    return omit(cached, ["expiry"]);
+  }
 
   const searchParams = new URLSearchParams({
-    t: title,
     apiKey: OMDB_API_KEY,
+    t: title,
     type,
   });
   if (year) searchParams.set("y", year);
 
-  let { Error, imdbId, imdbRating } = await fetch(
-    `https://www.omdbapi.com/?${searchParams.toString()}`
-  ).then((response) => response.json());
+  let result = {};
+  try {
+    const respBody = await fetch(
+      `https://www.omdbapi.com/?${searchParams.toString()}`
+    ).then((response) => response.json());
 
-  const cacheData = { imdbId, imdbRating };
-  if (Error && Error.includes("not found")) {
-    cacheData.imdbRating = "N/F";
-    cacheData.expiry = +new Date() + ONE_DAY_IN_MS;
-  } else if (Error) {
-    throw new Error(`Error retrieving rating: ${Error}`);
-  } else {
-    cacheData.expiry = +new Date() + TWO_WEEKS_IN_MS;
+    const { Error: errmsg, imdbID, imdbRating } = respBody;
+
+    if (errmsg && errmsg.includes("not found")) {
+      result.imdbRating = "N/F";
+      result.imdbID = "";
+      result.expiry = +new Date() + ONE_DAY_IN_MS;
+    } else if (errmsg) {
+      throw new Error(errmsg);
+    } else {
+      result.imdbRating = imdbRating;
+      result.imdbID = imdbID;
+      result.expiry = +new Date() + TWO_WEEKS_IN_MS;
+    }
+  } catch (e) {
+    e.message = `Error fetching rating: ${e.message}`;
+    return { error: e };
   }
 
-  chrome.storage.local.set({ [key]: cacheData });
-  return imdbRating;
+  chrome.storage.local.set({ [key]: result });
+  return omit(result, ["expiry"]);
+}
+
+function checkCachedDataIsUsable(data) {
+  return (
+    data &&
+    data.imdbRating &&
+    (data.imdbRating === "N/F" || data.imdbID) &&
+    data.expiry > +new Date()
+  );
 }

@@ -56,14 +56,14 @@ class JioCinemaPage {
     return programs;
   }
 
-  addRating(program, rating) {
+  addIMDBData(program, data) {
     const { node } = program;
 
     if (node.querySelector(`p.${IMDB_RATING_NODE_CLASS}`)) return;
 
     const ratingNode = document.createElement("p");
     ratingNode.classList.add(IMDB_RATING_NODE_CLASS);
-    ratingNode.innerText = `IMDb ${rating}`;
+    ratingNode.innerText = `IMDb ${data.imdbRating}`;
 
     node.appendChild(ratingNode);
   }
