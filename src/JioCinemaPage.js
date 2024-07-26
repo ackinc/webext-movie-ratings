@@ -68,11 +68,17 @@ class JioCinemaPage {
 
     const ratingNode = document.createElement("a");
     ratingNode.classList.add(IMDB_DATA_NODE_CLASS);
-    ratingNode.setAttribute("href", getIMDBLink(data.imdbID));
-    ratingNode.setAttribute("target", "_blank");
+    if (data.imdbRating !== "N/F") {
+      ratingNode.setAttribute("href", getIMDBLink(data.imdbID));
+      ratingNode.setAttribute("target", "_blank");
+    }
     ratingNode.innerText = `IMDb ${data.imdbRating}`;
 
-    node.parentNode.appendChild(ratingNode);
+    if (node.nextElementSibling) {
+      node.parentNode.insertBefore(ratingNode, node.nextElementSibling);
+    } else {
+      node.parentNode.appendChild(ratingNode);
+    }
   }
 
   watchForNewPrograms(callback) {
@@ -96,8 +102,9 @@ class JioCinemaPage {
 
     const styleNode = document.createElement("style");
     styleNode.innerHTML = `
-      a.webext-imdb-rating {
+      a.${IMDB_DATA_NODE_CLASS} {
         color: #999999;
+        display: block;
         font-family: ${pageFontFamily};
         font-size: 12px;
         font-weight: bold;
