@@ -1,4 +1,4 @@
-export const IMDB_RATING_NODE_CLASS = "webext-imdb-rating";
+export const IMDB_DATA_NODE_CLASS = "webext-imdb-data";
 
 export const ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
 
@@ -16,4 +16,8 @@ export async function waitFor(fn, maxTries = 10, intervalBetweenTriesMs = 500) {
     await delayMs(intervalBetweenTriesMs);
   }
   throw new Error("waitFor timed out");
+}
+
+export function getIMDBLink(imdbID) {
+  return `https://www.imdb.com/title/${imdbID}`;
 }

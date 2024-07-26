@@ -1,4 +1,4 @@
-import { IMDB_RATING_NODE_CLASS, waitFor } from "./common";
+import { IMDB_DATA_NODE_CLASS, getIMDBLink, waitFor } from "./common";
 
 /* USAGE
 
@@ -59,13 +59,19 @@ class JioCinemaPage {
   addIMDBData(program, data) {
     const { node } = program;
 
-    if (node.querySelector(`p.${IMDB_RATING_NODE_CLASS}`)) return;
+    if (
+      node.nextElementSibling &&
+      node.nextElementSibling.classList.contains(IMDB_DATA_NODE_CLASS)
+    ) {
+      return;
+    }
 
-    const ratingNode = document.createElement("p");
-    ratingNode.classList.add(IMDB_RATING_NODE_CLASS);
+    const ratingNode = document.createElement("a");
+    ratingNode.classList.add(IMDB_DATA_NODE_CLASS);
+    ratingNode.setAttribute("href", getIMDBLink(data.imdbID));
     ratingNode.innerText = `IMDb ${data.imdbRating}`;
 
-    node.appendChild(ratingNode);
+    node.parentNode.appendChild(ratingNode);
   }
 
   watchForNewPrograms(callback) {
@@ -89,7 +95,7 @@ class JioCinemaPage {
 
     const styleNode = document.createElement("style");
     styleNode.innerHTML = `
-      p.webext-imdb-rating {
+      a.webext-imdb-rating {
         color: #999999;
         font-family: ${pageFontFamily};
         font-size: 12px;
