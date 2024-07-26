@@ -181,6 +181,11 @@ class JioCinemaPage {
       return false;
     }
 
+    if (title === "Episodes") {
+      // episodes list
+      return false;
+    }
+
     return true;
   }
 
