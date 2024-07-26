@@ -1,4 +1,4 @@
-import { IMDB_RATING_NODE_CLASS, waitFor } from "./common";
+import { IMDB_RATING_NODE_CLASS } from "./common";
 
 /* USAGE
 
@@ -23,19 +23,34 @@ class JioCinemaPage {
     this._mutationCallback = this._mutationCallback.bind(this);
   }
 
-  async initialize() {
-    this.contentContainer = await waitFor(
-      () => document.querySelector("main"),
-      // if a logged-in user visits the jiocinema website,
-      //   jio presents them with an account-choosing UI
-      //   which blocks the loading of the main page until
-      //   the user selects an account
-      // since the user may take any amount of time to do this,
-      //   and we want the extension to work regardless, we have
-      //   no option but to wait indefinitely
-      Infinity
-    );
-    this._injectStyles();
+  initialize() {
+    return new Promise((resolve) => {
+      this._injectStyles();
+
+      const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          const { target } = mutation;
+          if (
+            target.nodeName === "DIV" &&
+            target.getAttribute("id") === "__next" &&
+            mutation.addedNodes.length > 0
+          ) {
+            for (const node of mutation.addedNodes) {
+              let mainNode;
+              if (
+                node.nodeType === Node.ELEMENT_NODE &&
+                (mainNode = node.querySelector("main"))
+              ) {
+                this.contentContainer = mainNode;
+                observer.disconnect();
+                resolve();
+              }
+            }
+          }
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
   }
 
   // returns a list of all the programs currently being displayed on the page
