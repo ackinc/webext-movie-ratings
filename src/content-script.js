@@ -21,10 +21,12 @@ async function main() {
   }
 
   await page.initialize();
-
-  page.findPrograms().forEach(fetchAndAddRating);
-
   page.watchForNewPrograms(fetchAndAddRating);
+
+  // ensure we add ratings for programs that were
+  //   already on the page when the watcher was
+  //   initialized
+  page.findPrograms().forEach(fetchAndAddRating);
 }
 
 async function fetchAndAddRating(program) {
