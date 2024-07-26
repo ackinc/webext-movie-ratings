@@ -110,11 +110,26 @@ class JioCinemaPage {
     return listTitle;
   }
 
-  _getTitleFromProgramNode(node) {
-    return node
+  _extractDataFromProgramNode(node) {
+    const isMovie = node.getAttribute("href").startsWith("/movies");
+
+    const ariaLabelParts = node
       .getAttribute("aria-label")
-      .split(/(:|-)\sWatch/)[0]
-      .trim();
+      .match(/^(.+?)(\((\d+)\).*)?(:|-)\sWatch/);
+
+    const title = this._cleanTitle(ariaLabelParts[1]);
+    const year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
+
+    return {
+      title: this._cleanTitle(title),
+      type: isMovie ? "movie" : "series",
+      year,
+    };
+  }
+
+  _cleanTitle(title) {
+    // removes suffixes like 'TV Show', 'English Movie', 'Hindi Movie', etc.
+    return title.replace(/\s*((TV Show)|(\S+ Movie))\s*$/, "");
   }
 
   _isValidProgramList({ title }) {
@@ -145,7 +160,7 @@ class JioCinemaPage {
     ).filter(this._checkProgramNodeIsForMovieOrTVShow);
     const programs = programNodes.map((node) => ({
       node,
-      title: this._getTitleFromProgramNode(node),
+      ...this._extractDataFromProgramNode(node),
     }));
     return programs;
   }
@@ -168,7 +183,7 @@ class JioCinemaPage {
         ) {
           this.newProgramCallback({
             node,
-            title: this._getTitleFromProgramNode(node),
+            ...this._extractDataFromProgramNode(node),
           });
           continue;
         }

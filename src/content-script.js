@@ -1,3 +1,4 @@
+import { pick } from "lodash";
 import JioCinemaPage from "./JioCinemaPage";
 
 let page;
@@ -27,11 +28,14 @@ async function main() {
 }
 
 async function fetchAndAddRating(program) {
-  const rating = await fetchRating(program.title);
+  const rating = await fetchRating(program);
   page.addRating(program, rating);
 }
 
-async function fetchRating() {
-  // TODO
-  return Promise.resolve("10.0");
+async function fetchRating(program) {
+  const response = await chrome.runtime.sendMessage({
+    type: "fetchIMDBRating",
+    data: pick(program, ["title", "type", "year"]),
+  });
+  return response.rating;
 }

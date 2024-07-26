@@ -10,5 +10,10 @@
       "js": ["content-script.js"],
       "matches": ["https://*.jiocinema.com/*"]
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "permissions": ["storage"]
 }

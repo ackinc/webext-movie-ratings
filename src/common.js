@@ -1,5 +1,9 @@
 export const IMDB_RATING_NODE_CLASS = "webext-imdb-rating";
 
+export const ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
+
+export const TWO_WEEKS_IN_MS = ONE_DAY_IN_MS * 7 * 2;
+
 export function delayMs(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
