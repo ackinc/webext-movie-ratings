@@ -87,6 +87,14 @@ class JioCinemaPage {
     }
   }
 
+  checkIMDBDataAlreadyAdded(program) {
+    const maybeImdbDataNode = program.node.nextElementSibling;
+    return (
+      maybeImdbDataNode &&
+      maybeImdbDataNode.classList.contains(IMDB_DATA_NODE_CLASS)
+    );
+  }
+
   watchForNewPrograms(callback) {
     this.newProgramCallback = callback;
 
@@ -135,24 +143,20 @@ class JioCinemaPage {
     const isMovie = node.getAttribute("href").startsWith("/movies");
     const data = {};
 
-    try {
-      const ariaLabelParts = node
-        .getAttribute("aria-label")
-        .match(
-          /^(.+?)(\((\d+)\).*)?(:|-)\s(Watch|Stay Tuned|All Seasons, Episodes|A Thrilling New Series)/
-        );
+    const ariaLabelParts = node
+      .getAttribute("aria-label")
+      .match(
+        /^(.+?)(\((\d+)\).*)?(:|-)\s(Watch|Stay Tuned|All Seasons, Episodes|A Thrilling New Series)/
+      );
 
-      if (!ariaLabelParts) {
-        throw new Error(`Label does not match regex`);
-      }
-
-      data.title = this._cleanTitle(ariaLabelParts[1]);
-      data.type = isMovie ? "movie" : "series";
-      data.year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
-    } catch (e) {
-      e.message = `Error extracting data from program node: ${e.message}`;
-      console.warn(e, node);
+    if (!ariaLabelParts) {
+      // console.error(`Error extracting data from program node`, node);
+      return data;
     }
+
+    data.title = this._cleanTitle(ariaLabelParts[1]);
+    data.type = isMovie ? "movie" : "series";
+    data.year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
 
     return data;
   }

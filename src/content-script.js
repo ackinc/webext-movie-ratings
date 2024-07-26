@@ -1,4 +1,5 @@
 import { pick } from "lodash";
+import { invert } from "./common";
 import JioCinemaPage from "./JioCinemaPage";
 
 let page;
@@ -13,12 +14,13 @@ async function main() {
   }
 
   await page.initialize();
-  page.watchForNewPrograms(fetchAndAddIMDBData);
 
-  // ensure we add ratings for programs that were
-  //   already on the page when the watcher was
-  //   initialized
-  page.findPrograms().forEach(fetchAndAddIMDBData);
+  setInterval(() => {
+    page
+      .findPrograms()
+      .filter(invert(page.checkIMDBDataAlreadyAdded))
+      .forEach(fetchAndAddIMDBData);
+  }, 1000);
 }
 
 async function fetchAndAddIMDBData(program) {
