@@ -112,9 +112,7 @@ class JioCinemaPage {
     let listTitle = node.querySelector("h1,h2,h3")?.textContent;
     if (!listTitle) {
       const gp = node.parentNode.parentNode;
-      if (gp.classList.contains("MuiStack-root")) {
-        listTitle = gp.querySelector("h2")?.textContent;
-      }
+      listTitle = gp.querySelector("h2")?.textContent;
     }
     return listTitle;
   }
