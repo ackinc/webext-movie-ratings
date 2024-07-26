@@ -50,7 +50,7 @@ async function fetchIMDBData({ title, type, year }) {
       result.expiry = +new Date() + TWO_WEEKS_IN_MS;
     }
   } catch (e) {
-    e.message = `Error fetching rating: ${e.message}`;
+    e.message = `Error fetching rating for ${title}: ${e.message}`;
     return { error: e };
   }
 
