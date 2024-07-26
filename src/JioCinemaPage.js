@@ -69,6 +69,7 @@ class JioCinemaPage {
     const ratingNode = document.createElement("a");
     ratingNode.classList.add(IMDB_DATA_NODE_CLASS);
     ratingNode.setAttribute("href", getIMDBLink(data.imdbID));
+    ratingNode.setAttribute("target", "_blank");
     ratingNode.innerText = `IMDb ${data.imdbRating}`;
 
     node.parentNode.appendChild(ratingNode);
