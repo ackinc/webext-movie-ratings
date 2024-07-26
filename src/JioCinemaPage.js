@@ -119,13 +119,10 @@ class JioCinemaPage {
       .match(/^(.+?)(\((\d+)\).*)?(:|-)\sWatch/);
 
     const title = this._cleanTitle(ariaLabelParts[1]);
+    const type = isMovie ? "movie" : "series";
     const year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
 
-    return {
-      title: this._cleanTitle(title),
-      type: isMovie ? "movie" : "series",
-      year,
-    };
+    return { title, type, year };
   }
 
   _cleanTitle(title) {
