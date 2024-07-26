@@ -21,3 +21,7 @@ export async function waitFor(fn, maxTries = 10, intervalBetweenTriesMs = 500) {
 export function getIMDBLink(imdbID) {
   return `https://www.imdb.com/title/${imdbID}`;
 }
+
+export function invert(fn) {
+  return (...args) => !fn(...args);
+}
