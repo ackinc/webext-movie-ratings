@@ -148,8 +148,14 @@ class JioCinemaPage {
   }
 
   _cleanTitle(title) {
-    // removes suffixes like 'TV Show', 'Season 1', 'English Movie', etc.
-    return title.replace(/\s*((TV Show)|(\S+ Movie)|(Season \d+))\s*$/, "");
+    // removes suffixes like 'TV Show', 'Season 1', 'Season 1 Episode 4',
+    //   'English Movie', etc.
+    return title
+      .trim()
+      .replace(
+        /\s*((TV Show)|(Web Series)|(\S+ Movie)|(Season \d+(\s+Episode\d+)?))$/,
+        ""
+      );
   }
 
   _isValidProgramList({ title }) {
@@ -205,7 +211,7 @@ class JioCinemaPage {
           this._checkProgramNodeIsForMovieOrTVShow(node)
         ) {
           const programNodeData = this._extractDataFromProgramNode(node);
-          if (programNodeData) {
+          if (programNodeData.title) {
             this.newProgramCallback({ node, ...programNodeData });
           }
           continue;
