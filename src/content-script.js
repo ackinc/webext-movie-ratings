@@ -3,14 +3,6 @@ import JioCinemaPage from "./JioCinemaPage";
 
 let page;
 
-if (window.navigation) {
-  window.navigation.addEventListener("navigate", () => {
-    console.log("Navigation detected");
-    page && page.stopWatchingForNewPrograms();
-    main();
-  });
-}
-
 main();
 
 async function main() {
@@ -32,10 +24,7 @@ async function main() {
 async function fetchAndAddIMDBData(program) {
   const imdbData = await fetchIMDBData(program);
   if (imdbData.error) {
-    console.error(
-      `Error fetching IMDB data for ${program.title}`,
-      imdbData.error
-    );
+    console.warn(`Error fetching IMDB data`, imdbData.error, program);
   } else {
     page.addIMDBData(program, imdbData);
   }
