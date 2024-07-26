@@ -6,21 +6,15 @@ import { IMDB_DATA_NODE_CLASS, getIMDBLink, waitFor } from "./common";
 const page = new JioCinemaPage();
 await page.initialize();
 ...
-page.watchForNewPrograms(cb);
-...
-page.stopWatchingForNewPrograms();
 ```
 
 */
 class JioCinemaPage {
   constructor() {
     this.contentContainer = null;
-    this.newProgramCallback = null;
-    this.observer = null;
 
     this._findProgramsInProgramList =
       this._findProgramsInProgramList.bind(this);
-    this._mutationCallback = this._mutationCallback.bind(this);
   }
 
   async initialize() {
@@ -95,20 +89,6 @@ class JioCinemaPage {
     );
   }
 
-  watchForNewPrograms(callback) {
-    this.newProgramCallback = callback;
-
-    this.observer = new MutationObserver(this._mutationCallback);
-    this.observer.observe(this.contentContainer, {
-      subtree: true,
-      childList: true,
-    });
-  }
-
-  stopWatchingForNewPrograms() {
-    this.observer.disconnect();
-  }
-
   _injectStyles() {
     const pageFontFamily = window
       .getComputedStyle(document.body)
@@ -137,6 +117,47 @@ class JioCinemaPage {
       }
     }
     return listTitle;
+  }
+
+  _isValidProgramList({ title }) {
+    // get rid of the channels and languages lists
+
+    if (!title) {
+      // channels list has no title
+      return false;
+    }
+
+    if (title === "Watch In Your Language") {
+      // languages list
+      return false;
+    }
+
+    if (title === "Episodes") {
+      // episodes list
+      return false;
+    }
+
+    return true;
+  }
+
+  _findProgramsInProgramList(pList) {
+    const { node } = pList;
+    const programNodes = Array.from(
+      node.querySelectorAll('a.block[role="button"]')
+    ).filter(this._checkProgramNodeIsForMovieOrTVShow);
+    const programs = programNodes
+      .map((node) => ({
+        node,
+        ...this._extractDataFromProgramNode(node),
+      }))
+      // drop program nodes for which data extraction failed
+      .filter(({ title, type }) => title && type);
+    return programs;
+  }
+
+  _checkProgramNodeIsForMovieOrTVShow(node) {
+    const href = node.getAttribute("href");
+    return href.startsWith("/movies") || href.startsWith("/tv-shows");
   }
 
   _extractDataFromProgramNode(node) {
@@ -170,167 +191,6 @@ class JioCinemaPage {
         /\s*((TV Show)|(Web Series)|(\S+ Movie)|(Season \d+(\s+Episode\d+)?))$/,
         ""
       );
-  }
-
-  _isValidProgramList({ title }) {
-    // get rid of the channels and languages lists
-
-    if (!title) {
-      // channels list has no title
-      return false;
-    }
-
-    if (title === "Watch In Your Language") {
-      // languages list
-      return false;
-    }
-
-    if (title === "Episodes") {
-      // episodes list
-      return false;
-    }
-
-    return true;
-  }
-
-  _checkProgramNodeIsForMovieOrTVShow(node) {
-    const href = node.getAttribute("href");
-    return href.startsWith("/movies") || href.startsWith("/tv-shows");
-  }
-
-  _findProgramsInProgramList(pList) {
-    const { node } = pList;
-    const programNodes = Array.from(
-      node.querySelectorAll('a.block[role="button"]')
-    ).filter(this._checkProgramNodeIsForMovieOrTVShow);
-    const programs = programNodes
-      .map((node) => ({
-        node,
-        ...this._extractDataFromProgramNode(node),
-      }))
-      // drop program nodes for which data extraction failed
-      .filter(({ title }) => title);
-    return programs;
-  }
-
-  _mutationCallback(mutationList) {
-    for (const mutation of mutationList) {
-      const target = mutation.target;
-
-      for (const node of mutation.addedNodes) {
-        if (node.nodeType !== Node.ELEMENT_NODE) continue;
-
-        // check if a program node was added to a program list
-        // this happens when scrolling horizontally through
-        //   a program list
-        if (
-          node.nodeName === "A" &&
-          node.classList.contains("block") &&
-          node.getAttribute("role") === "button" &&
-          this._checkProgramNodeIsForMovieOrTVShow(node)
-        ) {
-          const programNodeData = this._extractDataFromProgramNode(node);
-          if (programNodeData.title) {
-            this.newProgramCallback({ node, ...programNodeData });
-          }
-          continue;
-        }
-
-        // check if a program node was added to a program grid
-        // this happens when scrolling vertically down a program grid
-        if (
-          target.nodeName === "DIV" &&
-          ["MuiGrid-root", "MuiGrid-container"].every((cName) =>
-            target.classList.contains(cName)
-          ) &&
-          ["MuiGrid-root", "MuiGrid-item"].every((cName) =>
-            node.classList.contains(cName)
-          )
-        ) {
-          const programNode = node.querySelector('a.block[role="button"]');
-          if (
-            programNode &&
-            this._checkProgramNodeIsForMovieOrTVShow(programNode)
-          ) {
-            const programNodeData =
-              this._extractDataFromProgramNode(programNode);
-            if (programNodeData.title) {
-              this.newProgramCallback({
-                node: programNode,
-                ...programNodeData,
-              });
-            }
-          }
-
-          continue;
-        }
-
-        // check if a program list/grid node was added
-        // this happens when scrolling vertically down the page
-        if (
-          node.nodeName === "DIV" &&
-          [
-            "mui-style-e0sayp-stackBlock", // program list
-            "mui-style-6u7r0i-stackBlock", // program grid
-          ].some((className) => node.classList.contains(className))
-        ) {
-          const listTitle = this._getTitleFromProgramListNode(node);
-          if (!this._isValidProgramList({ title: listTitle })) continue;
-
-          this._findProgramsInProgramList({ node }).forEach(
-            this.newProgramCallback
-          );
-
-          continue;
-        }
-
-        // check if a 'More like this' grid was added
-        // this happens on visiting a progam-specific page
-        if (
-          target.nodeName === "MAIN" &&
-          node.nodeName === "DIV" &&
-          node.firstChild?.nodeName === "DIV" &&
-          node.firstChild.classList.contains("mui-style-1kf8ltx-stackBlock")
-        ) {
-          const gridNode = node.firstChild;
-          const gridTitle = this._getTitleFromProgramListNode(gridNode);
-          if (!this._isValidProgramList({ title: gridTitle })) continue;
-
-          this._findProgramsInProgramList({ node: gridNode }).forEach(
-            this.newProgramCallback
-          );
-
-          continue;
-        }
-
-        // check if a program list node's contents were modified
-        // this happens in some special cases, like when changing
-        //   the selected language in the 'Fresh Episodes' program list
-        if (
-          target.nodeName === "DIV" &&
-          target.classList.contains("mui-style-e0sayp-stackBlock") &&
-          node.nodeName === "DIV" &&
-          node.classList.contains("slick-slider")
-        ) {
-          const listTitle = this._getTitleFromProgramListNode(target);
-          if (!this._isValidProgramList({ title: listTitle })) continue;
-
-          this._findProgramsInProgramList({ node: target }).forEach(
-            this.newProgramCallback
-          );
-
-          continue;
-        }
-
-        // check if an element was added that contains one/more
-        //   program list nodes
-        // this usually happens when the page is loaded for the first time
-        if (node.querySelector("div.mui-style-e0sayp-stackBlock")) {
-          this.findPrograms().forEach(this.newProgramCallback);
-          continue;
-        }
-      }
-    }
   }
 }
 
