@@ -33,7 +33,8 @@ class JioCinemaPage {
       // since the user may take any amount of time to do this,
       //   and we want the extension to work regardless, we have
       //   no option but to wait indefinitely
-      Infinity
+      Infinity,
+      250
     );
     this._injectStyles();
   }
