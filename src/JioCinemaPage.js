@@ -43,8 +43,14 @@ class JioCinemaPage {
   // a 'program' can be a movie, tv-series, or misc video content
   // we really only care about movies and tv-series
   findPrograms() {
+    const programListSelectors = [
+      "div.mui-style-e0sayp-stackBlock", // program list
+      "div.mui-style-6u7r0i-stackBlock", // program grid on program listing page (ex: "Best of premium")
+      "div.mui-style-1kf8ltx-stackBlock", // program grid on program-specific page
+    ];
+
     const programListNodes = Array.from(
-      document.querySelectorAll("div.mui-style-e0sayp-stackBlock")
+      document.querySelectorAll(programListSelectors.join(","))
     );
 
     const programLists = programListNodes
