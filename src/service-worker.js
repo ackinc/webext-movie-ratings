@@ -7,7 +7,9 @@ chrome.runtime.onMessage.addListener(handleMessage);
 
 function handleMessage(request, sender, sendResponse) {
   if (request.type === "fetchIMDBRating") {
-    fetchIMDBData(request.data).then((data) => sendResponse(data));
+    fetchIMDBData(request.data)
+      .then((data) => sendResponse(data))
+      .catch((e) => sendResponse({ error: e }));
   } else {
     throw new Error(`Unknown message type: ${request.type}`);
   }
@@ -31,27 +33,22 @@ async function fetchIMDBData({ title, type, year }) {
   if (year) searchParams.set("y", year);
 
   let result = {};
-  try {
-    const respBody = await fetch(
-      `https://www.omdbapi.com/?${searchParams.toString()}`
-    ).then((response) => response.json());
+  const respBody = await fetch(
+    `https://www.omdbapi.com/?${searchParams.toString()}`
+  ).then((response) => response.json());
 
-    const { Error: errmsg, imdbID, imdbRating } = respBody;
+  const { Error: errmsg, imdbID, imdbRating } = respBody;
 
-    if (errmsg && errmsg.includes("not found")) {
-      result.imdbRating = "N/F";
-      result.imdbID = "";
-      result.expiry = +new Date() + ONE_DAY_IN_MS;
-    } else if (errmsg) {
-      throw new Error(errmsg);
-    } else {
-      result.imdbRating = imdbRating;
-      result.imdbID = imdbID;
-      result.expiry = +new Date() + TWO_WEEKS_IN_MS;
-    }
-  } catch (e) {
-    e.message = `Error fetching data for ${title}: ${e.message}`;
-    return { error: e };
+  if (errmsg && errmsg.includes("not found")) {
+    result.imdbRating = "N/F";
+    result.imdbID = "";
+    result.expiry = +new Date() + ONE_DAY_IN_MS;
+  } else if (errmsg) {
+    throw new Error(errmsg);
+  } else {
+    result.imdbRating = imdbRating;
+    result.imdbID = imdbID;
+    result.expiry = +new Date() + TWO_WEEKS_IN_MS;
   }
 
   chrome.storage.local.set({ [key]: result });
