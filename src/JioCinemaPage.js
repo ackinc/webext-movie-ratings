@@ -140,8 +140,8 @@ class JioCinemaPage {
   }
 
   _cleanTitle(title) {
-    // removes suffixes like 'TV Show', 'English Movie', 'Hindi Movie', etc.
-    return title.replace(/\s*((TV Show)|(\S+ Movie))\s*$/, "");
+    // removes suffixes like 'TV Show', 'Season 1', 'English Movie', etc.
+    return title.replace(/\s*((TV Show)|(\S+ Movie)|(Season \d+))\s*$/, "");
   }
 
   _isValidProgramList({ title }) {
