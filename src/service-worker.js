@@ -18,7 +18,9 @@ function handleMessage(request, sender, sendResponse) {
 }
 
 async function fetchIMDBData({ title, type, year }) {
-  const key = btoa([title, type, year].filter(Boolean).join("|"));
+  const key = btoa(
+    [title.replace(/[^\w]/g, ""), type, year].filter(Boolean).join("|")
+  );
 
   const cached = await chrome.storage.local.get(key);
   if (checkCachedDataIsUsable(cached)) {
