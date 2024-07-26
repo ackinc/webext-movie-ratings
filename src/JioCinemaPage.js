@@ -113,16 +113,22 @@ class JioCinemaPage {
 
   _extractDataFromProgramNode(node) {
     const isMovie = node.getAttribute("href").startsWith("/movies");
+    const data = {};
 
-    const ariaLabelParts = node
-      .getAttribute("aria-label")
-      .match(/^(.+?)(\((\d+)\).*)?(:|-)\sWatch/);
+    try {
+      const ariaLabelParts = node
+        .getAttribute("aria-label")
+        .match(/^(.+?)(\((\d+)\).*)?(:|-)\sWatch/);
 
-    const title = this._cleanTitle(ariaLabelParts[1]);
-    const type = isMovie ? "movie" : "series";
-    const year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
+      data.title = this._cleanTitle(ariaLabelParts[1]);
+      data.type = isMovie ? "movie" : "series";
+      data.year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
+    } catch (e) {
+      e.message = `Error extracting data from program node: ${e.message}`;
+      console.error(e, node);
+    }
 
-    return { title, type, year };
+    return data;
   }
 
   _cleanTitle(title) {
@@ -156,10 +162,13 @@ class JioCinemaPage {
     const programNodes = Array.from(
       node.querySelectorAll('a.block[role="button"]')
     ).filter(this._checkProgramNodeIsForMovieOrTVShow);
-    const programs = programNodes.map((node) => ({
-      node,
-      ...this._extractDataFromProgramNode(node),
-    }));
+    const programs = programNodes
+      .map((node) => ({
+        node,
+        ...this._extractDataFromProgramNode(node),
+      }))
+      // drop program nodes for which data extraction failed
+      .filter(({ title }) => title);
     return programs;
   }
 
@@ -179,10 +188,10 @@ class JioCinemaPage {
           node.getAttribute("role") === "button" &&
           this._checkProgramNodeIsForMovieOrTVShow(node)
         ) {
-          this.newProgramCallback({
-            node,
-            ...this._extractDataFromProgramNode(node),
-          });
+          const programNodeData = this._extractDataFromProgramNode(node);
+          if (programNodeData) {
+            this.newProgramCallback({ node, ...programNodeData });
+          }
           continue;
         }
 
