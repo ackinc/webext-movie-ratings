@@ -118,7 +118,9 @@ class JioCinemaPage {
     try {
       const ariaLabelParts = node
         .getAttribute("aria-label")
-        .match(/^(.+?)(\((\d+)\).*)?(:|-)\sWatch/);
+        .match(
+          /^(.+?)(\((\d+)\).*)?(:|-)\s(Watch|Stay Tuned|All Seasons, Episodes|A Thrilling New Series)/
+        );
 
       data.title = this._cleanTitle(ariaLabelParts[1]);
       data.type = isMovie ? "movie" : "series";
