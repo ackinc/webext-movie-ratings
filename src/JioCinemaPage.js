@@ -120,24 +120,12 @@ class JioCinemaPage {
   }
 
   _isValidProgramList({ title }) {
-    // get rid of the channels and languages lists
-
-    if (!title) {
-      // channels list has no title
-      return false;
-    }
-
-    if (title === "Watch In Your Language") {
-      // languages list
-      return false;
-    }
-
-    if (title === "Episodes") {
-      // episodes list
-      return false;
-    }
-
-    return true;
+    return (
+      title &&
+      !["Watch In Your Language", "Episodes", "Meet The Creators!"].includes(
+        title
+      )
+    );
   }
 
   _findProgramsInProgramList(pList) {
