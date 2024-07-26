@@ -115,7 +115,7 @@ class JioCinemaPage {
   }
 
   _getTitleFromProgramListNode(node) {
-    let listTitle = node.querySelector("h2")?.textContent;
+    let listTitle = node.querySelector("h1,h2,h3")?.textContent;
     if (!listTitle) {
       const gp = node.parentNode.parentNode;
       if (gp.classList.contains("MuiStack-root")) {
@@ -136,12 +136,16 @@ class JioCinemaPage {
           /^(.+?)(\((\d+)\).*)?(:|-)\s(Watch|Stay Tuned|All Seasons, Episodes|A Thrilling New Series)/
         );
 
+      if (!ariaLabelParts) {
+        throw new Error(`Label does not match regex`);
+      }
+
       data.title = this._cleanTitle(ariaLabelParts[1]);
       data.type = isMovie ? "movie" : "series";
       data.year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
     } catch (e) {
       e.message = `Error extracting data from program node: ${e.message}`;
-      console.error(e, node);
+      console.warn(e, node);
     }
 
     return data;
@@ -201,7 +205,7 @@ class JioCinemaPage {
       for (const node of mutation.addedNodes) {
         if (node.nodeType !== Node.ELEMENT_NODE) continue;
 
-        // check if a program node was added
+        // check if a program node was added to a program list
         // this happens when scrolling horizontally through
         //   a program list
         if (
@@ -217,16 +221,67 @@ class JioCinemaPage {
           continue;
         }
 
-        // check if a program list node was added
+        // check if a program node was added to a program grid
+        // this happens when scrolling vertically down a program grid
+        if (
+          target.nodeName === "DIV" &&
+          ["MuiGrid-root", "MuiGrid-container"].every((cName) =>
+            target.classList.contains(cName)
+          ) &&
+          ["MuiGrid-root", "MuiGrid-item"].every((cName) =>
+            node.classList.contains(cName)
+          )
+        ) {
+          const programNode = node.querySelector('a.block[role="button"]');
+          if (
+            programNode &&
+            this._checkProgramNodeIsForMovieOrTVShow(programNode)
+          ) {
+            const programNodeData =
+              this._extractDataFromProgramNode(programNode);
+            if (programNodeData.title) {
+              this.newProgramCallback({
+                node: programNode,
+                ...programNodeData,
+              });
+            }
+          }
+
+          continue;
+        }
+
+        // check if a program list/grid node was added
         // this happens when scrolling vertically down the page
         if (
           node.nodeName === "DIV" &&
-          node.classList.contains("mui-style-e0sayp-stackBlock")
+          [
+            "mui-style-e0sayp-stackBlock", // program list
+            "mui-style-6u7r0i-stackBlock", // program grid
+          ].some((className) => node.classList.contains(className))
         ) {
           const listTitle = this._getTitleFromProgramListNode(node);
           if (!this._isValidProgramList({ title: listTitle })) continue;
 
           this._findProgramsInProgramList({ node }).forEach(
+            this.newProgramCallback
+          );
+
+          continue;
+        }
+
+        // check if a 'More like this' grid was added
+        // this happens on visiting a progam-specific page
+        if (
+          target.nodeName === "MAIN" &&
+          node.nodeName === "DIV" &&
+          node.firstChild?.nodeName === "DIV" &&
+          node.firstChild.classList.contains("mui-style-1kf8ltx-stackBlock")
+        ) {
+          const gridNode = node.firstChild;
+          const gridTitle = this._getTitleFromProgramListNode(gridNode);
+          if (!this._isValidProgramList({ title: gridTitle })) continue;
+
+          this._findProgramsInProgramList({ node: gridNode }).forEach(
             this.newProgramCallback
           );
 

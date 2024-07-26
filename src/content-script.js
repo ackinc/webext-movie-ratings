@@ -24,7 +24,7 @@ async function main() {
 async function fetchAndAddIMDBData(program) {
   const imdbData = await fetchIMDBData(program);
   if (imdbData.error) {
-    console.warn(`Error fetching IMDB data`, imdbData.error, program);
+    console.error(`Error fetching IMDB data`, imdbData.error, program);
   } else {
     page.addIMDBData(program, imdbData);
   }
