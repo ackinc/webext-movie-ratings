@@ -17,16 +17,15 @@ function handleMessage(request, sender, sendResponse) {
   return true;
 }
 
-async function fetchIMDBData({ title, type, year }) {
-  const key = btoa(
-    [title.replace(/[^\w]/g, ""), type, year].filter(Boolean).join("|")
-  );
+async function fetchIMDBData(program) {
+  const key = getCacheKey(program);
 
-  const cached = await chrome.storage.local.get(key);
+  const { [key]: cached } = await chrome.storage.local.get(key);
   if (checkCachedDataIsUsable(cached)) {
     return omit(cached, ["expiry"]);
   }
 
+  const { title, type, year } = program;
   const searchParams = new URLSearchParams({
     apiKey: OMDB_API_KEY,
     t: title,
@@ -57,11 +56,20 @@ async function fetchIMDBData({ title, type, year }) {
   return omit(result, ["expiry"]);
 }
 
+function getCacheKey(program) {
+  const { title, type, year } = program;
+  return btoa(
+    [title.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
+      .filter(Boolean)
+      .join("|")
+  );
+}
+
 function checkCachedDataIsUsable(data) {
   return (
     data &&
     data.imdbRating &&
-    (data.imdbRating === "N/F" || data.imdbID) &&
+    (data.imdbID || data.imdbRating === "N/F") &&
     data.expiry > +new Date()
   );
 }
