@@ -7,7 +7,7 @@
     "build:dev": "esbuild manifest.json src/content-script.js src/service-worker.js --loader:.json=copy --entry-names=[name] --bundle --sourcemap --outdir=dist --watch",
     "prebuild": "pnpm run clean",
     "build": "esbuild manifest.json src/content-script.js --loader:.json=copy --entry-names=[name] --bundle --sourcemap --outdir=dist",
-    "clean": "rm -r dist/*"
+    "clean": "rm -rf dist/*"
   },
   "author": "",
   "license": "ISC",
