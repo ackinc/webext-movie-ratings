@@ -1,4 +1,4 @@
-import { pick } from "lodash";
+import pick from "lodash/pick";
 import { invert } from "./common";
 import JioCinemaPage from "./JioCinemaPage";
 

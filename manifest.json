@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "OTT Movie Ratings",
+  "name": "Sieve: IMDB ratings on OTT platforms to help you choose what to watch faster",
   "description": "Adds IMDB ratings next to movies / tv shows on JioCinema. Other platforms coming soon!",
   "version": "1.0.0",
   "icons": {},

@@ -1,4 +1,4 @@
-import { omit } from "lodash";
+import omit from "lodash/omit";
 import { ONE_DAY_IN_MS, TWO_WEEKS_IN_MS } from "./common";
 
 const OMDB_API_KEY = "d7991986";
