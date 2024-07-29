@@ -29,6 +29,7 @@ class JioCinemaPage {
   }
 
   async initialize() {
+    this._injectStyles();
     this.contentContainer = await waitFor(
       () => document.querySelector("main"),
       // if a logged-in user visits the jiocinema website,
@@ -41,7 +42,6 @@ class JioCinemaPage {
       Infinity,
       250
     );
-    this._injectStyles();
   }
 
   // returns a list of all the programs currently being displayed on the page
