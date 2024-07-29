@@ -67,3 +67,15 @@ export function extractProgramTitle(str) {
       .replace(/[^A-Za-z0-9]*$/, "")
   );
 }
+
+export function pick(obj, keys) {
+  const retval = {};
+  for (const key of keys) retval[key] = obj[key];
+  return retval;
+}
+
+export function omit(obj, keys) {
+  const retval = { ...obj };
+  for (const key of keys) delete retval[key];
+  return retval;
+}
