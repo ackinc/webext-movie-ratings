@@ -86,6 +86,9 @@ class JioCinemaPage {
       ratingNode.setAttribute("href", getIMDBLink(data.imdbID));
       ratingNode.setAttribute("target", "_blank");
     }
+    if (["N/A", "N/F"].includes(data.imdbRating)) {
+      ratingNode.style.visibility = "hidden";
+    }
     ratingNode.innerText = `IMDb ${data.imdbRating}`;
 
     if (node.nextElementSibling) {
