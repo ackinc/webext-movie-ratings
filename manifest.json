@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Movie Ratings for Indian OTTs",
-  "description": "Adds IMDB ratings next to movies / tv shows on popular Indian OTT platforms",
+  "name": "OTT Movie Ratings",
+  "description": "Adds IMDB ratings next to movies / tv shows on JioCinema. Other platforms coming soon!",
   "version": "1.0.0",
   "icons": {},
   "author": "anirudh.nimmagadda@gmail.com",
