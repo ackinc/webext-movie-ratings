@@ -25,3 +25,45 @@ export function getIMDBLink(imdbID) {
 export function invert(fn) {
   return (...args) => !fn(...args);
 }
+
+const languages = [
+  "English",
+  "Bengali",
+  "Hindi",
+  "Punjabi",
+  "Tamil",
+  "Telugu",
+  "Marathi",
+  "Kannada",
+  "Malayalam",
+  "Bhojpuri",
+  "Gujarati",
+];
+
+export function extractProgramTitle(str) {
+  let title = str.trim();
+
+  const toRemove = [
+    "New TV Show",
+    "TV Show",
+    "TV Series",
+    "Web Series",
+    "Webseries",
+    ...languages.map((l) => `${l} Movie`),
+    // removes suffixes like "Season 1", "Season 1 Streaming Now",
+    //   "Season 1 Episode 4", and "Season 1 Episode 4: <Episode Name>"
+    /Season \d+.*$/,
+    ...languages.map((l) => `(${l})`),
+    // REVIEW: are there many programs whose titles legitimately
+    //   end with these words?
+    /Movie|Series$/,
+  ];
+  toRemove.forEach((x) => (title = title.replace(x, "")));
+  return (
+    title
+      .trim()
+      .replace(/\s+/, " ")
+      // title should end with alphabet or number
+      .replace(/[^A-Za-z0-9]*$/, "")
+  );
+}

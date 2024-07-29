@@ -1,4 +1,9 @@
-import { IMDB_DATA_NODE_CLASS, getIMDBLink, waitFor } from "./common";
+import {
+  IMDB_DATA_NODE_CLASS,
+  extractProgramTitle,
+  getIMDBLink,
+  waitFor,
+} from "./common";
 
 const PROGRAM_NODE_CONTAINER_CLASSES = {
   LIST: "mui-style-e0sayp-stackBlock",
@@ -168,23 +173,25 @@ class JioCinemaPage {
     const { node } = pContainer;
     const programNodes = Array.from(
       node.querySelectorAll('a.block[role="button"]')
-    ).filter(this._checkProgramNodeIsForMovieOrTVShow);
+    ).filter(ProgramNode.checkProgramNodeIsForMovieOrTVShow);
     const programs = programNodes
       .map((node) => ({
         node,
-        ...this._extractDataFromProgramNode(node),
+        ...ProgramNode.extractData(node),
       }))
       // drop program nodes for which data extraction failed
       .filter(({ title, type }) => title && type);
     return programs;
   }
+}
 
-  _checkProgramNodeIsForMovieOrTVShow(node) {
+class ProgramNode {
+  static checkProgramNodeIsForMovieOrTVShow(node) {
     const href = node.getAttribute("href");
     return href.startsWith("/movies") || href.startsWith("/tv-shows");
   }
 
-  _extractDataFromProgramNode(node) {
+  static extractData(node) {
     const isMovie = node.getAttribute("href").startsWith("/movies");
     const data = {};
 
@@ -199,22 +206,21 @@ class JioCinemaPage {
       return data;
     }
 
-    data.title = this._cleanTitle(ariaLabelParts[1]);
+    data.title = this._extractProgramTitle(ariaLabelParts[1]);
     data.type = isMovie ? "movie" : "series";
     data.year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
 
     return data;
   }
 
-  _cleanTitle(title) {
-    // removes suffixes like 'TV Show', 'Season 1', 'Season 1 Episode 4',
-    //   'English Movie', etc.
-    return title
-      .trim()
-      .replace(
-        /\s*((TV Show)|(Web Series)|(\S+ Movie)|(Season \d+(\s+Episode\d+)?))$/,
-        ""
-      );
+  static _extractProgramTitle(str) {
+    let title = extractProgramTitle(str);
+
+    // page-specific exceptional cases
+    if (title === "Watch Chernobyl") return "Chernobyl";
+    else if (title === "Watch The Newsroom") return "The Newsroom";
+    else if (title === "Enjoy Pokemon") return "Pokemon";
+    else return title;
   }
 }
 
