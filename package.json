@@ -4,9 +4,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "prebuild:dev": "pnpm run clean && cp -r images dist",
     "build:dev": "esbuild manifest.json src/content-script.js src/service-worker.js --loader:.json=copy --entry-names=[name] --bundle --sourcemap --outdir=dist --watch",
-    "prebuild": "pnpm run clean",
-    "build": "esbuild manifest.json src/content-script.js src/service-worker.js --loader:.json=copy --entry-names=[name] --bundle --sourcemap --outdir=dist",
+    "prebuild": "pnpm run clean && cp -r images dist",
+    "build": "esbuild manifest.json src/content-script.js src/service-worker.js --loader:.json=copy --entry-names=[name] --bundle --outdir=dist",
     "clean": "rm -rf dist/*"
   },
   "author": "",

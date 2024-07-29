@@ -1,14 +1,19 @@
 {
   "manifest_version": 3,
-  "name": "Sieve: IMDB ratings on OTT platforms to help you choose what to watch faster",
-  "description": "Adds IMDB ratings next to movies / tv shows on JioCinema. Other platforms coming soon!",
+  "name": "Sieve: IMDB ratings on Indian OTT platforms",
+  "description": "Sieve currently adds IMDB ratings next to movies / tv shows on JioCinema and Hotstar, to help you choose what to watch faster. Other platforms coming soon!",
   "version": "1.0.0",
-  "icons": {},
+  "icons": {
+    "16": "images/icon-16.png",
+    "32": "images/icon-32.png",
+    "48": "images/icon-48.png",
+    "128": "images/icon-128.png"
+  },
   "author": "anirudh.nimmagadda@gmail.com",
   "content_scripts": [
     {
       "js": ["content-script.js"],
-      "matches": ["https://*.jiocinema.com/*"]
+      "matches": ["https://*.jiocinema.com/*", "https://*.hotstar.com/*"]
     }
   ],
   "background": {
