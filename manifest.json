@@ -4,10 +4,10 @@
   "description": "Sieve currently adds IMDB ratings next to movies / tv shows on JioCinema and Hotstar, to help you choose what to watch faster. Other platforms coming soon!",
   "version": "1.0.0",
   "icons": {
-    "16": "images/icon-16.png",
-    "32": "images/icon-32.png",
-    "48": "images/icon-48.png",
-    "128": "images/icon-128.png"
+    "16": "images/logo16.png",
+    "32": "images/logo32.png",
+    "48": "images/logo48.png",
+    "128": "images/logo128.png"
   },
   "author": "anirudh.nimmagadda@gmail.com",
   "content_scripts": [
