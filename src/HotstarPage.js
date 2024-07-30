@@ -26,32 +26,12 @@ class HotstarPage {
 
   addIMDBData(program, data) {
     if (this.checkIMDBDataAlreadyAdded(program)) return;
-
     const ratingNode = this._createIMDBDataNode(data);
-
-    const { node } = program;
-    const metadataNode = ProgramNode.getMetadataNode(node);
-    if (metadataNode) {
-      this._insertIMDBDataNodeIntoProgramMetadataNode(ratingNode, metadataNode);
-    } else if (node.nextElementSibling) {
-      node.parentNode.insertBefore(ratingNode, node.nextElementSibling);
-    } else {
-      node.parentNode.appendChild(ratingNode);
-    }
+    ProgramNode.insertIMDBNode(program.node, ratingNode);
   }
 
   checkIMDBDataAlreadyAdded(program) {
-    const { node } = program;
-    const metadataNode = ProgramNode.getMetadataNode(node);
-    if (metadataNode) {
-      return !!metadataNode.querySelector(`a.${IMDB_DATA_NODE_CLASS}`);
-    }
-
-    const maybeImdbDataNode = node.nextElementSibling;
-    return (
-      maybeImdbDataNode &&
-      maybeImdbDataNode.classList.contains(IMDB_DATA_NODE_CLASS)
-    );
+    return !!ProgramNode.getIMDBNode(program.node);
   }
 
   _injectStyles() {
@@ -68,6 +48,13 @@ class HotstarPage {
         font-size: 14px;
         font-weight: bold;
         margin: 4px 0 0 8px;
+      }
+
+      div[data-scale-down="true"] a.${IMDB_DATA_NODE_CLASS} {
+        margin: 0 0 0 2px;
+        color: var(--ON-SURFACE-ALT);
+        fontSize: 16px;
+        fontWeight: 500;
       }
     `;
     document.head.appendChild(styleNode);
@@ -128,18 +115,6 @@ class HotstarPage {
 
     return node;
   }
-
-  _insertIMDBDataNodeIntoProgramMetadataNode(imdbDataNode, metadataNode) {
-    // match the rating up nicely with surrounding metadata
-    imdbDataNode.style.margin = "0 0 0 2px";
-    imdbDataNode.style.color = "#8f98b2";
-    imdbDataNode.style.fontSize = "16px";
-    imdbDataNode.style.fontWeight = "500";
-    metadataNode.insertBefore(
-      imdbDataNode,
-      metadataNode.lastChild.previousElementSibling
-    );
-  }
 }
 
 class ProgramNode {
@@ -167,6 +142,37 @@ class ProgramNode {
     return node.firstChild.querySelector(
       ':scope > div[data-scale-down="true"]'
     );
+  }
+
+  static getIMDBNode(node) {
+    const metadataNode = this.getMetadataNode(node);
+    if (metadataNode) {
+      return metadataNode.querySelector(`a.${IMDB_DATA_NODE_CLASS}`);
+    }
+
+    const maybeImdbDataNode = node.nextElementSibling;
+    if (
+      maybeImdbDataNode &&
+      maybeImdbDataNode.classList.contains(IMDB_DATA_NODE_CLASS)
+    ) {
+      return maybeImdbDataNode;
+    }
+
+    return null;
+  }
+
+  static insertIMDBNode(node, imdbNode) {
+    const metadataNode = this.getMetadataNode(node);
+    if (metadataNode) {
+      metadataNode.insertBefore(
+        imdbNode,
+        metadataNode.lastChild.previousElementSibling
+      );
+    } else if (node.nextElementSibling) {
+      node.parentNode.insertBefore(imdbNode, node.nextElementSibling);
+    } else {
+      node.parentNode.appendChild(imdbNode);
+    }
   }
 }
 
