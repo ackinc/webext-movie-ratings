@@ -79,6 +79,13 @@ class HotstarPage {
         .textContent;
     }
 
+    if (
+      node.parentNode.parentNode.parentNode.dataset["testid"] ===
+      "scroll-section-More Like This"
+    ) {
+      return "More Like This";
+    }
+
     return node.firstChild.querySelector("h2").textContent;
   }
 
