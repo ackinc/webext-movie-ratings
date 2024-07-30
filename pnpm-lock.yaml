@@ -11,6 +11,9 @@ importers:
       '@eslint/js':
         specifier: ^9.7.0
         version: 9.7.0
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
       esbuild:
         specifier: ^0.23.0
         version: 0.23.0
@@ -276,6 +279,10 @@ packages:
 
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
+
+  dotenv@16.4.5:
+    resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
+    engines: {node: '>=12'}
 
   esbuild@0.23.0:
     resolution: {integrity: sha512-1lvV17H2bMYda/WaFb2jLPeHU3zml2k4/yagNMG8Q/YtfMjCwEUZa2eXXMgZTVSL5q1n4H7sQ0X6CdJDqqeCFA==}
@@ -695,6 +702,8 @@ snapshots:
       ms: 2.1.2
 
   deep-is@0.1.4: {}
+
+  dotenv@16.4.5: {}
 
   esbuild@0.23.0:
     optionalDependencies:

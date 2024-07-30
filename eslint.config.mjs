@@ -6,7 +6,11 @@ export default [
   {
     files: ["src/**/*.js"],
     languageOptions: {
-      globals: { ...globals.browser, ...globals.webextensions },
+      globals: {
+        ...globals.browser,
+        ...globals.webextensions,
+        BUILDTIME_ENV: "readonly",
+      },
     },
   },
   {

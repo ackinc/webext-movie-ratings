@@ -1,3 +1,4 @@
+import "dotenv/config";
 import * as esbuild from "esbuild";
 import * as path from "node:path";
 
@@ -16,6 +17,7 @@ const config = {
     path.resolve(__dirname, "../manifest.json"),
   ],
   bundle: true,
+  define: { "BUILDTIME_ENV.OMDB_API_KEY": `"${process.env.OMDB_API_KEY}"` },
   entryNames: "[name]",
   loader: {
     ".json": "copy",

@@ -1,7 +1,5 @@
 import { ONE_DAY_IN_MS, TWO_WEEKS_IN_MS, omit } from "./common";
 
-const OMDB_API_KEY = "d7991986";
-
 chrome.runtime.onMessage.addListener(handleMessage);
 
 function handleMessage(request, sender, sendResponse) {
@@ -26,7 +24,7 @@ async function fetchIMDBData(program) {
 
   const { title, type, year } = program;
   const searchParams = new URLSearchParams({
-    apiKey: OMDB_API_KEY,
+    apiKey: BUILDTIME_ENV.OMDB_API_KEY,
     t: title,
     type,
   });
