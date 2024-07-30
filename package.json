@@ -5,9 +5,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "prebuild:dev": "pnpm run clean && cp -r images dist",
-    "build:dev": "esbuild manifest.json src/content-script.js src/service-worker.js --loader:.json=copy --entry-names=[name] --bundle --sourcemap --outdir=dist --watch",
+    "build:dev": "node scripts/build.js --dev",
     "prebuild": "pnpm run clean && cp -r images dist",
-    "build": "esbuild manifest.json src/content-script.js src/service-worker.js --loader:.json=copy --entry-names=[name] --bundle --outdir=dist",
+    "build": "node scripts/build.js",
     "postbuild": "7z a dist.zip ./dist/*",
     "clean": "rm -rf dist/* dist.zip"
   },
