@@ -13,7 +13,7 @@
   "content_scripts": [
     {
       "js": ["content-script.js"],
-      "matches": ["https://*.jiocinema.com/*"]
+      "matches": ["https://*.jiocinema.com/*", "https://*.hotstar.com/*"]
     }
   ],
   "background": {
