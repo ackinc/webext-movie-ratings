@@ -32,10 +32,7 @@ class HotstarPage {
     const { node } = program;
     const metadataNode = ProgramNode.getMetadataNode(node);
     if (metadataNode) {
-      // line the rating up nicely with surrounding metadata
-      ratingNode.style.margin = "-6px 0 0 0";
-      ratingNode.style.color = "#8f98b2";
-      metadataNode.insertBefore(ratingNode, metadataNode.lastChild);
+      this._insertIMDBDataNodeIntoProgramMetadataNode(ratingNode, metadataNode);
     } else if (node.nextElementSibling) {
       node.parentNode.insertBefore(ratingNode, node.nextElementSibling);
     } else {
@@ -123,6 +120,18 @@ class HotstarPage {
     node.innerText = `IMDb ${data.imdbRating}`;
 
     return node;
+  }
+
+  _insertIMDBDataNodeIntoProgramMetadataNode(imdbDataNode, metadataNode) {
+    // match the rating up nicely with surrounding metadata
+    imdbDataNode.style.margin = "0 0 0 2px";
+    imdbDataNode.style.color = "#8f98b2";
+    imdbDataNode.style.fontSize = "16px";
+    imdbDataNode.style.fontWeight = "500";
+    metadataNode.insertBefore(
+      imdbDataNode,
+      metadataNode.lastChild.previousElementSibling
+    );
   }
 }
 
