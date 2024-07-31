@@ -20,17 +20,24 @@ async function main() {
 
   await page.initialize();
 
+  const intervalTimeMs = 2000;
+  const maxErrors = 30;
+  let nErrors = 0;
   const interval = setInterval(() => {
     try {
       page
         .findPrograms()
         .filter(invert(page.checkIMDBDataAlreadyAdded))
         .forEach(fetchAndAddIMDBData);
+      nErrors = 0;
     } catch (e) {
       console.error(`Error adding IMDB ratings`, e);
-      clearInterval(interval);
+      if (++nErrors >= maxErrors) {
+        console.log(`Pausing due to too many errors`);
+        clearInterval(interval);
+      }
     }
-  }, 2000);
+  }, intervalTimeMs);
 }
 
 async function fetchAndAddIMDBData(program) {
