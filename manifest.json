@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Sieve: IMDB ratings on Indian OTT platforms",
-  "description": "Sieve adds IMDB ratings next to movies / tv shows on JioCinema, to help you choose what to watch faster.",
-  "version": "1.0.0",
+  "name": "IMDB ratings on Indian OTT",
+  "description": "This extension adds IMDB ratings next to programs on JioCinema, Hotstar, and SonyLIV, to help you choose what to watch faster.",
+  "version": "2.0.0",
   "icons": {
     "16": "images/logo16.png",
     "32": "images/logo32.png",
