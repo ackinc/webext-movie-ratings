@@ -10,6 +10,9 @@ class AbstractPage {
 
   constructor() {
     this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
+    this.findProgramsInProgramContainer =
+      this.findProgramsInProgramContainer.bind(this);
+    this.isValidProgramContainer = this.isValidProgramContainer.bind(this);
   }
 
   async initialize() {
