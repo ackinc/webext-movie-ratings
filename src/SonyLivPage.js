@@ -9,15 +9,25 @@ import {
 class ProgramNode extends AbstractProgramNode {
   static isMovieOrSeries(node) {
     const href = node.getAttribute("href");
-    return href.startsWith("/movies") || href.startsWith("/shows");
+    return (
+      href.startsWith("/movies") ||
+      href.startsWith("/shows") ||
+      href.startsWith("/trailer") ||
+      (node.classList.contains("multipurpose-portrait-link") &&
+        href.startsWith("https://www.sonyliv.com/dplnk?schema=sony://asset/"))
+    );
   }
 
   static extractData(node) {
-    const isMovie = node.getAttribute("href").startsWith("/movies");
+    const href = node.getAttribute("href");
     const data = {};
 
     data.title = extractProgramTitle(node.getAttribute("title"));
-    data.type = isMovie ? "movie" : "series";
+    data.type = href.startsWith("/movies")
+      ? "movie"
+      : href.startsWith("/shows")
+      ? "series"
+      : undefined;
 
     return data;
   }
@@ -103,7 +113,7 @@ class SonyLivPage extends AbstractPage {
         node,
         ...this.constructor.ProgramNode.extractData(node),
       }))
-      .filter(({ title, type }) => title && type);
+      .filter(({ title }) => !!title);
     return programs;
   }
 }
