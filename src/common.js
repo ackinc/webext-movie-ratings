@@ -1,5 +1,7 @@
 export const IMDB_DATA_NODE_CLASS = "webext-imdb-data";
 
+export const IMDB_STYLE_NODE_CLASS = "webext-styles";
+
 export const ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
 
 export const TWO_WEEKS_IN_MS = ONE_DAY_IN_MS * 7 * 2;
