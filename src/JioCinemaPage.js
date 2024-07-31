@@ -7,6 +7,65 @@ import {
   waitFor,
 } from "./common";
 
+class ProgramNode extends AbstractProgramNode {
+  static isMovieOrSeries(node) {
+    const href = node.getAttribute("href");
+    return href.startsWith("/movies") || href.startsWith("/tv-shows");
+  }
+
+  static extractData(node) {
+    const isMovie = node.getAttribute("href").startsWith("/movies");
+    const data = {};
+
+    const ariaLabelParts = node
+      .getAttribute("aria-label")
+      .match(
+        /^(.+?)(\((\d+)\).*)?(:|-)\s(Watch|Stay Tuned|All Seasons, Episodes|A Thrilling New Series)/
+      );
+
+    if (!ariaLabelParts) {
+      // console.error(`Error extracting data from program node`, node);
+      return data;
+    }
+
+    data.title = ProgramNode.#extractProgramTitle(ariaLabelParts[1]);
+    data.type = isMovie ? "movie" : "series";
+    data.year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
+
+    return data;
+  }
+
+  static insertIMDBNode(node, imdbNode) {
+    if (node.nextElementSibling) {
+      node.parentNode.insertBefore(imdbNode, node.nextElementSibling);
+    } else {
+      node.parentNode.appendChild(imdbNode);
+    }
+  }
+
+  static getIMDBNode(node) {
+    const maybeImdbDataNode = node.nextElementSibling;
+    if (
+      maybeImdbDataNode &&
+      maybeImdbDataNode.classList.contains(IMDB_DATA_NODE_CLASS)
+    ) {
+      return maybeImdbDataNode;
+    }
+
+    return null;
+  }
+
+  static #extractProgramTitle(str) {
+    let title = extractProgramTitle(str);
+
+    // page-specific exceptional cases
+    if (title === "Watch Chernobyl") return "Chernobyl";
+    else if (title === "Watch The Newsroom") return "The Newsroom";
+    else if (title === "Enjoy Pokemon") return "Pokemon";
+    else return title;
+  }
+}
+
 class JioCinemaPage extends AbstractPage {
   static #programContainerNodeClasses = {
     LIST: "mui-style-e0sayp-stackBlock",
@@ -127,65 +186,6 @@ class JioCinemaPage extends AbstractPage {
       // drop program nodes for which data extraction failed
       .filter(({ title, type }) => title && type);
     return programs;
-  }
-}
-
-class ProgramNode extends AbstractProgramNode {
-  static isMovieOrSeries(node) {
-    const href = node.getAttribute("href");
-    return href.startsWith("/movies") || href.startsWith("/tv-shows");
-  }
-
-  static extractData(node) {
-    const isMovie = node.getAttribute("href").startsWith("/movies");
-    const data = {};
-
-    const ariaLabelParts = node
-      .getAttribute("aria-label")
-      .match(
-        /^(.+?)(\((\d+)\).*)?(:|-)\s(Watch|Stay Tuned|All Seasons, Episodes|A Thrilling New Series)/
-      );
-
-    if (!ariaLabelParts) {
-      // console.error(`Error extracting data from program node`, node);
-      return data;
-    }
-
-    data.title = ProgramNode.#extractProgramTitle(ariaLabelParts[1]);
-    data.type = isMovie ? "movie" : "series";
-    data.year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
-
-    return data;
-  }
-
-  static insertIMDBNode(node, imdbNode) {
-    if (node.nextElementSibling) {
-      node.parentNode.insertBefore(imdbNode, node.nextElementSibling);
-    } else {
-      node.parentNode.appendChild(node);
-    }
-  }
-
-  static getIMDBNode(node) {
-    const maybeImdbDataNode = node.nextElementSibling;
-    if (
-      maybeImdbDataNode &&
-      maybeImdbDataNode.classList.contains(IMDB_DATA_NODE_CLASS)
-    ) {
-      return maybeImdbDataNode;
-    }
-
-    return null;
-  }
-
-  static #extractProgramTitle(str) {
-    let title = extractProgramTitle(str);
-
-    // page-specific exceptional cases
-    if (title === "Watch Chernobyl") return "Chernobyl";
-    else if (title === "Watch The Newsroom") return "The Newsroom";
-    else if (title === "Enjoy Pokemon") return "Pokemon";
-    else return title;
   }
 }
 
