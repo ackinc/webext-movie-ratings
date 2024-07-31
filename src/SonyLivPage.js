@@ -33,7 +33,10 @@ class ProgramNode extends AbstractProgramNode {
   }
 
   static insertIMDBNode(node, imdbNode) {
-    if (node.nextElementSibling) {
+    if (node.parentNode.classList.contains("innerlistt")) {
+      node.firstChild.style.marginBottom = "2em";
+      node.firstChild.firstChild.appendChild(imdbNode);
+    } else if (node.nextElementSibling) {
       node.parentNode.insertBefore(imdbNode, node.nextElementSibling);
     } else {
       node.parentNode.appendChild(imdbNode);
@@ -41,6 +44,12 @@ class ProgramNode extends AbstractProgramNode {
   }
 
   static getIMDBNode(node) {
+    if (node.parentNode.classList.contains("innerlistt")) {
+      return node.firstChild.firstChild.lastChild.classList.contains(
+        IMDB_DATA_NODE_CLASS
+      );
+    }
+
     const maybeImdbDataNode = node.nextElementSibling;
     if (
       maybeImdbDataNode &&
@@ -79,13 +88,18 @@ class SonyLivPage extends AbstractPage {
   }
 
   findProgramContainerNodes() {
-    return Array.from(document.querySelectorAll("div.layout-main-container"));
+    return Array.from(
+      document.querySelectorAll(
+        "div.layout-main-container,div.Outerlistt.Outerlist"
+      )
+    );
   }
 
   getTitleFromProgramContainerNode(node) {
     return (
       node.querySelector(".listing-link h3")?.textContent ??
-      node.querySelector(":scope > h3")?.textContent
+      node.querySelector(":scope > h3")?.textContent ??
+      node.querySelector(":scope > div.heading-filter-wrap > h1")?.textContent
     );
   }
 
@@ -103,9 +117,12 @@ class SonyLivPage extends AbstractPage {
   }
 
   findProgramsInProgramContainer(pContainer) {
+    const { node } = pContainer;
     const programNodes = Array.from(
-      pContainer.node.querySelectorAll(
-        "div.slick-track a.landscape-link,a.portrait-link,a.multipurpose-portrait-link"
+      node.querySelectorAll(
+        node.classList.contains("Outerlistt")
+          ? ":scope > div.innerlistt.innerlist a[title]"
+          : "div.slick-track a.landscape-link,a.portrait-link,a.multipurpose-portrait-link"
       )
     ).filter(this.constructor.ProgramNode.isMovieOrSeries);
     const programs = programNodes
