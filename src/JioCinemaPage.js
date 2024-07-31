@@ -16,8 +16,9 @@ class JioCinemaPage extends AbstractPage {
 
   static ProgramNode = ProgramNode;
 
-  // eslint-disable-next-line constructor-super
-  constructor() {}
+  constructor() {
+    super();
+  }
 
   async initialize() {
     this.injectStyles();

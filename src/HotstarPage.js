@@ -9,8 +9,9 @@ import {
 class HotstarPage extends AbstractPage {
   static ProgramNode = ProgramNode;
 
-  // eslint-disable-next-line constructor-super
-  constructor() {}
+  constructor() {
+    super();
+  }
 
   injectStyles() {
     super.injectStyles();

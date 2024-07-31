@@ -9,7 +9,7 @@ class AbstractPage {
   static ProgramNode = AbstractProgramNode;
 
   constructor() {
-    throw new Error("Not implemented");
+    this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
   }
 
   async initialize() {
