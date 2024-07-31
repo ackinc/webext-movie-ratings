@@ -1,6 +1,7 @@
 import { pick, invert } from "./common";
 import JioCinemaPage from "./JioCinemaPage";
 import HotstarPage from "./HotstarPage";
+import SonyLivPage from "./SonyLivPage";
 
 let page;
 
@@ -11,6 +12,8 @@ async function main() {
     page = new JioCinemaPage();
   } else if (location.hostname === "www.hotstar.com") {
     page = new HotstarPage();
+  } else if (location.hostname === "www.sonyliv.com") {
+    page = new SonyLivPage();
   } else {
     throw new Error("Page not recognized");
   }
