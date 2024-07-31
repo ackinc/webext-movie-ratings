@@ -127,11 +127,11 @@ class HotstarPage extends AbstractPage {
 
     const programNodes = Array.from(
       node.querySelectorAll('a[data-testid="link"]')
-    ).filter(ProgramNode.isMovieOrSeries);
+    ).filter(this.constructor.ProgramNode.isMovieOrSeries);
     const programs = programNodes
       .map((node) => ({
         node,
-        ...ProgramNode.extractData(node),
+        ...this.constructor.ProgramNode.extractData(node),
       }))
       // drop program nodes for which data extraction failed
       .filter(({ title, type }) => title && type);

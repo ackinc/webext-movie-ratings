@@ -28,7 +28,7 @@ class ProgramNode extends AbstractProgramNode {
       return data;
     }
 
-    data.title = ProgramNode.#extractProgramTitle(ariaLabelParts[1]);
+    data.title = this.#extractProgramTitle(ariaLabelParts[1]);
     data.type = isMovie ? "movie" : "series";
     data.year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
 
@@ -177,11 +177,11 @@ class JioCinemaPage extends AbstractPage {
     const { node } = pContainer;
     const programNodes = Array.from(
       node.querySelectorAll('a.block[role="button"]')
-    ).filter(ProgramNode.isMovieOrSeries);
+    ).filter(this.constructor.ProgramNode.isMovieOrSeries);
     const programs = programNodes
       .map((node) => ({
         node,
-        ...ProgramNode.extractData(node),
+        ...this.constructor.ProgramNode.extractData(node),
       }))
       // drop program nodes for which data extraction failed
       .filter(({ title, type }) => title && type);

@@ -1,6 +1,7 @@
 import { pick, invert } from "./common";
 import JioCinemaPage from "./JioCinemaPage";
 import HotstarPage from "./HotstarPage";
+import SonyLivPage from "./SonyLivPage";
 
 let page;
 
@@ -11,18 +12,32 @@ async function main() {
     page = new JioCinemaPage();
   } else if (location.hostname === "www.hotstar.com") {
     page = new HotstarPage();
+  } else if (location.hostname === "www.sonyliv.com") {
+    page = new SonyLivPage();
   } else {
     throw new Error("Page not recognized");
   }
 
   await page.initialize();
 
-  setInterval(() => {
-    page
-      .findPrograms()
-      .filter(invert(page.checkIMDBDataAlreadyAdded))
-      .forEach(fetchAndAddIMDBData);
-  }, 1000);
+  const intervalTimeMs = 2000;
+  const maxErrors = 30;
+  let nErrors = 0;
+  const interval = setInterval(() => {
+    try {
+      page
+        .findPrograms()
+        .filter(invert(page.checkIMDBDataAlreadyAdded))
+        .forEach(fetchAndAddIMDBData);
+      nErrors = 0;
+    } catch (e) {
+      console.error(`Error adding IMDB ratings`, e);
+      if (++nErrors >= maxErrors) {
+        console.log(`Pausing due to too many errors`);
+        clearInterval(interval);
+      }
+    }
+  }, intervalTimeMs);
 }
 
 async function fetchAndAddIMDBData(program) {

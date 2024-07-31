@@ -51,11 +51,13 @@ export function extractProgramTitle(str) {
     "TV Series",
     "Web Series",
     "Webseries",
-    ...languages.map((l) => `${l} Movie`),
     // removes suffixes like "Season 1", "Season 1 Streaming Now",
     //   "Season 1 Episode 4", and "Season 1 Episode 4: <Episode Name>"
-    /Season \d+.*$/,
+    /Season \d+.*$/i,
+    ...languages.map((l) => `${l} Movie`),
+    ...languages.map((l) => `(${l} Dub)`),
     ...languages.map((l) => `(${l})`),
+    "(Dub)",
     // REVIEW: are there many programs whose titles legitimately
     //   end with these words?
     /Movie|Series$/,

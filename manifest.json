@@ -13,7 +13,11 @@
   "content_scripts": [
     {
       "js": ["content-script.js"],
-      "matches": ["https://*.jiocinema.com/*", "https://*.hotstar.com/*"]
+      "matches": [
+        "https://*.jiocinema.com/*",
+        "https://*.hotstar.com/*",
+        "https://*.sonyliv.com/*"
+      ]
     }
   ],
   "background": {

@@ -26,8 +26,8 @@ async function fetchIMDBData(program) {
   const searchParams = new URLSearchParams({
     apiKey: BUILDTIME_ENV.OMDB_API_KEY,
     t: title,
-    type,
   });
+  if (type) searchParams.set("type", type);
   if (year) searchParams.set("y", year);
 
   let result = {};
