@@ -1,36 +1,27 @@
+import AbstractPage from "./AbstractPage";
+import AbstractProgramNode from "./AbstractProgramNode";
 import {
   IMDB_DATA_NODE_CLASS,
+  IMDB_STYLE_NODE_CLASS,
   extractProgramTitle,
-  getIMDBLink,
   waitFor,
 } from "./common";
 
-const PROGRAM_NODE_CONTAINER_CLASSES = {
-  LIST: "mui-style-e0sayp-stackBlock",
-  GRID_MORE_LIKE_THIS: "mui-style-1kf8ltx-stackBlock",
-  GRID_OTHER: "mui-style-6u7r0i-stackBlock",
-};
+class JioCinemaPage extends AbstractPage {
+  static #programContainerNodeClasses = {
+    LIST: "mui-style-e0sayp-stackBlock",
+    GRID_MORE_LIKE_THIS: "mui-style-1kf8ltx-stackBlock",
+    GRID_OTHER: "mui-style-6u7r0i-stackBlock",
+  };
 
-/* USAGE
+  static ProgramNode = ProgramNode;
 
-```js
-const page = new JioCinemaPage();
-await page.initialize();
-...
-```
-
-*/
-class JioCinemaPage {
-  constructor() {
-    this.contentContainer = null;
-
-    this._findProgramsInProgramContainer =
-      this._findProgramsInProgramContainer.bind(this);
-  }
+  // eslint-disable-next-line constructor-super
+  constructor() {}
 
   async initialize() {
-    this._injectStyles();
-    this.contentContainer = await waitFor(
+    this.injectStyles();
+    await waitFor(
       () => document.querySelector("main"),
       // if a logged-in user visits the jiocinema website,
       //   jio presents them with an account-choosing UI
@@ -44,74 +35,14 @@ class JioCinemaPage {
     );
   }
 
-  // returns a list of all the programs currently being displayed on the page
-  // a 'program' can be a movie, tv-series, or misc video content
-  // we really only care about movies and tv-series
-  findPrograms() {
-    const programListSelectors = Object.values(
-      PROGRAM_NODE_CONTAINER_CLASSES
-    ).map((cName) => `div.${cName}`);
+  injectStyles() {
+    super.injectStyles();
 
-    const programListNodes = Array.from(
-      document.querySelectorAll(programListSelectors.join(","))
-    );
-
-    const programLists = programListNodes
-      .map((node) => ({
-        node,
-        title: this._getTitleFromProgramContainerNode(node),
-      }))
-      .filter(this._isValidProgramContainer);
-
-    const programs = programLists
-      .map(this._findProgramsInProgramContainer)
-      .flat();
-
-    return programs;
-  }
-
-  addIMDBData(program, data) {
-    const { node } = program;
-
-    if (
-      node.nextElementSibling &&
-      node.nextElementSibling.classList.contains(IMDB_DATA_NODE_CLASS)
-    ) {
-      return;
-    }
-
-    const ratingNode = document.createElement("a");
-    ratingNode.classList.add(IMDB_DATA_NODE_CLASS);
-    if (data.imdbRating !== "N/F") {
-      ratingNode.setAttribute("href", getIMDBLink(data.imdbID));
-      ratingNode.setAttribute("target", "_blank");
-    }
-    if (["N/A", "N/F"].includes(data.imdbRating)) {
-      ratingNode.style.visibility = "hidden";
-    }
-    ratingNode.innerText = `IMDb ${data.imdbRating}`;
-
-    if (node.nextElementSibling) {
-      node.parentNode.insertBefore(ratingNode, node.nextElementSibling);
-    } else {
-      node.parentNode.appendChild(ratingNode);
-    }
-  }
-
-  checkIMDBDataAlreadyAdded(program) {
-    const maybeImdbDataNode = program.node.nextElementSibling;
-    return (
-      maybeImdbDataNode &&
-      maybeImdbDataNode.classList.contains(IMDB_DATA_NODE_CLASS)
-    );
-  }
-
-  _injectStyles() {
     const pageFontFamily = window
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
 
-    const styleNode = document.createElement("style");
+    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`);
     styleNode.innerHTML = `
       a.${IMDB_DATA_NODE_CLASS} {
         color: #999999;
@@ -122,23 +53,33 @@ class JioCinemaPage {
         margin: -6px 0 0 4px;
       }
     `;
-    document.head.appendChild(styleNode);
   }
 
-  _getTitleFromProgramContainerNode(node) {
+  findProgramContainerNodes() {
+    const selectors = Object.values(
+      JioCinemaPage.#programContainerNodeClasses
+    ).map((cName) => `div.${cName}`);
+
+    const programContainerNodes = Array.from(
+      document.querySelectorAll(selectors.join(","))
+    );
+
+    return programContainerNodes;
+  }
+
+  getTitleFromProgramContainerNode(node) {
+    const containerClasses = JioCinemaPage.#programContainerNodeClasses;
     const { classList } = node;
 
-    if (classList.contains(PROGRAM_NODE_CONTAINER_CLASSES.LIST)) {
-      return this._getTitleFromProgramListNode(node);
+    if (classList.contains(containerClasses.LIST)) {
+      return this.#getTitleFromProgramListNode(node);
     }
 
-    if (
-      classList.contains(PROGRAM_NODE_CONTAINER_CLASSES.GRID_MORE_LIKE_THIS)
-    ) {
+    if (classList.contains(containerClasses.GRID_MORE_LIKE_THIS)) {
       return node.querySelector(":scope > h3").textContent;
     }
 
-    if (classList.contains(PROGRAM_NODE_CONTAINER_CLASSES.GRID_OTHER)) {
+    if (classList.contains(containerClasses.GRID_OTHER)) {
       return node.firstChild.firstChild.nextElementSibling.querySelector(
         ":scope > h1"
       ).textContent;
@@ -147,7 +88,7 @@ class JioCinemaPage {
     return "";
   }
 
-  _getTitleFromProgramListNode(node) {
+  #getTitleFromProgramListNode(node) {
     let listTitle = "";
 
     let titleContainerNode = node.firstChild.firstChild;
@@ -163,7 +104,7 @@ class JioCinemaPage {
     return listTitle;
   }
 
-  _isValidProgramContainer({ title }) {
+  isValidProgramContainer({ title }) {
     return (
       title &&
       !["Watch In Your Language", "Episodes", "Meet The Creators!"].includes(
@@ -172,11 +113,11 @@ class JioCinemaPage {
     );
   }
 
-  _findProgramsInProgramContainer(pContainer) {
+  findProgramsInProgramContainer(pContainer) {
     const { node } = pContainer;
     const programNodes = Array.from(
       node.querySelectorAll('a.block[role="button"]')
-    ).filter(ProgramNode.checkProgramNodeIsForMovieOrTVShow);
+    ).filter(ProgramNode.isMovieOrSeries);
     const programs = programNodes
       .map((node) => ({
         node,
@@ -188,8 +129,8 @@ class JioCinemaPage {
   }
 }
 
-class ProgramNode {
-  static checkProgramNodeIsForMovieOrTVShow(node) {
+class ProgramNode extends AbstractProgramNode {
+  static isMovieOrSeries(node) {
     const href = node.getAttribute("href");
     return href.startsWith("/movies") || href.startsWith("/tv-shows");
   }
@@ -209,14 +150,34 @@ class ProgramNode {
       return data;
     }
 
-    data.title = this._extractProgramTitle(ariaLabelParts[1]);
+    data.title = ProgramNode.#extractProgramTitle(ariaLabelParts[1]);
     data.type = isMovie ? "movie" : "series";
     data.year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
 
     return data;
   }
 
-  static _extractProgramTitle(str) {
+  static insertIMDBNode(node, imdbNode) {
+    if (node.nextElementSibling) {
+      node.parentNode.insertBefore(imdbNode, node.nextElementSibling);
+    } else {
+      node.parentNode.appendChild(node);
+    }
+  }
+
+  static getIMDBNode(node) {
+    const maybeImdbDataNode = node.nextElementSibling;
+    if (
+      maybeImdbDataNode &&
+      maybeImdbDataNode.classList.contains(IMDB_DATA_NODE_CLASS)
+    ) {
+      return maybeImdbDataNode;
+    }
+
+    return null;
+  }
+
+  static #extractProgramTitle(str) {
     let title = extractProgramTitle(str);
 
     // page-specific exceptional cases
