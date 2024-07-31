@@ -108,7 +108,7 @@ class JioCinemaPage extends AbstractPage {
         color: #999999;
         display: block;
         font-family: ${pageFontFamily};
-        font-size: 12px;
+        font-size: 14px;
         font-weight: bold;
         margin: -6px 0 0 4px;
       }
