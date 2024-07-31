@@ -1,45 +1,24 @@
-import { IMDB_DATA_NODE_CLASS, getIMDBLink } from "./common";
+import AbstractPage from "./AbstractPage";
+import AbstractProgramNode from "./AbstractProgramNode";
+import {
+  IMDB_DATA_NODE_CLASS,
+  IMDB_STYLE_NODE_CLASS,
+  getIMDBLink,
+} from "./common";
 
-class HotstarPage {
+class HotstarPage extends AbstractPage {
+  static ProgramNode = ProgramNode;
+
+  // eslint-disable-next-line constructor-super
   constructor() {}
 
-  async initialize() {
-    this._injectStyles();
-  }
+  injectStyles() {
+    super.injectStyles();
 
-  findPrograms() {
-    const programContainerNodes =
-      document.querySelectorAll("div.tray-container");
-    const programContainers = Array.from(programContainerNodes)
-      .map((node) => ({
-        title: this._getTitleFromProgramContainerNode(node),
-        node,
-      }))
-      .filter(this._isValidProgramContainer);
-
-    const programs = programContainers
-      .map(this._findProgramsInProgramContainer)
-      .flat();
-
-    return programs;
-  }
-
-  addIMDBData(program, data) {
-    if (this.checkIMDBDataAlreadyAdded(program)) return;
-    const ratingNode = this._createIMDBDataNode(data);
-    ProgramNode.insertIMDBNode(program.node, ratingNode);
-  }
-
-  checkIMDBDataAlreadyAdded(program) {
-    return !!ProgramNode.getIMDBNode(program.node);
-  }
-
-  _injectStyles() {
+    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`);
     const pageFontFamily = window
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
-
-    const styleNode = document.createElement("style");
     styleNode.innerHTML = `
       a.${IMDB_DATA_NODE_CLASS} {
         color: #999999;
@@ -47,7 +26,6 @@ class HotstarPage {
         font-family: ${pageFontFamily};
         font-size: 14px;
         font-weight: bold;
-        margin: 4px 0 0 8px;
       }
 
       div[data-scale-down="true"] a.${IMDB_DATA_NODE_CLASS} {
@@ -57,10 +35,13 @@ class HotstarPage {
         fontWeight: 500;
       }
     `;
-    document.head.appendChild(styleNode);
   }
 
-  _getTitleFromProgramContainerNode(node) {
+  findProgramContainerNodes() {
+    return Array.from(document.querySelectorAll("div.tray-container"));
+  }
+
+  getTitleFromProgramContainerNode(node) {
     if (node.firstChild.dataset["testid"] === "grid-container") {
       return node.parentNode.parentNode.querySelector("div.headerSpace h4")
         .textContent;
@@ -76,7 +57,7 @@ class HotstarPage {
     return node.firstChild.querySelector("h2").textContent;
   }
 
-  _isValidProgramContainer({ title }) {
+  isValidProgramContainer({ title }) {
     return (
       title &&
       !["Popular Languages", "Popular Genres", "Popular Channels"].includes(
@@ -85,12 +66,12 @@ class HotstarPage {
     );
   }
 
-  _findProgramsInProgramContainer(pContainer) {
+  findProgramsInProgramContainer(pContainer) {
     const { node } = pContainer;
 
     const programNodes = Array.from(
       node.querySelectorAll('a[data-testid="link"]')
-    ).filter(ProgramNode.checkProgramNodeIsForMovieOrTVShow);
+    ).filter(ProgramNode.isMovieOrSeries);
     const programs = programNodes
       .map((node) => ({
         node,
@@ -101,7 +82,7 @@ class HotstarPage {
     return programs;
   }
 
-  _createIMDBDataNode(data) {
+  createIMDBDataNode(data) {
     const node = document.createElement("a");
     node.classList.add(IMDB_DATA_NODE_CLASS);
     if (data.imdbRating !== "N/F") {
@@ -117,8 +98,8 @@ class HotstarPage {
   }
 }
 
-class ProgramNode {
-  static checkProgramNodeIsForMovieOrTVShow(node) {
+class ProgramNode extends AbstractProgramNode {
+  static isMovieOrSeries(node) {
     const href = node.getAttribute("href");
     return href.startsWith("/in/movies") || href.startsWith("/in/shows");
   }
@@ -138,10 +119,18 @@ class ProgramNode {
     };
   }
 
-  static getMetadataNode(node) {
-    return node.firstChild.querySelector(
-      ':scope > div[data-scale-down="true"]'
-    );
+  static insertIMDBNode(node, imdbNode) {
+    const metadataNode = this.getMetadataNode(node);
+    if (metadataNode) {
+      metadataNode.insertBefore(
+        imdbNode,
+        metadataNode.lastChild.previousElementSibling
+      );
+    } else if (node.nextElementSibling) {
+      node.parentNode.insertBefore(imdbNode, node.nextElementSibling);
+    } else {
+      node.parentNode.appendChild(imdbNode);
+    }
   }
 
   static getIMDBNode(node) {
@@ -161,18 +150,10 @@ class ProgramNode {
     return null;
   }
 
-  static insertIMDBNode(node, imdbNode) {
-    const metadataNode = this.getMetadataNode(node);
-    if (metadataNode) {
-      metadataNode.insertBefore(
-        imdbNode,
-        metadataNode.lastChild.previousElementSibling
-      );
-    } else if (node.nextElementSibling) {
-      node.parentNode.insertBefore(imdbNode, node.nextElementSibling);
-    } else {
-      node.parentNode.appendChild(imdbNode);
-    }
+  static getMetadataNode(node) {
+    return node.firstChild.querySelector(
+      ':scope > div[data-scale-down="true"]'
+    );
   }
 }
 
