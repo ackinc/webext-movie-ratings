@@ -72,10 +72,10 @@ class AbstractPage {
       node.setAttribute("href", getIMDBLink(data.imdbID));
       node.setAttribute("target", "_blank");
     }
-    if (["N/A", "N/F"].includes(data.imdbRating)) {
+    if (["N/F"].includes(data.imdbRating)) {
       node.style.visibility = "hidden";
     }
-    node.innerText = `IMDb ${data.imdbRating}`;
+    node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : data.imdbRating}`;
 
     return node;
   }
