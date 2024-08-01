@@ -65,6 +65,7 @@ class ProgramNode extends AbstractProgramNode {
       "Enjoy Pokemon": "Pokemon",
       "Harry Potter And The Philosopher's Stone":
         "Harry Potter And the Sorcerer's Stone",
+      "The Family Star": "Family Star",
     };
 
     return exceptionalCases[title] ?? title;
