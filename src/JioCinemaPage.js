@@ -59,10 +59,15 @@ class ProgramNode extends AbstractProgramNode {
     let title = extractProgramTitle(str);
 
     // page-specific exceptional cases
-    if (title === "Watch Chernobyl") return "Chernobyl";
-    else if (title === "Watch The Newsroom") return "The Newsroom";
-    else if (title === "Enjoy Pokemon") return "Pokemon";
-    else return title;
+    const exceptionalCases = {
+      "Watch Chernobyl": "Chernobyl",
+      "Watch The Newsroom": "The Newsroom",
+      "Enjoy Pokemon": "Pokemon",
+      "Harry Potter And The Philosopher's Stone":
+        "Harry Potter And the Sorcerer's Stone",
+    };
+
+    return exceptionalCases[title] ?? title;
   }
 }
 
