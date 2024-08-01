@@ -161,19 +161,15 @@ class JioCinemaPage extends AbstractPage {
   }
 
   #getTitleFromProgramListNode(node) {
-    let listTitle = "";
+    // check if regular program list
+    let titleNode = node.firstChild?.firstChild?.firstChild;
+    if (titleNode?.nodeName === "H2") return titleNode.textContent;
 
-    let titleContainerNode = node.firstChild.firstChild;
-    if (titleContainerNode) {
-      listTitle = titleContainerNode.querySelector(":scope > h2")?.textContent;
-    }
+    // check if toggle-able program list
+    titleNode = node.parentNode.previousElementSibling?.firstChild?.firstChild;
+    if (titleNode?.nodeName === "H2") return titleNode.textContent;
 
-    if (!listTitle) {
-      titleContainerNode = node.parentNode.parentNode.firstChild;
-      listTitle = titleContainerNode.querySelector(":scope > h2")?.textContent;
-    }
-
-    return listTitle;
+    return "";
   }
 
   isValidProgramContainer({ title }) {
