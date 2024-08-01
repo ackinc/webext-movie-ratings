@@ -30,7 +30,11 @@ class ProgramNode extends AbstractProgramNode {
 
     data.title = this.#extractProgramTitle(ariaLabelParts[1]);
     data.type = isMovie ? "movie" : "series";
-    data.year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
+
+    // the year data on JioCinema seems super unreliable, so we won't use it
+    // examples:
+    //   "Welcome (2022)"" should be "Welcome (2007)"
+    // data.year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
 
     return data;
   }
@@ -66,6 +70,8 @@ class ProgramNode extends AbstractProgramNode {
       "Harry Potter And The Philosopher's Stone":
         "Harry Potter And the Sorcerer's Stone",
       "The Family Star": "Family Star",
+      "Happy Bhag Jayegi": "Happy Bhaag Jayegi",
+      "Gangs Of Wasseypur 1": "Gangs Of Wasseypur",
     };
 
     return exceptionalCases[title] ?? title;
