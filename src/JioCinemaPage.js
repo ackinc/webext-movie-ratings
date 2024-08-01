@@ -72,6 +72,7 @@ class ProgramNode extends AbstractProgramNode {
       "The Family Star": "Family Star",
       "Happy Bhag Jayegi": "Happy Bhaag Jayegi",
       "Gangs Of Wasseypur 1": "Gangs Of Wasseypur",
+      "Nagashaurya's Aswathama": "Aswathama",
     };
 
     return exceptionalCases[title] ?? title;
