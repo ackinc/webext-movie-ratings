@@ -36,29 +36,23 @@ class ProgramNode extends AbstractProgramNode {
     if (node.parentNode.classList.contains("innerlistt")) {
       node.firstChild.style.marginBottom = "2em";
       node.firstChild.firstChild.appendChild(imdbNode);
-    } else if (node.nextElementSibling) {
-      node.parentNode.insertBefore(imdbNode, node.nextElementSibling);
     } else {
-      node.parentNode.appendChild(imdbNode);
+      node.parentNode.parentNode.appendChild(imdbNode);
     }
   }
 
   static getIMDBNode(node) {
     if (node.parentNode.classList.contains("innerlistt")) {
-      return node.firstChild.firstChild.lastChild.classList.contains(
-        IMDB_DATA_NODE_CLASS
-      );
+      const candidate = node.firstChild.firstChild.lastChild;
+      return candidate.classList.contains(IMDB_DATA_NODE_CLASS)
+        ? candidate
+        : null;
     }
 
-    const maybeImdbDataNode = node.nextElementSibling;
-    if (
-      maybeImdbDataNode &&
-      maybeImdbDataNode.classList.contains(IMDB_DATA_NODE_CLASS)
-    ) {
-      return maybeImdbDataNode;
-    }
-
-    return null;
+    const candidate = node.parentNode.parentNode.lastChild;
+    return candidate.classList.contains(IMDB_DATA_NODE_CLASS)
+      ? candidate
+      : null;
   }
 }
 
