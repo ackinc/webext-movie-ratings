@@ -76,7 +76,14 @@ class HotstarPage extends AbstractPage {
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
     styleNode.innerHTML = `
+      div.swiper-slide > div:first-child {
+        padding-bottom: 21px;
+      }
+
       a.${IMDB_DATA_NODE_CLASS} {
+        /* absolute positioning is needed to make this node 'extrude' outside the ancestor
+             node that has the 'expand-onMouseEnter' event listener */
+        position: absolute;
         color: #999999;
         display: block;
         font-family: ${pageFontFamily};
@@ -85,6 +92,7 @@ class HotstarPage extends AbstractPage {
       }
 
       div[data-scale-down="true"] a.${IMDB_DATA_NODE_CLASS} {
+        position: inherit;
         margin: 0 0 0 2px;
         color: var(--ON-SURFACE-ALT);
         fontSize: 16px;

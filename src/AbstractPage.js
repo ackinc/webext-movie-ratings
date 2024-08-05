@@ -76,7 +76,7 @@ class AbstractPage {
       node.style.visibility = "hidden";
     }
     node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : data.imdbRating}`;
-
+    node.addEventListener("click", (e) => e.stopPropagation());
     return node;
   }
 }
