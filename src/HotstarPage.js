@@ -95,8 +95,8 @@ class HotstarPage extends AbstractPage {
         position: inherit;
         margin: 0 0 0 2px;
         color: var(--ON-SURFACE-ALT);
-        fontSize: 16px;
-        fontWeight: 500;
+        font-size: 16px;
+        font-weight: 500;
       }
     `;
   }
