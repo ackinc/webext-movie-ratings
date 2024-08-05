@@ -1,9 +1,9 @@
-import { ONE_HOUR_IN_MS, ONE_WEEK_IN_MS, omit } from "./common";
+import { ONE_HOUR_IN_MS, ONE_WEEK_IN_MS, browser, omit } from "./common";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
 
-chrome.runtime.onMessage.addListener(handleMessage);
+browser.runtime.onMessage.addListener(handleMessage);
 
 function handleMessage(request, sender, sendResponse) {
   if (request.type === "fetchIMDBRating") {
@@ -20,7 +20,7 @@ function handleMessage(request, sender, sendResponse) {
 async function fetchIMDBData(program) {
   const key = getCacheKey(program);
 
-  const { [key]: cached } = await chrome.storage.local.get(key);
+  const { [key]: cached } = await browser.storage.local.get(key);
   if (checkCachedDataIsUsable(cached)) {
     return omit(cached, ["expiry"]);
   }
@@ -52,7 +52,7 @@ async function fetchIMDBData(program) {
     result.expiry = +new Date() + imdbRatingCacheTime;
   }
 
-  chrome.storage.local.set({ [key]: result });
+  browser.storage.local.set({ [key]: result });
   return omit(result, ["expiry"]);
 }
 

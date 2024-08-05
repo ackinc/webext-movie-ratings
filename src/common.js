@@ -8,6 +8,8 @@ export const ONE_DAY_IN_MS = ONE_HOUR_IN_MS * 24;
 
 export const ONE_WEEK_IN_MS = ONE_DAY_IN_MS * 7;
 
+export const browser = browser ?? chrome;
+
 export function delayMs(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

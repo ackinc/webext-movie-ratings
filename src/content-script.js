@@ -1,4 +1,4 @@
-import { pick, invert } from "./common";
+import { browser, pick, invert } from "./common";
 import JioCinemaPage from "./JioCinemaPage";
 import HotstarPage from "./HotstarPage";
 import SonyLivPage from "./SonyLivPage";
@@ -50,7 +50,7 @@ async function fetchAndAddIMDBData(program) {
 }
 
 async function fetchIMDBData(program) {
-  const response = await chrome.runtime.sendMessage({
+  const response = await browser.runtime.sendMessage({
     type: "fetchIMDBRating",
     data: pick(program, ["title", "type", "year"]),
   });
