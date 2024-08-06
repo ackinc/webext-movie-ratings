@@ -43,6 +43,7 @@ export default class ProgramNode extends AbstractProgramNode {
         "div.titleCard--metadataWrapper"
       );
       metadataWrapper.insertBefore(imdbNode, metadataWrapper.lastChild);
+      return;
     }
 
     console.error(
