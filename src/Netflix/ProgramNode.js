@@ -35,21 +35,17 @@ export default class ProgramNode extends AbstractProgramNode {
   static insertIMDBNode(programNode, imdbNode) {
     if (programNode.matches("a.slider-refocus")) {
       programNode.parentNode.appendChild(imdbNode);
-      return;
-    }
-
-    if (programNode.matches("div.titleCard--container")) {
+    } else if (programNode.matches("div.titleCard--container")) {
       const metadataWrapper = programNode.querySelector(
         "div.titleCard--metadataWrapper"
       );
       metadataWrapper.insertBefore(imdbNode, metadataWrapper.lastChild);
-      return;
+    } else {
+      console.error(
+        "Error inserting IMDB node: program node not recognized",
+        programNode
+      );
     }
-
-    console.error(
-      "Error inserting IMDB node: program node not recognized",
-      programNode
-    );
   }
 
   static getIMDBNode(programNode) {
