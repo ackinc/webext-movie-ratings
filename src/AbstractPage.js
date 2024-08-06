@@ -53,15 +53,18 @@ class AbstractPage {
     throw new Error("Not implemented");
   }
 
-  getTitleFromProgramContainerNode() {
+  // eslint-disable-next-line no-unused-vars
+  getTitleFromProgramContainerNode(pContainerNode) {
     throw new Error("Not implemented");
   }
 
-  isValidProgramContainer() {
+  // eslint-disable-next-line no-unused-vars
+  isValidProgramContainer(pContainer) {
     throw new Error("Not implemented");
   }
 
-  findProgramsInProgramContainer() {
+  // eslint-disable-next-line no-unused-vars
+  findProgramsInProgramContainer(pContainer) {
     throw new Error("Not implemented");
   }
 
