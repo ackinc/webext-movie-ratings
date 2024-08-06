@@ -2,9 +2,12 @@ import { browser, pick, invert } from "./common";
 import JioCinemaPage from "./JioCinemaPage";
 import HotstarPage from "./HotstarPage";
 import SonyLivPage from "./SonyLivPage";
+import NetflixPage from "./Netflix/Page";
 
 let page;
-
+const intervalTimeMs = 2000;
+const maxConsecutiveErrors = 30;
+let nErrors = 0;
 main();
 
 async function main() {
@@ -14,30 +17,38 @@ async function main() {
     page = new HotstarPage();
   } else if (location.hostname === "www.sonyliv.com") {
     page = new SonyLivPage();
+  } else if (location.hostname === "www.netflix.com") {
+    page = new NetflixPage();
   } else {
     throw new Error("Page not recognized");
   }
 
   await page.initialize();
 
-  const intervalTimeMs = 2000;
-  const maxErrors = 30;
-  let nErrors = 0;
-  const interval = setInterval(() => {
-    try {
+  window.__page = page;
+
+  setTimeout(loop, 0);
+}
+
+async function loop() {
+  try {
+    await Promise.allSettled(
       page
         .findPrograms()
         .filter(invert(page.checkIMDBDataAlreadyAdded))
-        .forEach(fetchAndAddIMDBData);
-      nErrors = 0;
-    } catch (e) {
-      console.error(`Error adding IMDB ratings`, e);
-      if (++nErrors >= maxErrors) {
-        console.log(`Pausing due to too many errors`);
-        clearInterval(interval);
-      }
+        .map(fetchAndAddIMDBData)
+    );
+    nErrors = 0;
+  } catch (e) {
+    console.error(`Error adding IMDB ratings`, e);
+    ++nErrors;
+  } finally {
+    if (nErrors < maxConsecutiveErrors) {
+      setTimeout(loop, intervalTimeMs);
+    } else {
+      console.log(`Pausing due to too many errors`);
     }
-  }, intervalTimeMs);
+  }
 }
 
 async function fetchAndAddIMDBData(program) {
