@@ -34,7 +34,7 @@ export default class ProgramNode extends AbstractProgramNode {
 
   static insertIMDBNode(programNode, imdbNode) {
     if (programNode.matches("a.slider-refocus")) {
-      programNode.parentNode.appendChild(imdbNode);
+      programNode.parentNode.parentNode.parentNode.appendChild(imdbNode);
     } else if (programNode.matches("div.titleCard--container")) {
       const metadataWrapper = programNode.querySelector(
         "div.titleCard--metadataWrapper"
@@ -50,7 +50,8 @@ export default class ProgramNode extends AbstractProgramNode {
 
   static getIMDBNode(programNode) {
     if (programNode.matches("a.slider-refocus")) {
-      const maybeIMDBNode = programNode.nextElementSibling;
+      const maybeIMDBNode =
+        programNode.parentNode.parentNode.parentNode.lastChild;
       if (
         maybeIMDBNode &&
         maybeIMDBNode.classList.contains(IMDB_DATA_NODE_CLASS)
