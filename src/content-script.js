@@ -18,6 +18,7 @@ async function main() {
     throw new Error("Page not recognized");
   }
 
+  window.__page = page;
   await page.initialize();
 
   const intervalTimeMs = 2000;
