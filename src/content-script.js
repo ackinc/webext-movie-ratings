@@ -2,7 +2,7 @@ import { browser, pick, invert } from "./common";
 import JioCinemaPage from "./JioCinemaPage";
 import HotstarPage from "./HotstarPage";
 import SonyLivPage from "./SonyLivPage";
-import NetflixPage from "./NetflixPage";
+import NetflixPage from "./Netflix/Page";
 
 let page;
 const intervalTimeMs = 2000;
