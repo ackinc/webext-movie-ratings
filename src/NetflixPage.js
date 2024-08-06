@@ -93,11 +93,11 @@ class NetflixPage extends AbstractPage {
         font-family: ${pageFontFamily};
         font-size: 16px;
         font-weight: bold;
+        margin: 4px 0 0 4px;
       }
 
       .titleCard--metadataWrapper a.${IMDB_DATA_NODE_CLASS} {
-        margin-left: 1em;
-        margin-bottom: 1em;
+        margin: 0 0 0.5em 1em;
       }
     `;
   }
