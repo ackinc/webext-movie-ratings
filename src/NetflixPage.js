@@ -13,18 +13,23 @@ class ProgramNode extends AbstractProgramNode {
     );
     const durationNode = programNode.querySelector("span.duration");
 
+    const type = durationNode
+      ? ["Seasons", "Episodes", "Series"].some((x) =>
+          durationNode.textContent.includes(x)
+        )
+        ? "series"
+        : "movie"
+      : null;
+
     return {
       title: programNode.getAttribute("aria-label"),
-      year: metadataWrapperNode
-        ? metadataWrapperNode.querySelector("div.year").textContent
-        : null,
-      type: durationNode
-        ? ["Seasons", "Episodes", "Series"].some((x) =>
-            durationNode.textContent.includes(x)
-          )
-          ? "series"
-          : "movie"
-        : null,
+      type,
+      // specifying year for series is causing many false negatives
+      //   when querying omdbapi
+      year:
+        type === "movie" && metadataWrapperNode
+          ? metadataWrapperNode.querySelector("div.year").textContent
+          : null,
     };
   }
 
