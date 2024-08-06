@@ -103,34 +103,47 @@ class NetflixPage extends AbstractPage {
   }
 
   findProgramContainerNodes() {
-    return Array.from(
-      document.querySelectorAll(
-        "div.lolomoRow,div.titleGroup--wrapper,div.moreLikeThis--wrapper,div.gallery"
-      )
-    );
+    const selectors = [
+      "div.lolomoRow",
+      "div.titleGroup--wrapper",
+      "div.moreLikeThis--wrapper",
+      "div.gallery",
+      'div[data-uia="search-video-gallery"]',
+    ];
+    const nodes = document.querySelectorAll(selectors.join(","));
+    return Array.from(nodes);
   }
 
   getTitleFromProgramContainerNode(pContainerNode) {
-    if (pContainerNode.classList.contains("moreLikeThis--wrapper")) {
+    const { classList } = pContainerNode;
+
+    if (classList.contains("moreLikeThis--wrapper")) {
       return pContainerNode.querySelector(":scope > h3.moreLikeThis--header")
         .textContent;
     }
 
-    if (pContainerNode.classList.contains("titleGroup--wrapper")) {
+    if (classList.contains("titleGroup--wrapper")) {
       return pContainerNode.querySelector(".titleGroup--header").textContent;
     }
 
-    if (pContainerNode.classList.contains("gallery")) {
-      return pContainerNode.previousElementSibling.previousElementSibling
+    if (classList.contains("gallery")) {
+      return pContainerNode.parentNode.querySelector("div.ltr-1axxs14")
         .textContent;
     }
 
-    return pContainerNode.querySelector(":scope > h2 div.row-header-title")
-      ?.textContent;
+    if (classList.contains("lolomoRow")) {
+      return pContainerNode.querySelector(":scope > h2 div.row-header-title")
+        .textContent;
+    }
+
+    return null;
   }
 
   isValidProgramContainer(pContainer) {
-    return !!pContainer.title;
+    return (
+      pContainer.title ||
+      pContainer.node.getAttribute("data-uia") === "search-video-gallery"
+    );
   }
 
   findProgramsInProgramContainer(pContainer) {
@@ -139,7 +152,10 @@ class NetflixPage extends AbstractPage {
     let programNodes;
 
     if (
-      ["lolomoRow", "gallery"].some((cName) => node.classList.contains(cName))
+      ["lolomoRow", "gallery"].some((cName) =>
+        node.classList.contains(cName)
+      ) ||
+      node.getAttribute("data-uia") === "search-video-gallery"
     ) {
       programNodes = node.querySelectorAll(
         "div.ptrack-content a.slider-refocus"
