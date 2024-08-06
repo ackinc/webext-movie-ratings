@@ -16,7 +16,8 @@
       "matches": [
         "https://*.jiocinema.com/*",
         "https://*.hotstar.com/*",
-        "https://*.sonyliv.com/*"
+        "https://*.sonyliv.com/*",
+        "https://www.netflix.com/*"
       ]
     }
   ],

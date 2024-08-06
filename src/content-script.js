@@ -2,6 +2,7 @@ import { browser, pick, invert } from "./common";
 import JioCinemaPage from "./JioCinemaPage";
 import HotstarPage from "./HotstarPage";
 import SonyLivPage from "./SonyLivPage";
+import NetflixPage from "./NetflixPage";
 
 let page;
 
@@ -14,6 +15,8 @@ async function main() {
     page = new HotstarPage();
   } else if (location.hostname === "www.sonyliv.com") {
     page = new SonyLivPage();
+  } else if (location.hostname === "www.netflix.com") {
+    page = new NetflixPage();
   } else {
     throw new Error("Page not recognized");
   }
