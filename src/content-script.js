@@ -5,7 +5,9 @@ import SonyLivPage from "./SonyLivPage";
 import NetflixPage from "./NetflixPage";
 
 let page;
-
+const intervalTimeMs = 2000;
+const maxConsecutiveErrors = 30;
+let nErrors = 0;
 main();
 
 async function main() {
@@ -21,27 +23,32 @@ async function main() {
     throw new Error("Page not recognized");
   }
 
-  window.__page = page;
   await page.initialize();
 
-  const intervalTimeMs = 2000;
-  const maxErrors = 30;
-  let nErrors = 0;
-  const interval = setInterval(() => {
-    try {
+  window.__page = page;
+
+  setTimeout(loop, 0);
+}
+
+async function loop() {
+  try {
+    await Promise.allSettled(
       page
         .findPrograms()
         .filter(invert(page.checkIMDBDataAlreadyAdded))
-        .forEach(fetchAndAddIMDBData);
-      nErrors = 0;
-    } catch (e) {
-      console.error(`Error adding IMDB ratings`, e);
-      if (++nErrors >= maxErrors) {
-        console.log(`Pausing due to too many errors`);
-        clearInterval(interval);
-      }
+        .map(fetchAndAddIMDBData)
+    );
+    nErrors = 0;
+  } catch (e) {
+    console.error(`Error adding IMDB ratings`, e);
+    ++nErrors;
+  } finally {
+    if (nErrors < maxConsecutiveErrors) {
+      setTimeout(loop, intervalTimeMs);
+    } else {
+      console.log(`Pausing due to too many errors`);
     }
-  }, intervalTimeMs);
+  }
 }
 
 async function fetchAndAddIMDBData(program) {
