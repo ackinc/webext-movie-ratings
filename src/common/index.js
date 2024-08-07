@@ -62,6 +62,7 @@ export function extractProgramTitle(str) {
     ...languages.map((l) => `(${l} Dub)`),
     ...languages.map((l) => `(${l})`),
     "(Dub)",
+    /\(\d{4}\)/, // year
     // REVIEW: are there many programs whose titles legitimately
     //   end with these words?
     /Movie|Series$/,
@@ -86,4 +87,10 @@ export function omit(obj, keys) {
   const retval = { ...obj };
   for (const key of keys) delete retval[key];
   return retval;
+}
+
+export function findAncestor(node, predFn) {
+  let result = node.parentElement;
+  while (result && !predFn(result)) result = result.parentElement;
+  return result;
 }
