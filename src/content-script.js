@@ -1,7 +1,7 @@
 import { browser, pick, invert } from "./common";
-import JioCinemaPage from "./JioCinemaPage";
-import HotstarPage from "./HotstarPage";
-import SonyLivPage from "./SonyLivPage";
+import JioCinemaPage from "./JioCinema/Page";
+import HotstarPage from "./Hotstar/Page";
+import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 
 let page;

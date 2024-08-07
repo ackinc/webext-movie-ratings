@@ -1,4 +1,4 @@
-import AbstractPage from "../AbstractPage";
+import AbstractPage from "../common/AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../common";
 

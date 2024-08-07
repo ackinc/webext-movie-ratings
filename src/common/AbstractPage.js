@@ -1,11 +1,7 @@
 import AbstractProgramNode from "./AbstractProgramNode";
-import {
-  IMDB_STYLE_NODE_CLASS,
-  IMDB_DATA_NODE_CLASS,
-  getIMDBLink,
-} from "./common";
+import { IMDB_STYLE_NODE_CLASS, IMDB_DATA_NODE_CLASS, getIMDBLink } from ".";
 
-class AbstractPage {
+export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
 
   constructor() {
@@ -83,5 +79,3 @@ class AbstractPage {
     return node;
   }
 }
-
-export default AbstractPage;

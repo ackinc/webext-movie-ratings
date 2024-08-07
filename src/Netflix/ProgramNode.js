@@ -1,4 +1,4 @@
-import AbstractProgramNode from "../AbstractProgramNode";
+import AbstractProgramNode from "../common/AbstractProgramNode";
 import { IMDB_DATA_NODE_CLASS } from "../common";
 
 export default class ProgramNode extends AbstractProgramNode {

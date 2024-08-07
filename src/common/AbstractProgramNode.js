@@ -1,4 +1,4 @@
-class AbstractProgramNode {
+export default class AbstractProgramNode {
   // eslint-disable-next-line no-unused-vars
   static isMovieOrSeries(programNode) {
     throw new Error("Not implemented");
@@ -19,5 +19,3 @@ class AbstractProgramNode {
     throw new Error("Not implemented");
   }
 }
-
-export default AbstractProgramNode;
