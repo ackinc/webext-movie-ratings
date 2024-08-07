@@ -4,6 +4,7 @@ import HotstarPage from "./Hotstar/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
+import AppleTVPage from "./AppleTV/Page";
 
 let page;
 const intervalTimeMs = 2000;
@@ -22,6 +23,8 @@ async function main() {
     page = new NetflixPage();
   } else if (location.hostname === "www.primevideo.com") {
     page = new AmazonPrimeVideoPage();
+  } else if (location.hostname === "tv.apple.com") {
+    page = new AppleTVPage();
   } else {
     throw new Error("Page not recognized");
   }
@@ -55,11 +58,12 @@ async function loop() {
 }
 
 async function fetchAndAddIMDBData(program) {
-  const imdbData = await fetchIMDBData(program);
-  if (imdbData.error) {
-    console.error(`Error fetching IMDB data`, imdbData.error, program);
-  } else {
+  try {
+    const imdbData = await fetchIMDBData(program);
+    if (imdbData.error) throw new Error(imdbData.error);
     page.addIMDBData(program, imdbData);
+  } catch (e) {
+    console.error(`Error fetching and adding IMDB data: ${e.message}`, program);
   }
 }
 
