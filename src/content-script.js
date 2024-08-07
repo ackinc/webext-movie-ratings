@@ -3,6 +3,7 @@ import JioCinemaPage from "./JioCinema/Page";
 import HotstarPage from "./Hotstar/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
+import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
 
 let page;
 const intervalTimeMs = 2000;
@@ -19,6 +20,8 @@ async function main() {
     page = new SonyLivPage();
   } else if (location.hostname === "www.netflix.com") {
     page = new NetflixPage();
+  } else if (location.hostname === "www.primevideo.com") {
+    page = new AmazonPrimeVideoPage();
   } else {
     throw new Error("Page not recognized");
   }
