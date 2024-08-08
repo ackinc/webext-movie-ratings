@@ -1,14 +1,22 @@
-### Desc
+# ![](images/logoCircularMinimal32.png) Sift
 
-Sift is a chrome extension that adds IMDB ratings to Indian OTT platforms' websites
+This web extension:
 
-Get it from the Chrome web store: [link](https://chromewebstore.google.com/detail/sift-imdb-ratings-on-indi/pfnhkljamlclkackkndllofcfhihacna)
+- adds the IMDB rating of a movie / tv show next to it's tile on the page
+- clicking on the rating opens the movie's IMDB page in a new tab
 
-### Currently supported platforms:
+### Get it for:
+
+[![Chrome](images/chrome32.png)][chrome-link] &nbsp; [![Edge](images/edge32.png)][edge-link] &nbsp; [![Firefox](images/firefox32.png)][firefox-link]
+
+### Supported OTT platforms:
 
 - JioCinema
 - Hotstar
 - SonyLIV
+- Netflix
+- Amazon Prime Video
+- AppleTV+
 
 ### Build instructions
 
@@ -20,4 +28,10 @@ Get it from the Chrome web store: [link](https://chromewebstore.google.com/detai
 
 ### Misc
 
-- Movie ratings are sourced from Brian Fritz's [OMDB API](https://omdbapi.com); if you found this extension useful, consider donating via Brian's [Patreon](https://www.patreon.com/join/omdb)
+- Movie ratings are sourced from Brian Fritz's [OMDB API][omdbapi-link]; if you found this extension useful, consider donating via Brian's [Patreon][omdbapi-patreon-link]
+
+[chrome-link]: https://chromewebstore.google.com/detail/sift-imdb-ratings-on-indi/pfnhkljamlclkackkndllofcfhihacna
+[edge-link]: https://microsoftedge.microsoft.com/addons/detail/odgepppomekmdiifmjmocpjhopdmgjnl
+[firefox-link]: https://addons.mozilla.org/en-US/firefox/addon/imdb-ratings-for-various-ott/
+[omdbapi-link]: https://omdbapi.com
+[omdbapi-patreon-link]: https://www.patreon.com/join/omdb
