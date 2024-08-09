@@ -112,7 +112,7 @@ export default class JioCinemaPage extends AbstractPage {
   findProgramsInProgramContainer(pContainer) {
     const { node } = pContainer;
     const programNodes = Array.from(
-      node.querySelectorAll('a.block[role="button"]')
+      node.querySelectorAll("a.block[aria-label]")
     ).filter(this.constructor.ProgramNode.isMovieOrSeries);
     const programs = programNodes
       .map((node) => ({

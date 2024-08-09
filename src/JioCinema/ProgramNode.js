@@ -11,24 +11,9 @@ export default class ProgramNode extends AbstractProgramNode {
     const isMovie = node.getAttribute("href").startsWith("/movies");
     const data = {};
 
-    const ariaLabelParts = node
-      .getAttribute("aria-label")
-      .match(
-        /^(.+?)(\((\d+)\).*)?(:|-)\s(Watch|Stay Tuned|All Seasons, Episodes|A Thrilling New Series)/
-      );
-
-    if (!ariaLabelParts) {
-      // console.error(`Error extracting data from program node`, node);
-      return data;
-    }
-
-    data.title = this.#extractProgramTitle(ariaLabelParts[1]);
+    const label = node.getAttribute("aria-label");
+    data.title = this.#extractProgramTitle(label);
     data.type = isMovie ? "movie" : "series";
-
-    // the year data on JioCinema seems super unreliable, so we won't use it
-    // examples:
-    //   "Welcome (2022)"" should be "Welcome (2007)"
-    // data.year = ariaLabelParts[3] ? +ariaLabelParts[3] : undefined;
 
     return data;
   }
@@ -54,7 +39,7 @@ export default class ProgramNode extends AbstractProgramNode {
   }
 
   static #extractProgramTitle(str) {
-    let title = extractProgramTitle(str);
+    let title = extractProgramTitle(str.replace(/(Movie|Show)$/, ""));
 
     // page-specific exceptional cases
     const exceptionalCases = {
