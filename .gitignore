@@ -3,4 +3,5 @@ dist.zip
 dist/*
 !dist/.keep
 .env
+src.zip
 tmp

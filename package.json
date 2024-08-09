@@ -8,8 +8,10 @@
     "build:dev": "node scripts/build.js --dev",
     "prebuild": "pnpm run clean && cp -r images dist",
     "build": "node scripts/build.js",
-    "postbuild": "7z a dist.zip ./dist/*",
-    "clean": "rm -rf dist/* dist.zip"
+    "postbuild": "pnpm run zip:dist",
+    "zip:dist": "7z a dist.zip ./dist/*",
+    "zip:src": "./scripts/zipSrc.sh",
+    "clean": "rm -rf dist/* dist.zip src.zip"
   },
   "author": "",
   "license": "ISC",
