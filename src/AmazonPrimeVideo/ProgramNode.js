@@ -36,6 +36,11 @@ export default class ProgramNode extends AbstractProgramNode {
       programNode.previousElementSibling?.nodeName === "ARTICLE"
     ) {
       programNode.appendChild(imdbNode);
+    } else if (
+      programNode.nodeName === "ARTICLE" &&
+      programNode.previousElementSibling?.nodeName === "STRONG"
+    ) {
+      programNode.appendChild(imdbNode);
     } else {
       programNode.parentNode.appendChild(imdbNode);
     }
@@ -50,6 +55,11 @@ export default class ProgramNode extends AbstractProgramNode {
     } else if (
       programNode.nextElementSibling?.nodeName === "ARTICLE" ||
       programNode.previousElementSibling?.nodeName === "ARTICLE"
+    ) {
+      maybeImdbNode = programNode.lastChild;
+    } else if (
+      programNode.nodeName === "ARTICLE" &&
+      programNode.previousElementSibling?.nodeName === "STRONG"
     ) {
       maybeImdbNode = programNode.lastChild;
     } else {

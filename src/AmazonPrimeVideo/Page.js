@@ -47,6 +47,7 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
       'section[data-testid="standard-carousel"]',
       'section[data-testid="super-carousel"]',
       'section[data-testid="charts-carousel"]',
+      'section[data-testid="charts-container"]',
       'main[data-testid="browse"]',
     ];
     return Array.from(document.querySelectorAll(selectors.join(",")));
@@ -54,7 +55,7 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
 
   getTitleFromProgramContainerNode(pContainerNode) {
     if (
-      ["standard-carousel", "super-carousel"].includes(
+      ["standard-carousel", "super-carousel", "charts-container"].includes(
         pContainerNode.dataset.testid
       )
     ) {
@@ -95,7 +96,11 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
       programNodes = Array.from(
         node.querySelectorAll("article[data-card-title")
       );
-    } else if (["standard-carousel", "charts-carousel"].includes(testid)) {
+    } else if (
+      ["standard-carousel", "charts-carousel", "charts-container"].includes(
+        testid
+      )
+    ) {
       programNodes = Array.from(
         node.querySelectorAll(
           'ul[data-testid="card-container-list"] article[data-card-title]'
