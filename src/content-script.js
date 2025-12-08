@@ -8,7 +8,7 @@ import AppleTVPage from "./AppleTV/Page";
 
 let page;
 const intervalTimeMs = 2000;
-const maxConsecutiveErrors = 30;
+const maxConsecutiveErrors = 5;
 let nErrors = 0;
 main();
 
