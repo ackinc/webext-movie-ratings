@@ -1,5 +1,5 @@
 {
-  "name": "webext-movie-ratings-extension",
+  "name": "sift-movie-ratings-webextension",
   "version": "2.4.2",
   "main": "index.js",
   "scripts": {
@@ -13,9 +13,9 @@
     "zip:src": "./scripts/zipSrc.sh",
     "clean": "rm -rf dist/* dist.zip src.zip"
   },
-  "author": "",
+  "author": "Anirudh Nimmagadda <anirudh.nimmagadda@gmail.com>",
   "license": "ISC",
-  "description": "",
+  "description": "Sift adds IMDB ratings next to programs on various OTT platforms to help you choose what to watch faster.",
   "packageManager": "pnpm@9.6.0+sha512.38dc6fba8dba35b39340b9700112c2fe1e12f10b17134715a4aa98ccf7bb035e76fd981cf0bb384dfa98f8d6af5481c2bef2f4266a24bfa20c34eb7147ce0b5e",
   "devDependencies": {
     "@eslint/js": "^9.7.0",
