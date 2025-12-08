@@ -1,3 +1,4 @@
+const { execSync } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -25,8 +26,8 @@ let newVersion;
 
 fileList.forEach((f) => {
   const contents = require(f);
-  oldVersion = contents.version;
-  newVersion = bumpVersion(contents.version, versionBumpType);
+  oldVersion ??= contents.version;
+  newVersion ??= bumpVersion(contents.version, versionBumpType);
   contents.version = newVersion;
 
   if (writeFiles) {
@@ -34,7 +35,21 @@ fileList.forEach((f) => {
   }
 });
 
-console.log(`Bumped version from ${oldVersion} to ${newVersion}`);
+const logMsg = `Bumped version: v${oldVersion} to v${newVersion}`;
+
+if (writeFiles) {
+  try {
+    execSync(`git commit -m "${logMsg}"`, { stdio: "pipe" });
+    execSync(`git tag v${newVersion}`, { stdio: "pipe" });
+  } catch (e) {
+    console.error(`Error: ${e.message}`);
+    process.exit(1);
+  }
+}
+
+console.log(logMsg);
+
+// HELPERS
 
 function bumpVersion(oldVersion, versionBumpType) {
   let [major, minor, patch] = oldVersion.split(".").map((x) => +x);
