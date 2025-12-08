@@ -34,7 +34,6 @@ export default class AbstractPage {
   }
 
   addIMDBData(program, data) {
-    if (this.checkIMDBDataAlreadyAdded(program)) return;
     const ratingNode = this.createIMDBDataNode(data);
     this.constructor.ProgramNode.insertIMDBNode(program.node, ratingNode);
   }
