@@ -1,5 +1,4 @@
 import { browser, pick, invert } from "./common";
-import JioCinemaPage from "./JioCinema/Page";
 import HotstarPage from "./Hotstar/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
@@ -13,9 +12,7 @@ let nErrors = 0;
 main();
 
 async function main() {
-  if (location.hostname === "www.jiocinema.com") {
-    page = new JioCinemaPage();
-  } else if (location.hostname === "www.hotstar.com") {
+  if (location.hostname === "www.hotstar.com") {
     page = new HotstarPage();
   } else if (location.hostname === "www.sonyliv.com") {
     page = new SonyLivPage();
