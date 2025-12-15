@@ -3,21 +3,27 @@ import { IMDB_DATA_NODE_CLASS } from "../common";
 
 export default class ProgramNode extends AbstractProgramNode {
   static isMovieOrSeries(node) {
-    const href = node.getAttribute("href");
-    return href.startsWith("/in/movies") || href.startsWith("/in/shows");
+    const disambiguatingNode = node.querySelector('div[data-testid="action"]');
+    return ["Movie", "Show"].includes(
+      disambiguatingNode?.getAttribute("aria-label")?.split(",").at(-1)
+    );
   }
 
   static extractData(node) {
-    const href = node.getAttribute("href");
-    const isMovie = href.startsWith("/in/movies");
+    const disambiguatingNode = node.querySelector('div[data-testid="action"]');
+    const isMovie =
+      disambiguatingNode.getAttribute("aria-label").split(",").at(-1) ===
+      "Movie";
 
-    const label = node.getAttribute("aria-label");
+    const label = disambiguatingNode
+      .querySelector("article img")
+      .getAttribute("alt");
     if (!label) {
       // console.warn("No label found for node", node);
     }
 
     return {
-      title: label?.replace(/,\s*?(Movie|Show),?.*$/, "").trim(),
+      title: label,
       type: isMovie ? "movie" : "series",
     };
   }
