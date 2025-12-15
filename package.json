@@ -17,7 +17,7 @@
   "author": "Anirudh Nimmagadda <anirudh.nimmagadda@gmail.com>",
   "license": "ISC",
   "description": "Sift adds IMDB ratings next to programs on various OTT platforms to help you choose what to watch faster.",
-  "packageManager": "pnpm@9.6.0+sha512.38dc6fba8dba35b39340b9700112c2fe1e12f10b17134715a4aa98ccf7bb035e76fd981cf0bb384dfa98f8d6af5481c2bef2f4266a24bfa20c34eb7147ce0b5e",
+  "packageManager": "pnpm@10.26.0+sha512.3b3f6c725ebe712506c0ab1ad4133cf86b1f4b687effce62a9b38b4d72e3954242e643190fc51fa1642949c735f403debd44f5cb0edd657abe63a8b6a7e1e402",
   "devDependencies": {
     "@eslint/js": "^9.7.0",
     "dotenv": "^16.4.5",
