@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Sift: IMDB ratings on various OTT plaftorms",
   "description": "Sift adds IMDB ratings next to programs on various OTT platforms to help you choose what to watch faster.",
-  "version": "2.4.2",
+  "version": "2.4.3",
   "icons": {
     "16": "images/logo16.png",
     "32": "images/logo32.png",
@@ -12,7 +12,9 @@
   "author": "anirudh.nimmagadda@gmail.com",
   "content_scripts": [
     {
-      "js": ["content-script.js"],
+      "js": [
+        "content-script.js"
+      ],
       "matches": [
         "https://*.jiocinema.com/*",
         "https://*.hotstar.com/*",
@@ -24,9 +26,13 @@
     }
   ],
   "background": {
-    "scripts": ["service-worker.js"]
+    "scripts": [
+      "service-worker.js"
+    ]
   },
-  "permissions": ["storage"],
+  "permissions": [
+    "storage"
+  ],
   "browser_specific_settings": {
     "gecko": {
       "id": "sift_imdb_ratings_indian_ott@example.com",
