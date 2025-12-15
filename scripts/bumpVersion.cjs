@@ -39,7 +39,12 @@ const logMsg = `Bumped version: v${oldVersion} to v${newVersion}`;
 
 if (writeFiles) {
   try {
-    execSync(`git commit -m "${logMsg}"`, { stdio: "pipe" });
+    execSync(
+      `git add ${fileList
+        .map((x) => `"${x}"`)
+        .join(" ")} && git commit -m "${logMsg}"`,
+      { stdio: "pipe" }
+    );
     execSync(`git tag v${newVersion}`, { stdio: "pipe" });
   } catch (e) {
     console.error(`Error: ${e.message}`);
