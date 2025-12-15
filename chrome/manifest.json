@@ -12,9 +12,7 @@
   "author": "anirudh.nimmagadda@gmail.com",
   "content_scripts": [
     {
-      "js": [
-        "content-script.js"
-      ],
+      "js": ["content-script.js"],
       "matches": [
         "https://*.jiocinema.com/*",
         "https://*.hotstar.com/*",
@@ -29,7 +27,5 @@
     "service_worker": "service-worker.js",
     "type": "module"
   },
-  "permissions": [
-    "storage"
-  ]
+  "permissions": ["storage"]
 }

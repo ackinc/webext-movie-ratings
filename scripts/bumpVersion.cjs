@@ -32,6 +32,10 @@ fileList.forEach((f) => {
 
   if (writeFiles) {
     fs.writeFileSync(f, JSON.stringify(contents, null, 2));
+
+    // prevents prettier autoformatting causing unwanted changes
+    //   when manifest files are manually edited later
+    execSync(`npx prettier ${f} --write`, { stdio: "pipe" });
   }
 });
 
