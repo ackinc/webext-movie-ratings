@@ -75,7 +75,7 @@ export default class HotstarPage extends AbstractPage {
     const { node } = pContainer;
 
     const programNodes = Array.from(
-      node.querySelectorAll('a[data-testid="link"]')
+      node.querySelectorAll('div[data-testid="tray-card-default"]')
     ).filter(this.constructor.ProgramNode.isMovieOrSeries);
     const programs = programNodes
       .map((node) => ({

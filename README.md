@@ -11,7 +11,7 @@ This web extension:
 
 ### Supported OTT platforms:
 
-- Hotstar
+- JioHotstar
 - SonyLIV
 - Netflix
 - Amazon Prime Video
