@@ -58,8 +58,9 @@ export default class NetflixPage extends AbstractPage {
     }
 
     if (classList.contains("gallery")) {
-      return pContainerNode.parentNode.querySelector("div.ltr-1axxs14")
-        .textContent;
+      return pContainerNode.parentNode.previousElementSibling.querySelector(
+        "div.title"
+      ).textContent;
     }
 
     if (classList.contains("lolomoRow")) {
