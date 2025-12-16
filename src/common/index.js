@@ -44,6 +44,7 @@ const languages = [
   "Malayalam",
   "Bhojpuri",
   "Gujarati",
+  "Korean",
 ];
 
 export function extractProgramTitle(str) {

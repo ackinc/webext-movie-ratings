@@ -24,23 +24,37 @@ class SonyLivPage extends AbstractPage {
         text-align: left;
         text-decoration: none;
       }
+
+      div.trending-tray-layout a.${IMDB_DATA_NODE_CLASS} {
+        text-align: right;
+      }
     `;
   }
 
   findProgramContainerNodes() {
-    return Array.from(
-      document.querySelectorAll(
-        "div.layout-main-container,div.Outerlistt.Outerlist"
-      )
-    );
+    if (["/custompage/sports"].some((x) => location.pathname.includes(x))) {
+      return [];
+    }
+
+    const selectors = [
+      // lists on home and top-level categories (tv shows, movies, ...) pages
+      "div.layout-main-container",
+      // list on second-tier category pages
+      "div.listinpage_wrapper",
+    ];
+    return Array.from(document.querySelectorAll(selectors.join(",")));
   }
 
   getTitleFromProgramContainerNode(node) {
-    return (
-      node.querySelector(".listing-link h3")?.textContent ??
-      node.querySelector(":scope > h3")?.textContent ??
-      node.querySelector(":scope > div.heading-filter-wrap > h1")?.textContent
-    );
+    if (node.matches("div.layout-main-container")) {
+      return node.querySelector("h3.layout-label")?.textContent ?? null;
+    }
+
+    if (node.matches("div.listinpage_wrapper")) {
+      return node.querySelector("h1.listingHeadert")?.textContent ?? null;
+    }
+
+    return null;
   }
 
   isValidProgramContainer(pContainer) {
@@ -48,23 +62,30 @@ class SonyLivPage extends AbstractPage {
     return (
       title &&
       ![
-        "Popular Categories",
-        "Popular Channels",
-        "Watch In Your Language",
-        "Popular Sports",
-      ].includes(title)
+        // home page
+        "Best of Men's U19 Asia Cup 2025",
+        "U-19 Asia Cup 2025 Fixtures",
+        "Best of KBC",
+        "Explore More",
+        "Trending In Sports",
+        /^Indian Idol/,
+        "Top Moments In Reality",
+      ].some((x) => (x instanceof RegExp ? x.test(title) : x === title))
     );
   }
 
   findProgramsInProgramContainer(pContainer) {
     const { node } = pContainer;
-    const programNodes = Array.from(
-      node.querySelectorAll(
-        node.classList.contains("Outerlistt")
-          ? ":scope > div.innerlistt.innerlist a[title]"
-          : "div.slick-track a.landscape-link,a.portrait-link,a.multipurpose-portrait-link"
-      )
-    ).filter(this.constructor.ProgramNode.isMovieOrSeries);
+
+    const selector = node.matches("div.layout-main-container")
+      ? "a.trending-tray-link,a.landscape-link,a.portrait-link,a.multipurpose-portrait-link"
+      : node.matches("div.listinpage_wrapper")
+        ? "a[title]"
+        : null;
+
+    const programNodes = Array.from(node.querySelectorAll(selector)).filter(
+      this.constructor.ProgramNode.isMovieOrSeries
+    );
     const programs = programNodes
       .map((node) => ({
         node,

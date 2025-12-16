@@ -3,26 +3,30 @@ import { IMDB_DATA_NODE_CLASS, extractProgramTitle } from "../common";
 
 export default class ProgramNode extends AbstractProgramNode {
   static isMovieOrSeries(node) {
+    if (node.matches("a.trending-tray-link")) {
+      // we can't say for sure, so always return true
+      return true;
+    }
+
     const href = node.getAttribute("href");
-    return (
-      href.startsWith("/movies") ||
-      href.startsWith("/shows") ||
-      href.startsWith("/trailer") ||
-      (node.classList.contains("multipurpose-portrait-link") &&
-        href.startsWith("https://www.sonyliv.com/dplnk?schema=sony://asset/"))
-    );
+    return ["/movies", "/shows", "/trailer"].some((x) => href.startsWith(x));
   }
 
   static extractData(node) {
-    const href = node.getAttribute("href");
     const data = {};
 
-    data.title = extractProgramTitle(node.getAttribute("title"));
+    data.title = extractProgramTitle(
+      node.getAttribute("title") ||
+        node.querySelector("div.album-cover-container > img[title]")?.title ||
+        ""
+    );
+
+    const href = node.getAttribute("href");
     data.type = href.startsWith("/movies")
       ? "movie"
       : href.startsWith("/shows")
-      ? "series"
-      : undefined;
+        ? "series"
+        : undefined;
 
     return data;
   }
