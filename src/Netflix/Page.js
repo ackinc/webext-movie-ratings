@@ -58,9 +58,17 @@ export default class NetflixPage extends AbstractPage {
     }
 
     if (classList.contains("gallery")) {
-      return pContainerNode.parentNode.previousElementSibling.querySelector(
-        "div.title"
-      ).textContent;
+      if (
+        pContainerNode.parentNode.matches(
+          'div[data-uia="modal-content-wrapper"]'
+        )
+      ) {
+        return pContainerNode.previousElementSibling.textContent;
+      } else {
+        return pContainerNode.parentNode.previousElementSibling.querySelector(
+          "div.title"
+        ).textContent;
+      }
     }
 
     if (classList.contains("lolomoRow")) {
