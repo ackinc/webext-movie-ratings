@@ -21,6 +21,7 @@ const destDir = path.resolve(__dirname, "../dist");
 const config = {
   entryPoints: [
     path.join(srcDir, "content-script.js"),
+    path.join(srcDir, "urlchange-dispatcher.js"),
     path.join(srcDir, "service-worker.js"),
     path.resolve(__dirname, `../${target}/manifest.json`),
   ],

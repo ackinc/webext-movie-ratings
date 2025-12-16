@@ -11,6 +11,13 @@ const maxConsecutiveErrors = 5;
 let nErrors = 0;
 main();
 
+window.addEventListener("message", (e) => {
+  if (e.data === "sift: urlchange" && nErrors >= maxConsecutiveErrors) {
+    nErrors = 0;
+    setTimeout(loop, 0);
+  }
+});
+
 async function main() {
   if (location.hostname === "www.hotstar.com") {
     page = new HotstarPage();

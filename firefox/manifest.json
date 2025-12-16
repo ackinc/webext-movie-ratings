@@ -20,6 +20,17 @@
         "https://www.primevideo.com/*",
         "https://tv.apple.com/*"
       ]
+    },
+    {
+      "js": ["urlchange-dispatcher.js"],
+      "matches": [
+        "https://*.hotstar.com/*",
+        "https://*.sonyliv.com/*",
+        "https://www.netflix.com/*",
+        "https://www.primevideo.com/*",
+        "https://tv.apple.com/*"
+      ],
+      "world": "MAIN"
     }
   ],
   "background": {
