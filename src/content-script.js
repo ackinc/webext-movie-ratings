@@ -14,6 +14,7 @@ main();
 window.addEventListener("message", (e) => {
   if (e.data === "sift: urlchange" && nErrors >= maxConsecutiveErrors) {
     nErrors = 0;
+    console.log(`Sift: resuming due to page change`);
     setTimeout(loop, 0);
   }
 });
@@ -56,7 +57,7 @@ async function loop() {
     if (nErrors < maxConsecutiveErrors) {
       setTimeout(loop, intervalTimeMs);
     } else {
-      console.log(`Pausing due to too many errors`);
+      console.log(`Sift: Pausing due to too many errors`);
     }
   }
 }
