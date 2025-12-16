@@ -4,11 +4,11 @@ const path = require("node:path");
 
 const allowedVersionBumpTypes = ["major", "minor", "patch"];
 const versionBumpType = process.argv[2]?.replace(/^--/, "") ?? "patch";
-const writeFiles = process.argv.includes("--write");
+const writeFiles = !process.argv.includes("--nowrite");
 
 if (!allowedVersionBumpTypes.includes(versionBumpType)) {
   console.error(
-    `Error. Usage: node bumpVersion.cjs [TYPE] [--write]
+    `Error. Usage: node bumpVersion.cjs [TYPE] [--nowrite]
     TYPE: one of "--major", "--minor", "--patch" (default)`
   );
   process.exit(1);
