@@ -65,9 +65,14 @@ export default class NetflixPage extends AbstractPage {
       ) {
         return pContainerNode.previousElementSibling.textContent;
       } else {
-        return pContainerNode.parentNode.previousElementSibling.querySelector(
-          "div.title"
-        ).textContent;
+        return (
+          pContainerNode.parentNode.previousElementSibling.querySelector(
+            "div.title"
+          ).textContent ||
+          pContainerNode.parentNode.previousElementSibling.querySelector(
+            "div.aro-genre-details > span.genreTitle"
+          ).textContent
+        );
       }
     }
 
