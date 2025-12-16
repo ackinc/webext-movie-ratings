@@ -25,7 +25,10 @@ const config = {
     path.resolve(__dirname, `../${target}/manifest.json`),
   ],
   bundle: true,
-  define: { "BUILDTIME_ENV.OMDB_API_KEY": `"${process.env.OMDB_API_KEY}"` },
+  define: {
+    "BUILDTIME_ENV.OMDB_API_KEY": `"${process.env.OMDB_API_KEY}"`,
+    "BUILDTIME_ENV.DEBUG_MODE": devMode ? "true" : "false",
+  },
   entryNames: "[name]",
   loader: {
     ".json": "copy",

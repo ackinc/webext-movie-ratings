@@ -23,10 +23,29 @@ export default class AbstractPage {
         node,
       }))
       .filter(this.isValidProgramContainer);
-    const programs = programContainers
-      .map(this.findProgramsInProgramContainer)
-      .flat();
-    return programs;
+    const programs = programContainers.map(this.findProgramsInProgramContainer);
+
+    // logging a single message allows us to take advantage of the duplicate log message suppression
+    //   feature built-in to browser consoles
+    if (BUILDTIME_ENV.DEBUG_MODE) {
+      console.debug(
+        `Found ${programContainers.length} containers:\n\t${programContainers.map((pc, idx) => logPC(idx)).join("\n\t")}`
+      );
+    }
+
+    return programs.flat();
+
+    function logPC(idx) {
+      const pc = programContainers[idx];
+      const programsInPc = programs[idx];
+      const maxProgramTitles = 5;
+      return `${pc.title} [${programsInPc.length}]: ${
+        programsInPc
+          .slice(0, maxProgramTitles)
+          .map((p) => p.title)
+          .join(", ") + (programsInPc.length > maxProgramTitles ? " ..." : "")
+      }`;
+    }
   }
 
   checkIMDBDataAlreadyAdded(program) {
