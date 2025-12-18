@@ -24,7 +24,8 @@
     "esbuild": ">=0.25.0",
     "eslint": "9.x",
     "globals": "^15.8.0",
-    "prettier": "^3.7.4"
+    "prettier": "^3.7.4",
+    "typescript": "^5.9.3"
   },
   "type": "module"
 }
