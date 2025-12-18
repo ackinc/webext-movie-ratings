@@ -37,6 +37,7 @@ const config = {
   logLevel: devMode ? "info" : "warning",
   outdir: destDir,
   sourcemap: devMode ? "inline" : false,
+  target: "es2020",
 };
 
 if (devMode) {
