@@ -1,18 +1,19 @@
 import AbstractPage from "../common/AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../common";
+import type { ProgramContainer, Program } from "../common/types";
 
 export default class HotstarPage extends AbstractPage {
-  static ProgramNode = ProgramNode;
+  static override ProgramNode = ProgramNode;
 
   constructor() {
     super();
   }
 
-  injectStyles() {
+  override injectStyles() {
     super.injectStyles();
 
-    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`);
+    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`)!;
     const pageFontFamily = window
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
@@ -42,28 +43,35 @@ export default class HotstarPage extends AbstractPage {
     `;
   }
 
-  findProgramContainerNodes() {
+  override findProgramContainerNodes(): HTMLElement[] {
     return Array.from(document.querySelectorAll("div.tray-container"));
   }
 
-  getTitleFromProgramContainerNode(node) {
-    if (node.firstChild.dataset["testid"] === "grid-container") {
-      return node.parentNode.parentNode.querySelector("div.headerSpace h4")
-        .textContent;
+  override getTitleFromProgramContainerNode(node: HTMLElement): string {
+    if (
+      (node.firstChild as HTMLElement)?.dataset["testid"] === "grid-container"
+    ) {
+      return (
+        node.parentNode?.parentNode?.querySelector("div.headerSpace h4")
+          ?.textContent ?? ""
+      );
     }
 
     if (
-      node.parentNode.parentNode.parentNode.dataset["testid"] ===
-      "scroll-section-More Like This"
+      (node.parentNode?.parentNode?.parentNode as HTMLElement)?.dataset[
+        "testid"
+      ] === "scroll-section-More Like This"
     ) {
       return "More Like This";
     }
 
-    return node.firstChild.querySelector("h2").textContent;
+    return (
+      (node.firstChild as HTMLElement)?.querySelector("h2")?.textContent ?? ""
+    );
   }
 
-  isValidProgramContainer({ title }) {
-    return (
+  override isValidProgramContainer({ title }: ProgramContainer): boolean {
+    return Boolean(
       title &&
       !["Popular Languages", "Popular Genres", "Popular Channels"].includes(
         title
@@ -71,16 +79,21 @@ export default class HotstarPage extends AbstractPage {
     );
   }
 
-  findProgramsInProgramContainer(pContainer) {
+  override findProgramsInProgramContainer(
+    pContainer: ProgramContainer
+  ): Program[] {
     const { node } = pContainer;
+    const ctor = this.constructor as typeof HotstarPage;
 
-    const programNodes = Array.from(
-      node.querySelectorAll('div[data-testid="tray-card-default"]')
-    ).filter(this.constructor.ProgramNode.isMovieOrSeries);
+    const programNodes = (
+      Array.from(
+        node.querySelectorAll('div[data-testid="tray-card-default"]')
+      ) as HTMLElement[]
+    ).filter(ctor.ProgramNode.isMovieOrSeries);
     const programs = programNodes
       .map((node) => ({
         node,
-        ...this.constructor.ProgramNode.extractData(node),
+        ...ctor.ProgramNode.extractData(node),
       }))
       // drop program nodes for which data extraction failed
       .filter(({ title, type }) => title && type);
