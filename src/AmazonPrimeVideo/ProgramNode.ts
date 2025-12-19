@@ -4,33 +4,39 @@ import {
   findAncestor,
   IMDB_DATA_NODE_CLASS,
 } from "../common";
+import type { Program } from "../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static isMovieOrSeries(programNode) {
+  static override isMovieOrSeries(programNode: HTMLElement): boolean {
     return !!programNode;
   }
 
-  static extractData(programNode) {
+  static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
     if (programNode.nodeName === "ARTICLE") {
       const type =
-        programNode.dataset.cardEntityType === "Movie"
+        programNode.dataset["cardEntityType"] === "Movie"
           ? "movie"
-          : programNode.dataset.cardEntityType === "TV Show"
-          ? "series"
-          : null;
+          : programNode.dataset["cardEntityType"] === "TV Show"
+            ? "series"
+            : null;
       return {
-        title: extractProgramTitle(programNode.dataset.cardTitle),
-        type,
+        title: extractProgramTitle(programNode.dataset["cardTitle"] ?? ""),
+        ...(type ? { type } : {}),
       };
     } else if (programNode.nodeName === "A") {
-      return { title: programNode.getAttribute("aria-label") };
+      return { title: programNode.getAttribute("aria-label") ?? "" };
     }
+
+    return { title: "" };
   }
 
-  static insertIMDBNode(programNode, imdbNode) {
+  static override insertIMDBNode(
+    programNode: HTMLElement,
+    imdbNode: HTMLElement
+  ) {
     if (programNode.nodeName === "A") {
       const li = findAncestor(programNode, (node) => node.nodeName === "LI");
-      li.appendChild(imdbNode);
+      (li as HTMLElement).appendChild(imdbNode);
     } else if (
       programNode.nextElementSibling?.nodeName === "ARTICLE" ||
       programNode.previousElementSibling?.nodeName === "ARTICLE"
@@ -42,28 +48,28 @@ export default class ProgramNode extends AbstractProgramNode {
     ) {
       programNode.appendChild(imdbNode);
     } else {
-      programNode.parentNode.appendChild(imdbNode);
+      (programNode.parentNode as HTMLElement).appendChild(imdbNode);
     }
   }
 
-  static getIMDBNode(programNode) {
-    let maybeImdbNode;
+  static override getIMDBNode(programNode: HTMLElement): HTMLElement | null {
+    let maybeImdbNode: HTMLElement | null;
 
     if (programNode.nodeName === "A") {
       const li = findAncestor(programNode, (node) => node.nodeName === "LI");
-      maybeImdbNode = li.lastChild;
+      maybeImdbNode = (li?.lastChild as HTMLElement | undefined) ?? null;
     } else if (
       programNode.nextElementSibling?.nodeName === "ARTICLE" ||
       programNode.previousElementSibling?.nodeName === "ARTICLE"
     ) {
-      maybeImdbNode = programNode.lastChild;
+      maybeImdbNode = programNode.lastChild as HTMLElement;
     } else if (
       programNode.nodeName === "ARTICLE" &&
       programNode.previousElementSibling?.nodeName === "STRONG"
     ) {
-      maybeImdbNode = programNode.lastChild;
+      maybeImdbNode = programNode.lastChild as HTMLElement;
     } else {
-      maybeImdbNode = programNode.nextElementSibling;
+      maybeImdbNode = programNode.nextElementSibling as HTMLElement;
     }
 
     return maybeImdbNode &&

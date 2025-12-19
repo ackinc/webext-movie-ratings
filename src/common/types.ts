@@ -6,7 +6,7 @@ export type ProgramContainer = {
 export type Program = {
   node: HTMLElement;
   title: string;
-  type: "movie" | "series";
+  type?: "movie" | "series";
 };
 
 export type IMDBData = {
