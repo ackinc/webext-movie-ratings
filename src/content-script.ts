@@ -1,11 +1,13 @@
 import { browser, pick, invert } from "./common";
+import type AbstractPage from "./common/AbstractPage";
+import type { Program } from "./common/types";
 import HotstarPage from "./Hotstar/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
 
-let page;
+let page: AbstractPage;
 const intervalTimeMs = 2000;
 const maxConsecutiveErrors = 5;
 let nErrors = 0;
@@ -62,17 +64,19 @@ async function loop() {
   }
 }
 
-async function fetchAndAddIMDBData(program) {
+async function fetchAndAddIMDBData(program: Program) {
   try {
     const imdbData = await fetchIMDBData(program);
     if (imdbData.error) throw new Error(imdbData.error);
     page.addIMDBData(program, imdbData);
   } catch (e) {
+    if (!(e instanceof Error)) throw e;
+
     console.error(`Error fetching and adding IMDB data: ${e.message}`, program);
   }
 }
 
-async function fetchIMDBData(program) {
+async function fetchIMDBData(program: Program) {
   const response = await browser.runtime.sendMessage({
     type: "fetchIMDBRating",
     data: pick(program, ["title", "type", "year"]),
