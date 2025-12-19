@@ -1,21 +1,17 @@
 export default class AbstractProgramNode {
-  // eslint-disable-next-line no-unused-vars
-  static isMovieOrSeries(programNode) {
+  static isMovieOrSeries(_programNode: HTMLElement): boolean {
     throw new Error("Not implemented");
   }
 
-  // eslint-disable-next-line no-unused-vars
-  static extractData(programNode) {
+  static extractData(_programNode: HTMLElement) {
     throw new Error("Not implemented");
   }
 
-  // eslint-disable-next-line no-unused-vars
-  static insertIMDBNode(programNode, imdbNode) {
+  static insertIMDBNode(_programNode: HTMLElement, _imdbNode: HTMLElement) {
     throw new Error("Not implemented");
   }
 
-  // eslint-disable-next-line no-unused-vars
-  static getIMDBNode(programNode) {
+  static getIMDBNode(_programNode: HTMLElement): HTMLElement {
     throw new Error("Not implemented");
   }
 }
