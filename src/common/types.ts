@@ -7,6 +7,7 @@ export type Program = {
   node: HTMLElement;
   title: string;
   type?: "movie" | "series";
+  year?: string;
 };
 
 export type IMDBData = {
