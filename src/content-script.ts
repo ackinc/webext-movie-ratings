@@ -1,11 +1,13 @@
 import { browser, pick, invert } from "./common";
+import type AbstractPage from "./common/AbstractPage";
+import type { IMDBData, Program, SWErrorResponse } from "./common/types";
 import HotstarPage from "./Hotstar/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
 
-let page;
+let page: AbstractPage;
 const intervalTimeMs = 2000;
 const maxConsecutiveErrors = 5;
 let nErrors = 0;
@@ -62,20 +64,25 @@ async function loop() {
   }
 }
 
-async function fetchAndAddIMDBData(program) {
+async function fetchAndAddIMDBData(program: Program) {
   try {
-    const imdbData = await fetchIMDBData(program);
-    if (imdbData.error) throw new Error(imdbData.error);
-    page.addIMDBData(program, imdbData);
+    const response = await fetchIMDBData(program);
+    if ("error" in response) throw new Error(response.error);
+    page.addIMDBData(program, response);
   } catch (e) {
+    if (!(e instanceof Error)) throw e;
+
     console.error(`Error fetching and adding IMDB data: ${e.message}`, program);
   }
 }
 
-async function fetchIMDBData(program) {
-  const response = await browser.runtime.sendMessage({
-    type: "fetchIMDBRating",
-    data: pick(program, ["title", "type", "year"]),
-  });
+async function fetchIMDBData(
+  program: Program
+): Promise<IMDBData | SWErrorResponse> {
+  const response: IMDBData | SWErrorResponse =
+    await browser.runtime.sendMessage({
+      type: "fetchIMDBRating",
+      data: pick(program, ["title", "type", "year"]),
+    });
   return response;
 }

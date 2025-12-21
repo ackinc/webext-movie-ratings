@@ -4,23 +4,24 @@ import {
   IMDB_DATA_NODE_CLASS,
   IMDB_STYLE_NODE_CLASS,
 } from "../common";
+import type { ProgramContainer, Program } from "../common/types";
 import ProgramNode from "./ProgramNode";
 
 export default class AmazonPrimeVideoPage extends AbstractPage {
-  static ProgramNode = ProgramNode;
+  static override ProgramNode = ProgramNode;
 
   constructor() {
     super();
   }
 
-  injectStyles() {
+  override injectStyles() {
     super.injectStyles();
 
     const pageFontFamily = window
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
 
-    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`);
+    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`)!;
     styleNode.innerHTML = `
       a.${IMDB_DATA_NODE_CLASS} {
         color: #999999 !important;
@@ -42,7 +43,7 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
     `;
   }
 
-  findProgramContainerNodes() {
+  override findProgramContainerNodes(): HTMLElement[] {
     const selectors = [
       'section[data-testid="standard-carousel"]',
       'section[data-testid="super-carousel"]',
@@ -53,26 +54,34 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
     return Array.from(document.querySelectorAll(selectors.join(",")));
   }
 
-  getTitleFromProgramContainerNode(pContainerNode) {
+  override getTitleFromProgramContainerNode(
+    pContainerNode: HTMLElement
+  ): string {
+    const testid = pContainerNode.dataset["testid"] ?? "";
+
     if (
       ["standard-carousel", "super-carousel", "charts-container"].includes(
-        pContainerNode.dataset.testid
+        testid
       )
     ) {
-      return pContainerNode.querySelector(
-        'h2 span[data-testid="carousel-title"]'
-      ).textContent;
+      return (
+        pContainerNode.querySelector('h2 span[data-testid="carousel-title"]')
+          ?.textContent ?? ""
+      );
     }
 
-    if (["charts-carousel"].includes(pContainerNode.dataset.testid)) {
-      return findAncestor(
-        pContainerNode,
-        (node) => node.dataset.testid === "charts-container"
-      ).querySelector('h2 span[data-testid="carousel-title"]').textContent;
+    if (["charts-carousel"].includes(testid)) {
+      return (
+        findAncestor(
+          pContainerNode,
+          (node) => node.dataset["testid"] === "charts-container"
+        )?.querySelector('h2 span[data-testid="carousel-title"]')
+          ?.textContent ?? ""
+      );
     }
 
-    if (["browse"].includes(pContainerNode.dataset.testid)) {
-      return pContainerNode.querySelector("h1").textContent;
+    if (["browse"].includes(testid)) {
+      return pContainerNode.querySelector("h1")?.textContent ?? "";
     }
 
     console.error(
@@ -80,18 +89,20 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
       pContainerNode
     );
 
-    return null;
+    return "";
   }
 
-  isValidProgramContainer() {
+  override isValidProgramContainer(_pContainer: ProgramContainer): boolean {
     return true;
   }
 
-  findProgramsInProgramContainer(pContainer) {
+  override findProgramsInProgramContainer(
+    pContainer: ProgramContainer
+  ): Program[] {
     const { node } = pContainer;
-    const { testid } = node.dataset;
+    const testid = node.dataset["testid"] ?? "";
 
-    let programNodes = [];
+    let programNodes: HTMLElement[] = [];
     if (testid === "browse") {
       programNodes = Array.from(
         node.querySelectorAll("article[data-card-title")
@@ -114,11 +125,11 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
       );
     }
 
+    const ctor = this.constructor as typeof AmazonPrimeVideoPage;
     const programs = programNodes
       .map((node) => ({
         node,
-        containerType: testid,
-        ...this.constructor.ProgramNode.extractData(node),
+        ...ctor.ProgramNode.extractData(node),
       }))
       .filter(({ title }) => !!title);
     return programs;

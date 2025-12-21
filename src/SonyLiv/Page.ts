@@ -1,18 +1,19 @@
 import AbstractPage from "../common/AbstractPage";
 import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../common";
 import ProgramNode from "./ProgramNode";
+import type { Program, ProgramContainer } from "../common/types";
 
 class SonyLivPage extends AbstractPage {
-  static ProgramNode = ProgramNode;
+  static override ProgramNode = ProgramNode;
 
   constructor() {
     super();
   }
 
-  injectStyles() {
+  override injectStyles() {
     super.injectStyles();
 
-    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`);
+    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`)!;
     styleNode.innerHTML = `
       a.${IMDB_DATA_NODE_CLASS} {
         margin: 2px 0 0 8px;
@@ -31,7 +32,7 @@ class SonyLivPage extends AbstractPage {
     `;
   }
 
-  findProgramContainerNodes() {
+  override findProgramContainerNodes(): HTMLElement[] {
     if (["/custompage/sports"].some((x) => location.pathname.includes(x))) {
       return [];
     }
@@ -45,21 +46,21 @@ class SonyLivPage extends AbstractPage {
     return Array.from(document.querySelectorAll(selectors.join(",")));
   }
 
-  getTitleFromProgramContainerNode(node) {
+  override getTitleFromProgramContainerNode(node: HTMLElement): string {
     if (node.matches("div.layout-main-container")) {
-      return node.querySelector("h3.layout-label")?.textContent ?? null;
+      return node.querySelector("h3.layout-label")?.textContent ?? "";
     }
 
     if (node.matches("div.listinpage_wrapper")) {
-      return node.querySelector("h1.listingHeadert")?.textContent ?? null;
+      return node.querySelector("h1.listingHeadert")?.textContent ?? "";
     }
 
-    return null;
+    return "";
   }
 
-  isValidProgramContainer(pContainer) {
+  override isValidProgramContainer(pContainer: ProgramContainer): boolean {
     const { title } = pContainer;
-    return (
+    return Boolean(
       title &&
       ![
         // home page
@@ -74,7 +75,9 @@ class SonyLivPage extends AbstractPage {
     );
   }
 
-  findProgramsInProgramContainer(pContainer) {
+  override findProgramsInProgramContainer(
+    pContainer: ProgramContainer
+  ): Program[] {
     const { node } = pContainer;
 
     const selector = node.matches("div.layout-main-container")
@@ -82,14 +85,16 @@ class SonyLivPage extends AbstractPage {
       : node.matches("div.listinpage_wrapper")
         ? "a[title]"
         : null;
+    if (!selector) return [];
 
-    const programNodes = Array.from(node.querySelectorAll(selector)).filter(
-      this.constructor.ProgramNode.isMovieOrSeries
-    );
+    const ctor = this.constructor as typeof SonyLivPage;
+    const programNodes = Array.from(
+      node.querySelectorAll<HTMLElement>(selector)
+    ).filter(ctor.ProgramNode.isMovieOrSeries);
     const programs = programNodes
       .map((node) => ({
         node,
-        ...this.constructor.ProgramNode.extractData(node),
+        ...ctor.ProgramNode.extractData(node),
       }))
       .filter(({ title }) => !!title);
     return programs;

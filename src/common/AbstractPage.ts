@@ -1,4 +1,5 @@
 import AbstractProgramNode from "./AbstractProgramNode";
+import type { ProgramContainer, Program, IMDBData } from "./types";
 import { IMDB_STYLE_NODE_CLASS, IMDB_DATA_NODE_CLASS, getIMDBLink } from ".";
 
 export default class AbstractPage {
@@ -15,7 +16,7 @@ export default class AbstractPage {
     this.injectStyles();
   }
 
-  findPrograms() {
+  findPrograms(): Program[] {
     const programContainerNodes = this.findProgramContainerNodes();
     const programContainers = programContainerNodes
       .map((node) => ({
@@ -29,15 +30,15 @@ export default class AbstractPage {
     //   feature built-in to browser consoles
     if (BUILDTIME_ENV.DEBUG_MODE) {
       console.debug(
-        `Found ${programContainers.length} containers:\n\t${programContainers.map((pc, idx) => logPC(idx)).join("\n\t")}`
+        `Found ${programContainers.length} containers:\n\t${programContainers.map((_pc, idx) => logPC(idx)).join("\n\t")}`
       );
     }
 
     return programs.flat();
 
-    function logPC(idx) {
-      const pc = programContainers[idx];
-      const programsInPc = programs[idx];
+    function logPC(idx: number) {
+      const pc: ProgramContainer = programContainers[idx]!;
+      const programsInPc: Program[] = programs[idx]!;
       const maxProgramTitles = 5;
       return `${pc.title} [${programsInPc.length}]: ${
         programsInPc
@@ -48,13 +49,18 @@ export default class AbstractPage {
     }
   }
 
-  checkIMDBDataAlreadyAdded(program) {
-    return !!this.constructor.ProgramNode.getIMDBNode(program.node);
+  checkIMDBDataAlreadyAdded(program: Program): boolean {
+    return !!(this.constructor as typeof AbstractPage).ProgramNode.getIMDBNode(
+      program.node
+    );
   }
 
-  addIMDBData(program, data) {
+  addIMDBData(program: Program, data: IMDBData) {
     const ratingNode = this.createIMDBDataNode(data);
-    this.constructor.ProgramNode.insertIMDBNode(program.node, ratingNode);
+    (this.constructor as typeof AbstractPage).ProgramNode.insertIMDBNode(
+      program.node,
+      ratingNode
+    );
   }
 
   injectStyles() {
@@ -63,26 +69,26 @@ export default class AbstractPage {
     document.head.appendChild(styleNode);
   }
 
-  findProgramContainerNodes() {
+  findProgramContainerNodes(): HTMLElement[] {
     throw new Error("Not implemented");
   }
 
   // eslint-disable-next-line no-unused-vars
-  getTitleFromProgramContainerNode(pContainerNode) {
+  getTitleFromProgramContainerNode(_pContainerNode: HTMLElement): string {
     throw new Error("Not implemented");
   }
 
   // eslint-disable-next-line no-unused-vars
-  isValidProgramContainer(pContainer) {
+  isValidProgramContainer(_pContainer: ProgramContainer): boolean {
     throw new Error("Not implemented");
   }
 
   // eslint-disable-next-line no-unused-vars
-  findProgramsInProgramContainer(pContainer) {
+  findProgramsInProgramContainer(_pContainer: ProgramContainer): Program[] {
     throw new Error("Not implemented");
   }
 
-  createIMDBDataNode(data) {
+  createIMDBDataNode(data: IMDBData): HTMLElement {
     const node = document.createElement("a");
     node.classList.add(IMDB_DATA_NODE_CLASS);
     if (data.imdbRating !== "N/F") {

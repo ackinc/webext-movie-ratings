@@ -20,9 +20,9 @@ const destDir = path.resolve(__dirname, "../dist");
 
 const config = {
   entryPoints: [
-    path.join(srcDir, "content-script.js"),
-    path.join(srcDir, "urlchange-dispatcher.js"),
-    path.join(srcDir, "service-worker.js"),
+    path.join(srcDir, "content-script.ts"),
+    path.join(srcDir, "urlchange-dispatcher.ts"),
+    path.join(srcDir, "service-worker.ts"),
     path.resolve(__dirname, `../${target}/manifest.json`),
   ],
   bundle: true,
@@ -37,6 +37,7 @@ const config = {
   logLevel: devMode ? "info" : "warning",
   outdir: destDir,
   sourcemap: devMode ? "inline" : false,
+  target: "es2020",
 };
 
 if (devMode) {

@@ -1,22 +1,23 @@
 import AbstractPage from "../common/AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../common";
+import type { ProgramContainer, Program } from "../common/types";
 
 export default class NetflixPage extends AbstractPage {
-  static ProgramNode = ProgramNode;
+  static override ProgramNode = ProgramNode;
 
   constructor() {
     super();
   }
 
-  injectStyles() {
+  override injectStyles() {
     super.injectStyles();
 
     const pageFontFamily = window
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
 
-    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`);
+    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`)!;
     styleNode.innerHTML = `
       a.${IMDB_DATA_NODE_CLASS} {
         color: #999999;
@@ -33,7 +34,7 @@ export default class NetflixPage extends AbstractPage {
     `;
   }
 
-  findProgramContainerNodes() {
+  override findProgramContainerNodes(): HTMLElement[] {
     const selectors = [
       "div.lolomoRow",
       "div.titleGroup--wrapper",
@@ -41,60 +42,68 @@ export default class NetflixPage extends AbstractPage {
       "div.gallery",
       'div[data-uia="search-video-gallery"]',
     ];
-    const nodes = document.querySelectorAll(selectors.join(","));
+    const nodes = document.querySelectorAll<HTMLElement>(selectors.join(","));
     return Array.from(nodes);
   }
 
-  getTitleFromProgramContainerNode(pContainerNode) {
+  override getTitleFromProgramContainerNode(
+    pContainerNode: HTMLElement
+  ): string {
     const { classList } = pContainerNode;
 
     if (classList.contains("moreLikeThis--wrapper")) {
-      return pContainerNode.querySelector(":scope > h3.moreLikeThis--header")
-        .textContent;
+      return (
+        pContainerNode.querySelector(":scope > h3.moreLikeThis--header")
+          ?.textContent ?? ""
+      );
     }
 
     if (classList.contains("titleGroup--wrapper")) {
-      return pContainerNode.querySelector(".titleGroup--header").textContent;
+      return (
+        pContainerNode.querySelector(".titleGroup--header")?.textContent ?? ""
+      );
     }
 
     if (classList.contains("gallery")) {
-      if (
-        pContainerNode.parentNode.matches(
-          'div[data-uia="modal-content-wrapper"]'
-        )
-      ) {
-        return pContainerNode.previousElementSibling.textContent;
+      const pContainerParent = pContainerNode.parentNode as HTMLElement;
+
+      if (pContainerParent.matches('div[data-uia="modal-content-wrapper"]')) {
+        return pContainerNode.previousElementSibling?.textContent ?? "";
       } else {
         return (
-          pContainerNode.parentNode.previousElementSibling.querySelector(
-            "div.title"
-          ).textContent ||
-          pContainerNode.parentNode.previousElementSibling.querySelector(
+          pContainerParent.previousElementSibling?.querySelector("div.title")
+            ?.textContent ||
+          pContainerParent.previousElementSibling?.querySelector(
             "div.aro-genre-details > span.genreTitle"
-          ).textContent
+          )?.textContent ||
+          ""
         );
       }
     }
 
     if (classList.contains("lolomoRow")) {
-      return pContainerNode.querySelector(":scope > h2 div.row-header-title")
-        ?.textContent;
+      return (
+        pContainerNode.querySelector(":scope > h2 div.row-header-title")
+          ?.textContent ?? ""
+      );
     }
 
-    return null;
+    return "";
   }
 
-  isValidProgramContainer(pContainer) {
-    return (
+  override isValidProgramContainer(pContainer: ProgramContainer): boolean {
+    return Boolean(
       pContainer.title ||
       pContainer.node.getAttribute("data-uia") === "search-video-gallery"
     );
   }
 
-  findProgramsInProgramContainer(pContainer) {
+  override findProgramsInProgramContainer(
+    pContainer: ProgramContainer
+  ): Program[] {
     const { node } = pContainer;
 
-    let programNodes;
+    let programNodes: HTMLElement[] = [];
 
     if (
       ["lolomoRow", "gallery"].some((cName) =>
@@ -102,8 +111,8 @@ export default class NetflixPage extends AbstractPage {
       ) ||
       node.getAttribute("data-uia") === "search-video-gallery"
     ) {
-      programNodes = node.querySelectorAll(
-        "div.ptrack-content a.slider-refocus"
+      programNodes = Array.from(
+        node.querySelectorAll("div.ptrack-content a.slider-refocus")
       );
     }
 
@@ -112,13 +121,16 @@ export default class NetflixPage extends AbstractPage {
         node.classList.contains(cName)
       )
     ) {
-      programNodes = node.querySelectorAll("div.titleCard--container");
+      programNodes = Array.from(
+        node.querySelectorAll("div.titleCard--container")
+      );
     }
 
-    const programs = Array.from(programNodes)
+    const ctor = this.constructor as typeof NetflixPage;
+    const programs = programNodes
       .map((node) => ({
         node,
-        ...this.constructor.ProgramNode.extractData(node),
+        ...ctor.ProgramNode.extractData(node),
       }))
       .filter(({ title }) => title);
     return programs;
