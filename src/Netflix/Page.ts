@@ -84,7 +84,9 @@ export default class NetflixPage extends AbstractPage {
     if (classList.contains("lolomoRow")) {
       return (
         pContainerNode.querySelector(":scope > h2 div.row-header-title")
-          ?.textContent ?? ""
+          ?.textContent ??
+        pContainerNode.querySelector(":scope > h2.rowTitle")?.textContent ??
+        ""
       );
     }
 
