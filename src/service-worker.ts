@@ -1,13 +1,19 @@
 import { ONE_HOUR_IN_MS, ONE_WEEK_IN_MS, browser, omit } from "./common";
+import type { Program, IMDBData, CachedIMDBData } from "./common/types";
+import { MessageType } from "./common/types";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
 
 browser.runtime.onMessage.addListener(handleMessage);
 
-function handleMessage(request, sender, sendResponse) {
-  if (request.type === "fetchIMDBRating") {
-    fetchIMDBData(request.data)
+function handleMessage(
+  request: { type: keyof typeof MessageType; data: unknown },
+  _sender: chrome.runtime.MessageSender,
+  sendResponse: (...args: any[]) => void
+) {
+  if (request.type === MessageType.fetchIMDBRating) {
+    fetchIMDBData(request.data as Program)
       .then((data) => sendResponse(data))
       .catch((e) => sendResponse({ error: e }));
   } else {
@@ -17,12 +23,12 @@ function handleMessage(request, sender, sendResponse) {
   return true;
 }
 
-async function fetchIMDBData(program) {
+async function fetchIMDBData(program: Program): Promise<IMDBData> {
   const key = getCacheKey(program);
 
   const { [key]: cached } = await browser.storage.local.get(key);
-  if (checkCachedDataIsUsable(cached)) {
-    return omit(cached, ["expiry"]);
+  if (checkCachedDataIsUsable(cached as CachedIMDBData | undefined)) {
+    return omit(cached as CachedIMDBData, ["expiry"]) as IMDBData;
   }
 
   const { title, type, year } = program;
@@ -33,7 +39,7 @@ async function fetchIMDBData(program) {
   if (type) searchParams.set("type", type);
   if (year) searchParams.set("y", year);
 
-  let result = {};
+  let result: CachedIMDBData;
   const respBody = await fetch(
     `https://www.omdbapi.com/?${searchParams.toString()}`
   ).then((response) => response.json());
@@ -41,22 +47,26 @@ async function fetchIMDBData(program) {
   const { Error: errmsg, imdbID, imdbRating } = respBody;
 
   if (errmsg && errmsg.includes("not found")) {
-    result.imdbRating = "N/F";
-    result.imdbID = "";
-    result.expiry = +new Date() + nfRatingCacheTime;
+    result = {
+      imdbRating: "N/F",
+      imdbID: "",
+      expiry: +new Date() + nfRatingCacheTime,
+    };
   } else if (errmsg) {
     throw new Error(errmsg);
   } else {
-    result.imdbRating = imdbRating;
-    result.imdbID = imdbID;
-    result.expiry = +new Date() + imdbRatingCacheTime;
+    result = {
+      imdbRating,
+      imdbID,
+      expiry: +new Date() + imdbRatingCacheTime,
+    };
   }
 
   browser.storage.local.set({ [key]: result });
-  return omit(result, ["expiry"]);
+  return omit(result, ["expiry"]) as IMDBData;
 }
 
-function getCacheKey(program) {
+function getCacheKey(program: Program): string {
   const { title, type, year } = program;
   return btoa(
     [title.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
@@ -65,8 +75,8 @@ function getCacheKey(program) {
   );
 }
 
-function checkCachedDataIsUsable(data) {
-  return (
+function checkCachedDataIsUsable(data: CachedIMDBData | undefined): boolean {
+  return Boolean(
     data &&
     data.imdbRating &&
     (data.imdbID || data.imdbRating === "N/F") &&

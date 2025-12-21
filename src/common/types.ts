@@ -14,3 +14,13 @@ export type IMDBData = {
   imdbID: string;
   imdbRating: string;
 };
+
+export type CachedIMDBData = IMDBData & { expiry: number };
+
+export enum MessageType {
+  fetchIMDBRating = "fetchIMDBRating",
+}
+
+export type SWErrorResponse = {
+  error: any;
+};
