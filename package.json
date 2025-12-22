@@ -23,10 +23,11 @@
     "@types/chrome": "^0.1.32",
     "dotenv": "^16.4.5",
     "esbuild": ">=0.25.0",
-    "eslint": "9.x",
+    "eslint": "~9.39.2",
     "globals": "^15.8.0",
     "prettier": "^3.7.4",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.0"
   },
   "type": "module"
 }

@@ -1,10 +1,13 @@
 import globals from "globals";
+import { defineConfig } from "eslint/config";
 import pluginJs from "@eslint/js";
+import pluginTs from "typescript-eslint";
 
-export default [
+export default defineConfig([
   { ignores: ["dist/*"] },
   {
-    files: ["src/**/*.js"],
+    basePath: "src",
+    files: ["**/*.@(j|t)s"],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -14,10 +17,12 @@ export default [
     },
   },
   {
-    files: ["scripts/**/*.js", "scripts/**/*.cjs", "scripts/**/*.mjs"],
+    basePath: "scripts",
+    files: ["**/*.?(c|m)js"],
     languageOptions: {
       globals: { ...globals.node },
     },
   },
   pluginJs.configs.recommended,
-];
+  ...pluginTs.configs.recommended,
+]);
