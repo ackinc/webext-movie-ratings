@@ -18,6 +18,7 @@ const projectRoot = path.join(__dirname, "..");
 const fileList = [
   "package.json",
   "chrome/manifest.json",
+  "edge/manifest.json",
   "firefox/manifest.json",
 ].map((f) => path.join(projectRoot, f));
 

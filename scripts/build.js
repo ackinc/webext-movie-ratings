@@ -4,7 +4,7 @@ import * as path from "node:path";
 
 const devMode = process.argv.includes("--dev");
 
-const ALLOWED_TARGETS = ["firefox", "chrome"];
+const ALLOWED_TARGETS = ["edge", "firefox", "chrome"];
 const target =
   process.argv.find((arg) => arg.startsWith("--target="))?.split("=")[1] ??
   "chrome";
