@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Sift: IMDB ratings on various OTT platforms. Free & Open Source.",
+  "name": "Sift: IMDB ratings on various OTT platforms",
   "description": "Sift adds IMDB ratings next to programs on various OTT platforms to help you choose what to watch faster.",
   "version": "3.1.2",
   "icons": {
