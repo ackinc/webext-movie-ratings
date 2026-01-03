@@ -10,8 +10,9 @@
     "build": "node scripts/build.js",
     "bump-version": "node scripts/bumpVersion.cjs",
     "postbuild": "pnpm run zip:dist",
-    "zip:dist": "7z a dist.zip ./dist/*",
+    "zip:dist": "./scripts/zipDist.sh",
     "zip:src": "./scripts/zipSrc.sh",
+    "zip:all": "./scripts/zipAll.sh",
     "clean": "rm -rf dist/* dist.zip src.zip"
   },
   "author": "Anirudh Nimmagadda <anirudh.nimmagadda@gmail.com>",
