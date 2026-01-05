@@ -29,6 +29,24 @@ class SonyLivPage extends AbstractPage {
       div.trending-tray-layout a.${IMDB_DATA_NODE_CLASS} {
         text-align: right;
       }
+
+      @media screen and (max-width: 420px) {
+        a.${IMDB_DATA_NODE_CLASS} {
+          position: absolute;
+          top: 2px;
+          right: 10px;
+          margin: 0;
+          width: 48px;
+          height: 20px;
+          border-radius: 4px;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color: white;
+          font-size: 9px;
+        }
+      }
     `;
   }
 
