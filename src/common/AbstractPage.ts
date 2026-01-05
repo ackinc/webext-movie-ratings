@@ -74,17 +74,14 @@ valid containers:\n\t${programContainers
     throw new Error("Not implemented");
   }
 
-  // eslint-disable-next-line no-unused-vars
   getTitleFromProgramContainerNode(_pContainerNode: HTMLElement): string {
     throw new Error("Not implemented");
   }
 
-  // eslint-disable-next-line no-unused-vars
   isValidProgramContainer(_pContainer: ProgramContainer): boolean {
     throw new Error("Not implemented");
   }
 
-  // eslint-disable-next-line no-unused-vars
   findProgramsInProgramContainer(_pContainer: ProgramContainer): Program[] {
     throw new Error("Not implemented");
   }
