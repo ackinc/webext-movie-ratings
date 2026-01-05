@@ -36,6 +36,8 @@ export default class ProgramNode extends AbstractProgramNode {
     if ((node.parentNode as HTMLElement).classList.contains("innerlistt")) {
       (node.firstChild as HTMLElement).style.marginBottom = "2em";
       node.firstChild!.firstChild!.appendChild(imdbNode);
+    } else if (node.matches("a.link_container")) {
+      node.appendChild(imdbNode);
     } else {
       node.parentNode!.parentNode!.appendChild(imdbNode);
     }
@@ -44,6 +46,13 @@ export default class ProgramNode extends AbstractProgramNode {
   static override getIMDBNode(node: HTMLElement): HTMLElement | null {
     if ((node.parentNode as HTMLElement).classList.contains("innerlistt")) {
       const candidate = node.firstChild!.firstChild!.lastChild! as HTMLElement;
+      return candidate.classList.contains(IMDB_DATA_NODE_CLASS)
+        ? candidate
+        : null;
+    }
+
+    if (node.matches("a.link_container")) {
+      const candidate = node.lastChild! as HTMLElement;
       return candidate.classList.contains(IMDB_DATA_NODE_CLASS)
         ? candidate
         : null;

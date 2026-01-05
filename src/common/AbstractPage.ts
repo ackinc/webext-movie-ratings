@@ -30,15 +30,16 @@ export default class AbstractPage {
     //   feature built-in to browser consoles
     if (BUILDTIME_ENV.DEBUG_MODE) {
       console.debug(
-        `Found ${programContainers.length} containers:\n\t${programContainers.map((_pc, idx) => logPC(idx)).join("\n\t")}`
+        `Found ${programContainers.length} / ${programContainerNodes.length} \
+valid containers:\n\t${programContainers
+          .map((pc, idx) => logPC(pc, programs[idx]!))
+          .join("\n\t")}`
       );
     }
 
     return programs.flat();
 
-    function logPC(idx: number) {
-      const pc: ProgramContainer = programContainers[idx]!;
-      const programsInPc: Program[] = programs[idx]!;
+    function logPC(pc: ProgramContainer, programsInPc: Program[]) {
       const maxProgramTitles = 5;
       return `${pc.title} [${programsInPc.length}]: ${
         programsInPc
@@ -73,17 +74,14 @@ export default class AbstractPage {
     throw new Error("Not implemented");
   }
 
-  // eslint-disable-next-line no-unused-vars
   getTitleFromProgramContainerNode(_pContainerNode: HTMLElement): string {
     throw new Error("Not implemented");
   }
 
-  // eslint-disable-next-line no-unused-vars
   isValidProgramContainer(_pContainer: ProgramContainer): boolean {
     throw new Error("Not implemented");
   }
 
-  // eslint-disable-next-line no-unused-vars
   findProgramsInProgramContainer(_pContainer: ProgramContainer): Program[] {
     throw new Error("Not implemented");
   }
