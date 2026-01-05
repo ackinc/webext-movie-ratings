@@ -42,6 +42,9 @@ class SonyLivPage extends AbstractPage {
       "div.layout-main-container",
       // list on second-tier category pages
       "div.listinpage_wrapper",
+
+      // mobile web
+      "div.page-position > div.potraitTrayCards",
     ];
     return Array.from(document.querySelectorAll(selectors.join(",")));
   }
@@ -53,6 +56,13 @@ class SonyLivPage extends AbstractPage {
 
     if (node.matches("div.listinpage_wrapper")) {
       return node.querySelector("h1.listingHeadert")?.textContent ?? "";
+    }
+
+    if (node.matches("div.page-position > div.potraitTrayCards")) {
+      const titleWrapper = node.previousElementSibling;
+      if (titleWrapper?.matches("div.ty-wrapper")) {
+        return titleWrapper.querySelector("h3")?.textContent?.trim() ?? "";
+      }
     }
 
     return "";
@@ -84,7 +94,9 @@ class SonyLivPage extends AbstractPage {
       ? "a.trending-tray-link,a.landscape-link,a.portrait-link,a.multipurpose-portrait-link"
       : node.matches("div.listinpage_wrapper")
         ? "a[title]"
-        : null;
+        : node.matches("div.page-position > div.potraitTrayCards")
+          ? "a.link_container"
+          : null;
     if (!selector) return [];
 
     const ctor = this.constructor as typeof SonyLivPage;
