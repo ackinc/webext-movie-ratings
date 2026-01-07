@@ -15,7 +15,8 @@
     "zip:all": "./scripts/zipAll.sh",
     "clean": "rm -rf dist/* dist.zip src.zip",
     "publish:cws": "pnpm run build && pnpm run zip:dist && node scripts/publishToCWS.js",
-    "publish:eas": "pnpm run build --target=edge && pnpm run zip:dist && node scripts/publishToEAS.js"
+    "publish:eas": "pnpm run build --target=edge && pnpm run zip:dist && node scripts/publishToEAS.js",
+    "publish:mas": "pnpm run build --target=firefox && pnpm run zip:dist && pnpm run zip:src && node scripts/publishToMAS.js"
   },
   "author": "Anirudh Nimmagadda <anirudh.nimmagadda@gmail.com>",
   "license": "ISC",
@@ -24,10 +25,12 @@
   "devDependencies": {
     "@eslint/js": "^9.7.0",
     "@types/chrome": "^0.1.32",
+    "@types/jsonwebtoken": "^9.0.10",
     "dotenv": "^16.4.5",
     "esbuild": ">=0.25.0",
     "eslint": "~9.39.2",
     "globals": "^15.8.0",
+    "jsonwebtoken": "^9.0.3",
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.50.0"
