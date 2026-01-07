@@ -42,7 +42,15 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
   let result: CachedIMDBData;
   const respBody = await fetch(
     `https://www.omdbapi.com/?${searchParams.toString()}`
-  ).then((response) => response.json());
+  )
+    .then((response) => response.json())
+    .catch((err) => {
+      console.error(err);
+
+      // hack to prevent extension erroring out on server error
+      //   from the OMDB API side
+      return { Error: "not found" };
+    });
 
   const { Error: errmsg, imdbID, imdbRating } = respBody;
 

@@ -6,6 +6,7 @@ import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
+import CrunchyrollPage from "./Crunchyroll/Page";
 
 let page: AbstractPage;
 const intervalTimeMs = 2000;
@@ -32,6 +33,8 @@ async function main() {
     page = new AmazonPrimeVideoPage();
   } else if (location.hostname === "tv.apple.com") {
     page = new AppleTVPage();
+  } else if (location.hostname === "www.crunchyroll.com") {
+    page = new CrunchyrollPage();
   } else {
     throw new Error("Page not recognized");
   }
