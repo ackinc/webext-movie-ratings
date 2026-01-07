@@ -95,6 +95,7 @@ valid containers:\n\t${programContainers
     }
     if (["N/F"].includes(data.imdbRating)) {
       node.style.visibility = "hidden";
+      node.style.display = "none";
     }
     node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : data.imdbRating}`;
     node.addEventListener("click", (e) => e.stopPropagation());
