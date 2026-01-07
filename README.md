@@ -16,13 +16,15 @@ This web extension:
 - Netflix
 - Amazon Prime Video
 - AppleTV+
+- Crunchyroll
 
 ### Build instructions
 
-- Tested with node v20.14.0 and pnpm v9.6.0
+- Tested with node v24.0.1 and pnpm v10.26.0
 - Build commands:
-  - `pnpm run build` for chrome
+  - `pnpm run build --target=chrome` for chrome
   - `pnpm run build --target=firefox` for firefox
+  - `pnpm run build --target=edge` for edge
 - Install dev dependencies before building
 
 ### Misc

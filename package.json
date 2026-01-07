@@ -16,7 +16,8 @@
     "clean": "rm -rf dist/* dist.zip src.zip",
     "publish:cws": "pnpm run build && pnpm run zip:dist && node scripts/publishToCWS.js",
     "publish:eas": "pnpm run build --target=edge && pnpm run zip:dist && node scripts/publishToEAS.js",
-    "publish:mas": "pnpm run build --target=firefox && pnpm run zip:dist && pnpm run zip:src && node scripts/publishToMAS.js"
+    "publish:mas": "pnpm run build --target=firefox && pnpm run zip:dist && pnpm run zip:src && node scripts/publishToMAS.js",
+    "publish:all": "pnpm run publish:cws && pnpm run publish:eas && pnpm run publish:mas"
   },
   "author": "Anirudh Nimmagadda <anirudh.nimmagadda@gmail.com>",
   "license": "ISC",
