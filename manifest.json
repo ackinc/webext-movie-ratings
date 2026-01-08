@@ -39,5 +39,9 @@
     "service_worker": "service-worker.js",
     "type": "module"
   },
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_icon": "images/logo32.png"
+  },
   "permissions": ["storage"]
 }
