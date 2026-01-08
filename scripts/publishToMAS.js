@@ -23,8 +23,9 @@ console.log(`MAS: package upload succeeded`);
 const sourceUuid = await uploadSource();
 console.log(`MAS: source package upload succeeded`);
 
-await publishPackage();
-console.log(`MAS: submitted request to publish new version`);
+// WARN: this step always errors out, and appears to not be needed
+// await publishPackage();
+// console.log(`MAS: submitted request to publish new version`);
 
 /* helpers */
 
@@ -155,7 +156,7 @@ async function uploadSource() {
   return body.uuid;
 }
 
-async function publishPackage() {
+async function _publishPackage() {
   const response = await fetch(
     `${baseUrl}/api/v5/addons/addon/${MAS_ADDON_GUID}/versions/`,
     {
