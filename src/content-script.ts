@@ -70,7 +70,7 @@ async function loop() {
 async function fetchAndAddIMDBData(program: Program) {
   try {
     const response = await fetchIMDBData(program);
-    if ("error" in response) throw new Error(response.error);
+    if ("error" in response) throw response.error;
     page.addIMDBData(program, response);
   } catch (e) {
     if (!(e instanceof Error)) throw e;

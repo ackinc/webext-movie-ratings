@@ -1,5 +1,10 @@
 import { ONE_HOUR_IN_MS, ONE_WEEK_IN_MS, browser, omit } from "./common";
-import type { Program, IMDBData, CachedIMDBData } from "./common/types";
+import type {
+  Program,
+  IMDBData,
+  CachedIMDBData,
+  SWErrorResponse,
+} from "./common/types";
 import { MessageType } from "./common/types";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
@@ -10,7 +15,7 @@ browser.runtime.onMessage.addListener(handleMessage);
 function handleMessage(
   request: { type: keyof typeof MessageType; data: unknown },
   _sender: chrome.runtime.MessageSender,
-  sendResponse: (...args: any[]) => void
+  sendResponse: (arg: IMDBData | SWErrorResponse) => void
 ) {
   if (request.type === MessageType.fetchIMDBRating) {
     fetchIMDBData(request.data as Program)

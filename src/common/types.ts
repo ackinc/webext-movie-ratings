@@ -22,5 +22,5 @@ export enum MessageType {
 }
 
 export type SWErrorResponse = {
-  error: any;
+  error: Error;
 };
