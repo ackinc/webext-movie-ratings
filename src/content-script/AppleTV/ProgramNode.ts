@@ -1,6 +1,6 @@
-import AbstractProgramNode from "../common/AbstractProgramNode";
-import { IMDB_DATA_NODE_CLASS } from "../common";
-import type { Program } from "../common/types";
+import AbstractProgramNode from "../AbstractProgramNode";
+import { IMDB_DATA_NODE_CLASS } from "../../common";
+import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
   static override isMovieOrSeries(programNode: HTMLElement): boolean {

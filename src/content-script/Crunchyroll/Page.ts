@@ -1,6 +1,6 @@
-import AbstractPage from "../common/AbstractPage";
-import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../common";
-import type { ProgramContainer, Program } from "../common/types";
+import AbstractPage from "../AbstractPage";
+import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../../common";
+import type { ProgramContainer, Program } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
 export default class CrunchyrollPage extends AbstractPage {

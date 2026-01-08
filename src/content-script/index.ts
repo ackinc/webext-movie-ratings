@@ -1,6 +1,6 @@
-import { browser, pick, invert } from "./common";
-import type AbstractPage from "./common/AbstractPage";
-import type { IMDBData, Program, SWErrorResponse } from "./common/types";
+import { browser, pick, invert } from "../common";
+import type AbstractPage from "./AbstractPage";
+import type { IMDBData, Program, SWErrorResponse } from "../common/types";
 import HotstarPage from "./Hotstar/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";

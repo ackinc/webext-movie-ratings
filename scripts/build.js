@@ -23,8 +23,11 @@ const destDir = path.resolve(__dirname, "../dist");
 
 const config = {
   entryPoints: [
-    path.join(srcDir, "content-script.ts"),
-    path.join(srcDir, "urlchange-dispatcher.ts"),
+    { in: path.join(srcDir, "content-script/index.ts"), out: "content-script" },
+    {
+      in: path.join(srcDir, "content-script/urlchange-dispatcher.ts"),
+      out: "urlchange-dispatcher",
+    },
     path.join(srcDir, "service-worker.ts"),
     path.join(srcDir, "popup/index.html"),
     { in: path.join(srcDir, "popup/main.jsx"), out: "popup/main" },
