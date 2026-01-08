@@ -9,7 +9,6 @@
     "prebuild": "pnpm run clean && cp -r images dist",
     "build": "node scripts/build.js",
     "bump-version": "node scripts/bumpVersion.cjs",
-    "postbuild": "pnpm run zip:dist",
     "zip:dist": "./scripts/zipDist.sh",
     "zip:src": "./scripts/zipSrc.sh",
     "zip:all": "./scripts/zipAll.sh",
