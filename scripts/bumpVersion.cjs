@@ -15,12 +15,9 @@ if (!allowedVersionBumpTypes.includes(versionBumpType)) {
 }
 
 const projectRoot = path.join(__dirname, "..");
-const fileList = [
-  "package.json",
-  "chrome/manifest.json",
-  "edge/manifest.json",
-  "firefox/manifest.json",
-].map((f) => path.join(projectRoot, f));
+const fileList = ["package.json", "manifest.json"].map((f) =>
+  path.join(projectRoot, f)
+);
 
 let oldVersion;
 let newVersion;

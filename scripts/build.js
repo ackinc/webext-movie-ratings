@@ -1,6 +1,8 @@
 import "dotenv/config";
 import * as esbuild from "esbuild";
+import * as fs from "node:fs";
 import * as path from "node:path";
+import * as prettier from "prettier";
 
 const devMode = process.argv.includes("--dev");
 
@@ -15,6 +17,7 @@ if (!ALLOWED_TARGETS.includes(target)) {
 const __filename = stripScheme(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const rootDir = path.resolve(__dirname, "..");
 const srcDir = path.resolve(__dirname, "../src");
 const destDir = path.resolve(__dirname, "../dist");
 
@@ -23,7 +26,6 @@ const config = {
     path.join(srcDir, "content-script.ts"),
     path.join(srcDir, "urlchange-dispatcher.ts"),
     path.join(srcDir, "service-worker.ts"),
-    path.resolve(__dirname, `../${target}/manifest.json`),
   ],
   bundle: true,
   define: {
@@ -40,6 +42,8 @@ const config = {
   target: "es2020",
 };
 
+await makeAndMoveManifest(target);
+
 if (devMode) {
   const ctx = await esbuild.context(config);
   await ctx.watch();
@@ -49,4 +53,25 @@ if (devMode) {
 
 function stripScheme(url) {
   return url.replace(/^[^:]+:\/\//, "");
+}
+
+async function makeAndMoveManifest(target) {
+  const [template, browserSpecificUpdates] = (
+    await Promise.all(
+      ["./manifest.json", `${target}/manifest.json`]
+        .map((filename) => path.join(rootDir, filename))
+        .map((filename) =>
+          fs.promises.readFile(filename, { encoding: "utf-8" })
+        )
+    )
+  ).map(JSON.parse);
+
+  const destPath = path.join(destDir, "manifest.json");
+  await fs.promises.writeFile(
+    destPath,
+    await prettier.format(
+      JSON.stringify({ ...template, ...browserSpecificUpdates }),
+      { filepath: destPath }
+    )
+  );
 }
