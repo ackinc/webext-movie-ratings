@@ -1,4 +1,3 @@
-import "@types/chrome";
 import type AbstractPage from "./AbstractPage";
 
 declare global {
