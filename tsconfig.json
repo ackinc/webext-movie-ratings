@@ -34,7 +34,6 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    // "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
@@ -42,8 +41,8 @@
     "skipLibCheck": true,
 
     // since we're using preact
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "baseUrl": "./",
     "paths": {
       "react": ["./node_modules/preact/compat/"],
