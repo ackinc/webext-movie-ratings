@@ -15,7 +15,7 @@ let nErrors = 0;
 main();
 
 window.addEventListener("message", (e) => {
-  if (e.data === "sift: urlchange" && nErrors >= maxConsecutiveErrors) {
+  if (e.data === "sift:urlchange" && nErrors >= maxConsecutiveErrors) {
     nErrors = 0;
     console.log(`Sift: resuming due to page change`);
     setTimeout(loop, 0);
