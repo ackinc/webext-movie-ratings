@@ -3,6 +3,10 @@ import * as esbuild from "esbuild";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as prettier from "prettier";
+import * as fse from "fs-extra";
+import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
+
+const { SENTRY_AUTH_TOKEN } = process.env;
 
 const devMode = process.argv.includes("--dev");
 
@@ -21,6 +25,16 @@ const rootDir = path.resolve(__dirname, "..");
 const srcDir = path.resolve(__dirname, "../src");
 const destDir = path.resolve(__dirname, "../dist");
 
+// was previously using the copy-loader within esbuild to copy this
+//   file, but the introduction of the sentryEsbuildPlugin broke
+//   this process (outfile name for popup/index.html was mangled
+//   and the file itself was in destDir instead of destDir/popup)
+await copyFile(
+  path.join(srcDir, "popup/index.html"),
+  path.join(destDir, "popup/index.html")
+);
+await makeAndMoveManifest(target);
+
 const config = {
   entryPoints: [
     { in: path.join(srcDir, "content-script/index.ts"), out: "content-script" },
@@ -28,8 +42,7 @@ const config = {
       in: path.join(srcDir, "content-script/urlchange-dispatcher.ts"),
       out: "urlchange-dispatcher",
     },
-    path.join(srcDir, "service-worker.ts"),
-    path.join(srcDir, "popup/index.html"),
+    { in: path.join(srcDir, "service-worker.ts"), out: "service-worker" },
     { in: path.join(srcDir, "popup/main.jsx"), out: "popup/main" },
   ],
   bundle: true,
@@ -37,18 +50,24 @@ const config = {
     "BUILDTIME_ENV.OMDB_API_KEY": `"${process.env.OMDB_API_KEY}"`,
     "BUILDTIME_ENV.DEBUG_MODE": devMode ? "true" : "false",
   },
-  entryNames: "[dir]/[name]",
-  loader: {
-    ".json": "copy",
-    ".html": "copy",
-  },
   logLevel: devMode ? "info" : "warning",
   outdir: destDir,
-  sourcemap: devMode ? "inline" : false,
   target: "es2020",
-};
 
-await makeAndMoveManifest(target);
+  // haven't been able to make sourcemaps work for the devconsole
+  //   debugging experience when also using sentryEsbuildPlugin
+  //   to upload them to Sentry
+  sourcemap: devMode ? "inline" : "linked",
+  plugins: devMode
+    ? []
+    : [
+        sentryEsbuildPlugin({
+          authToken: SENTRY_AUTH_TOKEN,
+          org: "none-t24",
+          project: "sift-web-ext",
+        }),
+      ],
+};
 
 if (devMode) {
   const ctx = await esbuild.context(config);
@@ -80,4 +99,9 @@ async function makeAndMoveManifest(target) {
       { filepath: destPath }
     )
   );
+}
+
+async function copyFile(src, dest) {
+  await fse.ensureDir(path.dirname(dest));
+  await fs.promises.copyFile(src, dest);
 }

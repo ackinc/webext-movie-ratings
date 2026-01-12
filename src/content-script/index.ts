@@ -1,4 +1,5 @@
 import { browser, pick, invert } from "../common";
+import sentryScope from "../common/Sentry";
 import type AbstractPage from "./AbstractPage";
 import type { IMDBData, Program, SWErrorResponse } from "../common/types";
 import HotstarPage from "./Hotstar/Page";
@@ -55,14 +56,14 @@ async function loop() {
         .map(fetchAndAddIMDBData)
     );
     nErrors = 0;
+    setTimeout(loop, intervalTimeMs);
   } catch (e) {
     console.error(`Error adding IMDB ratings`, e);
-    ++nErrors;
-  } finally {
-    if (nErrors < maxConsecutiveErrors) {
+    if (++nErrors < maxConsecutiveErrors) {
       setTimeout(loop, intervalTimeMs);
     } else {
       console.log(`Sift: Pausing due to too many errors`);
+      sentryScope.captureException(e);
     }
   }
 }
