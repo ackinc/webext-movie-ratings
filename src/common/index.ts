@@ -110,3 +110,16 @@ export function findAncestor(
   while (result && !predFn(result)) result = result.parentElement;
   return result;
 }
+
+const errorReportingOptInStateKey = "optedInToErrorReporting";
+export async function getErrorReportingOptInState(): Promise<boolean> {
+  return !!(await browser.storage.local.get([errorReportingOptInStateKey]))[
+    errorReportingOptInStateKey
+  ];
+}
+
+export async function setErrorReportingOptInState(val: boolean): Promise<void> {
+  return await browser.storage.local.set({
+    [errorReportingOptInStateKey]: val,
+  });
+}
