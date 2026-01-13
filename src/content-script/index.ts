@@ -1,4 +1,4 @@
-import { browser, pick, invert } from "../common";
+import { browser, pick, omit, invert } from "../common";
 import sentryScope from "../common/Sentry";
 import type AbstractPage from "./AbstractPage";
 import type { IMDBData, Program, SWErrorResponse } from "../common/types";
@@ -57,40 +57,63 @@ async function main() {
 }
 
 async function loop() {
+  let programsToAddRatingsFor: Program[];
   try {
-    await Promise.allSettled(
-      page
-        .findPrograms()
-        .filter(invert(page.checkIMDBDataAlreadyAdded))
-        .map(fetchAndAddIMDBData)
-    );
+    programsToAddRatingsFor = page
+      .findPrograms()
+      .filter(invert(page.checkIMDBDataAlreadyAdded));
     nErrors = 0;
-    setTimeout(loop, intervalTimeMs);
   } catch (e) {
+    if (++nErrors < maxConsecutiveErrors) {
+      // retry, because the error might be a temporary one caused
+      //   by the page not having finished loading
+      setTimeout(loop, intervalTimeMs);
+      return;
+    }
+
     const err: Error = e instanceof Error ? e : new Error(e?.toString());
-    err.message = `Error adding IMDB ratings to page. ${err.message}`;
     console.error(err);
 
-    if (++nErrors < maxConsecutiveErrors) {
-      // retry, because the error might be a temporary one caused by the page
-      //   not having finished loading
-      setTimeout(loop, intervalTimeMs);
-    } else {
-      console.log(`Sift: Pausing due to too many errors`);
+    const clonedScope = sentryScope.clone();
+    clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
+    clonedScope.captureException(err);
+
+    console.log(`Sift: Pausing loop due to too many errors`);
+    return;
+  }
+
+  const results = await Promise.allSettled(
+    programsToAddRatingsFor.map(fetchIMDBData)
+  );
+  programsToAddRatingsFor.forEach((program, idx) => {
+    if (results[idx]!.status === "rejected") {
+      // do nothing if the promise was rejected; the error would
+      //   already have been logged and captured in the SW
+      return;
+    }
+
+    try {
+      page.addIMDBData(program, results[idx]!.value);
+    } catch (e) {
+      const err: Error = e instanceof Error ? e : new Error(e?.toString());
+      err.message = `Error adding imdb data to program. Program data: ${JSON.stringify(omit(program, ["node"]))}`;
+      console.error(err, program.node);
 
       const clonedScope = sentryScope.clone();
       clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
       clonedScope.captureException(err);
     }
-  }
+  });
+
+  setTimeout(loop, intervalTimeMs);
 }
 
-async function fetchAndAddIMDBData(program: Program) {
+async function fetchIMDBData(program: Program): Promise<IMDBData> {
   const response: IMDBData | SWErrorResponse =
     await browser.runtime.sendMessage({
       type: "fetchIMDBRating",
       data: pick(program, ["title", "type", "year"]),
     });
   if ("error" in response) throw response.error;
-  page.addIMDBData(program, response);
+  return response;
 }
