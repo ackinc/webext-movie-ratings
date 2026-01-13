@@ -1,6 +1,10 @@
 import AbstractProgramNode from "./AbstractProgramNode";
-import type { ProgramContainer, Program, IMDBData } from "./types";
-import { IMDB_STYLE_NODE_CLASS, IMDB_DATA_NODE_CLASS, getIMDBLink } from ".";
+import type { ProgramContainer, Program, IMDBData } from "../common/types";
+import {
+  IMDB_STYLE_NODE_CLASS,
+  IMDB_DATA_NODE_CLASS,
+  getIMDBLink,
+} from "../common";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
@@ -36,6 +40,10 @@ valid containers:\n\t${programContainers
           .join("\n\t")}`
       );
     }
+
+    // WARN
+    // if there is a valid program container with 0 programs, there might have been a
+    //   website markup change
 
     return programs.flat();
 

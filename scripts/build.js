@@ -1,6 +1,12 @@
 import "dotenv/config";
 import * as esbuild from "esbuild";
+import * as fs from "node:fs";
 import * as path from "node:path";
+import * as prettier from "prettier";
+import * as fse from "fs-extra";
+import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
+
+const { SENTRY_AUTH_TOKEN } = process.env;
 
 const devMode = process.argv.includes("--dev");
 
@@ -15,29 +21,52 @@ if (!ALLOWED_TARGETS.includes(target)) {
 const __filename = stripScheme(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const rootDir = path.resolve(__dirname, "..");
 const srcDir = path.resolve(__dirname, "../src");
 const destDir = path.resolve(__dirname, "../dist");
 
+// was previously using the copy-loader within esbuild to copy this
+//   file, but the introduction of the sentryEsbuildPlugin broke
+//   this process (outfile name for popup/index.html was mangled
+//   and the file itself was in destDir instead of destDir/popup)
+await copyFile(
+  path.join(srcDir, "popup/index.html"),
+  path.join(destDir, "popup/index.html")
+);
+await makeAndMoveManifest(target);
+
 const config = {
   entryPoints: [
-    path.join(srcDir, "content-script.ts"),
-    path.join(srcDir, "urlchange-dispatcher.ts"),
-    path.join(srcDir, "service-worker.ts"),
-    path.resolve(__dirname, `../${target}/manifest.json`),
+    { in: path.join(srcDir, "content-script/index.ts"), out: "content-script" },
+    {
+      in: path.join(srcDir, "content-script/urlchange-dispatcher.ts"),
+      out: "urlchange-dispatcher",
+    },
+    { in: path.join(srcDir, "service-worker.ts"), out: "service-worker" },
+    { in: path.join(srcDir, "popup/main.jsx"), out: "popup/main" },
   ],
   bundle: true,
   define: {
     "BUILDTIME_ENV.OMDB_API_KEY": `"${process.env.OMDB_API_KEY}"`,
     "BUILDTIME_ENV.DEBUG_MODE": devMode ? "true" : "false",
   },
-  entryNames: "[name]",
-  loader: {
-    ".json": "copy",
-  },
   logLevel: devMode ? "info" : "warning",
   outdir: destDir,
-  sourcemap: devMode ? "inline" : false,
   target: "es2020",
+
+  // haven't been able to make sourcemaps work for the devconsole
+  //   debugging experience when also using sentryEsbuildPlugin
+  //   to upload them to Sentry
+  sourcemap: devMode ? "inline" : "linked",
+  plugins: devMode
+    ? []
+    : [
+        sentryEsbuildPlugin({
+          authToken: SENTRY_AUTH_TOKEN,
+          org: "none-t24",
+          project: "sift-web-ext",
+        }),
+      ],
 };
 
 if (devMode) {
@@ -49,4 +78,30 @@ if (devMode) {
 
 function stripScheme(url) {
   return url.replace(/^[^:]+:\/\//, "");
+}
+
+async function makeAndMoveManifest(target) {
+  const [template, browserSpecificUpdates] = (
+    await Promise.all(
+      ["./manifest.json", `${target}/manifest.json`]
+        .map((filename) => path.join(rootDir, filename))
+        .map((filename) =>
+          fs.promises.readFile(filename, { encoding: "utf-8" })
+        )
+    )
+  ).map(JSON.parse);
+
+  const destPath = path.join(destDir, "manifest.json");
+  await fs.promises.writeFile(
+    destPath,
+    await prettier.format(
+      JSON.stringify({ ...template, ...browserSpecificUpdates }),
+      { filepath: destPath }
+    )
+  );
+}
+
+async function copyFile(src, dest) {
+  await fse.ensureDir(path.dirname(dest));
+  await fs.promises.copyFile(src, dest);
 }

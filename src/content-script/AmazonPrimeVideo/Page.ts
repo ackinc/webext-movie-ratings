@@ -1,10 +1,10 @@
-import AbstractPage from "../common/AbstractPage";
+import AbstractPage from "../AbstractPage";
 import {
   findAncestor,
   IMDB_DATA_NODE_CLASS,
   IMDB_STYLE_NODE_CLASS,
-} from "../common";
-import type { ProgramContainer, Program } from "../common/types";
+} from "../../common";
+import type { ProgramContainer, Program } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
 export default class AmazonPrimeVideoPage extends AbstractPage {

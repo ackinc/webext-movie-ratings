@@ -1,6 +1,13 @@
 import { ONE_HOUR_IN_MS, ONE_WEEK_IN_MS, browser, omit } from "./common";
-import type { Program, IMDBData, CachedIMDBData } from "./common/types";
+import type {
+  Program,
+  IMDBData,
+  CachedIMDBData,
+  SWErrorResponse,
+  OmdbApiResponse,
+} from "./common/types";
 import { MessageType } from "./common/types";
+import sentryScope from "./common/Sentry";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
@@ -10,20 +17,30 @@ browser.runtime.onMessage.addListener(handleMessage);
 function handleMessage(
   request: { type: keyof typeof MessageType; data: unknown },
   _sender: chrome.runtime.MessageSender,
-  sendResponse: (...args: any[]) => void
+  sendResponse: (arg: IMDBData | SWErrorResponse) => void
 ) {
   if (request.type === MessageType.fetchIMDBRating) {
-    fetchIMDBData(request.data as Program)
+    const program = request.data as Omit<Program, "node">;
+    fetchIMDBData(program)
       .then((data) => sendResponse(data))
-      .catch((e) => sendResponse({ error: e }));
+      .catch((e) => {
+        const error = e instanceof Error ? e : new Error(e.toString());
+        error.message = `Failed to fetch rating. Program: ${JSON.stringify(program)}. Error: ${error.message}`;
+        sendResponse({ error });
+        sentryScope.captureException(error);
+      });
   } else {
-    throw new Error(`Unknown message type: ${request.type}`);
+    const err = new Error(`Unknown message type: ${request.type}`);
+    sentryScope.captureException(err);
+    throw err;
   }
 
   return true;
 }
 
-async function fetchIMDBData(program: Program): Promise<IMDBData> {
+async function fetchIMDBData(
+  program: Omit<Program, "node">
+): Promise<IMDBData> {
   const key = getCacheKey(program);
 
   const { [key]: cached } = await browser.storage.local.get(key);
@@ -39,30 +56,24 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
   if (type) searchParams.set("type", type);
   if (year) searchParams.set("y", year);
 
-  let result: CachedIMDBData;
-  const respBody = await fetch(
+  const response = await fetch(
     `https://www.omdbapi.com/?${searchParams.toString()}`
-  )
-    .then((response) => response.json())
-    .catch((err) => {
-      console.error(err);
+  );
+  const respBody = (await response.json()) as OmdbApiResponse;
 
-      // hack to prevent extension erroring out on server error
-      //   from the OMDB API side
-      return { Error: "not found" };
-    });
-
-  const { Error: errmsg, imdbID, imdbRating } = respBody;
-
-  if (errmsg && errmsg.includes("not found")) {
-    result = {
-      imdbRating: "N/F",
-      imdbID: "",
-      expiry: +new Date() + nfRatingCacheTime,
-    };
-  } else if (errmsg) {
-    throw new Error(errmsg);
+  let result: CachedIMDBData;
+  if ("Error" in respBody) {
+    if (respBody.Error.includes("not found")) {
+      result = {
+        imdbRating: "N/F",
+        imdbID: "",
+        expiry: +new Date() + nfRatingCacheTime,
+      };
+    } else {
+      throw new Error(respBody.Error);
+    }
   } else {
+    const { imdbID, imdbRating } = respBody;
     result = {
       imdbRating,
       imdbID,
@@ -74,7 +85,7 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
   return omit(result, ["expiry"]) as IMDBData;
 }
 
-function getCacheKey(program: Program): string {
+function getCacheKey(program: Omit<Program, "node">): string {
   const { title, type, year } = program;
   return btoa(
     [title.replace(/[^\w\s]/g, "").toLowerCase(), type, year]

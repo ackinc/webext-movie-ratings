@@ -7,7 +7,7 @@ export default defineConfig([
   { ignores: ["dist/*"] },
   {
     basePath: "src",
-    files: ["**/*.@(j|t)s"],
+    files: ["**/*.@(j|t)s?(x)"],
     languageOptions: {
       globals: {
         ...globals.browser,

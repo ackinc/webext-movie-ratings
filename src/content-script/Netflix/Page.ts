@@ -1,7 +1,7 @@
-import AbstractPage from "../common/AbstractPage";
+import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../common";
-import type { ProgramContainer, Program } from "../common/types";
+import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../../common";
+import type { ProgramContainer, Program } from "../../common/types";
 
 export default class NetflixPage extends AbstractPage {
   static override ProgramNode = ProgramNode;

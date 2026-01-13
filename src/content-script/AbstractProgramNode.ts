@@ -1,4 +1,4 @@
-import type { Program } from "./types";
+import type { Program } from "../common/types";
 
 export default class AbstractProgramNode {
   static isMovieOrSeries(_programNode: HTMLElement): boolean {

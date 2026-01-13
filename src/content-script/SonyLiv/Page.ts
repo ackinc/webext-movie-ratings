@@ -1,7 +1,7 @@
-import AbstractPage from "../common/AbstractPage";
-import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../common";
+import AbstractPage from "../AbstractPage";
+import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../../common";
 import ProgramNode from "./ProgramNode";
-import type { Program, ProgramContainer } from "../common/types";
+import type { Program, ProgramContainer } from "../../common/types";
 
 class SonyLivPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
