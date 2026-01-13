@@ -38,7 +38,8 @@ console.log(`CWS: submitted request to publish new version`);
 async function getAccessToken() {
   // NOTE: if unable to get access token because of expired refresh token, use the
   //   google oauth playground (https://developers.google.com/oauthplayground/)
-  //   to get a new refresh token
+  //   to get a new refresh token; detailed instructions:
+  //   https://developer.chrome.com/docs/webstore/using-api#test-oauth
   const response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: {
