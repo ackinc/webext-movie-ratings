@@ -13,7 +13,6 @@ let page: AbstractPage;
 const intervalTimeMs = 2000;
 const maxConsecutiveErrors = 5;
 let nErrors = 0;
-main();
 
 window.addEventListener("message", (e) => {
   if (e.data === "sift:urlchange" && nErrors >= maxConsecutiveErrors) {
@@ -22,6 +21,16 @@ window.addEventListener("message", (e) => {
     setTimeout(loop, 0);
   }
 });
+
+try {
+  main();
+} catch (e) {
+  const clonedScope = sentryScope.clone();
+  clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
+  clonedScope.captureException(e);
+
+  throw e;
+}
 
 async function main() {
   if (location.hostname === "www.hotstar.com") {
@@ -58,12 +67,20 @@ async function loop() {
     nErrors = 0;
     setTimeout(loop, intervalTimeMs);
   } catch (e) {
-    console.error(`Error adding IMDB ratings`, e);
+    const err: Error = e instanceof Error ? e : new Error(e?.toString());
+    err.message = `Error adding IMDB ratings to page. ${err.message}`;
+    console.error(err);
+
     if (++nErrors < maxConsecutiveErrors) {
+      // retry, because the error might be a temporary one caused by the page
+      //   not having finished loading
       setTimeout(loop, intervalTimeMs);
     } else {
       console.log(`Sift: Pausing due to too many errors`);
-      sentryScope.captureException(e);
+
+      const clonedScope = sentryScope.clone();
+      clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
+      clonedScope.captureException(err);
     }
   }
 }
