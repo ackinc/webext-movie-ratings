@@ -1,4 +1,5 @@
 {
+  "name": "Sift: IMDB ratings on various OTT platforms",
   "background": {
     "scripts": ["service-worker.js"]
   },
