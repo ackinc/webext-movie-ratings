@@ -86,24 +86,11 @@ async function loop() {
 }
 
 async function fetchAndAddIMDBData(program: Program) {
-  try {
-    const response = await fetchIMDBData(program);
-    if ("error" in response) throw response.error;
-    page.addIMDBData(program, response);
-  } catch (e) {
-    if (!(e instanceof Error)) throw e;
-
-    console.error(`Error fetching and adding IMDB data: ${e.message}`, program);
-  }
-}
-
-async function fetchIMDBData(
-  program: Program
-): Promise<IMDBData | SWErrorResponse> {
   const response: IMDBData | SWErrorResponse =
     await browser.runtime.sendMessage({
       type: "fetchIMDBRating",
       data: pick(program, ["title", "type", "year"]),
     });
-  return response;
+  if ("error" in response) throw response.error;
+  page.addIMDBData(program, response);
 }

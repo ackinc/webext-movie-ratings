@@ -24,3 +24,12 @@ export enum MessageType {
 export type SWErrorResponse = {
   error: Error;
 };
+
+export type OmdbApiResponse =
+  | {
+      Error: string;
+    }
+  | {
+      imdbID: string;
+      imdbRating: string;
+    };
