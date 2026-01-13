@@ -20,12 +20,12 @@ function handleMessage(
   sendResponse: (arg: IMDBData | SWErrorResponse) => void
 ) {
   if (request.type === MessageType.fetchIMDBRating) {
-    fetchIMDBData(request.data as Program)
+    const program = request.data as Omit<Program, "node">;
+    fetchIMDBData(program)
       .then((data) => sendResponse(data))
       .catch((e) => {
         const error = e instanceof Error ? e : new Error(e.toString());
-        error.message = `Error fetching rating from API: ${error.message}`;
-
+        error.message = `Failed to fetch rating. Program: ${JSON.stringify(program)}. Error: ${error.message}`;
         sendResponse({ error });
         sentryScope.captureException(error);
       });
@@ -38,7 +38,9 @@ function handleMessage(
   return true;
 }
 
-async function fetchIMDBData(program: Program): Promise<IMDBData> {
+async function fetchIMDBData(
+  program: Omit<Program, "node">
+): Promise<IMDBData> {
   const key = getCacheKey(program);
 
   const { [key]: cached } = await browser.storage.local.get(key);
@@ -83,7 +85,7 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
   return omit(result, ["expiry"]) as IMDBData;
 }
 
-function getCacheKey(program: Program): string {
+function getCacheKey(program: Omit<Program, "node">): string {
   const { title, type, year } = program;
   return btoa(
     [title.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
