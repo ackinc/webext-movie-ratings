@@ -32,7 +32,7 @@ function App() {
           marginBottom: "1rem",
           borderRadius: "2rem",
           padding: "1rem",
-          backgroundColor: "#e1bf2b",
+          backgroundColor: "#f5c618",
           color: "#454545",
           fontSize: "0.75rem",
           display: "flex",
@@ -50,7 +50,10 @@ function App() {
           <li>Dimensions of the browser</li>
           <li>Error details</li>
         </ul>
-        <p>This will help us deliver fixes faster.</p>
+        <p>
+          This will help us deliver fixes faster when updates to an OTT
+          website's design causes the extension to break.
+        </p>
       </div>
 
       <div
