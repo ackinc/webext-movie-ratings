@@ -57,11 +57,10 @@ function App() {
         style={{
           padding: "0 1rem",
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
+          gap: "0.25rem",
         }}
       >
-        <label for="optInToErrorReporting">Opt-in to error reporting?</label>
         <input
           type="checkbox"
           id="optInToErrorReporting"
@@ -69,6 +68,7 @@ function App() {
           checked={optedInToErrorReporting}
           onChange={toggleErrorReportingOptIn}
         />
+        <label for="optInToErrorReporting">Opt-in to error reporting?</label>
       </div>
     </div>
   );
