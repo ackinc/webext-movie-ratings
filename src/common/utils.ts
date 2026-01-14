@@ -1,4 +1,10 @@
-import { browser, errorReportingOptInStateKey, languages } from "./constants";
+import {
+  browser,
+  errorReportingOptInStateKey,
+  languages,
+  lowRatedProgramFilterSettingsStateKey,
+} from "./constants";
+import type { LowRatedProgramFilterSettings } from "./types";
 
 export function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -64,6 +70,25 @@ export async function getErrorReportingOptInState(): Promise<boolean> {
 export async function setErrorReportingOptInState(val: boolean): Promise<void> {
   return await browser.storage.local.set({
     [errorReportingOptInStateKey]: val,
+  });
+}
+
+export async function getLowRatedProgramFilterSettingsState(): Promise<LowRatedProgramFilterSettings | null> {
+  const result = await browser.storage.local.get([
+    lowRatedProgramFilterSettingsStateKey,
+  ]);
+  return (
+    (result[
+      lowRatedProgramFilterSettingsStateKey
+    ] as LowRatedProgramFilterSettings) ?? null
+  );
+}
+
+export async function setLowRatedProgramFilterSettingsState(
+  data: LowRatedProgramFilterSettings
+): Promise<void> {
+  await browser.storage.local.set({
+    [lowRatedProgramFilterSettingsStateKey]: data,
   });
 }
 

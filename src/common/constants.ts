@@ -26,3 +26,5 @@ export const languages = [
 ];
 
 export const errorReportingOptInStateKey = "optedInToErrorReporting";
+export const lowRatedProgramFilterSettingsStateKey =
+  "lowRatedProgramFilterSettings";
