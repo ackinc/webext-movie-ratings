@@ -97,6 +97,8 @@ valid containers:\n\t${programContainers
   createIMDBDataNode(data: IMDBData): HTMLElement {
     const node = document.createElement("a");
     node.classList.add(IMDB_DATA_NODE_CLASS);
+    node.dataset["imdbID"] = data.imdbID;
+    node.dataset["imdbRating"] = data.imdbRating;
     if (data.imdbRating !== "N/F") {
       node.setAttribute("href", getIMDBLink(data.imdbID));
       node.setAttribute("target", "_blank");
