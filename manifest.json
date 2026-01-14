@@ -18,6 +18,7 @@
         "https://*.sonyliv.com/*",
         "https://www.netflix.com/*",
         "https://www.primevideo.com/*",
+        "https://www.amazon.com/gp/video/*",
         "https://tv.apple.com/*",
         "https://www.crunchyroll.com/*"
       ]
@@ -29,6 +30,7 @@
         "https://*.sonyliv.com/*",
         "https://www.netflix.com/*",
         "https://www.primevideo.com/*",
+        "https://www.amazon.com/gp/video/*",
         "https://tv.apple.com/*",
         "https://www.crunchyroll.com/*"
       ],

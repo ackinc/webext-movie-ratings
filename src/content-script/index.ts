@@ -39,7 +39,11 @@ async function main() {
     page = new SonyLivPage();
   } else if (location.hostname === "www.netflix.com") {
     page = new NetflixPage();
-  } else if (location.hostname === "www.primevideo.com") {
+  } else if (
+    ["www.primevideo.com", "www.amazon.com"].some(
+      (x) => x === location.hostname
+    )
+  ) {
     page = new AmazonPrimeVideoPage();
   } else if (location.hostname === "tv.apple.com") {
     page = new AppleTVPage();
