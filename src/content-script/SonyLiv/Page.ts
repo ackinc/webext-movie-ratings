@@ -14,7 +14,7 @@ class SonyLivPage extends AbstractPage {
     super.injectStyles();
 
     const styleNode = document.querySelector(`style.${STYLE_NODE_CLASS}`)!;
-    styleNode.innerHTML = `
+    styleNode.innerHTML += `
       a.${IMDB_DATA_NODE_CLASS} {
         margin: 2px 0 0 8px;
         color: #999999;

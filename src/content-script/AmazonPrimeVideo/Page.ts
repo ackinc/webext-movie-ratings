@@ -22,7 +22,7 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
       .getPropertyValue("font-family");
 
     const styleNode = document.querySelector(`style.${STYLE_NODE_CLASS}`)!;
-    styleNode.innerHTML = `
+    styleNode.innerHTML += `
       a.${IMDB_DATA_NODE_CLASS} {
         color: #999999 !important;
         display: block;

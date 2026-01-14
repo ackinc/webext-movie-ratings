@@ -4,6 +4,7 @@ import {
   STYLE_NODE_CLASS,
   IMDB_DATA_NODE_CLASS,
   getIMDBLink,
+  LOW_RATED_PROGRAM_NODE_CLASS,
 } from "../common";
 
 export default class AbstractPage {
@@ -75,6 +76,12 @@ valid containers:\n\t${programContainers
   injectStyles() {
     const styleNode = document.createElement("style");
     styleNode.classList.add(STYLE_NODE_CLASS);
+    styleNode.innerHTML = `
+      .${LOW_RATED_PROGRAM_NODE_CLASS} {
+        display: block;
+        opacity: 1;
+      }
+    `;
     document.head.appendChild(styleNode);
   }
 
