@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../../common";
+import { IMDB_DATA_NODE_CLASS, STYLE_NODE_CLASS } from "../../common";
 import ProgramNode from "./ProgramNode";
 import type { Program, ProgramContainer } from "../../common/types";
 
@@ -13,7 +13,7 @@ class SonyLivPage extends AbstractPage {
   override injectStyles() {
     super.injectStyles();
 
-    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`)!;
+    const styleNode = document.querySelector(`style.${STYLE_NODE_CLASS}`)!;
     styleNode.innerHTML = `
       a.${IMDB_DATA_NODE_CLASS} {
         margin: 2px 0 0 8px;

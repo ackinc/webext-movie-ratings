@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { IMDB_STYLE_NODE_CLASS, IMDB_DATA_NODE_CLASS } from "../../common";
+import { STYLE_NODE_CLASS, IMDB_DATA_NODE_CLASS } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -13,7 +13,7 @@ export default class AppleTvPage extends AbstractPage {
   override injectStyles() {
     super.injectStyles();
 
-    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`)!;
+    const styleNode = document.querySelector(`style.${STYLE_NODE_CLASS}`)!;
     styleNode.innerHTML = `
       a.${IMDB_DATA_NODE_CLASS} {
         color: var(--systemSecondary);

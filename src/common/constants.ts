@@ -1,6 +1,6 @@
-export const IMDB_DATA_NODE_CLASS = "webext-imdb-data";
-
-export const IMDB_STYLE_NODE_CLASS = "webext-styles";
+export const IMDB_DATA_NODE_CLASS = "sift-imdb-data";
+export const LOW_RATED_PROGRAM_NODE_CLASS = "sift-imdb-low-rated";
+export const STYLE_NODE_CLASS = "sift-styles";
 
 export const ONE_HOUR_IN_MS = 1000 * 60 * 60;
 

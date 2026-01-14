@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../../common";
+import { IMDB_DATA_NODE_CLASS, STYLE_NODE_CLASS } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 
 export default class HotstarPage extends AbstractPage {
@@ -13,7 +13,7 @@ export default class HotstarPage extends AbstractPage {
   override injectStyles() {
     super.injectStyles();
 
-    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`)!;
+    const styleNode = document.querySelector(`style.${STYLE_NODE_CLASS}`)!;
     const pageFontFamily = window
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");

@@ -1,7 +1,7 @@
 import AbstractProgramNode from "./AbstractProgramNode";
 import type { ProgramContainer, Program, IMDBData } from "../common/types";
 import {
-  IMDB_STYLE_NODE_CLASS,
+  STYLE_NODE_CLASS,
   IMDB_DATA_NODE_CLASS,
   getIMDBLink,
 } from "../common";
@@ -74,7 +74,7 @@ valid containers:\n\t${programContainers
 
   injectStyles() {
     const styleNode = document.createElement("style");
-    styleNode.classList.add(IMDB_STYLE_NODE_CLASS);
+    styleNode.classList.add(STYLE_NODE_CLASS);
     document.head.appendChild(styleNode);
   }
 

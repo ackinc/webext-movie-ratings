@@ -2,7 +2,7 @@ import AbstractPage from "../AbstractPage";
 import {
   findAncestor,
   IMDB_DATA_NODE_CLASS,
-  IMDB_STYLE_NODE_CLASS,
+  STYLE_NODE_CLASS,
 } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 import ProgramNode from "./ProgramNode";
@@ -21,7 +21,7 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
 
-    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`)!;
+    const styleNode = document.querySelector(`style.${STYLE_NODE_CLASS}`)!;
     styleNode.innerHTML = `
       a.${IMDB_DATA_NODE_CLASS} {
         color: #999999 !important;
