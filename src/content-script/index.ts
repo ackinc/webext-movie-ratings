@@ -22,7 +22,7 @@ let page: AbstractPage;
 let loopTimeout: number | null = null;
 
 window.addEventListener("message", (e) => {
-  if (e.data === "sift:urlchange" && loopTimeout === null) {
+  if (e.data === "sift:urlchange" && page && loopTimeout === null) {
     console.log(`Sift: resuming paused loop on page change`);
     loopTimeout = setTimeout(loop, 0);
   }
