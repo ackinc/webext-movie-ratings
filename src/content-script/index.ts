@@ -1,4 +1,10 @@
-import { browser, pick, omit, invert } from "../common";
+import {
+  browser,
+  pick,
+  omit,
+  invert,
+  delayMs,
+} from "../common";
 import sentryScope from "../common/Sentry";
 import type AbstractPage from "./AbstractPage";
 import type { IMDBData, Program, SWErrorResponse } from "../common/types";
@@ -10,20 +16,18 @@ import AppleTVPage from "./AppleTV/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 
 let page: AbstractPage;
-const intervalTimeMs = 2000;
-const maxConsecutiveErrors = 5;
-let nErrors = 0;
+let loopTimeout: number | null = null;
 
 window.addEventListener("message", (e) => {
-  if (e.data === "sift:urlchange" && nErrors >= maxConsecutiveErrors) {
-    nErrors = 0;
+  if (e.data === "sift:urlchange" && loopTimeout === null) {
     console.log(`Sift: resuming due to page change`);
-    setTimeout(loop, 0);
+    loopTimeout = setTimeout(loop, 0);
   }
 });
 
 try {
-  main();
+  initializePage();
+  loopTimeout = setTimeout(loop, 0);
 } catch (e) {
   const clonedScope = sentryScope.clone();
   clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
@@ -32,7 +36,7 @@ try {
   throw e;
 }
 
-async function main() {
+async function initializePage() {
   if (location.hostname === "www.hotstar.com") {
     page = new HotstarPage();
   } else if (location.hostname === "www.sonyliv.com") {
@@ -54,37 +58,55 @@ async function main() {
   }
 
   await page.initialize();
-
   window.__page = page;
-
-  setTimeout(loop, 0);
 }
 
 async function loop() {
-  let programsToAddRatingsFor: Program[];
-  try {
-    programsToAddRatingsFor = page
-      .findPrograms()
-      .filter(invert(page.checkIMDBDataAlreadyAdded));
-    nErrors = 0;
-  } catch (e) {
-    if (++nErrors < maxConsecutiveErrors) {
-      // retry, because the error might be a temporary one caused
-      //   by the page not having finished loading
-      setTimeout(loop, intervalTimeMs);
-      return;
-    }
+  const intervalTimeMs = 2000;
 
-    const err: Error = e instanceof Error ? e : new Error(e?.toString());
-    console.error(err);
+  try {
+    const programs = await findProgramsOnPage();
+    await addRatingsToPrograms(programs);
+    loopTimeout = setTimeout(loop, intervalTimeMs);
+  } catch (e) {
+    loopTimeout = null;
 
     const clonedScope = sentryScope.clone();
     clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
-    clonedScope.captureException(err);
+    clonedScope.captureException(e);
 
-    console.log(`Sift: Pausing loop due to too many errors`);
-    return;
+    throw e;
   }
+}
+
+async function findProgramsOnPage(): Promise<Program[]> {
+  const maxConsecutiveErrors = 5;
+  const errors = [];
+  const msDelayBetweenRetries = 2000;
+
+  let programs: Program[] | undefined;
+  do {
+    try {
+      programs = page.findPrograms();
+    } catch (e) {
+      const thisErr = e instanceof Error ? e : new Error(e?.toString());
+      console.error(thisErr);
+      errors.push(thisErr);
+
+      // the error may have been caused by the page not having finished
+      //   loading, so we'll give it some time
+      await delayMs(msDelayBetweenRetries);
+    }
+  } while (!programs && errors.length < maxConsecutiveErrors);
+
+  if (!programs) throw errors.at(-1);
+  return programs as Program[];
+}
+
+async function addRatingsToPrograms(allPrograms: Program[]) {
+  const programsToAddRatingsFor = allPrograms.filter(
+    invert(page.checkIMDBDataAlreadyAdded)
+  );
 
   const results = await Promise.allSettled(
     programsToAddRatingsFor.map(fetchIMDBData)
@@ -108,8 +130,6 @@ async function loop() {
       clonedScope.captureException(err);
     }
   });
-
-  setTimeout(loop, intervalTimeMs);
 }
 
 async function fetchIMDBData(program: Program): Promise<IMDBData> {
