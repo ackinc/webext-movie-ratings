@@ -20,7 +20,7 @@ let loopTimeout: number | null = null;
 
 window.addEventListener("message", (e) => {
   if (e.data === "sift:urlchange" && loopTimeout === null) {
-    console.log(`Sift: resuming due to page change`);
+    console.log(`Sift: resuming paused loop on page change`);
     loopTimeout = setTimeout(loop, 0);
   }
 });
