@@ -58,7 +58,6 @@ async function initializePage() {
   }
 
   await page.initialize();
-  window.__page = page;
 }
 
 async function loop() {
