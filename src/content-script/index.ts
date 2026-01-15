@@ -5,6 +5,7 @@ import {
   invert,
   delayMs,
   getSetting,
+  MessageType,
   SettingsKey,
   LOW_RATED_PROGRAM_NODE_CLASS,
   STYLE_NODE_CLASS,
@@ -65,13 +66,18 @@ async function initializePage() {
 
 function addMessageListeners() {
   window.addEventListener("message", (e) => {
-    if (e.data === "sift:urlchange" && page && loopTimeout === undefined) {
+    const { message } = e.data;
+    if (
+      message === MessageType.urlChange &&
+      page &&
+      loopTimeout === undefined
+    ) {
       console.log(`Sift: resuming paused loop on page change`);
       loopTimeout = setTimeout(loop, 0);
     }
   });
   browser.runtime.onMessage.addListener(({ message, data }) => {
-    if (message === "filterSettingsChange") {
+    if (message === MessageType.filterSettingsChange) {
       handleFilterSettingsChange(data as LowRatedProgramFilterSettings);
     }
   });

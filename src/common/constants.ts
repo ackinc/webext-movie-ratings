@@ -25,8 +25,10 @@ export const languages = [
   "Korean",
 ];
 
-export enum MessageType {
+export const enum MessageType {
   fetchIMDBRating = "fetchIMDBRating",
+  urlChange = "sift:urlchange",
+  filterSettingsChange = "filterSettingsChange",
 }
 
 export const enum SettingsKey {
