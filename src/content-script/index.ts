@@ -21,15 +21,9 @@ import CrunchyrollPage from "./Crunchyroll/Page";
 let page: AbstractPage;
 let loopTimeout: number | null = null;
 
-window.addEventListener("message", (e) => {
-  if (e.data === "sift:urlchange" && page && loopTimeout === null) {
-    console.log(`Sift: resuming paused loop on page change`);
-    loopTimeout = setTimeout(loop, 0);
-  }
-});
-
 try {
   initializePage();
+  addMessageListener();
   loopTimeout = setTimeout(loop, 0);
 } catch (e) {
   captureException(e as Error, { addViewportDims: true });
@@ -58,6 +52,15 @@ async function initializePage() {
   }
 
   await page.initialize();
+}
+
+function addMessageListener() {
+  window.addEventListener("message", (e) => {
+    if (e.data === "sift:urlchange" && page && loopTimeout === null) {
+      console.log(`Sift: resuming paused loop on page change`);
+      loopTimeout = setTimeout(loop, 0);
+    }
+  });
 }
 
 async function loop() {
