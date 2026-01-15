@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import {
   getLowRatedProgramFilterSettingsState,
@@ -39,7 +37,7 @@ function LowRatingFilters() {
           max="10"
           value={settings.minRating}
           step="1"
-          onChange={(e) =>
+          onInput={(e) =>
             updateSettings({
               minRating: parseInt((e.target as HTMLInputElement).value),
             })
@@ -60,7 +58,7 @@ function LowRatingFilters() {
           max="100"
           value={settings.transparency}
           step="10"
-          onChange={(e) =>
+          onInput={(e) =>
             updateSettings({
               transparency: parseInt((e.target as HTMLInputElement).value),
             })
