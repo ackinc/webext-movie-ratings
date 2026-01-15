@@ -61,12 +61,12 @@ async function initializePage() {
 }
 
 async function loop() {
-  const intervalTimeMs = 2000;
+  const msDelayBeforeNextInvocation = 2000;
 
   try {
     const programs = await findProgramsOnPage();
     await addRatingsToPrograms(programs);
-    loopTimeout = setTimeout(loop, intervalTimeMs);
+    loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
   } catch (e) {
     loopTimeout = null;
 
