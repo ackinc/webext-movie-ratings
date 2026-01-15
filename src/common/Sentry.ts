@@ -35,4 +35,15 @@ scope.setClient(client);
 
 client.init();
 
-export default scope;
+export function captureException(
+  e: Error,
+  opts: { addViewportDims: boolean } = { addViewportDims: false }
+) {
+  if (opts.addViewportDims) {
+    const clonedScope = scope.clone();
+    clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
+    clonedScope.captureException(e);
+  } else {
+    scope.captureException(e);
+  }
+}

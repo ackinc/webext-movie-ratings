@@ -7,7 +7,7 @@ import type {
   OmdbApiResponse,
 } from "./common/types";
 import { MessageType } from "./common/types";
-import sentryScope from "./common/Sentry";
+import { captureException } from "./common/Sentry";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
@@ -28,11 +28,11 @@ function handleMessage(
         const error = e instanceof Error ? e : new Error(e.toString());
         error.message = `Failed to fetch rating. Program: ${JSON.stringify(program)}. Error: ${error.message}`;
         sendResponse({ error });
-        sentryScope.captureException(error);
+        captureException(error);
       });
   } else {
     const err = new Error(`Unknown message type: ${request.type}`);
-    sentryScope.captureException(err);
+    captureException(err);
     throw err;
   }
 

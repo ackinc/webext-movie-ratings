@@ -5,7 +5,7 @@ import {
   invert,
   delayMs,
 } from "../common";
-import sentryScope from "../common/Sentry";
+import { captureException } from "../common/Sentry";
 import type AbstractPage from "./AbstractPage";
 import type { IMDBData, Program, SWErrorResponse } from "../common/types";
 import HotstarPage from "./Hotstar/Page";
@@ -29,10 +29,7 @@ try {
   initializePage();
   loopTimeout = setTimeout(loop, 0);
 } catch (e) {
-  const clonedScope = sentryScope.clone();
-  clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
-  clonedScope.captureException(e);
-
+  captureException(e as Error, { addViewportDims: true });
   throw e;
 }
 
@@ -69,11 +66,7 @@ async function loop() {
     loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
   } catch (e) {
     loopTimeout = null;
-
-    const clonedScope = sentryScope.clone();
-    clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
-    clonedScope.captureException(e);
-
+    captureException(e as Error, { addViewportDims: true });
     throw e;
   }
 }
@@ -124,9 +117,7 @@ async function addRatingsToPrograms(allPrograms: Program[]) {
       err.message = `Error adding imdb data to program. Program data: ${JSON.stringify(omit(program, ["node"]))}`;
       console.error(err, program.node);
 
-      const clonedScope = sentryScope.clone();
-      clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
-      clonedScope.captureException(err);
+      captureException(err, { addViewportDims: true });
     }
   });
 }
