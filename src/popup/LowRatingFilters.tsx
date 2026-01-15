@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { browser, getSetting, setSetting, SettingsKey } from "../common";
-import type { LowRatedProgramFilterSettings } from "../common";
+import type { ProgramFilterSettings } from "../common";
 
 function LowRatingFilters() {
   const [settings, setSettings] = useState({ minRating: 10, transparency: 0 });
@@ -9,7 +9,7 @@ function LowRatingFilters() {
     (async () => {
       const savedSettings = (await getSetting(
         SettingsKey.programFiltersSettings
-      )) as LowRatedProgramFilterSettings | undefined;
+      )) as ProgramFilterSettings | undefined;
       if (savedSettings) setSettings(savedSettings);
     })();
   }, []);
@@ -71,7 +71,7 @@ function LowRatingFilters() {
     </div>
   );
 
-  async function updateSettings(data: Partial<LowRatedProgramFilterSettings>) {
+  async function updateSettings(data: Partial<ProgramFilterSettings>) {
     const updatedSettings = { ...settings, ...data };
     await setSetting(SettingsKey.programFiltersSettings, updatedSettings);
     setSettings(updatedSettings);

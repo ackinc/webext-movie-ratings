@@ -15,7 +15,7 @@ import type {
   IMDBData,
   Program,
   SWErrorResponse,
-  LowRatedProgramFilterSettings,
+  ProgramFilterSettings,
 } from "../common/types";
 import HotstarPage from "./Hotstar/Page";
 import SonyLivPage from "./SonyLiv/Page";
@@ -80,7 +80,7 @@ function addMessageListeners() {
   });
   browser.runtime.onMessage.addListener(({ message, data }) => {
     if (message === MessageType.filterSettingsChange) {
-      handleFilterSettingsChange(data as LowRatedProgramFilterSettings);
+      handleFilterSettingsChange(data as ProgramFilterSettings);
     }
   });
 }
@@ -169,7 +169,7 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
 
 async function hideLowRatedPrograms(allPrograms: Program[]) {
   const settings = ((await getSetting(SettingsKey.programFiltersSettings)) as
-    | LowRatedProgramFilterSettings
+    | ProgramFilterSettings
     | undefined) ?? {
     minRating: 10,
     transparency: 0,
@@ -191,9 +191,7 @@ async function hideLowRatedPrograms(allPrograms: Program[]) {
   });
 }
 
-function handleFilterSettingsChange(
-  updatedSettings: LowRatedProgramFilterSettings
-) {
+function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
   // prevent any running loop invocation from scheduling another invocation
   loopAbortController.abort();
 

@@ -30,7 +30,7 @@ export type OmdbApiResponse =
       imdbRating: string;
     };
 
-export type LowRatedProgramFilterSettings = {
+export type ProgramFilterSettings = {
   minRating: number;
   transparency: number;
 };
