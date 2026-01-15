@@ -4,6 +4,9 @@ import {
   omit,
   invert,
   delayMs,
+  LOW_RATED_PROGRAM_NODE_CLASS,
+  STYLE_NODE_CLASS,
+  getLowRatedProgramFilterSettingsState,
 } from "../common";
 import { captureException } from "../common/errorReporter";
 import type AbstractPage from "./AbstractPage";
@@ -63,6 +66,7 @@ async function loop() {
   try {
     const programs = await findProgramsOnPage();
     await addRatingsToPrograms(programs);
+    await hideLowRatedPrograms(programs);
     loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
   } catch (e) {
     loopTimeout = null;
@@ -130,4 +134,34 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
     });
   if ("error" in response) throw response.error;
   return response;
+}
+
+async function hideLowRatedPrograms(allPrograms: Program[]) {
+  const settings = (await getLowRatedProgramFilterSettingsState()) ?? {
+    minRating: 10,
+    transparency: 0,
+  };
+
+  const styleNode = document.querySelector(
+    `style.${STYLE_NODE_CLASS}`
+  ) as HTMLElement;
+  styleNode.innerHTML = styleNode.innerHTML.replace(
+    /opacity:.+/,
+    `opacity: ${1 - settings.transparency / 100};`
+  );
+
+  allPrograms.forEach((p) => {
+    const imdbNode = (
+      page.constructor as typeof AbstractPage
+    ).ProgramNode.getIMDBNode(p.node);
+
+    if (
+      imdbNode &&
+      parseFloat(imdbNode.dataset!["imdbRating"]!) < settings.minRating
+    ) {
+      p.node.classList.add(LOW_RATED_PROGRAM_NODE_CLASS);
+    } else {
+      p.node.classList.remove(LOW_RATED_PROGRAM_NODE_CLASS);
+    }
+  });
 }
