@@ -27,8 +27,13 @@ function LowRatingFilters() {
     >
       <h3>Filter low-rated programs</h3>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        <label for="min-imdb-rating">Min. IMDB rating:</label>
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+        <label for="min-imdb-rating">
+          Fade programs rated below:{" "}
+          <span style={{ fontWeight: "bold" }}>
+            {settings.minRating.toFixed(1)}
+          </span>
+        </label>
         <input
           type="range"
           id="min-imdb-rating"
@@ -36,19 +41,18 @@ function LowRatingFilters() {
           min="0"
           max="10"
           value={settings.minRating}
-          step="1"
+          step="0.5"
           onInput={(e) =>
             updateSettings({
-              minRating: parseInt((e.target as HTMLInputElement).value),
+              minRating: parseFloat((e.target as HTMLInputElement).value),
             })
           }
         />
-        <p>{settings.minRating}</p>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
         <label for="low-rated-program-node-transparency">
-          Make low-rated programs this transparent
+          Make them this transparent:
         </label>
         <input
           type="range"
@@ -57,7 +61,7 @@ function LowRatingFilters() {
           min="0"
           max="100"
           value={settings.transparency}
-          step="10"
+          step="1"
           onInput={(e) =>
             updateSettings({
               transparency: parseInt((e.target as HTMLInputElement).value),
