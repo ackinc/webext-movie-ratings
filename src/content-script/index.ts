@@ -94,7 +94,7 @@ async function loop() {
   try {
     const programs = await findProgramsOnPage();
     await addRatingsToPrograms(programs);
-    await hideLowRatedPrograms(programs);
+    await fadeFilteredOutPrograms(programs);
 
     if (!thisLoopAbortController.signal.aborted) {
       loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
@@ -167,7 +167,7 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
   return response;
 }
 
-async function hideLowRatedPrograms(allPrograms: Program[]) {
+async function fadeFilteredOutPrograms(allPrograms: Program[]) {
   const settings = ((await getSetting(SettingsKey.programFiltersSettings)) as
     | ProgramFilterSettings
     | undefined) ?? {

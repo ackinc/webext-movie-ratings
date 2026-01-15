@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { render, h, Fragment } from "preact";
 import ErrorReportingOptIn from "./ErrorReportingOptIn";
-import LowRatingFilters from "./LowRatingFilters";
+import ProgramFilters from "./ProgramFilters";
 
 const root = document.querySelector("div#root");
 render(<App />, root);
@@ -16,7 +16,7 @@ function App() {
       }}
     >
       <ErrorReportingOptIn />
-      <LowRatingFilters />
+      <ProgramFilters />
     </div>
   );
 }

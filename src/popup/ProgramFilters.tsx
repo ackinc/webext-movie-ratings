@@ -2,7 +2,7 @@ import { useEffect, useState } from "preact/hooks";
 import { browser, getSetting, setSetting, SettingsKey } from "../common";
 import type { ProgramFilterSettings } from "../common";
 
-function LowRatingFilters() {
+function ProgramFilters() {
   const [settings, setSettings] = useState({ minRating: 10, transparency: 0 });
 
   useEffect(() => {
@@ -16,7 +16,7 @@ function LowRatingFilters() {
 
   return (
     <div
-      className="low-rated-program-filtering-controls"
+      className="program-filters-container"
       style={{
         padding: "1rem",
         display: "flex",
@@ -24,7 +24,7 @@ function LowRatingFilters() {
         gap: "1rem",
       }}
     >
-      <h3>Filter low-rated programs</h3>
+      <h3>Filter programs</h3>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
         <label for="min-imdb-rating">
@@ -50,13 +50,13 @@ function LowRatingFilters() {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-        <label for="low-rated-program-node-transparency">
+        <label for="filtered-out-program-node-transparency">
           Make them this transparent:
         </label>
         <input
           type="range"
-          id="low-rated-program-node-transparency"
-          name="low-rated-program-node-transparency"
+          id="filtered-out-program-node-transparency"
+          name="filtered-out-program-node-transparency"
           min="0"
           max="100"
           value={settings.transparency}
@@ -92,4 +92,4 @@ function LowRatingFilters() {
   }
 }
 
-export default LowRatingFilters;
+export default ProgramFilters;
