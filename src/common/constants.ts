@@ -29,10 +29,6 @@ export enum MessageType {
   fetchIMDBRating = "fetchIMDBRating",
 }
 
-export const errorReportingOptInStateKey = "optedInToErrorReporting";
-export const lowRatedProgramFilterSettingsStateKey =
-  "lowRatedProgramFilterSettings";
-
 export const enum SettingsKey {
   errorReportingOptIn = "errorReportingOptIn",
   programFiltersSettings = "programFiltersSettings",
