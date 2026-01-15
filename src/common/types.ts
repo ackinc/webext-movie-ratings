@@ -17,10 +17,6 @@ export type IMDBData = {
 
 export type CachedIMDBData = IMDBData & { expiry: number };
 
-export enum MessageType {
-  fetchIMDBRating = "fetchIMDBRating",
-}
-
 export type SWErrorResponse = {
   error: Error;
 };

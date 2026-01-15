@@ -6,7 +6,7 @@ import type {
   SWErrorResponse,
   OmdbApiResponse,
 } from "./common/types";
-import { MessageType } from "./common/types";
+import { MessageType } from "./common";
 import { captureException } from "./common/errorReporter";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;

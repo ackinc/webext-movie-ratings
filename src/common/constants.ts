@@ -25,6 +25,10 @@ export const languages = [
   "Korean",
 ];
 
+export enum MessageType {
+  fetchIMDBRating = "fetchIMDBRating",
+}
+
 export const errorReportingOptInStateKey = "optedInToErrorReporting";
 export const lowRatedProgramFilterSettingsStateKey =
   "lowRatedProgramFilterSettings";
