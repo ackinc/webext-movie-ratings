@@ -21,14 +21,16 @@ import CrunchyrollPage from "./Crunchyroll/Page";
 let page: AbstractPage;
 let loopTimeout: number | null = null;
 
-try {
-  initializePage();
-  addMessageListener();
-  loopTimeout = setTimeout(loop, 0);
-} catch (e) {
-  captureException(e as Error, { addViewportDims: true });
-  throw e;
-}
+(async () => {
+  try {
+    await initializePage();
+    addMessageListener();
+    loopTimeout = setTimeout(loop, 0);
+  } catch (e) {
+    captureException(e as Error, { addViewportDims: true });
+    throw e;
+  }
+})();
 
 async function initializePage() {
   if (location.hostname === "www.hotstar.com") {
