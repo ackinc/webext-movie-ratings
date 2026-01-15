@@ -25,12 +25,13 @@ import AppleTVPage from "./AppleTV/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 
 let page: AbstractPage;
-let loopTimeout: number | null = null;
+let loopTimeout: number | undefined;
+let loopAbortController: AbortController;
 
 (async () => {
   try {
     await initializePage();
-    addMessageListener();
+    addMessageListeners();
     loopTimeout = setTimeout(loop, 0);
   } catch (e) {
     captureException(e as Error, { addViewportDims: true });
@@ -62,25 +63,36 @@ async function initializePage() {
   await page.initialize();
 }
 
-function addMessageListener() {
+function addMessageListeners() {
   window.addEventListener("message", (e) => {
-    if (e.data === "sift:urlchange" && page && loopTimeout === null) {
+    if (e.data === "sift:urlchange" && page && loopTimeout === undefined) {
       console.log(`Sift: resuming paused loop on page change`);
       loopTimeout = setTimeout(loop, 0);
+    }
+  });
+  browser.runtime.onMessage.addListener(({ message, data }) => {
+    if (message === "filterSettingsChange") {
+      handleFilterSettingsChange(data as LowRatedProgramFilterSettings);
     }
   });
 }
 
 async function loop() {
+  const thisLoopAbortController = new AbortController();
+  loopAbortController = thisLoopAbortController;
+
   const msDelayBeforeNextInvocation = 2000;
 
   try {
     const programs = await findProgramsOnPage();
     await addRatingsToPrograms(programs);
     await hideLowRatedPrograms(programs);
-    loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
+
+    if (!thisLoopAbortController.signal.aborted) {
+      loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
+    }
   } catch (e) {
-    loopTimeout = null;
+    loopTimeout = undefined;
     captureException(e as Error, { addViewportDims: true });
     throw e;
   }
@@ -155,14 +167,6 @@ async function hideLowRatedPrograms(allPrograms: Program[]) {
     transparency: 0,
   };
 
-  const styleNode = document.querySelector(
-    `style.${STYLE_NODE_CLASS}`
-  ) as HTMLElement;
-  styleNode.innerHTML = styleNode.innerHTML.replace(
-    /opacity:.+/,
-    `opacity: ${1 - settings.transparency / 100};`
-  );
-
   allPrograms.forEach((p) => {
     const imdbNode = (
       page.constructor as typeof AbstractPage
@@ -177,4 +181,26 @@ async function hideLowRatedPrograms(allPrograms: Program[]) {
       p.node.classList.remove(LOW_RATED_PROGRAM_NODE_CLASS);
     }
   });
+}
+
+function handleFilterSettingsChange(
+  updatedSettings: LowRatedProgramFilterSettings
+) {
+  // prevent any running loop invocation from scheduling another invocation
+  loopAbortController.abort();
+
+  // clear any scheduled loop
+  clearTimeout(loopTimeout);
+
+  // update relevant stylesheet rule
+  const styleNode = document.querySelector(
+    `style.${STYLE_NODE_CLASS}`
+  ) as HTMLElement;
+  styleNode.innerHTML = styleNode.innerHTML.replace(
+    /opacity:.+/,
+    `opacity: ${1 - updatedSettings.transparency / 100};`
+  );
+
+  // restart loop
+  loopTimeout = setTimeout(loop, 0);
 }

@@ -75,6 +75,20 @@ function LowRatingFilters() {
     const updatedSettings = { ...settings, ...data };
     await setSetting(SettingsKey.programFiltersSettings, updatedSettings);
     setSettings(updatedSettings);
+
+    // let any relevant tabs know that the filter settings have changed
+    // bundling the updated settings into the message saves the content
+    //   scripts a lookup from storage
+    (
+      await browser.tabs.query({
+        url: browser.runtime.getManifest()["host_permissions"],
+      })
+    ).forEach((tab) =>
+      browser.tabs.sendMessage(tab.id as number, {
+        message: "filterSettingsChange",
+        data: updatedSettings,
+      })
+    );
   }
 }
 
