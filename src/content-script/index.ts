@@ -5,7 +5,7 @@ import {
   invert,
   delayMs,
 } from "../common";
-import { captureException } from "../common/Sentry";
+import { captureException } from "../common/errorReporter";
 import type AbstractPage from "./AbstractPage";
 import type { IMDBData, Program, SWErrorResponse } from "../common/types";
 import HotstarPage from "./Hotstar/Page";

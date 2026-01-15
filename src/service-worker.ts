@@ -7,7 +7,7 @@ import type {
   OmdbApiResponse,
 } from "./common/types";
 import { MessageType } from "./common/types";
-import { captureException } from "./common/Sentry";
+import { captureException } from "./common/errorReporter";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
