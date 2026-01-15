@@ -1,5 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { IMDB_DATA_NODE_CLASS, extractProgramTitle } from "../../common";
+import { CssClasses, extractProgramTitle } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -46,20 +46,20 @@ export default class ProgramNode extends AbstractProgramNode {
   static override getIMDBNode(node: HTMLElement): HTMLElement | null {
     if ((node.parentNode as HTMLElement).classList.contains("innerlistt")) {
       const candidate = node.firstChild!.firstChild!.lastChild! as HTMLElement;
-      return candidate.classList.contains(IMDB_DATA_NODE_CLASS)
+      return candidate.classList.contains(CssClasses.imdbDataNode)
         ? candidate
         : null;
     }
 
     if (node.matches("a.link_container")) {
       const candidate = node.lastChild! as HTMLElement;
-      return candidate.classList.contains(IMDB_DATA_NODE_CLASS)
+      return candidate.classList.contains(CssClasses.imdbDataNode)
         ? candidate
         : null;
     }
 
     const candidate = node.parentNode!.parentNode!.lastChild! as HTMLElement;
-    return candidate.classList.contains(IMDB_DATA_NODE_CLASS)
+    return candidate.classList.contains(CssClasses.imdbDataNode)
       ? candidate
       : null;
   }

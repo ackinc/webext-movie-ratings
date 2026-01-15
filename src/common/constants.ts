@@ -1,6 +1,8 @@
-export const IMDB_DATA_NODE_CLASS = "sift-imdb-data";
-export const LOW_RATED_PROGRAM_NODE_CLASS = "sift-imdb-low-rated";
-export const STYLE_NODE_CLASS = "sift-styles";
+export const enum CssClasses {
+  styleNode = "sift-style",
+  imdbDataNode = "sift-imdb-data",
+  filteredOutProgramNode = "sift-filtered-out-program",
+}
 
 export const ONE_HOUR_IN_MS = 1000 * 60 * 60;
 

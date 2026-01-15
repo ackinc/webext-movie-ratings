@@ -7,8 +7,7 @@ import {
   getSetting,
   MessageType,
   SettingsKey,
-  LOW_RATED_PROGRAM_NODE_CLASS,
-  STYLE_NODE_CLASS,
+  CssClasses,
 } from "../common";
 import { captureException } from "../common/errorReporter";
 import type AbstractPage from "./AbstractPage";
@@ -26,6 +25,9 @@ import AppleTVPage from "./AppleTV/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 
 let page: AbstractPage;
+
+// should *only* be set to undefined when we deliberately pause
+//   the loop due to errors
 let loopTimeout: number | undefined;
 let loopAbortController: AbortController;
 
@@ -182,9 +184,9 @@ async function hideLowRatedPrograms(allPrograms: Program[]) {
       imdbNode &&
       parseFloat(imdbNode.dataset!["imdbRating"]!) < settings.minRating
     ) {
-      p.node.classList.add(LOW_RATED_PROGRAM_NODE_CLASS);
+      p.node.classList.add(CssClasses.filteredOutProgramNode);
     } else {
-      p.node.classList.remove(LOW_RATED_PROGRAM_NODE_CLASS);
+      p.node.classList.remove(CssClasses.filteredOutProgramNode);
     }
   });
 }
@@ -200,7 +202,7 @@ function handleFilterSettingsChange(
 
   // update relevant stylesheet rule
   const styleNode = document.querySelector(
-    `style.${STYLE_NODE_CLASS}`
+    `style.${CssClasses.styleNode}`
   ) as HTMLElement;
   styleNode.innerHTML = styleNode.innerHTML.replace(
     /opacity:.+/,

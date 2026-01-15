@@ -1,5 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { IMDB_DATA_NODE_CLASS } from "../../common";
+import { CssClasses } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -68,7 +68,7 @@ export default class ProgramNode extends AbstractProgramNode {
         : ggplc;
       if (
         maybeIMDBNode &&
-        maybeIMDBNode.classList.contains(IMDB_DATA_NODE_CLASS)
+        maybeIMDBNode.classList.contains(CssClasses.imdbDataNode)
       ) {
         return maybeIMDBNode;
       } else {
@@ -77,7 +77,7 @@ export default class ProgramNode extends AbstractProgramNode {
     }
 
     return programNode.querySelector(
-      `div.titleCard--metadataWrapper > a.${IMDB_DATA_NODE_CLASS}`
+      `div.titleCard--metadataWrapper > a.${CssClasses.imdbDataNode}`
     );
   }
 }

@@ -1,5 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { IMDB_DATA_NODE_CLASS } from "../../common";
+import { CssClasses } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -20,6 +20,6 @@ export default class ProgramNode extends AbstractProgramNode {
   }
 
   static override getIMDBNode(programNode: HTMLElement): HTMLElement | null {
-    return programNode.querySelector(`a.${IMDB_DATA_NODE_CLASS}`);
+    return programNode.querySelector(`a.${CssClasses.imdbDataNode}`);
   }
 }

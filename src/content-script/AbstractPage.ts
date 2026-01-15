@@ -1,11 +1,6 @@
 import AbstractProgramNode from "./AbstractProgramNode";
 import type { ProgramContainer, Program, IMDBData } from "../common/types";
-import {
-  STYLE_NODE_CLASS,
-  IMDB_DATA_NODE_CLASS,
-  getIMDBLink,
-  LOW_RATED_PROGRAM_NODE_CLASS,
-} from "../common";
+import { CssClasses, getIMDBLink } from "../common";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
@@ -75,9 +70,9 @@ valid containers:\n\t${programContainers
 
   injectStyles() {
     const styleNode = document.createElement("style");
-    styleNode.classList.add(STYLE_NODE_CLASS);
+    styleNode.classList.add(CssClasses.styleNode);
     styleNode.innerHTML = `
-      .${LOW_RATED_PROGRAM_NODE_CLASS} {
+      .${CssClasses.filteredOutProgramNode} {
         display: block;
         opacity: 1;
       }
@@ -103,7 +98,7 @@ valid containers:\n\t${programContainers
 
   createIMDBDataNode(data: IMDBData): HTMLElement {
     const node = document.createElement("a");
-    node.classList.add(IMDB_DATA_NODE_CLASS);
+    node.classList.add(CssClasses.imdbDataNode);
     node.dataset["imdbID"] = data.imdbID;
     node.dataset["imdbRating"] = data.imdbRating;
     if (data.imdbRating !== "N/F") {

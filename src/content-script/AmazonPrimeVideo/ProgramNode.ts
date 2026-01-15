@@ -1,9 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import {
-  extractProgramTitle,
-  findAncestor,
-  IMDB_DATA_NODE_CLASS,
-} from "../../common";
+import { extractProgramTitle, findAncestor, CssClasses } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -73,7 +69,7 @@ export default class ProgramNode extends AbstractProgramNode {
     }
 
     return maybeImdbNode &&
-      maybeImdbNode.classList.contains(IMDB_DATA_NODE_CLASS)
+      maybeImdbNode.classList.contains(CssClasses.imdbDataNode)
       ? maybeImdbNode
       : null;
   }

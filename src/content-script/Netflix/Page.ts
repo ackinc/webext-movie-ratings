@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { IMDB_DATA_NODE_CLASS, STYLE_NODE_CLASS } from "../../common";
+import { CssClasses } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 
 export default class NetflixPage extends AbstractPage {
@@ -17,9 +17,9 @@ export default class NetflixPage extends AbstractPage {
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
 
-    const styleNode = document.querySelector(`style.${STYLE_NODE_CLASS}`)!;
+    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
     styleNode.innerHTML += `
-      a.${IMDB_DATA_NODE_CLASS} {
+      a.${CssClasses.imdbDataNode} {
         color: #999999;
         display: block;
         font-family: ${pageFontFamily};
@@ -28,7 +28,7 @@ export default class NetflixPage extends AbstractPage {
         margin: 4px 0 0 4px;
       }
 
-      .titleCard--metadataWrapper a.${IMDB_DATA_NODE_CLASS} {
+      .titleCard--metadataWrapper a.${CssClasses.imdbDataNode} {
         margin: 0 0 0.5em 1em;
       }
     `;

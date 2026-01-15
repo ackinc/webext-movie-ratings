@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { IMDB_DATA_NODE_CLASS, STYLE_NODE_CLASS } from "../../common";
+import { CssClasses } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -17,9 +17,9 @@ export default class CrunchyrollPage extends AbstractPage {
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
 
-    const styleNode = document.querySelector(`style.${STYLE_NODE_CLASS}`)!;
+    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
     styleNode.innerHTML += `
-      a.${IMDB_DATA_NODE_CLASS} {
+      a.${CssClasses.imdbDataNode} {
         color: #999999 !important;
         display: block;
         font-family: ${pageFontFamily};
@@ -31,7 +31,7 @@ export default class CrunchyrollPage extends AbstractPage {
         margin-bottom: 1.25em;
       }
 
-      section[data-testid="super-carousel"] li a.${IMDB_DATA_NODE_CLASS} {
+      section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
         position: absolute;
         bottom: -2em;
       }

@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { IMDB_DATA_NODE_CLASS, STYLE_NODE_CLASS } from "../../common";
+import { CssClasses } from "../../common";
 import ProgramNode from "./ProgramNode";
 import type { Program, ProgramContainer } from "../../common/types";
 
@@ -13,9 +13,9 @@ class SonyLivPage extends AbstractPage {
   override injectStyles() {
     super.injectStyles();
 
-    const styleNode = document.querySelector(`style.${STYLE_NODE_CLASS}`)!;
+    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
     styleNode.innerHTML += `
-      a.${IMDB_DATA_NODE_CLASS} {
+      a.${CssClasses.imdbDataNode} {
         margin: 2px 0 0 8px;
         color: #999999;
         display: block;
@@ -26,12 +26,12 @@ class SonyLivPage extends AbstractPage {
         text-decoration: none;
       }
 
-      div.trending-tray-layout a.${IMDB_DATA_NODE_CLASS} {
+      div.trending-tray-layout a.${CssClasses.imdbDataNode} {
         text-align: right;
       }
 
       @media screen and (max-width: 420px) {
-        a.${IMDB_DATA_NODE_CLASS} {
+        a.${CssClasses.imdbDataNode} {
           position: absolute;
           top: 2px;
           right: 10px;

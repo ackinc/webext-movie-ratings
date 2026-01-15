@@ -1,5 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { IMDB_DATA_NODE_CLASS } from "../../common";
+import { CssClasses } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -76,19 +76,19 @@ export default class ProgramNode extends AbstractProgramNode {
     let maybeImdbNode: HTMLElement | null = null;
 
     if (programNode.matches('div[data-t="carousel-card-wrapper"]')) {
-      maybeImdbNode = programNode.querySelector(`.${IMDB_DATA_NODE_CLASS}`);
+      maybeImdbNode = programNode.querySelector(`.${CssClasses.imdbDataNode}`);
     }
 
     if (programNode.matches("div.browse-card")) {
-      maybeImdbNode = programNode.querySelector(`.${IMDB_DATA_NODE_CLASS}`);
+      maybeImdbNode = programNode.querySelector(`.${CssClasses.imdbDataNode}`);
     }
 
     if (programNode.matches('div[data-t="series-card"]')) {
-      maybeImdbNode = programNode.querySelector(`.${IMDB_DATA_NODE_CLASS}`);
+      maybeImdbNode = programNode.querySelector(`.${CssClasses.imdbDataNode}`);
     }
 
     return maybeImdbNode &&
-      maybeImdbNode.classList.contains(IMDB_DATA_NODE_CLASS)
+      maybeImdbNode.classList.contains(CssClasses.imdbDataNode)
       ? maybeImdbNode
       : null;
   }

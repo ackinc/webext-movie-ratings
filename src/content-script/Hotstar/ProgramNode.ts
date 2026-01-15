@@ -1,5 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { IMDB_DATA_NODE_CLASS } from "../../common";
+import { CssClasses } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -49,13 +49,13 @@ export default class ProgramNode extends AbstractProgramNode {
   static override getIMDBNode(node: HTMLElement): HTMLElement | null {
     const metadataNode = this.getMetadataNode(node);
     if (metadataNode) {
-      return metadataNode.querySelector(`a.${IMDB_DATA_NODE_CLASS}`);
+      return metadataNode.querySelector(`a.${CssClasses.imdbDataNode}`);
     }
 
     const maybeImdbDataNode = node.nextElementSibling as HTMLElement;
     if (
       maybeImdbDataNode &&
-      maybeImdbDataNode.classList.contains(IMDB_DATA_NODE_CLASS)
+      maybeImdbDataNode.classList.contains(CssClasses.imdbDataNode)
     ) {
       return maybeImdbDataNode;
     }

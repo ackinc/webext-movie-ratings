@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { IMDB_DATA_NODE_CLASS, STYLE_NODE_CLASS } from "../../common";
+import { CssClasses } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 
 export default class HotstarPage extends AbstractPage {
@@ -13,7 +13,7 @@ export default class HotstarPage extends AbstractPage {
   override injectStyles() {
     super.injectStyles();
 
-    const styleNode = document.querySelector(`style.${STYLE_NODE_CLASS}`)!;
+    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
     const pageFontFamily = window
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
@@ -22,7 +22,7 @@ export default class HotstarPage extends AbstractPage {
         padding-bottom: 21px;
       }
 
-      a.${IMDB_DATA_NODE_CLASS} {
+      a.${CssClasses.imdbDataNode} {
         /* absolute positioning is needed to make this node 'extrude' outside the ancestor
              node that has the 'expand-onMouseEnter' event listener */
         position: absolute;
@@ -33,7 +33,7 @@ export default class HotstarPage extends AbstractPage {
         font-weight: bold;
       }
 
-      div[data-scale-down="true"] a.${IMDB_DATA_NODE_CLASS} {
+      div[data-scale-down="true"] a.${CssClasses.imdbDataNode} {
         position: inherit;
         margin: 0 0 0 2px;
         color: var(--ON-SURFACE-ALT);
