@@ -4,13 +4,19 @@ import {
   omit,
   invert,
   delayMs,
+  getSetting,
+  SettingsKey,
   LOW_RATED_PROGRAM_NODE_CLASS,
   STYLE_NODE_CLASS,
-  getLowRatedProgramFilterSettingsState,
 } from "../common";
 import { captureException } from "../common/errorReporter";
 import type AbstractPage from "./AbstractPage";
-import type { IMDBData, Program, SWErrorResponse } from "../common/types";
+import type {
+  IMDBData,
+  Program,
+  SWErrorResponse,
+  LowRatedProgramFilterSettings,
+} from "../common/types";
 import HotstarPage from "./Hotstar/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
@@ -142,7 +148,9 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
 }
 
 async function hideLowRatedPrograms(allPrograms: Program[]) {
-  const settings = (await getLowRatedProgramFilterSettingsState()) ?? {
+  const settings = ((await getSetting(SettingsKey.programFiltersSettings)) as
+    | LowRatedProgramFilterSettings
+    | undefined) ?? {
     minRating: 10,
     transparency: 0,
   };

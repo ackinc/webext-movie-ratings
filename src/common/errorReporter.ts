@@ -10,7 +10,7 @@ import {
   makeFetchTransport,
   Scope,
 } from "@sentry/react";
-import { getErrorReportingOptInState } from ".";
+import { getSetting, SettingsKey } from ".";
 
 // filter integrations that use the global variable
 const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
@@ -26,7 +26,7 @@ const client = new BrowserClient({
   integrations: integrations,
 
   beforeSend: async (evt) =>
-    (await getErrorReportingOptInState()) ? evt : null,
+    (await getSetting(SettingsKey.errorReportingOptIn)) ? evt : null,
   environment: BUILDTIME_ENV.DEBUG_MODE ? "development" : "production",
 });
 

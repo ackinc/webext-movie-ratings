@@ -1,15 +1,14 @@
 import { useEffect, useState } from "preact/hooks";
-import {
-  getErrorReportingOptInState,
-  setErrorReportingOptInState,
-} from "../common";
+import { getSetting, setSetting, SettingsKey } from "../common";
 
 function ErrorReportingOptIn() {
   const [optedInToErrorReporting, setOptedInToErrorReporting] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const optedIn = await getErrorReportingOptInState();
+      const optedIn = Boolean(
+        await getSetting(SettingsKey.errorReportingOptIn)
+      );
       setOptedInToErrorReporting(optedIn);
     })();
   }, []);
@@ -70,7 +69,7 @@ function ErrorReportingOptIn() {
 
   async function toggleErrorReportingOptIn() {
     const negated = !optedInToErrorReporting;
-    await setErrorReportingOptInState(negated);
+    await setSetting(SettingsKey.errorReportingOptIn, negated);
     setOptedInToErrorReporting(negated);
   }
 }

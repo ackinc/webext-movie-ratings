@@ -32,3 +32,8 @@ export enum MessageType {
 export const errorReportingOptInStateKey = "optedInToErrorReporting";
 export const lowRatedProgramFilterSettingsStateKey =
   "lowRatedProgramFilterSettings";
+
+export const enum SettingsKey {
+  errorReportingOptIn = "errorReportingOptIn",
+  programFiltersSettings = "programFiltersSettings",
+}

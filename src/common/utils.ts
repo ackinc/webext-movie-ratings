@@ -1,10 +1,4 @@
-import {
-  browser,
-  errorReportingOptInStateKey,
-  languages,
-  lowRatedProgramFilterSettingsStateKey,
-} from "./constants";
-import type { LowRatedProgramFilterSettings } from "./types";
+import { browser, languages, SettingsKey } from "./constants";
 
 export function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -61,35 +55,18 @@ export function getIMDBLink(imdbID: string): string {
   return `https://www.imdb.com/title/${imdbID}`;
 }
 
-export async function getErrorReportingOptInState(): Promise<boolean> {
-  return !!(await browser.storage.local.get([errorReportingOptInStateKey]))[
-    errorReportingOptInStateKey
-  ];
+export async function getSetting(
+  key: keyof typeof SettingsKey
+): Promise<unknown> {
+  const result = await browser.storage.local.get([key]);
+  return result[key];
 }
 
-export async function setErrorReportingOptInState(val: boolean): Promise<void> {
-  return await browser.storage.local.set({
-    [errorReportingOptInStateKey]: val,
-  });
-}
-
-export async function getLowRatedProgramFilterSettingsState(): Promise<LowRatedProgramFilterSettings | null> {
-  const result = await browser.storage.local.get([
-    lowRatedProgramFilterSettingsStateKey,
-  ]);
-  return (
-    (result[
-      lowRatedProgramFilterSettingsStateKey
-    ] as LowRatedProgramFilterSettings) ?? null
-  );
-}
-
-export async function setLowRatedProgramFilterSettingsState(
-  data: LowRatedProgramFilterSettings
+export async function setSetting(
+  key: keyof typeof SettingsKey,
+  value: unknown
 ): Promise<void> {
-  await browser.storage.local.set({
-    [lowRatedProgramFilterSettingsStateKey]: data,
-  });
+  await browser.storage.local.set({ [key]: value });
 }
 
 export function extractProgramTitle(str: string): string {
