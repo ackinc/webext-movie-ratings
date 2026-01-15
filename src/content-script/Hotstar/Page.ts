@@ -10,36 +10,36 @@ export default class HotstarPage extends AbstractPage {
     super();
   }
 
-  override injectStyles() {
-    super.injectStyles();
+  override async injectStyles() {
+    await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
     const pageFontFamily = window
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
     styleNode.innerHTML += `
-      div.swiper-slide > div:first-child {
-        padding-bottom: 21px;
-      }
+div.swiper-slide > div:first-child {
+  padding-bottom: 21px;
+}
 
-      a.${CssClasses.imdbDataNode} {
-        /* absolute positioning is needed to make this node 'extrude' outside the ancestor
-             node that has the 'expand-onMouseEnter' event listener */
-        position: absolute;
-        color: #999999;
-        display: block;
-        font-family: ${pageFontFamily};
-        font-size: 14px;
-        font-weight: bold;
-      }
+a.${CssClasses.imdbDataNode} {
+  /* absolute positioning is needed to make this node 'extrude' outside the ancestor
+        node that has the 'expand-onMouseEnter' event listener */
+  position: absolute;
+  color: #999999;
+  display: block;
+  font-family: ${pageFontFamily};
+  font-size: 14px;
+  font-weight: bold;
+}
 
-      div[data-scale-down="true"] a.${CssClasses.imdbDataNode} {
-        position: inherit;
-        margin: 0 0 0 2px;
-        color: var(--ON-SURFACE-ALT);
-        font-size: 16px;
-        font-weight: 500;
-      }
+div[data-scale-down="true"] a.${CssClasses.imdbDataNode} {
+  position: inherit;
+  margin: 0 0 0 2px;
+  color: var(--ON-SURFACE-ALT);
+  font-size: 16px;
+  font-weight: 500;
+}
     `;
   }
 

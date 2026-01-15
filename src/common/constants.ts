@@ -37,3 +37,8 @@ export const enum SettingsKey {
   errorReportingOptIn = "errorReportingOptIn",
   programFiltersSettings = "programFiltersSettings",
 }
+
+export const defaultProgramFilterSettings = {
+  minRating: 10,
+  transparency: 0,
+};

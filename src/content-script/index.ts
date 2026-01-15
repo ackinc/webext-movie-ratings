@@ -1,5 +1,6 @@
 import {
   browser,
+  defaultProgramFilterSettings,
   pick,
   omit,
   invert,
@@ -23,6 +24,7 @@ import NetflixPage from "./Netflix/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
+import { updateFilteredOutProgramNodeStyles } from "./utils";
 
 let page: AbstractPage;
 
@@ -168,12 +170,10 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
 }
 
 async function fadeFilteredOutPrograms(allPrograms: Program[]) {
-  const settings = ((await getSetting(SettingsKey.programFiltersSettings)) as
-    | ProgramFilterSettings
-    | undefined) ?? {
-    minRating: 10,
-    transparency: 0,
-  };
+  const settings =
+    ((await getSetting(SettingsKey.programFiltersSettings)) as
+      | ProgramFilterSettings
+      | undefined) ?? defaultProgramFilterSettings;
 
   allPrograms.forEach((p) => {
     const imdbNode = (
@@ -198,14 +198,7 @@ function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
   // clear any scheduled loop
   clearTimeout(loopTimeout);
 
-  // update relevant stylesheet rule
-  const styleNode = document.querySelector(
-    `style.${CssClasses.styleNode}`
-  ) as HTMLElement;
-  styleNode.innerHTML = styleNode.innerHTML.replace(
-    /opacity:.+/,
-    `opacity: ${1 - updatedSettings.transparency / 100};`
-  );
+  updateFilteredOutProgramNodeStyles(updatedSettings);
 
   // restart loop
   loopTimeout = setTimeout(loop, 0);

@@ -10,8 +10,8 @@ export default class CrunchyrollPage extends AbstractPage {
     super();
   }
 
-  override injectStyles() {
-    super.injectStyles();
+  override async injectStyles() {
+    await super.injectStyles();
 
     const pageFontFamily = window
       .getComputedStyle(document.body)
@@ -19,22 +19,22 @@ export default class CrunchyrollPage extends AbstractPage {
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
     styleNode.innerHTML += `
-      a.${CssClasses.imdbDataNode} {
-        color: #999999 !important;
-        display: block;
-        font-family: ${pageFontFamily};
-        font-size: 0.75rem;
-      }
+a.${CssClasses.imdbDataNode} {
+  color: #999999 !important;
+  display: block;
+  font-family: ${pageFontFamily};
+  font-size: 0.75rem;
+}
 
-      section[data-testid="super-carousel"] li {
-        position: relative;
-        margin-bottom: 1.25em;
-      }
+section[data-testid="super-carousel"] li {
+  position: relative;
+  margin-bottom: 1.25em;
+}
 
-      section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
-        position: absolute;
-        bottom: -2em;
-      }
+section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
+  position: absolute;
+  bottom: -2em;
+}
     `;
   }
 

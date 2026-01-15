@@ -10,8 +10,8 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
     super();
   }
 
-  override injectStyles() {
-    super.injectStyles();
+  override async injectStyles() {
+    await super.injectStyles();
 
     const pageFontFamily = window
       .getComputedStyle(document.body)
@@ -19,23 +19,23 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
     styleNode.innerHTML += `
-      a.${CssClasses.imdbDataNode} {
-        color: #999999 !important;
-        display: block;
-        font-family: ${pageFontFamily};
-        font-size: 15px;
-        margin: 4px 0 0 4px;
-      }
+a.${CssClasses.imdbDataNode} {
+  color: #999999 !important;
+  display: block;
+  font-family: ${pageFontFamily};
+  font-size: 15px;
+  margin: 4px 0 0 4px;
+}
 
-      section[data-testid="super-carousel"] li {
-        position: relative;
-        margin-bottom: 1.25em;
-      }
+section[data-testid="super-carousel"] li {
+  position: relative;
+  margin-bottom: 1.25em;
+}
 
-      section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
-        position: absolute;
-        bottom: -2em;
-      }
+section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
+  position: absolute;
+  bottom: -2em;
+}
     `;
   }
 

@@ -10,43 +10,43 @@ class SonyLivPage extends AbstractPage {
     super();
   }
 
-  override injectStyles() {
-    super.injectStyles();
+  override async injectStyles() {
+    await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
     styleNode.innerHTML += `
-      a.${CssClasses.imdbDataNode} {
-        margin: 2px 0 0 8px;
-        color: #999999;
-        display: block;
-        font-family: sans-serif;
-        font-size: 14px;
-        font-weight: bold;
-        text-align: left;
-        text-decoration: none;
-      }
+a.${CssClasses.imdbDataNode} {
+  margin: 2px 0 0 8px;
+  color: #999999;
+  display: block;
+  font-family: sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+  text-decoration: none;
+}
 
-      div.trending-tray-layout a.${CssClasses.imdbDataNode} {
-        text-align: right;
-      }
+div.trending-tray-layout a.${CssClasses.imdbDataNode} {
+  text-align: right;
+}
 
-      @media screen and (max-width: 420px) {
-        a.${CssClasses.imdbDataNode} {
-          position: absolute;
-          top: 2px;
-          right: 10px;
-          margin: 0;
-          width: 48px;
-          height: 20px;
-          border-radius: 4px;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          color: white;
-          font-size: 9px;
-        }
-      }
+@media screen and (max-width: 420px) {
+  a.${CssClasses.imdbDataNode} {
+    position: absolute;
+    top: 2px;
+    right: 10px;
+    margin: 0;
+    width: 48px;
+    height: 20px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 9px;
+  }
+}
     `;
   }
 

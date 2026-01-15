@@ -10,8 +10,8 @@ export default class NetflixPage extends AbstractPage {
     super();
   }
 
-  override injectStyles() {
-    super.injectStyles();
+  override async injectStyles() {
+    await super.injectStyles();
 
     const pageFontFamily = window
       .getComputedStyle(document.body)
@@ -19,18 +19,18 @@ export default class NetflixPage extends AbstractPage {
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
     styleNode.innerHTML += `
-      a.${CssClasses.imdbDataNode} {
-        color: #999999;
-        display: block;
-        font-family: ${pageFontFamily};
-        font-size: 16px;
-        font-weight: bold;
-        margin: 4px 0 0 4px;
-      }
+a.${CssClasses.imdbDataNode} {
+  color: #999999;
+  display: block;
+  font-family: ${pageFontFamily};
+  font-size: 16px;
+  font-weight: bold;
+  margin: 4px 0 0 4px;
+}
 
-      .titleCard--metadataWrapper a.${CssClasses.imdbDataNode} {
-        margin: 0 0 0.5em 1em;
-      }
+.titleCard--metadataWrapper a.${CssClasses.imdbDataNode} {
+  margin: 0 0 0.5em 1em;
+}
     `;
   }
 

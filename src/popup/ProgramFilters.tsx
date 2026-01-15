@@ -1,9 +1,15 @@
 import { useEffect, useState } from "preact/hooks";
-import { browser, getSetting, setSetting, SettingsKey } from "../common";
+import {
+  browser,
+  getSetting,
+  setSetting,
+  SettingsKey,
+  defaultProgramFilterSettings,
+} from "../common";
 import type { ProgramFilterSettings } from "../common";
 
 function ProgramFilters() {
-  const [settings, setSettings] = useState({ minRating: 10, transparency: 0 });
+  const [settings, setSettings] = useState(defaultProgramFilterSettings);
 
   useEffect(() => {
     (async () => {

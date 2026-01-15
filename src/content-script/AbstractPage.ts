@@ -1,6 +1,14 @@
 import AbstractProgramNode from "./AbstractProgramNode";
 import type { ProgramContainer, Program, IMDBData } from "../common/types";
-import { CssClasses, getIMDBLink } from "../common";
+import {
+  CssClasses,
+  defaultProgramFilterSettings,
+  getIMDBLink,
+  getSetting,
+  type ProgramFilterSettings,
+  SettingsKey,
+} from "../common";
+import { makeFilteredOutProgramNodeStylesClause } from "./utils";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
@@ -13,7 +21,7 @@ export default class AbstractPage {
   }
 
   async initialize() {
-    this.injectStyles();
+    await this.injectStyles();
   }
 
   findPrograms(): Program[] {
@@ -68,15 +76,16 @@ valid containers:\n\t${programContainers
     );
   }
 
-  injectStyles() {
+  async injectStyles() {
+    const filterSettings =
+      ((await getSetting(SettingsKey.programFiltersSettings)) as
+        | ProgramFilterSettings
+        | undefined) ?? defaultProgramFilterSettings;
+
     const styleNode = document.createElement("style");
     styleNode.classList.add(CssClasses.styleNode);
-    styleNode.innerHTML = `
-      .${CssClasses.filteredOutProgramNode} {
-        display: block;
-        opacity: 1;
-      }
-    `;
+    styleNode.innerHTML =
+      makeFilteredOutProgramNodeStylesClause(filterSettings);
     document.head.appendChild(styleNode);
   }
 
