@@ -40,7 +40,7 @@ function ProgramFilters() {
           min="0"
           max="10"
           value={settings.minRating}
-          step="0.5"
+          step="0.1"
           onInput={(e) =>
             updateSettings({
               minRating: parseFloat((e.target as HTMLInputElement).value),
