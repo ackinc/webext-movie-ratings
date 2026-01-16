@@ -101,7 +101,7 @@ section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
     let programNodes: HTMLElement[] = [];
     if (testid === "browse") {
       programNodes = Array.from(
-        node.querySelectorAll("article[data-card-title")
+        node.querySelectorAll("article[data-card-title]")
       );
     } else if (
       ["standard-carousel", "charts-carousel", "charts-container"].includes(
