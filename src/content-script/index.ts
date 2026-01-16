@@ -71,13 +71,8 @@ async function initializePage() {
 function addMessageListeners() {
   window.addEventListener("message", (e) => {
     const { message } = e.data;
-    if (
-      message === MessageType.urlChange &&
-      page &&
-      loopTimeout === undefined
-    ) {
-      console.log(`Sift: resuming paused loop on page change`);
-      loopTimeout = setTimeout(loop, 0);
+    if (message === MessageType.urlChange) {
+      handleUrlChange();
     }
   });
   browser.runtime.onMessage.addListener(({ message, data }) => {
@@ -189,6 +184,13 @@ async function fadeFilteredOutPrograms(allPrograms: Program[]) {
       p.node.classList.remove(CssClasses.filteredOutProgramNode);
     }
   });
+}
+
+function handleUrlChange() {
+  if (page && loopTimeout === undefined) {
+    console.log(`Sift: resuming paused loop on page change`);
+    loopTimeout = setTimeout(loop, 0);
+  }
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
