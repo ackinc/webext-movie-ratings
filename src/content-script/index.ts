@@ -71,13 +71,8 @@ async function initializePage() {
 function addMessageListeners() {
   window.addEventListener("message", (e) => {
     const { message } = e.data;
-    if (
-      message === MessageType.urlChange &&
-      page &&
-      loopTimeout === undefined
-    ) {
-      console.log(`Sift: resuming paused loop on page change`);
-      loopTimeout = setTimeout(loop, 0);
+    if (message === MessageType.urlChange) {
+      handleUrlChange();
     }
   });
   browser.runtime.onMessage.addListener(({ message, data }) => {
@@ -179,16 +174,22 @@ async function fadeFilteredOutPrograms(allPrograms: Program[]) {
     const imdbNode = (
       page.constructor as typeof AbstractPage
     ).ProgramNode.getIMDBNode(p.node);
+    if (!imdbNode) return;
 
-    if (
-      imdbNode &&
-      parseFloat(imdbNode.dataset!["imdbRating"]!) < settings.minRating
-    ) {
+    const rating = parseFloat(imdbNode.dataset!["imdbRating"]!);
+    if (rating < settings.minRating || rating > settings.maxRating) {
       p.node.classList.add(CssClasses.filteredOutProgramNode);
     } else {
       p.node.classList.remove(CssClasses.filteredOutProgramNode);
     }
   });
+}
+
+function handleUrlChange() {
+  if (page && loopTimeout === undefined) {
+    console.log(`Sift: resuming paused loop on page change`);
+    loopTimeout = setTimeout(loop, 0);
+  }
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {

@@ -32,5 +32,11 @@ export type OmdbApiResponse =
 
 export type ProgramFilterSettings = {
   minRating: number;
+  maxRating: number;
   transparency: number;
+};
+
+export type NumberRange = {
+  min: number;
+  max: number;
 };

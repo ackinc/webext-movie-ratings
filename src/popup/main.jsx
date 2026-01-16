@@ -2,6 +2,7 @@
 import { render, h, Fragment } from "preact";
 import ErrorReportingOptIn from "./ErrorReportingOptIn";
 import ProgramFilters from "./ProgramFilters";
+import "./main.css";
 
 const root = document.querySelector("div#root");
 render(<App />, root);

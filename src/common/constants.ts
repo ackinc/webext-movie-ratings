@@ -39,6 +39,7 @@ export const enum SettingsKey {
 }
 
 export const defaultProgramFilterSettings = {
-  minRating: 10,
+  minRating: 0,
+  maxRating: 10,
   transparency: 0,
 };
