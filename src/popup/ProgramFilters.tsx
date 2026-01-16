@@ -7,18 +7,27 @@ import {
   defaultProgramFilterSettings,
 } from "../common";
 import type { ProgramFilterSettings } from "../common";
+import DoubleEndedSlider from "./DoubleEndedSlider";
 
 function ProgramFilters() {
   const [settings, setSettings] = useState(defaultProgramFilterSettings);
+  const [savedSettingsLoaded, setSavedSettingsLoaded] = useState(false);
 
   useEffect(() => {
     (async () => {
       const savedSettings = (await getSetting(
         SettingsKey.programFiltersSettings
       )) as ProgramFilterSettings | undefined;
-      if (savedSettings) setSettings(savedSettings);
+      if (savedSettings) {
+        // merging instead of replacing in case a new property has been
+        //   introduced that hasn't yet been persisted to storage
+        setSettings((s) => ({ ...s, ...savedSettings }));
+      }
+      setSavedSettingsLoaded(true);
     })();
   }, []);
+
+  if (!savedSettingsLoaded) return null;
 
   return (
     <div
@@ -34,30 +43,29 @@ function ProgramFilters() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
         <label for="min-imdb-rating">
-          Fade programs rated below:{" "}
+          I want programs rated between{" "}
           <span style={{ fontWeight: "bold" }}>
             {settings.minRating.toFixed(1)}
+          </span>{" "}
+          and{" "}
+          <span style={{ fontWeight: "bold" }}>
+            {settings.maxRating.toFixed(1)}
           </span>
         </label>
-        <input
-          type="range"
-          id="min-imdb-rating"
-          name="min-imdb-rating"
-          min="0"
-          max="10"
-          value={settings.minRating}
-          step="0.1"
-          onInput={(e) =>
-            updateSettings({
-              minRating: parseFloat((e.target as HTMLInputElement).value),
-            })
+        <DoubleEndedSlider
+          className="imdb-rating-filter-slider"
+          range={{ min: 0, max: 10 }}
+          step={0.1}
+          defaultValues={{ min: settings.minRating, max: settings.maxRating }}
+          onInput={({ min, max }) =>
+            updateSettings({ minRating: min, maxRating: max })
           }
         />
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
         <label for="filtered-out-program-node-transparency">
-          Make them this transparent:
+          Make other programs this transparent:
         </label>
         <input
           type="range"

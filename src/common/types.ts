@@ -35,3 +35,8 @@ export type ProgramFilterSettings = {
   maxRating: number;
   transparency: number;
 };
+
+export type NumberRange = {
+  min: number;
+  max: number;
+};

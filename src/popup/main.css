@@ -1,0 +1,15 @@
+* {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Ubuntu, Arial, sans-serif;
+}
+
+.noUi-connect {
+  background-color: #f5c618;
+}
+
+.noUi-handle {
+  width: 20px !important;
+}
