@@ -22,6 +22,9 @@ export default function DoubleEndedSlider(props: DoubleEndedSliderProps) {
       behaviour: "tap-drag",
     });
 
+    // WARNING: nouislider triggers the 'update' event as many times during
+    //   initial setup of this component as there are handles on the slider,
+    //   even though these are not 'true updates'
     (slider as TargetElement).noUiSlider!.on("update", (values) => {
       props.onInput({ min: Number(values[0]), max: Number(values[1]) });
     });

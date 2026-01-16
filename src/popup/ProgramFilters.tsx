@@ -86,6 +86,14 @@ function ProgramFilters() {
   );
 
   async function updateSettings(data: Partial<ProgramFilterSettings>) {
+    if (
+      Object.entries(data).every(
+        ([k, v]) => v === settings[k as keyof ProgramFilterSettings]
+      )
+    ) {
+      return;
+    }
+
     const updatedSettings = { ...settings, ...data };
     await setSetting(SettingsKey.programFiltersSettings, updatedSettings);
     setSettings(updatedSettings);
