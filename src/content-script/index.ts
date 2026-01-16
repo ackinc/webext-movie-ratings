@@ -174,11 +174,10 @@ async function fadeFilteredOutPrograms(allPrograms: Program[]) {
     const imdbNode = (
       page.constructor as typeof AbstractPage
     ).ProgramNode.getIMDBNode(p.node);
+    if (!imdbNode) return;
 
-    if (
-      imdbNode &&
-      parseFloat(imdbNode.dataset!["imdbRating"]!) < settings.minRating
-    ) {
+    const rating = parseFloat(imdbNode.dataset!["imdbRating"]!);
+    if (rating < settings.minRating || rating > settings.maxRating) {
       p.node.classList.add(CssClasses.filteredOutProgramNode);
     } else {
       p.node.classList.remove(CssClasses.filteredOutProgramNode);
