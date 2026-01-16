@@ -1,5 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { extractProgramTitle, findAncestor, CssClasses } from "../../common";
+import { extractProgramTitle } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -8,7 +8,7 @@ export default class ProgramNode extends AbstractProgramNode {
   }
 
   static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
-    if (programNode.nodeName === "ARTICLE") {
+    if (programNode.matches("article[data-card-title]")) {
       const type =
         programNode.dataset["cardEntityType"] === "Movie"
           ? "movie"
@@ -19,58 +19,27 @@ export default class ProgramNode extends AbstractProgramNode {
         title: extractProgramTitle(programNode.dataset["cardTitle"] ?? ""),
         ...(type ? { type } : {}),
       };
-    } else if (programNode.nodeName === "A") {
-      return { title: programNode.getAttribute("aria-label") ?? "" };
+    }
+
+    if (programNode.matches('article[data-testid="super-carousel-card"]')) {
+      return {
+        title: extractProgramTitle(
+          programNode
+            .querySelector("a.shared-poster-link")
+            ?.getAttribute("aria-label") ?? ""
+        ),
+      };
+    }
+
+    // search results preview pane
+    if (programNode.matches("article > a")) {
+      return {
+        title: extractProgramTitle(
+          programNode.getAttribute("aria-label") ?? ""
+        ),
+      };
     }
 
     return { title: "" };
-  }
-
-  static override insertIMDBNode(
-    programNode: HTMLElement,
-    imdbNode: HTMLElement
-  ) {
-    if (programNode.nodeName === "A") {
-      const li = findAncestor(programNode, (node) => node.nodeName === "LI");
-      (li as HTMLElement).appendChild(imdbNode);
-    } else if (
-      programNode.nextElementSibling?.nodeName === "ARTICLE" ||
-      programNode.previousElementSibling?.nodeName === "ARTICLE"
-    ) {
-      programNode.appendChild(imdbNode);
-    } else if (
-      programNode.nodeName === "ARTICLE" &&
-      programNode.previousElementSibling?.nodeName === "STRONG"
-    ) {
-      programNode.appendChild(imdbNode);
-    } else {
-      (programNode.parentNode as HTMLElement).appendChild(imdbNode);
-    }
-  }
-
-  static override getIMDBNode(programNode: HTMLElement): HTMLElement | null {
-    let maybeImdbNode: HTMLElement | null;
-
-    if (programNode.nodeName === "A") {
-      const li = findAncestor(programNode, (node) => node.nodeName === "LI");
-      maybeImdbNode = (li?.lastChild as HTMLElement | undefined) ?? null;
-    } else if (
-      programNode.nextElementSibling?.nodeName === "ARTICLE" ||
-      programNode.previousElementSibling?.nodeName === "ARTICLE"
-    ) {
-      maybeImdbNode = programNode.lastChild as HTMLElement;
-    } else if (
-      programNode.nodeName === "ARTICLE" &&
-      programNode.previousElementSibling?.nodeName === "STRONG"
-    ) {
-      maybeImdbNode = programNode.lastChild as HTMLElement;
-    } else {
-      maybeImdbNode = programNode.nextElementSibling as HTMLElement;
-    }
-
-    return maybeImdbNode &&
-      maybeImdbNode.classList.contains(CssClasses.imdbDataNode)
-      ? maybeImdbNode
-      : null;
   }
 }
