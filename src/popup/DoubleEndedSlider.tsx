@@ -2,6 +2,7 @@ import { useEffect, useRef } from "preact/hooks";
 import {
   create as createSlider,
   type target as TargetElement,
+  type Options as SliderOptions,
 } from "nouislider";
 import "nouislider/dist/nouislider.css";
 
@@ -37,7 +38,7 @@ export default function DoubleEndedSlider(props: DoubleEndedSliderProps) {
 interface DoubleEndedSliderProps {
   className?: string;
   defaultValues: NumberRange;
-  range: NumberRange;
+  range: SliderOptions["range"];
   step: number;
   onInput: (values: NumberRange) => unknown;
 }
