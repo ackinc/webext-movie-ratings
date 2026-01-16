@@ -11,7 +11,7 @@ export default function DoubleEndedSlider(props: DoubleEndedSliderProps) {
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const slider = sliderRef.current as TargetElement;
+    const slider = sliderRef.current!;
 
     createSlider(slider, {
       start: [props.defaultValues.min, props.defaultValues.max],
@@ -21,7 +21,7 @@ export default function DoubleEndedSlider(props: DoubleEndedSliderProps) {
       behaviour: "tap-drag",
     });
 
-    slider.noUiSlider!.on("update", (values) => {
+    (slider as TargetElement).noUiSlider!.on("update", (values) => {
       props.onInput({ min: Number(values[0]), max: Number(values[1]) });
     });
   }, []);
