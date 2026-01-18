@@ -28,6 +28,7 @@ const client = new BrowserClient({
   beforeSend: async (evt) =>
     (await getSetting(SettingsKey.errorReportingOptIn)) ? evt : null,
   environment: BUILDTIME_ENV.DEBUG_MODE ? "development" : "production",
+  maxValueLength: 2048,
 });
 
 const scope = new Scope();
