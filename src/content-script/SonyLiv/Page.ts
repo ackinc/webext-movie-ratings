@@ -99,12 +99,12 @@ div.trending-tray-layout a.${CssClasses.imdbDataNode} {
         "Trending In Sports",
         /^Indian Idol/,
         "Top Moments In Reality",
-      ].some((x) => (x instanceof RegExp ? x.test(title) : x === title))
+      ].some((x) => (x instanceof RegExp ? x.test(title) : x === title)),
     );
   }
 
   override findProgramsInProgramContainer(
-    pContainer: ProgramContainer
+    pContainer: ProgramContainer,
   ): Program[] {
     const { node } = pContainer;
 
@@ -119,7 +119,7 @@ div.trending-tray-layout a.${CssClasses.imdbDataNode} {
 
     const ctor = this.constructor as typeof SonyLivPage;
     const programNodes = Array.from(
-      node.querySelectorAll<HTMLElement>(selector)
+      node.querySelectorAll<HTMLElement>(selector),
     ).filter(ctor.ProgramNode.isMovieOrSeries);
     const programs = programNodes
       .map((node) => ({

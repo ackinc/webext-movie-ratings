@@ -9,13 +9,13 @@ export default class ProgramNode extends AbstractProgramNode {
 
   static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
     const metadataWrapperNode = programNode.querySelector(
-      "div.titleCard--metadataWrapper"
+      "div.titleCard--metadataWrapper",
     );
     const durationNode = programNode.querySelector("span.duration");
 
     const type = durationNode
       ? ["Seasons", "Episodes", "Series"].some((x) =>
-          durationNode.textContent.includes(x)
+          durationNode.textContent.includes(x),
         )
         ? "series"
         : "movie"
@@ -36,7 +36,7 @@ export default class ProgramNode extends AbstractProgramNode {
 
   static override insertIMDBNode(
     programNode: HTMLElement,
-    imdbNode: HTMLElement
+    imdbNode: HTMLElement,
   ) {
     if (programNode.matches("a.slider-refocus")) {
       const ggp = programNode.parentNode!.parentNode!.parentNode!;
@@ -47,13 +47,13 @@ export default class ProgramNode extends AbstractProgramNode {
       }
     } else if (programNode.matches("div.titleCard--container")) {
       const metadataWrapper = programNode.querySelector(
-        "div.titleCard--metadataWrapper"
+        "div.titleCard--metadataWrapper",
       )!;
       metadataWrapper.insertBefore(imdbNode, metadataWrapper.lastChild);
     } else {
       console.error(
         "Error inserting IMDB node: program node not recognized",
-        programNode
+        programNode,
       );
     }
   }
@@ -77,7 +77,7 @@ export default class ProgramNode extends AbstractProgramNode {
     }
 
     return programNode.querySelector(
-      `div.titleCard--metadataWrapper > a.${CssClasses.imdbDataNode}`
+      `div.titleCard--metadataWrapper > a.${CssClasses.imdbDataNode}`,
     );
   }
 }

@@ -19,7 +19,7 @@ export default class ProgramNode extends AbstractProgramNode {
         node
           .querySelector("div.album-cover-container > img[title]")
           ?.getAttribute("title") ||
-        ""
+        "",
     );
 
     const href = node.getAttribute("href");

@@ -14,7 +14,7 @@ export default class ProgramNode extends AbstractProgramNode {
 
   static override insertIMDBNode(
     programNode: HTMLElement,
-    imdbNode: HTMLElement
+    imdbNode: HTMLElement,
   ) {
     programNode.appendChild(imdbNode);
   }

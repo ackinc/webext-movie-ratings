@@ -15,7 +15,7 @@ import { getSetting, SettingsKey } from ".";
 // filter integrations that use the global variable
 const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
   return !["BrowserApiErrors", "Breadcrumbs", "GlobalHandlers"].includes(
-    defaultIntegration.name
+    defaultIntegration.name,
   );
 });
 
@@ -37,7 +37,7 @@ client.init();
 
 export function captureException(
   e: Error,
-  opts: { addViewportDims: boolean } = { addViewportDims: false }
+  opts: { addViewportDims: boolean } = { addViewportDims: false },
 ) {
   if (opts.addViewportDims) {
     const clonedScope = scope.clone();

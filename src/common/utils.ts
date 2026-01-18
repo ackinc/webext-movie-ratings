@@ -7,7 +7,7 @@ export function delayMs(ms: number) {
 export async function waitFor(
   fn: (...args: any[]) => Promise<unknown>,
   maxTries = 10,
-  intervalBetweenTriesMs = 500
+  intervalBetweenTriesMs = 500,
 ) {
   let nTries = 0;
   let val;
@@ -19,14 +19,14 @@ export async function waitFor(
 }
 
 export function invert(
-  fn: (...args: any[]) => boolean
+  fn: (...args: any[]) => boolean,
 ): (...args: any[]) => boolean {
   return (...args) => !fn(...args);
 }
 
 export function pick(
   obj: Record<string, unknown>,
-  keys: string[]
+  keys: string[],
 ): Record<string, unknown> {
   const retval: Record<string, unknown> = {};
   for (const key of keys) retval[key] = obj[key];
@@ -35,7 +35,7 @@ export function pick(
 
 export function omit(
   obj: Record<string, unknown>,
-  keys: string[]
+  keys: string[],
 ): Record<string, unknown> {
   const retval = { ...obj };
   for (const key of keys) delete retval[key];
@@ -44,7 +44,7 @@ export function omit(
 
 export function findAncestor(
   node: HTMLElement,
-  predFn: (node2: HTMLElement) => boolean
+  predFn: (node2: HTMLElement) => boolean,
 ): HTMLElement | null {
   let result = node.parentElement;
   while (result && !predFn(result)) result = result.parentElement;
@@ -56,7 +56,7 @@ export function getIMDBLink(imdbID: string): string {
 }
 
 export async function getSetting(
-  key: keyof typeof SettingsKey
+  key: keyof typeof SettingsKey,
 ): Promise<unknown> {
   const result = await browser.storage.local.get([key]);
   return result[key];
@@ -64,7 +64,7 @@ export async function getSetting(
 
 export async function setSetting(
   key: keyof typeof SettingsKey,
-  value: unknown
+  value: unknown,
 ): Promise<void> {
   await browser.storage.local.set({ [key]: value });
 }

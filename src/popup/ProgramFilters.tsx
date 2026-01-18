@@ -16,7 +16,7 @@ function ProgramFilters() {
   useEffect(() => {
     (async () => {
       const savedSettings = (await getSetting(
-        SettingsKey.programFiltersSettings
+        SettingsKey.programFiltersSettings,
       )) as ProgramFilterSettings | undefined;
       if (savedSettings) {
         // merging instead of replacing in case a new property has been
@@ -88,7 +88,7 @@ function ProgramFilters() {
   async function updateSettings(data: Partial<ProgramFilterSettings>) {
     if (
       Object.entries(data).every(
-        ([k, v]) => v === settings[k as keyof ProgramFilterSettings]
+        ([k, v]) => v === settings[k as keyof ProgramFilterSettings],
       )
     ) {
       return;
@@ -109,7 +109,7 @@ function ProgramFilters() {
       browser.tabs.sendMessage(tab.id as number, {
         message: "filterSettingsChange",
         data: updatedSettings,
-      })
+      }),
     );
   }
 }

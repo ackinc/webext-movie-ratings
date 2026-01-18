@@ -26,7 +26,7 @@ export default class ProgramNode extends AbstractProgramNode {
         title: extractProgramTitle(
           programNode
             .querySelector("a.shared-poster-link")
-            ?.getAttribute("aria-label") ?? ""
+            ?.getAttribute("aria-label") ?? "",
         ),
       };
     }
@@ -35,7 +35,7 @@ export default class ProgramNode extends AbstractProgramNode {
     if (programNode.matches("article > a")) {
       return {
         title: extractProgramTitle(
-          programNode.getAttribute("aria-label") ?? ""
+          programNode.getAttribute("aria-label") ?? "",
         ),
       };
     }

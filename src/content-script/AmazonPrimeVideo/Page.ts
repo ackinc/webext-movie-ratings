@@ -69,13 +69,13 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
   }
 
   override getTitleFromProgramContainerNode(
-    pContainerNode: HTMLElement
+    pContainerNode: HTMLElement,
   ): string {
     const testid = pContainerNode.dataset["testid"] ?? "";
 
     if (
       ["standard-carousel", "super-carousel", "charts-container"].includes(
-        testid
+        testid,
       )
     ) {
       return (
@@ -111,7 +111,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
   }
 
   override findProgramsInProgramContainer(
-    pContainer: ProgramContainer
+    pContainer: ProgramContainer,
   ): Program[] {
     const { node } = pContainer;
     const testid = node.dataset["testid"] ?? "";
@@ -126,11 +126,11 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       ].includes(testid)
     ) {
       programNodes = Array.from(
-        node.querySelectorAll("article[data-card-title]")
+        node.querySelectorAll("article[data-card-title]"),
       );
     } else if (testid === "super-carousel") {
       programNodes = Array.from(
-        node.querySelectorAll('article[data-testid="super-carousel-card"]')
+        node.querySelectorAll('article[data-testid="super-carousel-card"]'),
       );
     } else if (testid === "navigation-bar-content-cards-below") {
       programNodes = Array.from(node.querySelectorAll("article > a"));
@@ -156,7 +156,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     //   meaning as user continues typing in search bar, they may be
     //   seeing ratings of the wrong programs
     const isInSearchResultsPreviewPane = program.node.matches(
-      'div[data-testid="navigation-bar-content-cards-below"] article > a'
+      'div[data-testid="navigation-bar-content-cards-below"] article > a',
     );
     return hasImdbNode && !isInSearchResultsPreviewPane;
   }
@@ -166,17 +166,17 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
 
     // see note about SEARCH_RESULTS_PREVIEW_PANE
     const isInSearchResultsPreviewPane = program.node.matches(
-      'div[data-testid="navigation-bar-content-cards-below"] article > a'
+      'div[data-testid="navigation-bar-content-cards-below"] article > a',
     );
     if (isInSearchResultsPreviewPane) {
       (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
-        program.node
+        program.node,
       );
     }
 
     (this.constructor as typeof AbstractPage).ProgramNode.insertIMDBNode(
       program.node,
-      ratingNode
+      ratingNode,
     );
   }
 }

@@ -74,20 +74,20 @@ div[data-scale-down="true"] a.${CssClasses.imdbDataNode} {
     return Boolean(
       title &&
       !["Popular Languages", "Popular Genres", "Popular Channels"].includes(
-        title
-      )
+        title,
+      ),
     );
   }
 
   override findProgramsInProgramContainer(
-    pContainer: ProgramContainer
+    pContainer: ProgramContainer,
   ): Program[] {
     const { node } = pContainer;
     const ctor = this.constructor as typeof HotstarPage;
 
     const programNodes = (
       Array.from(
-        node.querySelectorAll('div[data-testid="tray-card-default"]')
+        node.querySelectorAll('div[data-testid="tray-card-default"]'),
       ) as HTMLElement[]
     ).filter(ctor.ProgramNode.isMovieOrSeries);
     const programs = programNodes

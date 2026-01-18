@@ -6,7 +6,7 @@ export default class ProgramNode extends AbstractProgramNode {
   static override isMovieOrSeries(node: HTMLElement): boolean {
     const disambiguatingNode = node.querySelector('div[data-testid="action"]');
     return ["Movie", "Show"].includes(
-      disambiguatingNode?.getAttribute("aria-label")?.split(",").at(-1) ?? ""
+      disambiguatingNode?.getAttribute("aria-label")?.split(",").at(-1) ?? "",
     );
   }
 
@@ -34,12 +34,12 @@ export default class ProgramNode extends AbstractProgramNode {
     if (metadataNode) {
       metadataNode.insertBefore(
         imdbNode,
-        (metadataNode.lastChild as HTMLElement).previousElementSibling
+        (metadataNode.lastChild as HTMLElement).previousElementSibling,
       );
     } else if (node.nextElementSibling) {
       (node.parentNode as HTMLElement).insertBefore(
         imdbNode,
-        node.nextElementSibling
+        node.nextElementSibling,
       );
     } else {
       (node.parentNode as HTMLElement).appendChild(imdbNode);
@@ -65,7 +65,7 @@ export default class ProgramNode extends AbstractProgramNode {
 
   static getMetadataNode(node: HTMLElement): HTMLElement | null {
     return (node.firstChild as HTMLElement).querySelector(
-      ':scope > div[data-scale-down="true"]'
+      ':scope > div[data-scale-down="true"]',
     );
   }
 }

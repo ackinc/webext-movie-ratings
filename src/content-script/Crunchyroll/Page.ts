@@ -62,11 +62,11 @@ section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
   }
 
   override getTitleFromProgramContainerNode(
-    pContainerNode: HTMLElement
+    pContainerNode: HTMLElement,
   ): string {
     if (
       pContainerNode.matches(
-        'section.cr-browse-section[data-t="browse-section"]'
+        'section.cr-browse-section[data-t="browse-section"]',
       )
     ) {
       return pContainerNode.querySelector("h2.title")?.textContent ?? "";
@@ -75,7 +75,7 @@ section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
     if (pContainerNode.matches("div.dynamic-feed-wrapper > div[data-id]")) {
       return (
         pContainerNode.firstElementChild?.firstElementChild?.firstElementChild?.querySelector(
-          "div[id] h2"
+          "div[id] h2",
         )?.textContent ?? ""
       );
     }
@@ -89,7 +89,7 @@ section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
           ?.textContent ??
         // genre > category page (ex: "Action / Popular")
         pContainerNode.parentElement?.parentElement?.querySelector(
-          "div.breadcrumbs-with-filters div.subgenres-breadcrumbs"
+          "div.breadcrumbs-with-filters div.subgenres-breadcrumbs",
         )?.textContent ??
         ""
       );
@@ -121,7 +121,7 @@ section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
   }
 
   override findProgramsInProgramContainer(
-    pContainer: ProgramContainer
+    pContainer: ProgramContainer,
   ): Program[] {
     const { node } = pContainer;
 
@@ -129,7 +129,7 @@ section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
 
     if (node.matches('section.cr-browse-section[data-t="browse-section"]')) {
       programNodes = Array.from(
-        node.querySelectorAll('div[data-t="carousel-card-wrapper"]')
+        node.querySelectorAll('div[data-t="carousel-card-wrapper"]'),
       );
     } else if (node.matches("div.dynamic-feed-wrapper > div[data-id]")) {
       programNodes = Array.from(
@@ -138,22 +138,22 @@ section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
             'div[data-t="carousel-card-wrapper"]',
             'div[data-t^="episode-card"]',
             'div[data-t^="watch-list-card"]',
-          ].join(",")
-        )
+          ].join(","),
+        ),
       );
     } else if (node.matches("div.erc-browse-collection")) {
       programNodes = Array.from(node.querySelectorAll("div.browse-card"));
     } else if (node.matches("div.erc-alphabetical-virtual-list")) {
       programNodes = Array.from(
-        node.querySelectorAll('div[data-t="series-card"]')
+        node.querySelectorAll('div[data-t="series-card"]'),
       );
     } else if (node.matches("div.erc-genres-collection")) {
       programNodes = Array.from(
-        node.querySelectorAll('div[data-t="carousel-card-wrapper"]')
+        node.querySelectorAll('div[data-t="carousel-card-wrapper"]'),
       );
     } else if (node.matches("div.erc-similar-to")) {
       programNodes = Array.from(
-        node.querySelectorAll('div[data-t="carousel-card-wrapper"]')
+        node.querySelectorAll('div[data-t="carousel-card-wrapper"]'),
       );
     }
 

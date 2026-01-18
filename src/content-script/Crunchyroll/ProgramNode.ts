@@ -48,7 +48,7 @@ export default class ProgramNode extends AbstractProgramNode {
 
   static override insertIMDBNode(
     programNode: HTMLElement,
-    imdbNode: HTMLElement
+    imdbNode: HTMLElement,
   ) {
     if (programNode.matches('div[data-t="carousel-card-wrapper"]')) {
       const titleNode =
