@@ -3,6 +3,7 @@ import {
   browser,
   getSetting,
   setSetting,
+  MessageType,
   SettingsKey,
   defaultProgramFilterSettings,
 } from "../common";
@@ -107,7 +108,7 @@ function ProgramFilters() {
       })
     ).forEach((tab) =>
       browser.tabs.sendMessage(tab.id as number, {
-        message: "filterSettingsChange",
+        message: MessageType.filterSettingsChange,
         data: updatedSettings,
       }),
     );
