@@ -54,7 +54,7 @@ function ProgramFilters() {
         </label>
         <DoubleEndedSlider
           className="imdb-rating-filter-slider"
-          range={{ min: 0, "20%": 4, max: 10 }}
+          range={{ min: [0, 0.1], "20%": [4, 0.1], max: [10] }}
           step={0.1}
           defaultValues={{ min: settings.minRating, max: settings.maxRating }}
           onInput={({ min, max }) =>
