@@ -21,7 +21,7 @@ export default function Slider({
     createSlider(slider, {
       start,
       range,
-      step,
+      ...(step !== undefined ? { step } : {}),
       connect: true,
       behaviour: "tap-drag",
     });
@@ -50,6 +50,6 @@ interface SliderProps {
   className?: string;
   range: SliderOptions["range"];
   start: number[];
-  step: number;
+  step?: number;
   onInput: (values: number[]) => unknown;
 }
