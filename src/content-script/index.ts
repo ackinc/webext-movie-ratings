@@ -98,6 +98,12 @@ async function loop() {
     }
   } catch (e) {
     loopTimeout = undefined;
+
+    if ((e as Error).message.startsWith("Extension context invalidated")) {
+      // extension was reloaded (dev) / updated
+      return;
+    }
+
     captureException(e as Error, { addViewportDims: true });
     throw e;
   }
