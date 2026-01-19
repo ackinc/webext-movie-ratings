@@ -1,5 +1,4 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { CssClasses } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -57,6 +56,11 @@ export default class ProgramNode extends AbstractProgramNode {
       titleNode?.insertAdjacentElement("afterend", imdbNode);
     }
 
+    if (programNode.matches('div[data-t^="episode-card"]')) {
+      const titleNode = programNode.lastElementChild!.querySelector("small");
+      titleNode?.insertAdjacentElement("afterend", imdbNode);
+    }
+
     if (programNode.matches("div.browse-card")) {
       const titleNode = programNode.querySelector('h3[data-t="title"]');
       titleNode?.insertAdjacentElement("afterend", imdbNode);
@@ -70,26 +74,5 @@ export default class ProgramNode extends AbstractProgramNode {
         titleNode.style.gap = "1rem";
       }
     }
-  }
-
-  static override getIMDBNode(programNode: HTMLElement): HTMLElement | null {
-    let maybeImdbNode: HTMLElement | null = null;
-
-    if (programNode.matches('div[data-t="carousel-card-wrapper"]')) {
-      maybeImdbNode = programNode.querySelector(`.${CssClasses.imdbDataNode}`);
-    }
-
-    if (programNode.matches("div.browse-card")) {
-      maybeImdbNode = programNode.querySelector(`.${CssClasses.imdbDataNode}`);
-    }
-
-    if (programNode.matches('div[data-t="series-card"]')) {
-      maybeImdbNode = programNode.querySelector(`.${CssClasses.imdbDataNode}`);
-    }
-
-    return maybeImdbNode &&
-      maybeImdbNode.classList.contains(CssClasses.imdbDataNode)
-      ? maybeImdbNode
-      : null;
   }
 }

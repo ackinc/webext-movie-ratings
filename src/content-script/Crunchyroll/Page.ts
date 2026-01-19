@@ -23,7 +23,7 @@ a.${CssClasses.imdbDataNode} {
   color: #999999 !important;
   display: block;
   font-family: ${pageFontFamily};
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 section[data-testid="super-carousel"] li {
@@ -73,11 +73,7 @@ section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
     }
 
     if (pContainerNode.matches("div.dynamic-feed-wrapper > div[data-id]")) {
-      return (
-        pContainerNode.firstElementChild?.firstElementChild?.firstElementChild?.querySelector(
-          "div[id] h2",
-        )?.textContent ?? ""
-      );
+      return pContainerNode.querySelector("div[id] h2")?.textContent ?? "";
     }
 
     if (pContainerNode.matches("div.erc-browse-collection")) {
