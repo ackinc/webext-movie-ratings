@@ -45,6 +45,19 @@ div.listinpage_wrapper .innerlist a[id] .${CssClasses.imdbDataNode} {
   color: #eaeaea;
 }
 
+/* these show up when hovering over the "movies" link on the home and
+     other pages */
+div.megaMenu div.layout-container a.portrait-link .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #454545;
+  border-radius: 4px;
+  color: #eaeaea;
+}
+
 div.PopularSearchContainer > a[id] {
   position: relative;
 }
@@ -87,6 +100,7 @@ div.PopularSearchContainer > a[id] .${CssClasses.imdbDataNode} {
 
     const selectors = [
       // lists on home and top-level categories (tv shows, movies, ...) pages
+      // also shows on hovering over "movies" link on home and other pages
       "div.layout-main-container",
       // list on second-tier category pages
       "div.listinpage_wrapper",
