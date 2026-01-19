@@ -26,10 +26,6 @@ a.${CssClasses.imdbDataNode} {
   text-decoration: none;
 }
 
-div.listinpage_wrapper .innerlist a[id] {
-  display: inline;
-}
-
 div.listinpage_wrapper .innerlist a[id] div.listing-portrait-card-inner-div {
   position: relative;
 }
