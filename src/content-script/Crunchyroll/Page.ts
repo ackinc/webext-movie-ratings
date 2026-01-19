@@ -148,6 +148,7 @@ div[data-t^="watch-list-card"] h3 {
             'div[data-t^="watch-list-card"]',
             'div[data-t="release-episode-card-stack"]',
             'div[data-t="release-episode-card"]',
+            'div[data-t="single-show-card"]',
           ].join(","),
         ),
       );

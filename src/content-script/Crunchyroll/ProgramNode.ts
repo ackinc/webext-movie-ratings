@@ -35,6 +35,11 @@ export default class ProgramNode extends AbstractProgramNode {
       return { title };
     }
 
+    if (programNode.matches('div[data-t="single-show-card"]')) {
+      const title = programNode.querySelector("h2")?.textContent ?? "";
+      return { title };
+    }
+
     if (programNode.matches("div.browse-card")) {
       const title =
         programNode.querySelector('h3[data-t="title"]')?.textContent ?? "";
@@ -79,6 +84,12 @@ export default class ProgramNode extends AbstractProgramNode {
 
     if (programNode.matches('div[data-t^="release-episode-card"]')) {
       const titleNode = programNode.querySelector("h4");
+      titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('div[data-t="single-show-card"]')) {
+      const titleNode = programNode.querySelector("h2");
       titleNode?.insertAdjacentElement("afterend", imdbNode);
       return;
     }
