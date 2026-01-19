@@ -42,7 +42,10 @@ function ProgramFilters() {
     >
       <h3>Filter programs</h3>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+      <div
+        className="imdb-rating-filter-setting"
+        style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+      >
         <label>
           I want programs rated between{" "}
           <span style={{ fontWeight: "bold" }}>
@@ -63,23 +66,25 @@ function ProgramFilters() {
         />
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-        <label for="filtered-out-program-node-transparency">
-          Make other programs this transparent:
-        </label>
-        <input
-          type="range"
-          id="filtered-out-program-node-transparency"
-          name="filtered-out-program-node-transparency"
-          min="0"
-          max="100"
-          value={settings.transparency}
-          step="1"
-          onInput={(e) =>
-            updateSettings({
-              transparency: parseInt((e.target as HTMLInputElement).value),
-            })
-          }
+      <div
+        className="fopn-transparency-setting"
+        style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+      >
+        {settings.transparency > 100 ? (
+          <label>Hide other programs completely</label>
+        ) : (
+          <label>
+            Make other programs{" "}
+            <span style={{ fontWeight: "bold" }}>{settings.transparency}%</span>{" "}
+            transparent
+          </label>
+        )}
+        <Slider
+          className="fopn-transparency-slider"
+          range={{ min: [0, 1], "67%": [100, 20], max: [120] }}
+          start={[settings.transparency]}
+          onInput={([t]) => updateSettings({ transparency: t! })}
+          pips={[0, 100]}
         />
       </div>
     </div>
