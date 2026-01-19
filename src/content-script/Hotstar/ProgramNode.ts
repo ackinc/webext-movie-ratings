@@ -1,5 +1,4 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { CssClasses } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -27,45 +26,5 @@ export default class ProgramNode extends AbstractProgramNode {
       title: label,
       type: isMovie ? "movie" : "series",
     };
-  }
-
-  static override insertIMDBNode(node: HTMLElement, imdbNode: HTMLElement) {
-    const metadataNode = this.getMetadataNode(node);
-    if (metadataNode) {
-      metadataNode.insertBefore(
-        imdbNode,
-        (metadataNode.lastChild as HTMLElement).previousElementSibling,
-      );
-    } else if (node.nextElementSibling) {
-      (node.parentNode as HTMLElement).insertBefore(
-        imdbNode,
-        node.nextElementSibling,
-      );
-    } else {
-      (node.parentNode as HTMLElement).appendChild(imdbNode);
-    }
-  }
-
-  static override getIMDBNode(node: HTMLElement): HTMLElement | null {
-    const metadataNode = this.getMetadataNode(node);
-    if (metadataNode) {
-      return metadataNode.querySelector(`a.${CssClasses.imdbDataNode}`);
-    }
-
-    const maybeImdbDataNode = node.nextElementSibling as HTMLElement;
-    if (
-      maybeImdbDataNode &&
-      maybeImdbDataNode.classList.contains(CssClasses.imdbDataNode)
-    ) {
-      return maybeImdbDataNode;
-    }
-
-    return null;
-  }
-
-  static getMetadataNode(node: HTMLElement): HTMLElement | null {
-    return (node.firstChild as HTMLElement).querySelector(
-      ':scope > div[data-scale-down="true"]',
-    );
   }
 }
