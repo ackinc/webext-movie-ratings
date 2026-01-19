@@ -28,6 +28,11 @@ a.${CssClasses.imdbDataNode} {
   margin: 4px 0 0 4px;
 }
 
+div.title-card-container .${CssClasses.imdbDataNode} {
+  margin: 0;
+  padding-top: 16px;
+}
+
 div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode} {
   position: absolute;
   top: 4px;
@@ -127,7 +132,7 @@ div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode}
       node.getAttribute("data-uia") === "search-video-gallery"
     ) {
       programNodes = Array.from(
-        node.querySelectorAll("div.ptrack-content a.slider-refocus"),
+        node.querySelectorAll("div.title-card-container"),
       );
     }
 
