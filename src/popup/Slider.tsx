@@ -6,22 +6,20 @@ import {
 } from "nouislider";
 import "nouislider/dist/nouislider.css";
 
-import type { NumberRange } from "../common";
-
-export default function DoubleEndedSlider({
+export default function Slider({
   className,
-  defaultValues,
   range,
+  start,
   step,
   onInput,
-}: DoubleEndedSliderProps) {
+}: SliderProps) {
   const [sliderCreated, setSliderCreated] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const slider = sliderRef.current!;
     createSlider(slider, {
-      start: [defaultValues.min, defaultValues.max],
+      start,
       range,
       step,
       connect: true,
@@ -40,9 +38,7 @@ export default function DoubleEndedSlider({
     // WARNING: nouislider triggers the 'update' event as many times during
     //   initial setup of this component as there are handles on the slider,
     //   even though these are not 'true updates'
-    slider.noUiSlider!.on("update", (values) => {
-      onInput({ min: Number(values[0]), max: Number(values[1]) });
-    });
+    slider.noUiSlider!.on("update", (values) => onInput(values.map(Number)));
   }, [sliderCreated, onInput]);
 
   return (
@@ -50,10 +46,10 @@ export default function DoubleEndedSlider({
   );
 }
 
-interface DoubleEndedSliderProps {
+interface SliderProps {
   className?: string;
-  defaultValues: NumberRange;
   range: SliderOptions["range"];
+  start: number[];
   step: number;
-  onInput: (values: NumberRange) => unknown;
+  onInput: (values: number[]) => unknown;
 }

@@ -8,7 +8,7 @@ import {
   defaultProgramFilterSettings,
 } from "../common";
 import type { ProgramFilterSettings } from "../common";
-import DoubleEndedSlider from "./DoubleEndedSlider";
+import Slider from "./Slider";
 
 function ProgramFilters() {
   const [settings, setSettings] = useState(defaultProgramFilterSettings);
@@ -43,7 +43,7 @@ function ProgramFilters() {
       <h3>Filter programs</h3>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-        <label for="min-imdb-rating">
+        <label>
           I want programs rated between{" "}
           <span style={{ fontWeight: "bold" }}>
             {settings.minRating.toFixed(1)}
@@ -53,13 +53,13 @@ function ProgramFilters() {
             {settings.maxRating.toFixed(1)}
           </span>
         </label>
-        <DoubleEndedSlider
+        <Slider
           className="imdb-rating-filter-slider"
           range={{ min: [0, 0.1], "20%": [4, 0.1], max: [10] }}
+          start={[settings.minRating, settings.maxRating]}
           step={0.1}
-          defaultValues={{ min: settings.minRating, max: settings.maxRating }}
-          onInput={({ min, max }) =>
-            updateSettings({ minRating: min, maxRating: max })
+          onInput={([min, max]) =>
+            updateSettings({ minRating: min!, maxRating: max! })
           }
         />
       </div>
