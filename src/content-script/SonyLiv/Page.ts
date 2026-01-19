@@ -26,10 +26,6 @@ a.${CssClasses.imdbDataNode} {
   text-decoration: none;
 }
 
-div.trending-tray-layout a.${CssClasses.imdbDataNode} {
-  text-align: right;
-}
-
 @media screen and (max-width: 420px) {
   a.${CssClasses.imdbDataNode} {
     position: absolute;
