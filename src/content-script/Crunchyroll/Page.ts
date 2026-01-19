@@ -35,6 +35,15 @@ section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
   position: absolute;
   bottom: -2em;
 }
+
+div[data-t="series-card"] h2 {
+  display: flex;
+  gap: 1rem;
+}
+
+div[data-t^="watch-list-card"] h3 {
+  height: auto !important
+}
     `;
   }
 
@@ -113,7 +122,10 @@ section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
-    return !!pContainer.title;
+    return Boolean(
+      pContainer.title &&
+      !["News Collection"].some((x) => x === pContainer.title),
+    );
   }
 
   override findProgramsInProgramContainer(
@@ -134,6 +146,8 @@ section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
             'div[data-t="carousel-card-wrapper"]',
             'div[data-t^="episode-card"]',
             'div[data-t^="watch-list-card"]',
+            'div[data-t="release-episode-card-stack"]',
+            'div[data-t="release-episode-card"]',
           ].join(","),
         ),
       );

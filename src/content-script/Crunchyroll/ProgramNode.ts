@@ -1,4 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
+import { extractProgramTitle } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -24,6 +25,13 @@ export default class ProgramNode extends AbstractProgramNode {
 
     if (programNode.matches('div[data-t^="watch-list-card"]')) {
       const title = programNode.querySelector("h3")?.textContent ?? "";
+      return { title };
+    }
+
+    if (programNode.matches('div[data-t^="release-episode-card"]')) {
+      const title = extractProgramTitle(
+        programNode.querySelector("h4")?.textContent ?? "",
+      );
       return { title };
     }
 
@@ -54,25 +62,37 @@ export default class ProgramNode extends AbstractProgramNode {
         programNode.querySelector('h3[data-t="title"]') ??
         programNode.querySelector("h3");
       titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
     }
 
     if (programNode.matches('div[data-t^="episode-card"]')) {
       const titleNode = programNode.lastElementChild!.querySelector("small");
       titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('div[data-t^="watch-list-card"]')) {
+      const titleNode = programNode.querySelector("h3");
+      titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('div[data-t^="release-episode-card"]')) {
+      const titleNode = programNode.querySelector("h4");
+      titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
     }
 
     if (programNode.matches("div.browse-card")) {
       const titleNode = programNode.querySelector('h3[data-t="title"]');
       titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
     }
 
     if (programNode.matches('div[data-t="series-card"]')) {
       const titleNode = programNode.querySelector("h2");
-      if (titleNode) {
-        titleNode.insertAdjacentElement("beforeend", imdbNode);
-        titleNode.style.display = "flex";
-        titleNode.style.gap = "1rem";
-      }
+      titleNode?.insertAdjacentElement("beforeend", imdbNode);
+      return;
     }
   }
 }

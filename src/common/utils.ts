@@ -85,6 +85,7 @@ export function extractProgramTitle(str: string): string {
     ...languages.map((l) => `(${l} Dub)`),
     ...languages.map((l) => `(${l})`),
     "(Dub)",
+    "(Dubs)",
     /\sS\d+$/, // suffixes like "S09"; see https://github.com/ackinc/webext-movie-ratings/issues/1
     /\(\d{4}\)/, // year
     // REVIEW: are there many programs whose titles legitimately
