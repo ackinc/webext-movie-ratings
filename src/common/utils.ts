@@ -4,6 +4,10 @@ export function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export function clampNum(val: number, min: number, max: number) {
+  return val < min ? min : val > max ? max : val;
+}
+
 export async function waitFor(
   fn: (...args: any[]) => Promise<unknown>,
   maxTries = 10,

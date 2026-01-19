@@ -1,11 +1,11 @@
-import { CssClasses } from "../common";
+import { clampNum, CssClasses } from "../common";
 import type { ProgramFilterSettings } from "../common";
 
 export function makeFilteredOutProgramNodeStylesClause(
   filterSettings: ProgramFilterSettings,
 ): string {
   const { transparency } = filterSettings;
-  const opacity = 1 - transparency / 100;
+  const opacity = 1 - clampNum(transparency, 0, 100) / 100;
 
   return `
 .${CssClasses.filteredOutProgramNode} {
