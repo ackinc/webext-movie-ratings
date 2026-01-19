@@ -1,3 +1,4 @@
+import { CssClasses } from "../common";
 import type { Program } from "../common/types";
 
 export default class AbstractProgramNode {
@@ -9,11 +10,16 @@ export default class AbstractProgramNode {
     throw new Error("Not implemented");
   }
 
-  static insertIMDBNode(_programNode: HTMLElement, _imdbNode: HTMLElement) {
-    throw new Error("Not implemented");
+  static insertIMDBNode(programNode: HTMLElement, imdbNode: HTMLElement) {
+    programNode.appendChild(imdbNode);
   }
 
-  static getIMDBNode(_programNode: HTMLElement): HTMLElement | null {
-    throw new Error("Not implemented");
+  static getIMDBNode(programNode: HTMLElement): HTMLElement | null {
+    return programNode.querySelector(`.${CssClasses.imdbDataNode}`);
+  }
+
+  static removeIMDBNode(programNode: HTMLElement): void {
+    const imdbNode = this.getIMDBNode(programNode);
+    if (imdbNode) programNode.removeChild(imdbNode);
   }
 }

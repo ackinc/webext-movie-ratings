@@ -41,7 +41,7 @@ export default class AbstractPage {
         `Found ${programContainers.length} / ${programContainerNodes.length} \
 valid containers:\n\t${programContainers
           .map((pc, idx) => logPC(pc, programs[idx]!))
-          .join("\n\t")}`
+          .join("\n\t")}`,
       );
     }
 
@@ -64,7 +64,7 @@ valid containers:\n\t${programContainers
 
   checkIMDBDataAlreadyAdded(program: Program): boolean {
     return !!(this.constructor as typeof AbstractPage).ProgramNode.getIMDBNode(
-      program.node
+      program.node,
     );
   }
 
@@ -72,7 +72,7 @@ valid containers:\n\t${programContainers
     const ratingNode = this.createIMDBDataNode(data);
     (this.constructor as typeof AbstractPage).ProgramNode.insertIMDBNode(
       program.node,
-      ratingNode
+      ratingNode,
     );
   }
 

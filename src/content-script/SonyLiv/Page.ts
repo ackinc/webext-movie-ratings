@@ -26,8 +26,47 @@ a.${CssClasses.imdbDataNode} {
   text-decoration: none;
 }
 
-div.trending-tray-layout a.${CssClasses.imdbDataNode} {
-  text-align: right;
+div.listinpage_wrapper .innerlist a[id] div.listing-portrait-card-inner-div {
+  position: relative;
+}
+
+div.listinpage_wrapper .innerlist a[id] .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #454545;
+  border-radius: 4px;
+  color: #eaeaea;
+}
+
+/* these show up when hovering over the "movies" link on the home and
+     other pages */
+div.megaMenu div.layout-container a.portrait-link .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #454545;
+  border-radius: 4px;
+  color: #eaeaea;
+}
+
+div.PopularSearchContainer > a[id] {
+  position: relative;
+}
+
+div.PopularSearchContainer > a[id] .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #454545;
+  border-radius: 4px;
+  color: #eaeaea;
 }
 
 @media screen and (max-width: 420px) {
@@ -57,9 +96,16 @@ div.trending-tray-layout a.${CssClasses.imdbDataNode} {
 
     const selectors = [
       // lists on home and top-level categories (tv shows, movies, ...) pages
+      // also shows on hovering over "movies" link on home and other pages
       "div.layout-main-container",
       // list on second-tier category pages
       "div.listinpage_wrapper",
+
+      // search preview
+      "div.PopularSearchContainer",
+
+      // search results
+      "div.searchWrapperContainer",
 
       // mobile web
       "div.page-position > div.potraitTrayCards",
@@ -83,6 +129,17 @@ div.trending-tray-layout a.${CssClasses.imdbDataNode} {
       }
     }
 
+    if (node.matches("div.PopularSearchContainer")) {
+      return node.querySelector("h1")?.textContent ?? "";
+    }
+
+    if (node.matches("div.searchWrapperContainer")) {
+      return (
+        node.querySelector("div.SearchContainerGrid div.TopHeading h5")
+          ?.textContent ?? ""
+      );
+    }
+
     return "";
   }
 
@@ -99,12 +156,12 @@ div.trending-tray-layout a.${CssClasses.imdbDataNode} {
         "Trending In Sports",
         /^Indian Idol/,
         "Top Moments In Reality",
-      ].some((x) => (x instanceof RegExp ? x.test(title) : x === title))
+      ].some((x) => (x instanceof RegExp ? x.test(title) : x === title)),
     );
   }
 
   override findProgramsInProgramContainer(
-    pContainer: ProgramContainer
+    pContainer: ProgramContainer,
   ): Program[] {
     const { node } = pContainer;
 
@@ -114,12 +171,16 @@ div.trending-tray-layout a.${CssClasses.imdbDataNode} {
         ? "a[title]"
         : node.matches("div.page-position > div.potraitTrayCards")
           ? "a.link_container"
-          : null;
+          : node.matches("div.PopularSearchContainer")
+            ? "a[id]"
+            : node.matches("div.searchWrapperContainer")
+              ? "a[id]"
+              : null;
     if (!selector) return [];
 
     const ctor = this.constructor as typeof SonyLivPage;
     const programNodes = Array.from(
-      node.querySelectorAll<HTMLElement>(selector)
+      node.querySelectorAll<HTMLElement>(selector),
     ).filter(ctor.ProgramNode.isMovieOrSeries);
     const programs = programNodes
       .map((node) => ({

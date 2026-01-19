@@ -6,19 +6,23 @@ import type {
   SWErrorResponse,
   OmdbApiResponse,
 } from "./common/types";
-import { MessageType } from "./common";
+import { getSetting, setSetting, MessageType, SettingsKey } from "./common";
 import { captureException } from "./common/errorReporter";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
 
 browser.runtime.onMessage.addListener(handleMessage);
-browser.runtime.onInstalled.addListener(() => browser.action?.openPopup());
+browser.runtime.onInstalled.addListener(async () => {
+  if (await getSetting(SettingsKey.popupSeenAtLeastOnce)) return;
+  browser.action?.openPopup();
+  await setSetting(SettingsKey.popupSeenAtLeastOnce, true);
+});
 
 function handleMessage(
   request: { type: keyof typeof MessageType; data: unknown },
   _sender: chrome.runtime.MessageSender,
-  sendResponse: (arg: IMDBData | SWErrorResponse) => void
+  sendResponse: (arg: IMDBData | SWErrorResponse) => void,
 ) {
   if (request.type === MessageType.fetchIMDBRating) {
     const program = request.data as Omit<Program, "node">;
@@ -40,7 +44,7 @@ function handleMessage(
 }
 
 async function fetchIMDBData(
-  program: Omit<Program, "node">
+  program: Omit<Program, "node">,
 ): Promise<IMDBData> {
   const key = getCacheKey(program);
 
@@ -58,7 +62,7 @@ async function fetchIMDBData(
   if (year) searchParams.set("y", year);
 
   const response = await fetch(
-    `https://www.omdbapi.com/?${searchParams.toString()}`
+    `https://www.omdbapi.com/?${searchParams.toString()}`,
   );
   const respBody = (await response.json()) as OmdbApiResponse;
 
@@ -91,7 +95,7 @@ function getCacheKey(program: Omit<Program, "node">): string {
   return btoa(
     [title.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
       .filter(Boolean)
-      .join("|")
+      .join("|"),
   );
 }
 
@@ -100,6 +104,6 @@ function checkCachedDataIsUsable(data: CachedIMDBData | undefined): boolean {
     data &&
     data.imdbRating &&
     (data.imdbID || data.imdbRating === "N/F") &&
-    data.expiry > +new Date()
+    data.expiry > +new Date(),
   );
 }

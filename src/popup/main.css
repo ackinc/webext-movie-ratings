@@ -4,12 +4,20 @@
   padding: 0;
   box-sizing: border-box;
   font-family: Ubuntu, Arial, sans-serif;
+
+  --main-bg-color: #f5c618;
+  --highlighted-bg-color: #e2b615;
+  --main-text-color: #454545;
+
+  --primary-font-size: 1rem;
+  --secondary-font-size: 0.8rem;
 }
 
 .noUi-connect {
-  background-color: #f5c618;
+  background-color: var(--main-bg-color);
 }
 
 .noUi-handle {
+  cursor: grab;
   width: 20px !important;
 }

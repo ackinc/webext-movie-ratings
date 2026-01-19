@@ -1,5 +1,4 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { CssClasses } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -9,13 +8,13 @@ export default class ProgramNode extends AbstractProgramNode {
 
   static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
     const metadataWrapperNode = programNode.querySelector(
-      "div.titleCard--metadataWrapper"
+      "div.titleCard--metadataWrapper",
     );
     const durationNode = programNode.querySelector("span.duration");
 
     const type = durationNode
       ? ["Seasons", "Episodes", "Series"].some((x) =>
-          durationNode.textContent.includes(x)
+          durationNode.textContent.includes(x),
         )
         ? "series"
         : "movie"
@@ -32,52 +31,5 @@ export default class ProgramNode extends AbstractProgramNode {
       //   when querying omdbapi
       ...(year ? { year } : {}),
     };
-  }
-
-  static override insertIMDBNode(
-    programNode: HTMLElement,
-    imdbNode: HTMLElement
-  ) {
-    if (programNode.matches("a.slider-refocus")) {
-      const ggp = programNode.parentNode!.parentNode!.parentNode!;
-      if ((ggp.lastChild as HTMLElement).matches("div.progress")) {
-        ggp.insertBefore(imdbNode, ggp.lastChild);
-      } else {
-        ggp.appendChild(imdbNode);
-      }
-    } else if (programNode.matches("div.titleCard--container")) {
-      const metadataWrapper = programNode.querySelector(
-        "div.titleCard--metadataWrapper"
-      )!;
-      metadataWrapper.insertBefore(imdbNode, metadataWrapper.lastChild);
-    } else {
-      console.error(
-        "Error inserting IMDB node: program node not recognized",
-        programNode
-      );
-    }
-  }
-
-  static override getIMDBNode(programNode: HTMLElement): HTMLElement | null {
-    if (programNode.matches("a.slider-refocus")) {
-      const ggp = programNode.parentNode!.parentNode!
-        .parentNode! as HTMLElement;
-      const ggplc = ggp.lastChild as HTMLElement;
-      const maybeIMDBNode: HTMLElement = ggplc.matches("div.progress")
-        ? (ggplc.previousElementSibling as HTMLElement)
-        : ggplc;
-      if (
-        maybeIMDBNode &&
-        maybeIMDBNode.classList.contains(CssClasses.imdbDataNode)
-      ) {
-        return maybeIMDBNode;
-      } else {
-        return null;
-      }
-    }
-
-    return programNode.querySelector(
-      `div.titleCard--metadataWrapper > a.${CssClasses.imdbDataNode}`
-    );
   }
 }

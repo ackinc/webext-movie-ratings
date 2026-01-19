@@ -53,7 +53,7 @@ async function initializePage() {
     page = new NetflixPage();
   } else if (
     ["www.primevideo.com", "www.amazon.com"].some(
-      (x) => x === location.hostname
+      (x) => x === location.hostname,
     )
   ) {
     page = new AmazonPrimeVideoPage();
@@ -98,6 +98,12 @@ async function loop() {
     }
   } catch (e) {
     loopTimeout = undefined;
+
+    if ((e as Error).message.startsWith("Extension context invalidated")) {
+      // extension was reloaded (dev) / updated
+      return;
+    }
+
     captureException(e as Error, { addViewportDims: true });
     throw e;
   }
@@ -129,11 +135,11 @@ async function findProgramsOnPage(): Promise<Program[]> {
 
 async function addRatingsToPrograms(allPrograms: Program[]) {
   const programsToAddRatingsFor = allPrograms.filter(
-    invert(page.checkIMDBDataAlreadyAdded)
+    invert(page.checkIMDBDataAlreadyAdded),
   );
 
   const results = await Promise.allSettled(
-    programsToAddRatingsFor.map(fetchIMDBData)
+    programsToAddRatingsFor.map(fetchIMDBData),
   );
   programsToAddRatingsFor.forEach((program, idx) => {
     if (results[idx]!.status === "rejected") {

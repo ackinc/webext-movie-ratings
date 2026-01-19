@@ -28,6 +28,19 @@ a.${CssClasses.imdbDataNode} {
   margin: 4px 0 0 4px;
 }
 
+div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #141414;
+  border-radius: 8px;
+  color: #d2d2d2;
+  font-size: 16px;
+  font-weight: normal;
+}
+
 .titleCard--metadataWrapper a.${CssClasses.imdbDataNode} {
   margin: 0 0 0.5em 1em;
 }
@@ -47,7 +60,7 @@ a.${CssClasses.imdbDataNode} {
   }
 
   override getTitleFromProgramContainerNode(
-    pContainerNode: HTMLElement
+    pContainerNode: HTMLElement,
   ): string {
     const { classList } = pContainerNode;
 
@@ -74,7 +87,7 @@ a.${CssClasses.imdbDataNode} {
           pContainerParent.previousElementSibling?.querySelector("div.title")
             ?.textContent ||
           pContainerParent.previousElementSibling?.querySelector(
-            "div.aro-genre-details > span.genreTitle"
+            "div.aro-genre-details > span.genreTitle",
           )?.textContent ||
           ""
         );
@@ -96,12 +109,12 @@ a.${CssClasses.imdbDataNode} {
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
     return Boolean(
       pContainer.title ||
-      pContainer.node.getAttribute("data-uia") === "search-video-gallery"
+      pContainer.node.getAttribute("data-uia") === "search-video-gallery",
     );
   }
 
   override findProgramsInProgramContainer(
-    pContainer: ProgramContainer
+    pContainer: ProgramContainer,
   ): Program[] {
     const { node } = pContainer;
 
@@ -109,22 +122,22 @@ a.${CssClasses.imdbDataNode} {
 
     if (
       ["lolomoRow", "gallery"].some((cName) =>
-        node.classList.contains(cName)
+        node.classList.contains(cName),
       ) ||
       node.getAttribute("data-uia") === "search-video-gallery"
     ) {
       programNodes = Array.from(
-        node.querySelectorAll("div.ptrack-content a.slider-refocus")
+        node.querySelectorAll("div.ptrack-content a.slider-refocus"),
       );
     }
 
     if (
       ["moreLikeThis--wrapper", "titleGroup--wrapper"].some((cName) =>
-        node.classList.contains(cName)
+        node.classList.contains(cName),
       )
     ) {
       programNodes = Array.from(
-        node.querySelectorAll("div.titleCard--container")
+        node.querySelectorAll("div.titleCard--container"),
       );
     }
 

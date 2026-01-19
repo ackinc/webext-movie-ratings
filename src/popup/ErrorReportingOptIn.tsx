@@ -9,7 +9,7 @@ function ErrorReportingOptIn() {
   useEffect(() => {
     (async () => {
       const optedIn = Boolean(
-        await getSetting(SettingsKey.errorReportingOptIn)
+        await getSetting(SettingsKey.errorReportingOptIn),
       );
       setOptedInToErrorReporting(optedIn);
     })();

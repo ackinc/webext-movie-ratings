@@ -31,7 +31,7 @@ a.${CssClasses.imdbDataNode} {
   }
 
   override getTitleFromProgramContainerNode(
-    pContainerNode: HTMLElement
+    pContainerNode: HTMLElement,
   ): string {
     return pContainerNode.getAttribute("aria-label") ?? "";
   }
@@ -44,10 +44,10 @@ a.${CssClasses.imdbDataNode} {
   }
 
   override findProgramsInProgramContainer(
-    pContainer: ProgramContainer
+    pContainer: ProgramContainer,
   ): Program[] {
     const programNodes: HTMLElement[] = Array.from(
-      pContainer.node.querySelectorAll("ul > li a")
+      pContainer.node.querySelectorAll("ul > li a"),
     );
 
     const ctor = this.constructor as typeof AppleTvPage;

@@ -3,6 +3,7 @@ import {
   browser,
   getSetting,
   setSetting,
+  MessageType,
   SettingsKey,
   defaultProgramFilterSettings,
 } from "../common";
@@ -16,7 +17,7 @@ function ProgramFilters() {
   useEffect(() => {
     (async () => {
       const savedSettings = (await getSetting(
-        SettingsKey.programFiltersSettings
+        SettingsKey.programFiltersSettings,
       )) as ProgramFilterSettings | undefined;
       if (savedSettings) {
         // merging instead of replacing in case a new property has been
@@ -54,7 +55,7 @@ function ProgramFilters() {
         </label>
         <DoubleEndedSlider
           className="imdb-rating-filter-slider"
-          range={{ min: 0, "20%": 4, max: 10 }}
+          range={{ min: [0, 0.1], "20%": [4, 0.1], max: [10] }}
           step={0.1}
           defaultValues={{ min: settings.minRating, max: settings.maxRating }}
           onInput={({ min, max }) =>
@@ -88,7 +89,7 @@ function ProgramFilters() {
   async function updateSettings(data: Partial<ProgramFilterSettings>) {
     if (
       Object.entries(data).every(
-        ([k, v]) => v === settings[k as keyof ProgramFilterSettings]
+        ([k, v]) => v === settings[k as keyof ProgramFilterSettings],
       )
     ) {
       return;
@@ -107,9 +108,9 @@ function ProgramFilters() {
       })
     ).forEach((tab) =>
       browser.tabs.sendMessage(tab.id as number, {
-        message: "filterSettingsChange",
+        message: MessageType.filterSettingsChange,
         data: updatedSettings,
-      })
+      }),
     );
   }
 }
