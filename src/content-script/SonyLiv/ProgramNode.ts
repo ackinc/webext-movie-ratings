@@ -33,4 +33,18 @@ export default class ProgramNode extends AbstractProgramNode {
 
     return { title, ...(type ? { type } : {}) };
   }
+
+  static override insertIMDBNode(
+    programNode: HTMLElement,
+    imdbNode: HTMLElement,
+  ): void {
+    if (programNode.matches("div.listinpage_wrapper .innerlist a[id]")) {
+      programNode
+        .querySelector("div.listing-portrait-card-inner-div")!
+        .appendChild(imdbNode);
+      return;
+    }
+
+    programNode.appendChild(imdbNode);
+  }
 }

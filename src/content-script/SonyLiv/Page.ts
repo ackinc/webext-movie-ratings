@@ -26,6 +26,40 @@ a.${CssClasses.imdbDataNode} {
   text-decoration: none;
 }
 
+div.listinpage_wrapper .innerlist a[id] {
+  display: inline;
+}
+
+div.listinpage_wrapper .innerlist a[id] div.listing-portrait-card-inner-div {
+  position: relative;
+}
+
+div.listinpage_wrapper .innerlist a[id] .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #454545;
+  border-radius: 4px;
+  color: #eaeaea;
+}
+
+div.PopularSearchContainer > a[id] {
+  position: relative;
+}
+
+div.PopularSearchContainer > a[id] .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #454545;
+  border-radius: 4px;
+  color: #eaeaea;
+}
+
 @media screen and (max-width: 420px) {
   a.${CssClasses.imdbDataNode} {
     position: absolute;
