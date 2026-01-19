@@ -28,6 +28,19 @@ a.${CssClasses.imdbDataNode} {
   margin: 4px 0 0 4px;
 }
 
+div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #141414;
+  border-radius: 8px;
+  color: #d2d2d2;
+  font-size: 16px;
+  font-weight: normal;
+}
+
 .titleCard--metadataWrapper a.${CssClasses.imdbDataNode} {
   margin: 0 0 0.5em 1em;
 }
