@@ -36,6 +36,7 @@ export const enum MessageType {
 export const enum SettingsKey {
   errorReportingOptIn = "errorReportingOptIn",
   programFiltersSettings = "programFiltersSettings",
+  popupSeenAtLeastOnce = "popupSeenAtLeastOnce",
 }
 
 export const defaultProgramFilterSettings = {

@@ -6,14 +6,18 @@ import type {
   SWErrorResponse,
   OmdbApiResponse,
 } from "./common/types";
-import { MessageType } from "./common";
+import { getSetting, setSetting, MessageType, SettingsKey } from "./common";
 import { captureException } from "./common/errorReporter";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
 
 browser.runtime.onMessage.addListener(handleMessage);
-browser.runtime.onInstalled.addListener(() => browser.action?.openPopup());
+browser.runtime.onInstalled.addListener(async () => {
+  if (await getSetting(SettingsKey.popupSeenAtLeastOnce)) return;
+  browser.action?.openPopup();
+  await setSetting(SettingsKey.popupSeenAtLeastOnce, true);
+});
 
 function handleMessage(
   request: { type: keyof typeof MessageType; data: unknown },
