@@ -96,8 +96,10 @@ function ProgramFilters() {
     }
 
     const updatedSettings = { ...settings, ...data };
-    await setSetting(SettingsKey.programFiltersSettings, updatedSettings);
     setSettings(updatedSettings);
+
+    // persist the change in storage
+    await setSetting(SettingsKey.programFiltersSettings, updatedSettings);
 
     // let any relevant tabs know that the filter settings have changed
     // bundling the updated settings into the message saves the content
