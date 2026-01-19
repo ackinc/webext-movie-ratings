@@ -3,6 +3,7 @@ import {
   create as createSlider,
   type target as TargetElement,
   type Options as SliderOptions,
+  PipsMode,
 } from "nouislider";
 import "nouislider/dist/nouislider.css";
 
@@ -11,6 +12,7 @@ export default function Slider({
   range,
   start,
   step,
+  pips,
   onInput,
 }: SliderProps) {
   const [sliderCreated, setSliderCreated] = useState(false);
@@ -22,6 +24,15 @@ export default function Slider({
       start,
       range,
       ...(step !== undefined ? { step } : {}),
+      ...(pips !== undefined
+        ? {
+            pips: {
+              mode: PipsMode.Values,
+              values: pips,
+              filter: (value) => (pips.includes(value) ? 0 : -1),
+            },
+          }
+        : {}),
       connect: true,
       behaviour: "tap-drag",
     });
@@ -51,5 +62,6 @@ interface SliderProps {
   range: SliderOptions["range"];
   start: number[];
   step?: number;
+  pips?: number[];
   onInput: (values: number[]) => unknown;
 }

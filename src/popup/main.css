@@ -19,5 +19,17 @@
 
 .noUi-handle {
   cursor: grab;
+}
+
+.imdb-rating-filter-slider .noUi-handle {
   width: 20px !important;
+}
+
+.fopn-transparency-slider .noUi-pips {
+  padding: 0;
+  height: auto;
+}
+
+.fopn-transparency-slider .noUi-marker {
+  height: 12px;
 }

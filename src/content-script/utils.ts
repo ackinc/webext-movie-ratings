@@ -9,6 +9,7 @@ export function makeFilteredOutProgramNodeStylesClause(
 
   return `
 .${CssClasses.filteredOutProgramNode} {
+  ${transparency > 100 ? `display: none;` : ""}
   opacity: ${opacity};
 }
   `.trim();
