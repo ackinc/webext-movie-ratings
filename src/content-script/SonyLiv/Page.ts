@@ -57,6 +57,12 @@ a.${CssClasses.imdbDataNode} {
       // list on second-tier category pages
       "div.listinpage_wrapper",
 
+      // search preview
+      "div.PopularSearchContainer",
+
+      // search results
+      "div.searchWrapperContainer",
+
       // mobile web
       "div.page-position > div.potraitTrayCards",
     ];
@@ -77,6 +83,17 @@ a.${CssClasses.imdbDataNode} {
       if (titleWrapper?.matches("div.ty-wrapper")) {
         return titleWrapper.querySelector("h3")?.textContent?.trim() ?? "";
       }
+    }
+
+    if (node.matches("div.PopularSearchContainer")) {
+      return node.querySelector("h1")?.textContent ?? "";
+    }
+
+    if (node.matches("div.searchWrapperContainer")) {
+      return (
+        node.querySelector("div.SearchContainerGrid div.TopHeading h5")
+          ?.textContent ?? ""
+      );
     }
 
     return "";
@@ -110,7 +127,11 @@ a.${CssClasses.imdbDataNode} {
         ? "a[title]"
         : node.matches("div.page-position > div.potraitTrayCards")
           ? "a.link_container"
-          : null;
+          : node.matches("div.PopularSearchContainer")
+            ? "a[id]"
+            : node.matches("div.searchWrapperContainer")
+              ? "a[id]"
+              : null;
     if (!selector) return [];
 
     const ctor = this.constructor as typeof SonyLivPage;

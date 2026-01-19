@@ -19,6 +19,8 @@ export default class ProgramNode extends AbstractProgramNode {
         node
           .querySelector("div.album-cover-container > img[title]")
           ?.getAttribute("title") ||
+        // search preview
+        node.querySelector("img.card-img")?.getAttribute("alt") ||
         "",
     );
 
