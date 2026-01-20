@@ -9,13 +9,7 @@ render(<App />, root);
 
 function App() {
   return (
-    <div
-      style={{
-        width: "320px",
-        padding: "16px",
-        fontSize: "0.875rem",
-      }}
-    >
+    <div className="app">
       <ErrorReportingOptIn />
       <ProgramFilters />
     </div>

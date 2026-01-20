@@ -47,11 +47,11 @@ function ProgramFilters() {
         style={{ display: "flex", flexDirection: "column", gap: "4px" }}
       >
         <label>
-          I want programs rated between{" "}
+          Watch shows rated{" "}
           <span style={{ fontWeight: "bold" }}>
             {settings.minRating.toFixed(1)}
           </span>{" "}
-          and{" "}
+          to{" "}
           <span style={{ fontWeight: "bold" }}>
             {settings.maxRating.toFixed(1)}
           </span>
@@ -71,10 +71,10 @@ function ProgramFilters() {
         style={{ display: "flex", flexDirection: "column", gap: "4px" }}
       >
         {settings.transparency > 100 ? (
-          <label>Hide other programs completely</label>
+          <label>Hide other shows completely</label>
         ) : (
           <label>
-            Make other programs{" "}
+            Make other shows{" "}
             <span style={{ fontWeight: "bold" }}>{settings.transparency}%</span>{" "}
             transparent
           </label>

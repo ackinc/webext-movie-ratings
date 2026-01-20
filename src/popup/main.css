@@ -13,6 +13,12 @@
   --secondary-font-size: 0.8rem;
 }
 
+div#root > .app {
+  width: 320px;
+  padding: 16px;
+  font-size: 0.875rem;
+}
+
 .noUi-connect {
   background-color: var(--main-bg-color);
 }
