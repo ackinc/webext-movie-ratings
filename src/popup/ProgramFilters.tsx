@@ -57,6 +57,26 @@ function ProgramFilters() {
         />
       </div>
 
+      <div
+        className="unrated-show-setting filter-setting-container"
+        style={{ flexDirection: "row", alignItems: "center" }}
+      >
+        <input
+          id="exclude-unrated-programs"
+          name="exclude-unrated-programs"
+          type="checkbox"
+          checked={settings.excludeUnratedPrograms}
+          onChange={(e) => {
+            updateSettings({
+              excludeUnratedPrograms: !!e.target["checked"],
+            });
+          }}
+        />
+        <label for="exclude-unrated-programs">
+          Exclude shows we don't know the rating for
+        </label>
+      </div>
+
       <div className="fopn-transparency-setting filter-setting-container">
         {settings.transparency > 100 ? (
           <label>Hide other shows completely</label>

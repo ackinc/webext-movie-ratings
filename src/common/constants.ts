@@ -1,3 +1,5 @@
+import { type ProgramFilterSettings } from "./types";
+
 export const enum CssClasses {
   styleNode = "sift-style",
   imdbDataNode = "sift-imdb-data",
@@ -40,8 +42,9 @@ export const enum SettingsKey {
   popupSeenAtLeastOnce = "popupSeenAtLeastOnce",
 }
 
-export const defaultProgramFilterSettings = {
+export const defaultProgramFilterSettings: ProgramFilterSettings = {
   minRating: 0,
   maxRating: 10,
+  excludeUnratedPrograms: true,
   transparency: 0,
 };

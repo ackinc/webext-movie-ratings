@@ -172,10 +172,12 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
 }
 
 async function fadeFilteredOutPrograms(allPrograms: Program[]) {
-  const settings =
-    ((await getSetting(SettingsKey.programFiltersSettings)) as
+  const settings = {
+    ...defaultProgramFilterSettings,
+    ...((await getSetting(SettingsKey.programFiltersSettings)) as
       | ProgramFilterSettings
-      | undefined) ?? defaultProgramFilterSettings;
+      | undefined),
+  };
 
   allPrograms.forEach((p) => {
     const imdbNode = (
@@ -185,6 +187,8 @@ async function fadeFilteredOutPrograms(allPrograms: Program[]) {
 
     const rating = parseFloat(imdbNode.dataset!["imdbRating"]!);
     if (rating < settings.minRating || rating > settings.maxRating) {
+      p.node.classList.add(CssClasses.filteredOutProgramNode);
+    } else if (settings.excludeUnratedPrograms && Number.isNaN(rating)) {
       p.node.classList.add(CssClasses.filteredOutProgramNode);
     } else {
       p.node.classList.remove(CssClasses.filteredOutProgramNode);
