@@ -10,6 +10,8 @@ import {
 import type { ProgramFilterSettings } from "../common";
 import Slider from "./Slider";
 
+import "./ProgramFilters.css";
+
 function ProgramFilters() {
   const [settings, setSettings] = useState(defaultProgramFilterSettings);
   const [savedSettingsLoaded, setSavedSettingsLoaded] = useState(false);
@@ -31,21 +33,10 @@ function ProgramFilters() {
   if (!savedSettingsLoaded) return null;
 
   return (
-    <div
-      className="program-filters-container"
-      style={{
-        padding: "1rem",
-        display: "flex",
-        flexDirection: "column",
-        gap: "1rem",
-      }}
-    >
+    <div className="program-filters-container">
       <h3>Filter programs</h3>
 
-      <div
-        className="imdb-rating-filter-setting"
-        style={{ display: "flex", flexDirection: "column", gap: "4px" }}
-      >
+      <div className="imdb-rating-filter-setting filter-setting-container">
         <label>
           Watch shows rated{" "}
           <span style={{ fontWeight: "bold" }}>
@@ -66,10 +57,7 @@ function ProgramFilters() {
         />
       </div>
 
-      <div
-        className="fopn-transparency-setting"
-        style={{ display: "flex", flexDirection: "column", gap: "4px" }}
-      >
+      <div className="fopn-transparency-setting filter-setting-container">
         {settings.transparency > 100 ? (
           <label>Hide other shows completely</label>
         ) : (

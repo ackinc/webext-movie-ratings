@@ -16,7 +16,7 @@
 div#root > .app {
   width: 320px;
   padding: 16px;
-  font-size: 0.875rem;
+  font-size: var(--secondary-font-size);
 }
 
 .noUi-connect {
@@ -47,4 +47,9 @@ div#root > .app {
 
 .fopn-transparency-slider .noUi-marker {
   height: 12px;
+}
+
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
 }
