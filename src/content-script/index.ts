@@ -69,17 +69,8 @@ async function initializePage() {
 }
 
 function addMessageListeners() {
-  window.addEventListener("message", (e) => {
-    const { message } = e.data;
-    if (message === MessageType.urlChange) {
-      handleUrlChange();
-    }
-  });
-  browser.runtime.onMessage.addListener(({ message, data }) => {
-    if (message === MessageType.filterSettingsChange) {
-      handleFilterSettingsChange(data as ProgramFilterSettings);
-    }
-  });
+  window.addEventListener("message", handleMessage);
+  browser.runtime.onMessage.addListener(handleMessage);
 }
 
 async function loop() {
@@ -189,6 +180,14 @@ async function fadeFilteredOutPrograms(allPrograms: Program[]) {
       p.node.classList.remove(CssClasses.filteredOutProgramNode);
     }
   });
+}
+
+function handleMessage(e: MessageEvent) {
+  if (e.type === MessageType.urlChange) {
+    handleUrlChange();
+  } else if (e.type === MessageType.filterSettingsChange) {
+    handleFilterSettingsChange(e.data as ProgramFilterSettings);
+  }
 }
 
 function handleUrlChange() {
