@@ -30,6 +30,10 @@ a.${CssClasses.imdbDataNode} {
 
 div.title-card-container .${CssClasses.imdbDataNode} {
   margin: 0;
+  padding-top: 4px;
+}
+
+div.title-card-container:has(> div.progress) .${CssClasses.imdbDataNode} {
   padding-top: 16px;
 }
 
