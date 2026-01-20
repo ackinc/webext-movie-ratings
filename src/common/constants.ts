@@ -31,6 +31,7 @@ export const enum MessageType {
   fetchIMDBRating = "sift:fetchIMDBRating",
   urlChange = "sift:urlchange",
   filterSettingsChange = "sift:filterSettingsChange",
+  orphanCheck = "sift:orphanCheck",
 }
 
 export const enum SettingsKey {

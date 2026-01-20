@@ -36,6 +36,9 @@ let loopAbortController: AbortController;
 
 (async () => {
   try {
+    // so content scripts belonging to prev. ext. version can cleanup
+    window.postMessage({ messageType: MessageType.orphanCheck });
+
     await initializePage();
     addMessageListeners();
     loopTimeout = setTimeout(loop, 0);
@@ -98,11 +101,7 @@ async function loop() {
     loopTimeout = undefined;
 
     if ((e as Error).message.startsWith("Extension context invalidated")) {
-      // extension was updated, and this content script is now orphaned;
-      //   it should be cleaned up so the updated service worker can
-      //   inject the updated content script without worrying about
-      //   conflicts with this orphaned content script
-      cleanup(programs);
+      cleanup();
       return;
     }
 
@@ -196,7 +195,9 @@ async function fadeFilteredOutPrograms(allPrograms: Program[]) {
 function handleMessage(m: MessageEvent | Message) {
   const { messageType, data } = m instanceof MessageEvent ? m.data : m;
 
-  if (messageType === MessageType.urlChange) {
+  if (messageType === MessageType.orphanCheck) {
+    if (!browser.runtime.id) cleanup();
+  } else if (messageType === MessageType.urlChange) {
     handleUrlChange();
   } else if (messageType === MessageType.filterSettingsChange) {
     handleFilterSettingsChange(data as ProgramFilterSettings);
@@ -211,11 +212,7 @@ function handleUrlChange() {
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
-  // prevent any running loop invocation from scheduling another invocation
-  loopAbortController.abort();
-
-  // clear any scheduled loop
-  clearTimeout(loopTimeout);
+  haltLoop();
 
   updateFilteredOutProgramNodeStyles(updatedSettings);
 
@@ -223,12 +220,22 @@ function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
   loopTimeout = setTimeout(loop, 0);
 }
 
-function cleanup(programs: Program[]) {
+function haltLoop() {
+  // prevent running loop invocation from scheduling another invocation
+  loopAbortController.abort();
+
+  // clear any scheduled loop
+  clearTimeout(loopTimeout);
+}
+
+function cleanup() {
+  haltLoop();
   removeMessageListeners();
 
   const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
   styleNode?.parentElement?.removeChild(styleNode);
 
+  const programs = page.findPrograms();
   programs.forEach((p) => {
     p.node.classList.remove(CssClasses.filteredOutProgramNode);
     (page.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(

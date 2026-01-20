@@ -13,12 +13,31 @@ import { captureException } from "./common/errorReporter";
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
 
+browser.runtime.onInstalled.addListener(onInstalled);
 browser.runtime.onMessage.addListener(handleMessage);
-browser.runtime.onInstalled.addListener(async () => {
+
+async function onInstalled() {
+  await injectUpdatedContentScripts();
+  await showPopupIfNotSeen();
+}
+
+async function injectUpdatedContentScripts() {
+  const tabs = await browser.tabs.query({
+    url: browser.runtime.getManifest()["host_permissions"],
+  });
+  tabs.forEach((tab) => {
+    browser.scripting.executeScript({
+      files: browser.runtime.getManifest()["content_scripts"]![0]!["js"]!,
+      target: { tabId: tab.id! },
+    });
+  });
+}
+
+async function showPopupIfNotSeen() {
   if (await getSetting(SettingsKey.popupSeenAtLeastOnce)) return;
   browser.action?.openPopup();
   await setSetting(SettingsKey.popupSeenAtLeastOnce, true);
-});
+}
 
 function handleMessage(
   request: Message,
