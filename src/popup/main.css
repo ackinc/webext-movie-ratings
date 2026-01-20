@@ -28,7 +28,16 @@ div#root > .app {
 }
 
 .imdb-rating-filter-slider .noUi-handle {
-  width: 20px !important;
+  width: 18px !important;
+  right: -9px !important;
+}
+
+.imdb-rating-filter-slider .noUi-handle::before {
+  left: 6px;
+}
+
+.imdb-rating-filter-slider .noUi-handle::after {
+  left: 9px;
 }
 
 .fopn-transparency-slider .noUi-pips {
