@@ -1,11 +1,11 @@
 import { useEffect, useState } from "preact/hooks";
 import {
-  browser,
   getSetting,
   setSetting,
   MessageType,
   SettingsKey,
   defaultProgramFilterSettings,
+  sendMessageToAllTabs,
 } from "../common";
 import type { ProgramFilterSettings } from "../common";
 import Slider from "./Slider";
@@ -104,19 +104,13 @@ function ProgramFilters() {
     // persist the change in storage
     await setSetting(SettingsKey.programFiltersSettings, updatedSettings);
 
-    // let any relevant tabs know that the filter settings have changed
+    // let relevant tabs know that the filter settings have changed
     // bundling the updated settings into the message saves the content
     //   scripts a lookup from storage
-    (
-      await browser.tabs.query({
-        url: browser.runtime.getManifest()["host_permissions"],
-      })
-    ).forEach((tab) =>
-      browser.tabs.sendMessage(tab.id as number, {
-        messageType: MessageType.filterSettingsChange,
-        data: updatedSettings,
-      }),
-    );
+    await sendMessageToAllTabs({
+      messageType: MessageType.filterSettingsChange,
+      data: updatedSettings,
+    });
   }
 }
 

@@ -1,4 +1,5 @@
 import { browser, languages, SettingsKey } from "./constants";
+import type { Message } from "./types";
 
 export function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -104,4 +105,22 @@ export function extractProgramTitle(str: string): string {
       // title should end with alphabet or number
       .replace(/[^A-Za-z0-9]*$/, "")
   );
+}
+
+export async function sendMessageToAllTabs(message: Message) {
+  const tabs = await browser.tabs.query({
+    url: browser.runtime.getManifest()["host_permissions"],
+  });
+  const results = await Promise.allSettled(
+    tabs.map((tab) => browser.tabs.sendMessage(tab.id as number, message)),
+  );
+  results.forEach((result, idx) => {
+    if (result.status === "fulfilled") return;
+
+    const tab = tabs[idx]!;
+    const { reason } = result;
+    if (reason.message.includes("Receiving end does not exist")) return;
+    reason.message = `Failed to send message ${message.messageType} to tab ${tab.id} (url: ${tab.url}). ${reason.message}`;
+    console.error(reason);
+  });
 }
