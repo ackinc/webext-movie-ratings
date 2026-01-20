@@ -73,14 +73,20 @@ function addMessageListeners() {
   browser.runtime.onMessage.addListener(handleMessage);
 }
 
+function removeMessageListeners() {
+  window.removeEventListener("message", handleMessage);
+  browser.runtime.onMessage.removeListener(handleMessage);
+}
+
 async function loop() {
   const thisLoopAbortController = new AbortController();
   loopAbortController = thisLoopAbortController;
 
   const msDelayBeforeNextInvocation = 2000;
 
+  let programs: Program[] = [];
   try {
-    const programs = await findProgramsOnPage();
+    programs = await findProgramsOnPage();
     await addRatingsToPrograms(programs);
     await fadeFilteredOutPrograms(programs);
 
@@ -91,7 +97,11 @@ async function loop() {
     loopTimeout = undefined;
 
     if ((e as Error).message.startsWith("Extension context invalidated")) {
-      // extension was reloaded (dev) / updated
+      // extension was updated, and this content script is now orphaned;
+      //   it should be cleaned up so the updated service worker can
+      //   inject the updated content script without worrying about
+      //   conflicts with this orphaned content script
+      cleanup(programs);
       return;
     }
 
@@ -208,4 +218,20 @@ function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
 
   // restart loop
   loopTimeout = setTimeout(loop, 0);
+}
+
+function cleanup(programs: Program[]) {
+  removeMessageListeners();
+
+  const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
+  styleNode?.parentElement?.removeChild(styleNode);
+
+  programs.forEach((p) => {
+    p.node.classList.remove(CssClasses.filteredOutProgramNode);
+    (page.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
+      p.node,
+    );
+  });
+
+  console.log("sift: orphaned content script cleanup complete");
 }
