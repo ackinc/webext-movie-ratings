@@ -28,9 +28,9 @@ export const languages = [
 ];
 
 export const enum MessageType {
-  fetchIMDBRating = "fetchIMDBRating",
+  fetchIMDBRating = "sift:fetchIMDBRating",
   urlChange = "sift:urlchange",
-  filterSettingsChange = "filterSettingsChange",
+  filterSettingsChange = "sift:filterSettingsChange",
 }
 
 export const enum SettingsKey {

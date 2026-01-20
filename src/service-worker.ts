@@ -2,6 +2,7 @@ import { ONE_HOUR_IN_MS, ONE_WEEK_IN_MS, browser, omit } from "./common";
 import type {
   Program,
   IMDBData,
+  Message,
   CachedIMDBData,
   SWErrorResponse,
   OmdbApiResponse,
@@ -20,11 +21,11 @@ browser.runtime.onInstalled.addListener(async () => {
 });
 
 function handleMessage(
-  request: { type: keyof typeof MessageType; data: unknown },
+  request: Message,
   _sender: chrome.runtime.MessageSender,
   sendResponse: (arg: IMDBData | SWErrorResponse) => void,
 ) {
-  if (request.type === MessageType.fetchIMDBRating) {
+  if (request.messageType === MessageType.fetchIMDBRating) {
     const program = request.data as Omit<Program, "node">;
     fetchIMDBData(program)
       .then((data) => sendResponse(data))
@@ -35,7 +36,7 @@ function handleMessage(
         captureException(error);
       });
   } else {
-    const err = new Error(`Unknown message type: ${request.type}`);
+    const err = new Error(`Unknown message type: ${request.messageType}`);
     captureException(err);
     throw err;
   }

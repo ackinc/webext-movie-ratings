@@ -112,12 +112,10 @@ function ProgramFilters() {
         url: browser.runtime.getManifest()["host_permissions"],
       })
     ).forEach((tab) =>
-      browser.tabs.sendMessage(
-        tab.id as number,
-        new MessageEvent(MessageType.filterSettingsChange, {
-          data: updatedSettings,
-        }),
-      ),
+      browser.tabs.sendMessage(tab.id as number, {
+        messageType: MessageType.filterSettingsChange,
+        data: updatedSettings,
+      }),
     );
   }
 }

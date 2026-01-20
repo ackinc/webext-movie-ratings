@@ -14,6 +14,7 @@ import { captureException } from "../common/errorReporter";
 import type AbstractPage from "./AbstractPage";
 import type {
   IMDBData,
+  Message,
   Program,
   SWErrorResponse,
   ProgramFilterSettings,
@@ -164,7 +165,7 @@ async function addRatingsToPrograms(allPrograms: Program[]) {
 async function fetchIMDBData(program: Program): Promise<IMDBData> {
   const response: IMDBData | SWErrorResponse =
     await browser.runtime.sendMessage({
-      type: "fetchIMDBRating",
+      messageType: MessageType.fetchIMDBRating,
       data: pick(program, ["title", "type", "year"]),
     });
   if ("error" in response) throw response.error;
@@ -192,11 +193,13 @@ async function fadeFilteredOutPrograms(allPrograms: Program[]) {
   });
 }
 
-function handleMessage(e: MessageEvent) {
-  if (e.type === MessageType.urlChange) {
+function handleMessage(m: MessageEvent | Message) {
+  const { messageType, data } = m instanceof MessageEvent ? m.data : m;
+
+  if (messageType === MessageType.urlChange) {
     handleUrlChange();
-  } else if (e.type === MessageType.filterSettingsChange) {
-    handleFilterSettingsChange(e.data as ProgramFilterSettings);
+  } else if (messageType === MessageType.filterSettingsChange) {
+    handleFilterSettingsChange(data as ProgramFilterSettings);
   }
 }
 

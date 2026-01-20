@@ -1,3 +1,5 @@
+import { MessageType } from "./constants";
+
 export type ProgramContainer = {
   node: HTMLElement;
   title: string;
@@ -39,4 +41,9 @@ export type ProgramFilterSettings = {
 export type NumberRange = {
   min: number;
   max: number;
+};
+
+export type Message = {
+  messageType: MessageType;
+  data: unknown;
 };
