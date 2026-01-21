@@ -55,6 +55,18 @@ export default class ProgramNode extends AbstractProgramNode {
       return { title };
     }
 
+    if (programNode.matches('div[data-t="search-series-card"]')) {
+      const title = programNode.querySelector("h2")?.textContent ?? "";
+      return { title };
+    }
+
+    if (programNode.matches('div[data-t="search-episode-card"]')) {
+      const title =
+        programNode.querySelector('small[data-t="series-title"]')
+          ?.textContent ?? "";
+      return { title };
+    }
+
     return { title: "" };
   }
 
@@ -103,6 +115,20 @@ export default class ProgramNode extends AbstractProgramNode {
     if (programNode.matches('div[data-t="series-card"]')) {
       const titleNode = programNode.querySelector("h2");
       titleNode?.insertAdjacentElement("beforeend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('div[data-t="search-series-card"]')) {
+      const titleNode = programNode.querySelector("h2");
+      titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('div[data-t="search-episode-card"]')) {
+      const titleNode = programNode.querySelector(
+        'small[data-t="series-title"]',
+      );
+      titleNode?.insertAdjacentElement("afterend", imdbNode);
       return;
     }
   }

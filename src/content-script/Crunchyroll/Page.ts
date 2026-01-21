@@ -44,6 +44,18 @@ div[data-t="series-card"] h2 {
 div[data-t^="watch-list-card"] h3 {
   height: auto !important
 }
+
+div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-t="series-title"]) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-t="series-title"]) .${CssClasses.imdbDataNode} {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  font-weight: bold;
+}
     `;
   }
 
@@ -66,6 +78,11 @@ div[data-t^="watch-list-card"] h3 {
 
       // on single-show page
       "div.erc-similar-to",
+
+      // search results
+      "div.erc-top-results",
+      "div.erc-series-results",
+      "div.erc-episodes-results",
     ];
     return Array.from(document.querySelectorAll(selectors.join(",")));
   }
@@ -118,6 +135,14 @@ div[data-t^="watch-list-card"] h3 {
       return pContainerNode.querySelector("h3")?.textContent ?? "";
     }
 
+    if (
+      pContainerNode.matches(
+        "div.erc-top-results,div.erc-series-results,div.erc-episodes-results",
+      )
+    ) {
+      return pContainerNode.querySelector("h1,h2")?.textContent ?? "";
+    }
+
     return "";
   }
 
@@ -165,6 +190,14 @@ div[data-t^="watch-list-card"] h3 {
     } else if (node.matches("div.erc-similar-to")) {
       programNodes = Array.from(
         node.querySelectorAll('div[data-t="carousel-card-wrapper"]'),
+      );
+    } else if (node.matches("div.erc-top-results,div.erc-series-results")) {
+      programNodes = Array.from(
+        node.querySelectorAll('div[data-t="search-series-card"]'),
+      );
+    } else if (node.matches("div.erc-episodes-results")) {
+      programNodes = Array.from(
+        node.querySelectorAll('div[data-t="search-episode-card"]'),
       );
     }
 
