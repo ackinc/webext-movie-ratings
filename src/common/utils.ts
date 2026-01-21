@@ -96,6 +96,7 @@ export function extractProgramTitle(str: string): string {
     // REVIEW: are there many programs whose titles legitimately
     //   end with these words?
     /Movie|Series$/,
+    /: Restored Version$/i,
   ];
   toRemove.forEach((x) => (title = title.replace(x, "")));
   return (

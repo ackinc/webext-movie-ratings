@@ -1,4 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
+import { extractProgramTitle } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -32,7 +33,7 @@ export default class ProgramNode extends AbstractProgramNode {
         : null;
 
     return {
-      title,
+      title: extractProgramTitle(title),
       ...(type ? { type } : {}),
       // specifying year for series is causing many false negatives
       //   when querying omdbapi
