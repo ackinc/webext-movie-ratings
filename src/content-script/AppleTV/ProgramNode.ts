@@ -7,7 +7,39 @@ export default class ProgramNode extends AbstractProgramNode {
   }
 
   static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
-    const title = programNode.getAttribute("aria-label") ?? "";
-    return { title };
+    let title: string = "";
+
+    if (programNode.matches("ul > li a")) {
+      title = programNode.getAttribute("aria-label") ?? "";
+    } else if (programNode.matches("div.search-hint-lockup")) {
+      title =
+        programNode.querySelector(
+          'div[data-testid="search-hint-lockup-title"] > span',
+        )?.textContent ?? "";
+    }
+
+    let type: Program["type"];
+    if (location.pathname.includes("/movie/")) {
+      type = "movie";
+    } else if (location.pathname.includes("/show/")) {
+      type = "series";
+    }
+
+    return { title, ...(type ? { type } : {}) };
+  }
+
+  static override insertIMDBNode(
+    programNode: HTMLElement,
+    imdbNode: HTMLElement,
+  ): void {
+    if (programNode.matches("div.search-hint-lockup")) {
+      const titleNode = programNode.querySelector(
+        'div[data-testid="search-hint-lockup-title"] > span',
+      );
+      titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    programNode.appendChild(imdbNode);
   }
 }

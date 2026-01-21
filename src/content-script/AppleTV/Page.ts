@@ -19,6 +19,16 @@ a.${CssClasses.imdbDataNode} {
   color: var(--systemSecondary);
   margin-left: 4px;
 }
+
+div.search-hint-lockup div[data-testid="search-hint-lockup-title"] {
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+div.search-hint-lockup div[data-testid="search-hint-lockup-title"] .${CssClasses.imdbDataNode} {
+  flex-shrink: 0;
+}
     `;
   }
 
@@ -26,7 +36,10 @@ a.${CssClasses.imdbDataNode} {
     // user is on MLS (sports) page
     if (location.pathname.includes("/channel/mls")) return [];
 
-    const selectors = ['div.section[aria-label]:not([aria-label=""])'];
+    const selectors = [
+      'div.section[aria-label]:not([aria-label=""])',
+      "ul.search-suggestions",
+    ];
     return Array.from(document.querySelectorAll(selectors.join(", ")));
   }
 
@@ -40,32 +53,31 @@ a.${CssClasses.imdbDataNode} {
     if (["/movie/", "/show/"].some((x) => location.pathname.includes(x)))
       return pContainer.title === "Related";
 
+    if (["/person/"].some((x) => location.pathname.includes(x)))
+      return pContainer.title !== "Guest Appearances";
+
     return true;
   }
 
   override findProgramsInProgramContainer(
     pContainer: ProgramContainer,
   ): Program[] {
-    const programNodes: HTMLElement[] = Array.from(
-      pContainer.node.querySelectorAll("ul > li a"),
-    );
+    const selector = pContainer.node.matches(
+      'div.section[aria-label]:not([aria-label=""])',
+    )
+      ? "ul > li a"
+      : pContainer.node.matches("ul.search-suggestions")
+        ? "div.search-hint-lockup"
+        : null;
+    const programNodes: HTMLElement[] = selector
+      ? Array.from(pContainer.node.querySelectorAll(selector))
+      : [];
 
     const ctor = this.constructor as typeof AppleTvPage;
     const programs: Program[] = programNodes
       .map((node) => {
         const extractedData = ctor.ProgramNode.extractData(node);
-        let type: Program["type"];
-        if (location.pathname.includes("/movie/")) {
-          type = "movie";
-        } else if (location.pathname.includes("/show/")) {
-          type = "series";
-        }
-
-        return {
-          node,
-          ...(type ? { type } : {}),
-          ...extractedData,
-        };
+        return { node, ...extractedData };
       })
       .filter(({ title }) => !!title);
 
