@@ -86,7 +86,7 @@ async function loop() {
   const thisLoopAbortController = new AbortController();
   loopAbortController = thisLoopAbortController;
 
-  const msDelayBeforeNextInvocation = 2000;
+  const msDelayBeforeNextInvocation = 1000;
 
   let programs: Program[] = [];
   try {
