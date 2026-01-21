@@ -1,10 +1,14 @@
 import AbstractProgramNode from "./AbstractProgramNode";
 import type { ProgramContainer, Program, IMDBData } from "../common/types";
 import {
-  IMDB_STYLE_NODE_CLASS,
-  IMDB_DATA_NODE_CLASS,
+  CssClasses,
+  defaultProgramFilterSettings,
   getIMDBLink,
+  getSetting,
+  type ProgramFilterSettings,
+  SettingsKey,
 } from "../common";
+import { makeFilteredOutProgramNodeStylesClause } from "./utils";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
@@ -17,7 +21,7 @@ export default class AbstractPage {
   }
 
   async initialize() {
-    this.injectStyles();
+    await this.injectStyles();
   }
 
   findPrograms(): Program[] {
@@ -37,7 +41,7 @@ export default class AbstractPage {
         `Found ${programContainers.length} / ${programContainerNodes.length} \
 valid containers:\n\t${programContainers
           .map((pc, idx) => logPC(pc, programs[idx]!))
-          .join("\n\t")}`
+          .join("\n\t")}`,
       );
     }
 
@@ -60,7 +64,7 @@ valid containers:\n\t${programContainers
 
   checkIMDBDataAlreadyAdded(program: Program): boolean {
     return !!(this.constructor as typeof AbstractPage).ProgramNode.getIMDBNode(
-      program.node
+      program.node,
     );
   }
 
@@ -68,13 +72,20 @@ valid containers:\n\t${programContainers
     const ratingNode = this.createIMDBDataNode(data);
     (this.constructor as typeof AbstractPage).ProgramNode.insertIMDBNode(
       program.node,
-      ratingNode
+      ratingNode,
     );
   }
 
-  injectStyles() {
+  async injectStyles() {
+    const filterSettings =
+      ((await getSetting(SettingsKey.programFiltersSettings)) as
+        | ProgramFilterSettings
+        | undefined) ?? defaultProgramFilterSettings;
+
     const styleNode = document.createElement("style");
-    styleNode.classList.add(IMDB_STYLE_NODE_CLASS);
+    styleNode.classList.add(CssClasses.styleNode);
+    styleNode.innerHTML =
+      makeFilteredOutProgramNodeStylesClause(filterSettings);
     document.head.appendChild(styleNode);
   }
 
@@ -96,7 +107,9 @@ valid containers:\n\t${programContainers
 
   createIMDBDataNode(data: IMDBData): HTMLElement {
     const node = document.createElement("a");
-    node.classList.add(IMDB_DATA_NODE_CLASS);
+    node.classList.add(CssClasses.imdbDataNode);
+    node.dataset["imdbID"] = data.imdbID;
+    node.dataset["imdbRating"] = data.imdbRating;
     if (data.imdbRating !== "N/F") {
       node.setAttribute("href", getIMDBLink(data.imdbID));
       node.setAttribute("target", "_blank");

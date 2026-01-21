@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../../common";
+import { CssClasses } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -10,31 +10,40 @@ export default class CrunchyrollPage extends AbstractPage {
     super();
   }
 
-  override injectStyles() {
-    super.injectStyles();
+  override async injectStyles() {
+    await super.injectStyles();
 
     const pageFontFamily = window
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
 
-    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`)!;
-    styleNode.innerHTML = `
-      a.${IMDB_DATA_NODE_CLASS} {
-        color: #999999 !important;
-        display: block;
-        font-family: ${pageFontFamily};
-        font-size: 0.75rem;
-      }
+    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
+    styleNode.innerHTML += `
+a.${CssClasses.imdbDataNode} {
+  color: #999999 !important;
+  display: block;
+  font-family: ${pageFontFamily};
+  font-size: 0.875rem;
+}
 
-      section[data-testid="super-carousel"] li {
-        position: relative;
-        margin-bottom: 1.25em;
-      }
+section[data-testid="super-carousel"] li {
+  position: relative;
+  margin-bottom: 1.25em;
+}
 
-      section[data-testid="super-carousel"] li a.${IMDB_DATA_NODE_CLASS} {
-        position: absolute;
-        bottom: -2em;
-      }
+section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
+  position: absolute;
+  bottom: -2em;
+}
+
+div[data-t="series-card"] h2 {
+  display: flex;
+  gap: 1rem;
+}
+
+div[data-t^="watch-list-card"] h3 {
+  height: auto !important
+}
     `;
   }
 
@@ -62,22 +71,18 @@ export default class CrunchyrollPage extends AbstractPage {
   }
 
   override getTitleFromProgramContainerNode(
-    pContainerNode: HTMLElement
+    pContainerNode: HTMLElement,
   ): string {
     if (
       pContainerNode.matches(
-        'section.cr-browse-section[data-t="browse-section"]'
+        'section.cr-browse-section[data-t="browse-section"]',
       )
     ) {
       return pContainerNode.querySelector("h2.title")?.textContent ?? "";
     }
 
     if (pContainerNode.matches("div.dynamic-feed-wrapper > div[data-id]")) {
-      return (
-        pContainerNode.firstElementChild?.firstElementChild?.firstElementChild?.querySelector(
-          "div[id] h2"
-        )?.textContent ?? ""
-      );
+      return pContainerNode.querySelector("div[id] h2")?.textContent ?? "";
     }
 
     if (pContainerNode.matches("div.erc-browse-collection")) {
@@ -89,7 +94,7 @@ export default class CrunchyrollPage extends AbstractPage {
           ?.textContent ??
         // genre > category page (ex: "Action / Popular")
         pContainerNode.parentElement?.parentElement?.querySelector(
-          "div.breadcrumbs-with-filters div.subgenres-breadcrumbs"
+          "div.breadcrumbs-with-filters div.subgenres-breadcrumbs",
         )?.textContent ??
         ""
       );
@@ -117,11 +122,14 @@ export default class CrunchyrollPage extends AbstractPage {
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
-    return !!pContainer.title;
+    return Boolean(
+      pContainer.title &&
+      !["News Collection"].some((x) => x === pContainer.title),
+    );
   }
 
   override findProgramsInProgramContainer(
-    pContainer: ProgramContainer
+    pContainer: ProgramContainer,
   ): Program[] {
     const { node } = pContainer;
 
@@ -129,7 +137,7 @@ export default class CrunchyrollPage extends AbstractPage {
 
     if (node.matches('section.cr-browse-section[data-t="browse-section"]')) {
       programNodes = Array.from(
-        node.querySelectorAll('div[data-t="carousel-card-wrapper"]')
+        node.querySelectorAll('div[data-t="carousel-card-wrapper"]'),
       );
     } else if (node.matches("div.dynamic-feed-wrapper > div[data-id]")) {
       programNodes = Array.from(
@@ -138,22 +146,25 @@ export default class CrunchyrollPage extends AbstractPage {
             'div[data-t="carousel-card-wrapper"]',
             'div[data-t^="episode-card"]',
             'div[data-t^="watch-list-card"]',
-          ].join(",")
-        )
+            'div[data-t="release-episode-card-stack"]',
+            'div[data-t="release-episode-card"]',
+            'div[data-t="single-show-card"]',
+          ].join(","),
+        ),
       );
     } else if (node.matches("div.erc-browse-collection")) {
       programNodes = Array.from(node.querySelectorAll("div.browse-card"));
     } else if (node.matches("div.erc-alphabetical-virtual-list")) {
       programNodes = Array.from(
-        node.querySelectorAll('div[data-t="series-card"]')
+        node.querySelectorAll('div[data-t="series-card"]'),
       );
     } else if (node.matches("div.erc-genres-collection")) {
       programNodes = Array.from(
-        node.querySelectorAll('div[data-t="carousel-card-wrapper"]')
+        node.querySelectorAll('div[data-t="carousel-card-wrapper"]'),
       );
     } else if (node.matches("div.erc-similar-to")) {
       programNodes = Array.from(
-        node.querySelectorAll('div[data-t="carousel-card-wrapper"]')
+        node.querySelectorAll('div[data-t="carousel-card-wrapper"]'),
       );
     }
 

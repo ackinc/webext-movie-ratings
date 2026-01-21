@@ -10,12 +10,12 @@ import {
   makeFetchTransport,
   Scope,
 } from "@sentry/react";
-import { getErrorReportingOptInState } from ".";
+import { getSetting, SettingsKey } from ".";
 
 // filter integrations that use the global variable
 const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
   return !["BrowserApiErrors", "Breadcrumbs", "GlobalHandlers"].includes(
-    defaultIntegration.name
+    defaultIntegration.name,
   );
 });
 
@@ -26,7 +26,7 @@ const client = new BrowserClient({
   integrations: integrations,
 
   beforeSend: async (evt) =>
-    (await getErrorReportingOptInState()) ? evt : null,
+    (await getSetting(SettingsKey.errorReportingOptIn)) ? evt : null,
   environment: BUILDTIME_ENV.DEBUG_MODE ? "development" : "production",
   maxValueLength: 2048,
 });
@@ -36,4 +36,15 @@ scope.setClient(client);
 
 client.init();
 
-export default scope;
+export function captureException(
+  e: Error,
+  opts: { addViewportDims: boolean } = { addViewportDims: false },
+) {
+  if (opts.addViewportDims) {
+    const clonedScope = scope.clone();
+    clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
+    clonedScope.captureException(e);
+  } else {
+    scope.captureException(e);
+  }
+}

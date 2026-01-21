@@ -2,25 +2,49 @@ import { ONE_HOUR_IN_MS, ONE_WEEK_IN_MS, browser, omit } from "./common";
 import type {
   Program,
   IMDBData,
+  Message,
   CachedIMDBData,
   SWErrorResponse,
   OmdbApiResponse,
 } from "./common/types";
-import { MessageType } from "./common/types";
-import sentryScope from "./common/Sentry";
+import { getSetting, setSetting, MessageType, SettingsKey } from "./common";
+import { captureException } from "./common/errorReporter";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
 
+browser.runtime.onInstalled.addListener(onInstalled);
 browser.runtime.onMessage.addListener(handleMessage);
-browser.runtime.onInstalled.addListener(() => browser.action?.openPopup());
+
+async function onInstalled() {
+  await injectUpdatedContentScripts();
+  await showPopupIfNotSeen();
+}
+
+async function injectUpdatedContentScripts() {
+  const tabs = await browser.tabs.query({
+    url: browser.runtime.getManifest()["host_permissions"],
+  });
+  tabs.forEach((tab) => {
+    browser.scripting.executeScript({
+      files: browser.runtime.getManifest()["content_scripts"]![0]!["js"]!,
+      target: { tabId: tab.id! },
+    });
+  });
+}
+
+async function showPopupIfNotSeen() {
+  if (await getSetting(SettingsKey.popupSeenAtLeastOnce)) return;
+  browser.action?.openPopup();
+  await setSetting(SettingsKey.popupSeenAtLeastOnce, true);
+}
 
 function handleMessage(
-  request: { type: keyof typeof MessageType; data: unknown },
+  request: Message,
   _sender: chrome.runtime.MessageSender,
-  sendResponse: (arg: IMDBData | SWErrorResponse) => void
+  sendResponse: (arg: IMDBData | SWErrorResponse) => void,
 ) {
-  if (request.type === MessageType.fetchIMDBRating) {
+  if (request.messageType === MessageType.fetchIMDBRating) {
     const program = request.data as Omit<Program, "node">;
     fetchIMDBData(program)
       .then((data) => sendResponse(data))
@@ -28,11 +52,11 @@ function handleMessage(
         const error = e instanceof Error ? e : new Error(e.toString());
         error.message = `Failed to fetch rating. Program: ${JSON.stringify(program)}. Error: ${error.message}`;
         sendResponse({ error });
-        sentryScope.captureException(error);
+        captureException(error);
       });
   } else {
-    const err = new Error(`Unknown message type: ${request.type}`);
-    sentryScope.captureException(err);
+    const err = new Error(`Unknown message type: ${request.messageType}`);
+    captureException(err);
     throw err;
   }
 
@@ -40,7 +64,7 @@ function handleMessage(
 }
 
 async function fetchIMDBData(
-  program: Omit<Program, "node">
+  program: Omit<Program, "node">,
 ): Promise<IMDBData> {
   const key = getCacheKey(program);
 
@@ -58,7 +82,7 @@ async function fetchIMDBData(
   if (year) searchParams.set("y", year);
 
   const response = await fetch(
-    `https://www.omdbapi.com/?${searchParams.toString()}`
+    `https://www.omdbapi.com/?${searchParams.toString()}`,
   );
   const respBody = (await response.json()) as OmdbApiResponse;
 
@@ -91,7 +115,7 @@ function getCacheKey(program: Omit<Program, "node">): string {
   return btoa(
     [title.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
       .filter(Boolean)
-      .join("|")
+      .join("|"),
   );
 }
 
@@ -100,6 +124,6 @@ function checkCachedDataIsUsable(data: CachedIMDBData | undefined): boolean {
     data &&
     data.imdbRating &&
     (data.imdbID || data.imdbRating === "N/F") &&
-    data.expiry > +new Date()
+    data.expiry > +new Date(),
   );
 }

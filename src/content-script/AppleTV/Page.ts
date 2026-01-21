@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { IMDB_STYLE_NODE_CLASS, IMDB_DATA_NODE_CLASS } from "../../common";
+import { CssClasses } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -10,15 +10,15 @@ export default class AppleTvPage extends AbstractPage {
     super();
   }
 
-  override injectStyles() {
-    super.injectStyles();
+  override async injectStyles() {
+    await super.injectStyles();
 
-    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`)!;
-    styleNode.innerHTML = `
-      a.${IMDB_DATA_NODE_CLASS} {
-        color: var(--systemSecondary);
-        margin-left: 4px;
-      }
+    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
+    styleNode.innerHTML += `
+a.${CssClasses.imdbDataNode} {
+  color: var(--systemSecondary);
+  margin-left: 4px;
+}
     `;
   }
 
@@ -31,7 +31,7 @@ export default class AppleTvPage extends AbstractPage {
   }
 
   override getTitleFromProgramContainerNode(
-    pContainerNode: HTMLElement
+    pContainerNode: HTMLElement,
   ): string {
     return pContainerNode.getAttribute("aria-label") ?? "";
   }
@@ -44,10 +44,10 @@ export default class AppleTvPage extends AbstractPage {
   }
 
   override findProgramsInProgramContainer(
-    pContainer: ProgramContainer
+    pContainer: ProgramContainer,
   ): Program[] {
     const programNodes: HTMLElement[] = Array.from(
-      pContainer.node.querySelectorAll("ul > li a")
+      pContainer.node.querySelectorAll("ul > li a"),
     );
 
     const ctor = this.constructor as typeof AppleTvPage;

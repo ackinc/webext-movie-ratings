@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../../common";
+import { CssClasses } from "../../common";
 import ProgramNode from "./ProgramNode";
 import type { Program, ProgramContainer } from "../../common/types";
 
@@ -10,43 +10,82 @@ class SonyLivPage extends AbstractPage {
     super();
   }
 
-  override injectStyles() {
-    super.injectStyles();
+  override async injectStyles() {
+    await super.injectStyles();
 
-    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`)!;
-    styleNode.innerHTML = `
-      a.${IMDB_DATA_NODE_CLASS} {
-        margin: 2px 0 0 8px;
-        color: #999999;
-        display: block;
-        font-family: sans-serif;
-        font-size: 14px;
-        font-weight: bold;
-        text-align: left;
-        text-decoration: none;
-      }
+    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
+    styleNode.innerHTML += `
+a.${CssClasses.imdbDataNode} {
+  margin: 2px 0 0 8px;
+  color: #999999;
+  display: block;
+  font-family: sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+  text-decoration: none;
+}
 
-      div.trending-tray-layout a.${IMDB_DATA_NODE_CLASS} {
-        text-align: right;
-      }
+div.listinpage_wrapper .innerlist a[id] div.listing-portrait-card-inner-div {
+  position: relative;
+}
 
-      @media screen and (max-width: 420px) {
-        a.${IMDB_DATA_NODE_CLASS} {
-          position: absolute;
-          top: 2px;
-          right: 10px;
-          margin: 0;
-          width: 48px;
-          height: 20px;
-          border-radius: 4px;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          color: white;
-          font-size: 9px;
-        }
-      }
+div.listinpage_wrapper .innerlist a[id] .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #454545;
+  border-radius: 4px;
+  color: #eaeaea;
+}
+
+/* these show up when hovering over the "movies" link on the home and
+     other pages */
+div.megaMenu div.layout-container a.portrait-link .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #454545;
+  border-radius: 4px;
+  color: #eaeaea;
+}
+
+div.PopularSearchContainer > a[id] {
+  position: relative;
+}
+
+div.PopularSearchContainer > a[id] .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #454545;
+  border-radius: 4px;
+  color: #eaeaea;
+}
+
+@media screen and (max-width: 420px) {
+  a.${CssClasses.imdbDataNode} {
+    position: absolute;
+    top: 2px;
+    right: 10px;
+    margin: 0;
+    width: 48px;
+    height: 20px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 9px;
+  }
+}
     `;
   }
 
@@ -57,9 +96,16 @@ class SonyLivPage extends AbstractPage {
 
     const selectors = [
       // lists on home and top-level categories (tv shows, movies, ...) pages
+      // also shows on hovering over "movies" link on home and other pages
       "div.layout-main-container",
       // list on second-tier category pages
       "div.listinpage_wrapper",
+
+      // search preview
+      "div.PopularSearchContainer",
+
+      // search results
+      "div.searchWrapperContainer",
 
       // mobile web
       "div.page-position > div.potraitTrayCards",
@@ -83,6 +129,17 @@ class SonyLivPage extends AbstractPage {
       }
     }
 
+    if (node.matches("div.PopularSearchContainer")) {
+      return node.querySelector("h1")?.textContent ?? "";
+    }
+
+    if (node.matches("div.searchWrapperContainer")) {
+      return (
+        node.querySelector("div.SearchContainerGrid div.TopHeading h5")
+          ?.textContent ?? ""
+      );
+    }
+
     return "";
   }
 
@@ -99,12 +156,12 @@ class SonyLivPage extends AbstractPage {
         "Trending In Sports",
         /^Indian Idol/,
         "Top Moments In Reality",
-      ].some((x) => (x instanceof RegExp ? x.test(title) : x === title))
+      ].some((x) => (x instanceof RegExp ? x.test(title) : x === title)),
     );
   }
 
   override findProgramsInProgramContainer(
-    pContainer: ProgramContainer
+    pContainer: ProgramContainer,
   ): Program[] {
     const { node } = pContainer;
 
@@ -114,12 +171,16 @@ class SonyLivPage extends AbstractPage {
         ? "a[title]"
         : node.matches("div.page-position > div.potraitTrayCards")
           ? "a.link_container"
-          : null;
+          : node.matches("div.PopularSearchContainer")
+            ? "a[id]"
+            : node.matches("div.searchWrapperContainer")
+              ? "a[id]"
+              : null;
     if (!selector) return [];
 
     const ctor = this.constructor as typeof SonyLivPage;
     const programNodes = Array.from(
-      node.querySelectorAll<HTMLElement>(selector)
+      node.querySelectorAll<HTMLElement>(selector),
     ).filter(ctor.ProgramNode.isMovieOrSeries);
     const programs = programNodes
       .map((node) => ({

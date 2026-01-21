@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { IMDB_DATA_NODE_CLASS, IMDB_STYLE_NODE_CLASS } from "../../common";
+import { CssClasses } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 
 export default class NetflixPage extends AbstractPage {
@@ -10,27 +10,62 @@ export default class NetflixPage extends AbstractPage {
     super();
   }
 
-  override injectStyles() {
-    super.injectStyles();
+  override async injectStyles() {
+    await super.injectStyles();
 
     const pageFontFamily = window
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
 
-    const styleNode = document.querySelector(`style.${IMDB_STYLE_NODE_CLASS}`)!;
-    styleNode.innerHTML = `
-      a.${IMDB_DATA_NODE_CLASS} {
-        color: #999999;
-        display: block;
-        font-family: ${pageFontFamily};
-        font-size: 16px;
-        font-weight: bold;
-        margin: 4px 0 0 4px;
-      }
+    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
+    styleNode.innerHTML += `
+a.${CssClasses.imdbDataNode} {
+  color: #999999;
+  display: block;
+  font-family: ${pageFontFamily};
+  font-size: 16px;
+  font-weight: bold;
+  margin: 4px 0 0 4px;
+}
 
-      .titleCard--metadataWrapper a.${IMDB_DATA_NODE_CLASS} {
-        margin: 0 0 0.5em 1em;
-      }
+div.title-card-container .${CssClasses.imdbDataNode} {
+  margin: 0;
+  padding-top: 4px;
+}
+
+div.title-card-container:has(> div.progress) .${CssClasses.imdbDataNode} {
+  padding-top: 16px;
+}
+
+div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #141414;
+  border-radius: 8px;
+  color: #d2d2d2;
+  font-size: 16px;
+  font-weight: normal;
+}
+
+.titleCard--metadataWrapper a.${CssClasses.imdbDataNode} {
+  margin: 0 0 0.5em 1em;
+}
+
+section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #141414;
+  border-radius: 8px;
+  color: #d2d2d2;
+  font-size: 16px;
+  font-weight: normal;
+}
     `;
   }
 
@@ -40,14 +75,14 @@ export default class NetflixPage extends AbstractPage {
       "div.titleGroup--wrapper",
       "div.moreLikeThis--wrapper",
       "div.gallery",
-      'div[data-uia="search-video-gallery"]',
+      'section[data-uia="search-gallery"]',
     ];
     const nodes = document.querySelectorAll<HTMLElement>(selectors.join(","));
     return Array.from(nodes);
   }
 
   override getTitleFromProgramContainerNode(
-    pContainerNode: HTMLElement
+    pContainerNode: HTMLElement,
   ): string {
     const { classList } = pContainerNode;
 
@@ -74,7 +109,7 @@ export default class NetflixPage extends AbstractPage {
           pContainerParent.previousElementSibling?.querySelector("div.title")
             ?.textContent ||
           pContainerParent.previousElementSibling?.querySelector(
-            "div.aro-genre-details > span.genreTitle"
+            "div.aro-genre-details > span.genreTitle",
           )?.textContent ||
           ""
         );
@@ -90,18 +125,19 @@ export default class NetflixPage extends AbstractPage {
       );
     }
 
+    if (pContainerNode.matches('section[data-uia="search-gallery"]')) {
+      return "Search results";
+    }
+
     return "";
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
-    return Boolean(
-      pContainer.title ||
-      pContainer.node.getAttribute("data-uia") === "search-video-gallery"
-    );
+    return Boolean(pContainer.title);
   }
 
   override findProgramsInProgramContainer(
-    pContainer: ProgramContainer
+    pContainer: ProgramContainer,
   ): Program[] {
     const { node } = pContainer;
 
@@ -109,22 +145,28 @@ export default class NetflixPage extends AbstractPage {
 
     if (
       ["lolomoRow", "gallery"].some((cName) =>
-        node.classList.contains(cName)
+        node.classList.contains(cName),
       ) ||
       node.getAttribute("data-uia") === "search-video-gallery"
     ) {
       programNodes = Array.from(
-        node.querySelectorAll("div.ptrack-content a.slider-refocus")
+        node.querySelectorAll("div.title-card-container"),
       );
     }
 
     if (
       ["moreLikeThis--wrapper", "titleGroup--wrapper"].some((cName) =>
-        node.classList.contains(cName)
+        node.classList.contains(cName),
       )
     ) {
       programNodes = Array.from(
-        node.querySelectorAll("div.titleCard--container")
+        node.querySelectorAll("div.titleCard--container"),
+      );
+    }
+
+    if (node.matches('section[data-uia="search-gallery"]')) {
+      programNodes = Array.from(
+        node.querySelectorAll('a[data-uia="search-gallery-video-card"]'),
       );
     }
 

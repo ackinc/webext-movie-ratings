@@ -1,0 +1,59 @@
+* {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Ubuntu, Arial, sans-serif;
+
+  --main-bg-color: #f5c618;
+  --highlighted-bg-color: #e2b615;
+  --main-text-color: #454545;
+
+  --primary-font-size: 1rem;
+  --secondary-font-size: 0.8rem;
+}
+
+div#root > .app {
+  width: 320px;
+  padding: 16px;
+  font-size: var(--secondary-font-size);
+}
+
+.bolded {
+  font-weight: bold;
+}
+
+.noUi-connect {
+  background-color: var(--main-bg-color);
+}
+
+.noUi-handle {
+  cursor: grab;
+}
+
+.imdb-rating-filter-slider .noUi-handle {
+  width: 18px !important;
+  right: -9px !important;
+}
+
+.imdb-rating-filter-slider .noUi-handle::before {
+  left: 6px;
+}
+
+.imdb-rating-filter-slider .noUi-handle::after {
+  left: 9px;
+}
+
+.fopn-transparency-slider .noUi-pips {
+  padding: 0;
+  height: auto;
+}
+
+.fopn-transparency-slider .noUi-marker {
+  height: 12px;
+}
+
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}

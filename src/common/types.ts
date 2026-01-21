@@ -1,3 +1,5 @@
+import { MessageType } from "./constants";
+
 export type ProgramContainer = {
   node: HTMLElement;
   title: string;
@@ -17,10 +19,6 @@ export type IMDBData = {
 
 export type CachedIMDBData = IMDBData & { expiry: number };
 
-export enum MessageType {
-  fetchIMDBRating = "fetchIMDBRating",
-}
-
 export type SWErrorResponse = {
   error: Error;
 };
@@ -33,3 +31,20 @@ export type OmdbApiResponse =
       imdbID: string;
       imdbRating: string;
     };
+
+export type ProgramFilterSettings = {
+  minRating: number;
+  maxRating: number;
+  excludeUnratedPrograms: boolean;
+  transparency: number;
+};
+
+export type NumberRange = {
+  min: number;
+  max: number;
+};
+
+export type Message = {
+  messageType: MessageType;
+  data: unknown;
+};

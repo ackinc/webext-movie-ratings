@@ -1,0 +1,19 @@
+.program-filters-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.program-filters-container h3 {
+  margin-bottom: 8px;
+}
+
+.filter-setting-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-setting-container:not(:last-child) {
+  margin-bottom: 16px;
+}

@@ -1,38 +1,54 @@
-import { browser, pick, omit, invert } from "../common";
-import sentryScope from "../common/Sentry";
+import {
+  browser,
+  defaultProgramFilterSettings,
+  pick,
+  omit,
+  invert,
+  delayMs,
+  getSetting,
+  MessageType,
+  SettingsKey,
+  CssClasses,
+} from "../common";
+import { captureException } from "../common/errorReporter";
 import type AbstractPage from "./AbstractPage";
-import type { IMDBData, Program, SWErrorResponse } from "../common/types";
+import type {
+  IMDBData,
+  Message,
+  Program,
+  SWErrorResponse,
+  ProgramFilterSettings,
+} from "../common/types";
 import HotstarPage from "./Hotstar/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
+import { updateFilteredOutProgramNodeStyles } from "./utils";
 
 let page: AbstractPage;
-const intervalTimeMs = 2000;
-const maxConsecutiveErrors = 5;
-let nErrors = 0;
 
-window.addEventListener("message", (e) => {
-  if (e.data === "sift:urlchange" && nErrors >= maxConsecutiveErrors) {
-    nErrors = 0;
-    console.log(`Sift: resuming due to page change`);
-    setTimeout(loop, 0);
+// should *only* be set to undefined when we deliberately pause
+//   the loop due to errors
+let loopTimeout: number | undefined;
+let loopAbortController: AbortController;
+
+(async () => {
+  try {
+    // so content scripts belonging to prev. ext. version can cleanup
+    window.postMessage({ messageType: MessageType.orphanCheck });
+
+    await initializePage();
+    addMessageListeners();
+    loopTimeout = setTimeout(loop, 0);
+  } catch (e) {
+    captureException(e as Error, { addViewportDims: true });
+    throw e;
   }
-});
+})();
 
-try {
-  main();
-} catch (e) {
-  const clonedScope = sentryScope.clone();
-  clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
-  clonedScope.captureException(e);
-
-  throw e;
-}
-
-async function main() {
+async function initializePage() {
   if (location.hostname === "www.hotstar.com") {
     page = new HotstarPage();
   } else if (location.hostname === "www.sonyliv.com") {
@@ -41,7 +57,7 @@ async function main() {
     page = new NetflixPage();
   } else if (
     ["www.primevideo.com", "www.amazon.com"].some(
-      (x) => x === location.hostname
+      (x) => x === location.hostname,
     )
   ) {
     page = new AmazonPrimeVideoPage();
@@ -54,40 +70,77 @@ async function main() {
   }
 
   await page.initialize();
+}
 
-  window.__page = page;
+function addMessageListeners() {
+  window.addEventListener("message", handleMessage);
+  browser.runtime.onMessage.addListener(handleMessage);
+}
 
-  setTimeout(loop, 0);
+function removeMessageListeners() {
+  window.removeEventListener("message", handleMessage);
+  browser.runtime.onMessage.removeListener(handleMessage);
 }
 
 async function loop() {
-  let programsToAddRatingsFor: Program[];
+  const thisLoopAbortController = new AbortController();
+  loopAbortController = thisLoopAbortController;
+
+  const msDelayBeforeNextInvocation = 2000;
+
+  let programs: Program[] = [];
   try {
-    programsToAddRatingsFor = page
-      .findPrograms()
-      .filter(invert(page.checkIMDBDataAlreadyAdded));
-    nErrors = 0;
+    programs = await findProgramsOnPage();
+    await addRatingsToPrograms(programs);
+    await fadeFilteredOutPrograms(programs);
+
+    if (!thisLoopAbortController.signal.aborted) {
+      loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
+    }
   } catch (e) {
-    if (++nErrors < maxConsecutiveErrors) {
-      // retry, because the error might be a temporary one caused
-      //   by the page not having finished loading
-      setTimeout(loop, intervalTimeMs);
+    loopTimeout = undefined;
+
+    if ((e as Error).message.startsWith("Extension context invalidated")) {
+      cleanup();
       return;
     }
 
-    const err: Error = e instanceof Error ? e : new Error(e?.toString());
-    console.error(err);
-
-    const clonedScope = sentryScope.clone();
-    clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
-    clonedScope.captureException(err);
-
-    console.log(`Sift: Pausing loop due to too many errors`);
-    return;
+    captureException(e as Error, { addViewportDims: true });
+    throw e;
   }
+}
+
+async function findProgramsOnPage(): Promise<Program[]> {
+  const maxConsecutiveErrors = 5;
+  const errors = [];
+  const msDelayBetweenRetries = 2000;
+
+  let programs: Program[] | undefined;
+  do {
+    try {
+      programs = page.findPrograms();
+    } catch (e) {
+      const thisErr = e instanceof Error ? e : new Error(e?.toString());
+      console.error(thisErr);
+      errors.push(thisErr);
+
+      // the error may have been caused by the page not having finished
+      //   loading, so we'll give it some time
+      await delayMs(msDelayBetweenRetries);
+    }
+  } while (!programs && errors.length < maxConsecutiveErrors);
+
+  if (!programs) throw errors.at(-1);
+  return programs as Program[];
+}
+
+async function addRatingsToPrograms(allPrograms: Program[]) {
+  const programsToAddRatingsFor = allPrograms.filter(
+    invert(page.checkIMDBDataAlreadyAdded),
+  );
 
   const results = await Promise.allSettled(
-    programsToAddRatingsFor.map(fetchIMDBData)
+    programsToAddRatingsFor.map(fetchIMDBData),
   );
   programsToAddRatingsFor.forEach((program, idx) => {
     if (results[idx]!.status === "rejected") {
@@ -103,21 +156,96 @@ async function loop() {
       err.message = `Error adding imdb data to program. Program data: ${JSON.stringify(omit(program, ["node"]))}`;
       console.error(err, program.node);
 
-      const clonedScope = sentryScope.clone();
-      clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
-      clonedScope.captureException(err);
+      captureException(err, { addViewportDims: true });
     }
   });
-
-  setTimeout(loop, intervalTimeMs);
 }
 
 async function fetchIMDBData(program: Program): Promise<IMDBData> {
   const response: IMDBData | SWErrorResponse =
     await browser.runtime.sendMessage({
-      type: "fetchIMDBRating",
+      messageType: MessageType.fetchIMDBRating,
       data: pick(program, ["title", "type", "year"]),
     });
   if ("error" in response) throw response.error;
   return response;
+}
+
+async function fadeFilteredOutPrograms(allPrograms: Program[]) {
+  const settings = {
+    ...defaultProgramFilterSettings,
+    ...((await getSetting(SettingsKey.programFiltersSettings)) as
+      | ProgramFilterSettings
+      | undefined),
+  };
+
+  allPrograms.forEach((p) => {
+    const imdbNode = (
+      page.constructor as typeof AbstractPage
+    ).ProgramNode.getIMDBNode(p.node);
+    if (!imdbNode) return;
+
+    const rating = parseFloat(imdbNode.dataset!["imdbRating"]!);
+    if (rating < settings.minRating || rating > settings.maxRating) {
+      p.node.classList.add(CssClasses.filteredOutProgramNode);
+    } else if (settings.excludeUnratedPrograms && Number.isNaN(rating)) {
+      p.node.classList.add(CssClasses.filteredOutProgramNode);
+    } else {
+      p.node.classList.remove(CssClasses.filteredOutProgramNode);
+    }
+  });
+}
+
+function handleMessage(m: MessageEvent | Message) {
+  const { messageType, data } = m instanceof MessageEvent ? m.data : m;
+
+  if (messageType === MessageType.orphanCheck) {
+    if (!browser.runtime.id) cleanup();
+  } else if (messageType === MessageType.urlChange) {
+    handleUrlChange();
+  } else if (messageType === MessageType.filterSettingsChange) {
+    handleFilterSettingsChange(data as ProgramFilterSettings);
+  }
+}
+
+function handleUrlChange() {
+  if (page && loopTimeout === undefined) {
+    console.log(`Sift: resuming paused loop on page change`);
+    loopTimeout = setTimeout(loop, 0);
+  }
+}
+
+function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
+  haltLoop();
+
+  updateFilteredOutProgramNodeStyles(updatedSettings);
+
+  // restart loop
+  loopTimeout = setTimeout(loop, 0);
+}
+
+function haltLoop() {
+  // prevent running loop invocation from scheduling another invocation
+  loopAbortController.abort();
+
+  // clear any scheduled loop
+  clearTimeout(loopTimeout);
+}
+
+function cleanup() {
+  haltLoop();
+  removeMessageListeners();
+
+  const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
+  styleNode?.parentElement?.removeChild(styleNode);
+
+  const programs = page.findPrograms();
+  programs.forEach((p) => {
+    p.node.classList.remove(CssClasses.filteredOutProgramNode);
+    (page.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
+      p.node,
+    );
+  });
+
+  console.log("sift: orphaned content script cleanup complete");
 }

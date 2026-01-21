@@ -1,6 +1,10 @@
-export const IMDB_DATA_NODE_CLASS = "webext-imdb-data";
+import { type ProgramFilterSettings } from "./types";
 
-export const IMDB_STYLE_NODE_CLASS = "webext-styles";
+export const enum CssClasses {
+  styleNode = "sift-style",
+  imdbDataNode = "sift-imdb-data",
+  filteredOutProgramNode = "sift-filtered-out-program",
+}
 
 export const ONE_HOUR_IN_MS = 1000 * 60 * 60;
 
@@ -25,4 +29,22 @@ export const languages = [
   "Korean",
 ];
 
-export const errorReportingOptInStateKey = "optedInToErrorReporting";
+export const enum MessageType {
+  fetchIMDBRating = "sift:fetchIMDBRating",
+  urlChange = "sift:urlchange",
+  filterSettingsChange = "sift:filterSettingsChange",
+  orphanCheck = "sift:orphanCheck",
+}
+
+export const enum SettingsKey {
+  errorReportingOptIn = "errorReportingOptIn",
+  programFiltersSettings = "programFiltersSettings",
+  popupSeenAtLeastOnce = "popupSeenAtLeastOnce",
+}
+
+export const defaultProgramFilterSettings: ProgramFilterSettings = {
+  minRating: 0,
+  maxRating: 10,
+  excludeUnratedPrograms: true,
+  transparency: 0,
+};

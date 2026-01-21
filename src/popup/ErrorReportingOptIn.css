@@ -1,0 +1,43 @@
+.error-reporting-container {
+  border-radius: 18px;
+  padding: 8px 16px;
+  background-color: var(--main-bg-color);
+  color: var(--main-text-color);
+  font-size: var(--secondary-font-size);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.error-reporting-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-reporting-control button.toggle-info-btn {
+  margin-left: auto;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--main-text-color);
+  border-radius: 50%;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: var(--secondary-font-size);
+  font-weight: bold;
+}
+
+.error-reporting-control button.toggle-info-btn:hover {
+  background-color: var(--highlighted-bg-color);
+}
+
+.error-reporting-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: var(--secondary-font-size);
+}
+
+.error-reporting-details ul {
+  padding-left: 16px;
+}
