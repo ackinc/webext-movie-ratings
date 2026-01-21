@@ -53,6 +53,19 @@ div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode}
 .titleCard--metadataWrapper a.${CssClasses.imdbDataNode} {
   margin: 0 0 0.5em 1em;
 }
+
+section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin: 0;
+  padding: 4px 8px;
+  background-color: #141414;
+  border-radius: 8px;
+  color: #d2d2d2;
+  font-size: 16px;
+  font-weight: normal;
+}
     `;
   }
 
@@ -62,7 +75,7 @@ div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode}
       "div.titleGroup--wrapper",
       "div.moreLikeThis--wrapper",
       "div.gallery",
-      'div[data-uia="search-video-gallery"]',
+      'section[data-uia="search-gallery"]',
     ];
     const nodes = document.querySelectorAll<HTMLElement>(selectors.join(","));
     return Array.from(nodes);
@@ -112,14 +125,15 @@ div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode}
       );
     }
 
+    if (pContainerNode.matches('section[data-uia="search-gallery"]')) {
+      return "Search results";
+    }
+
     return "";
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
-    return Boolean(
-      pContainer.title ||
-      pContainer.node.getAttribute("data-uia") === "search-video-gallery",
-    );
+    return Boolean(pContainer.title);
   }
 
   override findProgramsInProgramContainer(
@@ -147,6 +161,12 @@ div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode}
     ) {
       programNodes = Array.from(
         node.querySelectorAll("div.titleCard--container"),
+      );
+    }
+
+    if (node.matches('section[data-uia="search-gallery"]')) {
+      programNodes = Array.from(
+        node.querySelectorAll('a[data-uia="search-gallery-video-card"]'),
       );
     }
 
