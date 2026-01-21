@@ -37,6 +37,10 @@ div.title-card-container:has(> div.progress) .${CssClasses.imdbDataNode} {
   padding-top: 16px;
 }
 
+div.title-card-container:has(svg.top-10-rank) .${CssClasses.imdbDataNode} {
+  margin-left: 50%;
+}
+
 div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode} {
   position: absolute;
   top: 4px;
