@@ -19,6 +19,10 @@ div#root > .app {
   font-size: var(--secondary-font-size);
 }
 
+.bolded {
+  font-weight: bold;
+}
+
 .noUi-connect {
   background-color: var(--main-bg-color);
 }

@@ -38,14 +38,9 @@ function ProgramFilters() {
 
       <div className="imdb-rating-filter-setting filter-setting-container">
         <label>
-          Watch shows rated{" "}
-          <span style={{ fontWeight: "bold" }}>
-            {settings.minRating.toFixed(1)}
-          </span>{" "}
-          to{" "}
-          <span style={{ fontWeight: "bold" }}>
-            {settings.maxRating.toFixed(1)}
-          </span>
+          Include shows rated{" "}
+          <span className="bolded">{settings.minRating.toFixed(1)}</span> to{" "}
+          <span className="bolded">{settings.maxRating.toFixed(1)}</span>
         </label>
         <Slider
           className="imdb-rating-filter-slider"
@@ -68,23 +63,20 @@ function ProgramFilters() {
           checked={settings.excludeUnratedPrograms}
           onChange={(e) => {
             updateSettings({
-              excludeUnratedPrograms: !!e.target["checked"],
+              excludeUnratedPrograms: (e.target as HTMLInputElement).checked,
             });
           }}
         />
-        <label for="exclude-unrated-programs">
-          Exclude shows we don't know the rating for
-        </label>
+        <label for="exclude-unrated-programs">Exclude unrated shows</label>
       </div>
 
       <div className="fopn-transparency-setting filter-setting-container">
         {settings.transparency > 100 ? (
-          <label>Hide other shows completely</label>
+          <label>Hide excluded shows completely</label>
         ) : (
           <label>
-            Make other shows{" "}
-            <span style={{ fontWeight: "bold" }}>{settings.transparency}%</span>{" "}
-            transparent
+            Make excluded shows{" "}
+            <span className="bolded">{settings.transparency}%</span> transparent
           </label>
         )}
         <Slider
