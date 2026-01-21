@@ -40,6 +40,12 @@ export default class ProgramNode extends AbstractProgramNode {
       return;
     }
 
+    if (programNode.matches("a.search-card.lockup")) {
+      const titleNode = programNode.querySelector("p.search-card-title");
+      titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
     programNode.appendChild(imdbNode);
   }
 }

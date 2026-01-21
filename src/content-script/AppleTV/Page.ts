@@ -29,6 +29,10 @@ div.search-hint-lockup div[data-testid="search-hint-lockup-title"] {
 div.search-hint-lockup div[data-testid="search-hint-lockup-title"] .${CssClasses.imdbDataNode} {
   flex-shrink: 0;
 }
+
+a.search-card.lockup .${CssClasses.imdbDataNode} {
+  margin-left: 0;
+}
     `;
   }
 
