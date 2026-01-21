@@ -82,6 +82,7 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
       // search results
       "div.erc-top-results",
       "div.erc-series-results",
+      "div.erc-movies-results",
       "div.erc-episodes-results",
     ];
     return Array.from(document.querySelectorAll(selectors.join(",")));
@@ -137,7 +138,7 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
 
     if (
       pContainerNode.matches(
-        "div.erc-top-results,div.erc-series-results,div.erc-episodes-results",
+        "div.erc-top-results,div.erc-series-results,div.erc-movies-results,div.erc-episodes-results",
       )
     ) {
       return pContainerNode.querySelector("h1,h2")?.textContent ?? "";
@@ -194,6 +195,10 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
     } else if (node.matches("div.erc-top-results,div.erc-series-results")) {
       programNodes = Array.from(
         node.querySelectorAll('div[data-t="search-series-card"]'),
+      );
+    } else if (node.matches("div.erc-movies-results")) {
+      programNodes = Array.from(
+        node.querySelectorAll('div[data-t="search-movie-card"]'),
       );
     } else if (node.matches("div.erc-episodes-results")) {
       programNodes = Array.from(

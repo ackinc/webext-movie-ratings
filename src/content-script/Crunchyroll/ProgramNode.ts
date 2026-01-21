@@ -60,6 +60,11 @@ export default class ProgramNode extends AbstractProgramNode {
       return { title };
     }
 
+    if (programNode.matches('div[data-t="search-movie-card"]')) {
+      const title = programNode.querySelector("h2")?.textContent ?? "";
+      return { title };
+    }
+
     if (programNode.matches('div[data-t="search-episode-card"]')) {
       const title =
         programNode.querySelector('small[data-t="series-title"]')
@@ -118,7 +123,11 @@ export default class ProgramNode extends AbstractProgramNode {
       return;
     }
 
-    if (programNode.matches('div[data-t="search-series-card"]')) {
+    if (
+      programNode.matches(
+        'div[data-t="search-series-card"],div[data-t="search-movie-card"]',
+      )
+    ) {
       const titleNode = programNode.querySelector("h2");
       titleNode?.insertAdjacentElement("afterend", imdbNode);
       return;
