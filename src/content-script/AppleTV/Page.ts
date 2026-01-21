@@ -69,7 +69,7 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     const selector = pContainer.node.matches(
       'div.section[aria-label]:not([aria-label=""])',
     )
-      ? "ul > li a"
+      ? "ul > li a,ul > li div.lockup"
       : pContainer.node.matches("ul.search-suggestions")
         ? "div.search-hint-lockup"
         : null;

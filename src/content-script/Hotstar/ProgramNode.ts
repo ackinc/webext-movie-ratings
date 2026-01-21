@@ -4,27 +4,52 @@ import type { Program } from "../../common/types";
 export default class ProgramNode extends AbstractProgramNode {
   static override isMovieOrSeries(node: HTMLElement): boolean {
     const disambiguatingNode = node.querySelector('div[data-testid="action"]');
-    return ["Movie", "Show"].includes(
-      disambiguatingNode?.getAttribute("aria-label")?.split(",").at(-1) ?? "",
-    );
+
+    if (disambiguatingNode?.getAttribute("aria-label")) {
+      return /,(Movie|Show)$/.test(
+        disambiguatingNode.getAttribute("aria-label")!,
+      );
+    } else {
+      const href = disambiguatingNode?.firstElementChild?.getAttribute("href");
+      return Boolean(
+        href && ["/movies/", "/shows/"].some((x) => href.includes(x)),
+      );
+    }
   }
 
   static override extractData(node: HTMLElement): Omit<Program, "node"> {
     const disambiguatingNode = node.querySelector('div[data-testid="action"]');
-    const isMovie =
-      disambiguatingNode?.getAttribute("aria-label")?.split(",").at(-1) ===
-      "Movie";
 
-    const label =
+    const title =
       disambiguatingNode?.querySelector("article img")?.getAttribute("alt") ??
       "";
-    if (!label) {
-      // console.warn("No label found for node", node);
+
+    let type: Program["type"];
+    if (disambiguatingNode?.getAttribute("aria-label")) {
+      const ariaLabel = disambiguatingNode.getAttribute("aria-label")!;
+      type = ariaLabel?.endsWith("Movie") ? "movie" : "series";
+    } else {
+      const href = disambiguatingNode?.firstElementChild?.getAttribute("href");
+      type = href?.includes("/movies/") ? "movie" : "series";
     }
 
-    return {
-      title: label,
-      type: isMovie ? "movie" : "series",
-    };
+    return { title, type };
+  }
+
+  static override insertIMDBNode(
+    programNode: HTMLElement,
+    imdbNode: HTMLElement,
+  ): void {
+    if (
+      programNode.matches(
+        'div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-label]))',
+      )
+    ) {
+      const titleNode = programNode.querySelector("a span[title]");
+      titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    programNode.appendChild(imdbNode);
   }
 }

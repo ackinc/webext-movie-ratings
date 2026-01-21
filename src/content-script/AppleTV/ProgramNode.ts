@@ -9,7 +9,7 @@ export default class ProgramNode extends AbstractProgramNode {
   static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
     let title: string = "";
 
-    if (programNode.matches("ul > li a")) {
+    if (programNode.matches("ul > li a,ul > li div.lockup")) {
       title = programNode.getAttribute("aria-label") ?? "";
     } else if (programNode.matches("div.search-hint-lockup")) {
       title =

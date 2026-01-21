@@ -44,6 +44,10 @@ div[data-scale-down="true"] a.${CssClasses.imdbDataNode} {
   font-size: 16px;
   font-weight: 500;
 }
+
+div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-label])) .${CssClasses.imdbDataNode} {
+  position: relative;
+}
     `;
   }
 
@@ -70,6 +74,11 @@ div[data-scale-down="true"] a.${CssClasses.imdbDataNode} {
   }
 
   override getTitleFromProgramContainerNode(node: HTMLElement): string {
+    // search page (when something entered into search bar)
+    if (node.matches("div.search-results")) {
+      return node.querySelector("p.TITLE1")?.textContent ?? "Search results";
+    }
+
     // search page (when nothing entered into search bar)
     if (
       node.matches("div.tray-container") &&
