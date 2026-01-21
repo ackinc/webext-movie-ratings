@@ -20,6 +20,6 @@ export default class AbstractProgramNode {
 
   static removeIMDBNode(programNode: HTMLElement): void {
     const imdbNode = this.getIMDBNode(programNode);
-    if (imdbNode) programNode.removeChild(imdbNode);
+    if (imdbNode) imdbNode.parentElement!.removeChild(imdbNode);
   }
 }
