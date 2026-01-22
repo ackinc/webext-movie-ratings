@@ -69,6 +69,10 @@ div.PopularSearchContainer > a[id] .${CssClasses.imdbDataNode} {
   color: #eaeaea;
 }
 
+div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDataNode} {
+  margin: 0;
+}
+
 @media screen and (max-width: 420px) {
   a.${CssClasses.imdbDataNode} {
     position: absolute;
@@ -130,7 +134,7 @@ div.PopularSearchContainer > a[id] .${CssClasses.imdbDataNode} {
     }
 
     if (node.matches("div.PopularSearchContainer")) {
-      return node.querySelector("h1")?.textContent ?? "";
+      return node.querySelector("h1")?.textContent ?? "Search results";
     }
 
     if (node.matches("div.searchWrapperContainer")) {
@@ -172,7 +176,7 @@ div.PopularSearchContainer > a[id] .${CssClasses.imdbDataNode} {
         : node.matches("div.page-position > div.potraitTrayCards")
           ? "a.link_container"
           : node.matches("div.PopularSearchContainer")
-            ? "a[id]"
+            ? "a[id],div.sonyliv-original-block-wrap"
             : node.matches("div.searchWrapperContainer")
               ? "a[id]"
               : null;

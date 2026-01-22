@@ -9,29 +9,60 @@ export default class ProgramNode extends AbstractProgramNode {
       return true;
     }
 
+    if (node.matches("div.sonyliv-original-block-wrap")) {
+      return true;
+    }
+
     const href = node.getAttribute("href") ?? "";
     return ["/movies", "/shows", "/trailer"].some((x) => href.startsWith(x));
   }
 
   static override extractData(node: HTMLElement): Omit<Program, "node"> {
-    const title = extractProgramTitle(
-      node.getAttribute("title") ||
+    let title: string;
+    let type: Program["type"] | undefined;
+
+    if (node.matches("div.PopularSearchContainer a[id]")) {
+      title =
+        node
+          .getAttribute("href")
+          ?.split("/")
+          .at(-1)
+          ?.replace(/-\d+$/, "")
+          .replace("-", " ") ?? "";
+
+      const href = node.getAttribute("href");
+      type = href?.startsWith("/movies")
+        ? "movie"
+        : href?.startsWith("/shows")
+          ? "series"
+          : undefined;
+    } else if (
+      node.matches("div.PopularSearchContainer div.sonyliv-original-block-wrap")
+    ) {
+      title =
+        node.querySelector("div.sonyliv-original-right-sec h2")?.textContent ??
+        "";
+
+      type = node.querySelector("strong.episode-count") ? "series" : "movie";
+    } else {
+      title =
+        node.getAttribute("title") ||
         node
           .querySelector("div.album-cover-container > img[title]")
           ?.getAttribute("title") ||
         // search preview
         node.querySelector("img.card-img")?.getAttribute("alt") ||
-        "",
-    );
+        "";
 
-    const href = node.getAttribute("href");
-    const type = href?.startsWith("/movies")
-      ? "movie"
-      : href?.startsWith("/shows")
-        ? "series"
-        : undefined;
+      const href = node.getAttribute("href");
+      type = href?.startsWith("/movies")
+        ? "movie"
+        : href?.startsWith("/shows")
+          ? "series"
+          : undefined;
+    }
 
-    return { title, ...(type ? { type } : {}) };
+    return { title: extractProgramTitle(title), ...(type ? { type } : {}) };
   }
 
   static override insertIMDBNode(
@@ -42,6 +73,18 @@ export default class ProgramNode extends AbstractProgramNode {
       programNode
         .querySelector("div.listing-portrait-card-inner-div")!
         .appendChild(imdbNode);
+      return;
+    }
+
+    if (
+      programNode.matches(
+        "div.PopularSearchContainer div.sonyliv-original-block-wrap",
+      )
+    ) {
+      const titleNode = programNode.querySelector(
+        "div.sonyliv-original-right-sec > h2",
+      );
+      titleNode?.insertAdjacentElement("afterend", imdbNode);
       return;
     }
 
