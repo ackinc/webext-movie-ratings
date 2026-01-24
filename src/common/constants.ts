@@ -46,5 +46,5 @@ export const defaultProgramFilterSettings: ProgramFilterSettings = {
   minRating: 0,
   maxRating: 10,
   excludeUnratedPrograms: true,
-  transparency: 0,
+  transparency: 75,
 };
