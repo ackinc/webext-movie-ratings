@@ -9,8 +9,17 @@ export default class ProgramNode extends AbstractProgramNode {
   static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
     let title: string = "";
 
-    if (programNode.matches("ul > li a,ul > li div.lockup")) {
-      title = programNode.getAttribute("aria-label") ?? "";
+    if (programNode.matches("ul > li a.lockup,ul > li div.lockup")) {
+      title =
+        programNode.querySelector("div.content img")?.getAttribute("alt") ?? "";
+
+      if (!title && programNode.matches("ul > li a.lockup")) {
+        const href = programNode.getAttribute("href");
+        const hrefParts = href?.split("/") ?? [];
+        const titleIdx =
+          Math.max(hrefParts.indexOf("movie"), hrefParts.indexOf("show")) + 1;
+        title = hrefParts[titleIdx]?.replace(/-/g, " ") ?? "";
+      }
     } else if (programNode.matches("div.search-hint-lockup")) {
       title =
         programNode.querySelector(
@@ -23,6 +32,13 @@ export default class ProgramNode extends AbstractProgramNode {
       type = "movie";
     } else if (location.pathname.includes("/show/")) {
       type = "series";
+    } else if (programNode.matches("ul > li a.lockup")) {
+      const href = programNode.getAttribute("href");
+      type = href?.includes("/movie/")
+        ? "movie"
+        : href?.includes("/show/")
+          ? "series"
+          : undefined;
     }
 
     return { title, ...(type ? { type } : {}) };

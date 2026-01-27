@@ -41,7 +41,7 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     if (location.pathname.includes("/channel/mls")) return [];
 
     const selectors = [
-      'div.section[aria-label]:not([aria-label=""])',
+      'div.section[data-testid="section-container"]',
       "ul.search-suggestions",
     ];
     return Array.from(document.querySelectorAll(selectors.join(", ")));
@@ -50,6 +50,15 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
   override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
+    if (
+      pContainerNode.matches('div.section[data-testid="section-container"]')
+    ) {
+      return (
+        pContainerNode.querySelector("div.header h2 span.dir-wrapper")
+          ?.textContent ?? ""
+      );
+    }
+
     return pContainerNode.getAttribute("aria-label") ?? "";
   }
 
@@ -60,16 +69,16 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     if (["/person/"].some((x) => location.pathname.includes(x)))
       return pContainer.title !== "Guest Appearances";
 
-    return true;
+    return Boolean(pContainer.title);
   }
 
   override findProgramsInProgramContainer(
     pContainer: ProgramContainer,
   ): Program[] {
     const selector = pContainer.node.matches(
-      'div.section[aria-label]:not([aria-label=""])',
+      'div.section[data-testid="section-container"]',
     )
-      ? "ul > li a,ul > li div.lockup"
+      ? "ul > li a.lockup,ul > li div.lockup"
       : pContainer.node.matches("ul.search-suggestions")
         ? "div.search-hint-lockup"
         : null;
