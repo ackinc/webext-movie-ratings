@@ -20,6 +20,15 @@ a.${CssClasses.imdbDataNode} {
   margin-left: 4px;
 }
 
+ul > li button.epic-showcase-item .${CssClasses.imdbDataNode} {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  z-index: 1;
+  margin: 0;
+  color: white;
+}
+
 div.search-hint-lockup div[data-testid="search-hint-lockup-title"] {
   width: 100%;
   justify-content: space-between;
@@ -78,7 +87,7 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     const selector = pContainer.node.matches(
       'div.section[data-testid="section-container"]',
     )
-      ? "ul > li a.lockup,ul > li div.lockup"
+      ? "ul > li button.epic-showcase-item,ul > li a.lockup,ul > li div.lockup"
       : pContainer.node.matches("ul.search-suggestions")
         ? "div.search-hint-lockup"
         : null;

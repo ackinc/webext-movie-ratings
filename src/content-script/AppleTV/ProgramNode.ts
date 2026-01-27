@@ -20,6 +20,8 @@ export default class ProgramNode extends AbstractProgramNode {
           Math.max(hrefParts.indexOf("movie"), hrefParts.indexOf("show")) + 1;
         title = hrefParts[titleIdx]?.replace(/-/g, " ") ?? "";
       }
+    } else if (programNode.matches("ul > li button.epic-showcase-item")) {
+      title = programNode.getAttribute("aria-label") ?? "";
     } else if (programNode.matches("div.search-hint-lockup")) {
       title =
         programNode.querySelector(
