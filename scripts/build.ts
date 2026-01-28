@@ -1,4 +1,4 @@
-// import "dotenv/config";
+import "dotenv/config";
 import * as esbuild from "esbuild";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -127,8 +127,10 @@ function pick(
   for (const k in keys) {
     const isRequired = keys[k];
 
-    if (!(k in obj) && isRequired) retval[k] = obj[k];
-    else throw new Error(`Required key ${k} is absent`);
+    if (!(k in obj) && isRequired)
+      throw new Error(`Required key ${k} is absent`);
+
+    retval[k] = obj[k];
   }
 
   return retval;
