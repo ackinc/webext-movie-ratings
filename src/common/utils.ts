@@ -1,5 +1,5 @@
 import { browser, languages, SettingsKey } from "./constants";
-import type { Message } from "./types";
+import type { Message, IsOptional } from "./types";
 
 export function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -10,7 +10,7 @@ export function clampNum(val: number, min: number, max: number) {
 }
 
 export async function waitFor(
-  fn: (...args: any[]) => Promise<unknown>,
+  fn: () => Promise<unknown>,
   maxTries = 10,
   intervalBetweenTriesMs = 500,
 ) {
@@ -23,18 +23,29 @@ export async function waitFor(
   throw new Error("waitFor timed out");
 }
 
-export function invert(
-  fn: (...args: any[]) => boolean,
-): (...args: any[]) => boolean {
+export function invert<T extends unknown[]>(
+  fn: (...args: T) => boolean,
+): (...args: T) => boolean {
   return (...args) => !fn(...args);
 }
 
 export function pick(
   obj: Record<string, unknown>,
-  keys: string[],
+  keys: string[] | Record<string, IsOptional>,
+  defaultRequired: boolean = false,
 ): Record<string, unknown> {
+  if (Array.isArray(keys))
+    keys = keys.reduce((acc, k) => ({ ...acc, [k]: defaultRequired }), {});
+
   const retval: Record<string, unknown> = {};
-  for (const key of keys) retval[key] = obj[key];
+
+  for (const k in keys) {
+    const isOptional = keys[k];
+
+    if (k in obj || isOptional) retval[k] = obj[k];
+    else throw new Error(`Required key ${k} is absent`);
+  }
+
   return retval;
 }
 

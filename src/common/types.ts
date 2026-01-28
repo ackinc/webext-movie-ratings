@@ -48,3 +48,5 @@ export type Message = {
   messageType: MessageType;
   data: unknown;
 };
+
+export type IsOptional = boolean;
