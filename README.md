@@ -1,9 +1,8 @@
 # ![](images/logoCircularMinimal32.png) Sift
 
-This web extension:
+### What does this extension do? [10s Demo][demo-video-link]
 
-- adds the IMDB rating of a movie / tv show next to it's tile on the page
-- clicking on the rating opens the movie's IMDB page in a new tab
+![Sift](misc/screenshots/what_does_this_extension_do.png)
 
 ### Get it for:
 
@@ -11,11 +10,11 @@ This web extension:
 
 ### Supported OTT platforms:
 
-- Hotstar
-- SonyLIV
 - Netflix
 - Amazon Prime Video
 - AppleTV+
+- Hotstar
+- SonyLIV
 - Crunchyroll
 
 ### Build instructions
@@ -36,3 +35,4 @@ This web extension:
 [firefox-link]: https://addons.mozilla.org/en-US/firefox/addon/imdb-ratings-for-various-ott/
 [omdbapi-link]: https://omdbapi.com
 [omdbapi-patreon-link]: https://www.patreon.com/join/omdb
+[demo-video-link]: https://youtu.be/NXBS0n9awSw?si=L8c6MUpSu6qVoDbj
