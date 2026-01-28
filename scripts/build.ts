@@ -1,4 +1,4 @@
-import "dotenv/config";
+// import "dotenv/config";
 import * as esbuild from "esbuild";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -6,7 +6,11 @@ import * as prettier from "prettier";
 import * as fse from "fs-extra";
 import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
 
-const { SENTRY_AUTH_TOKEN } = process.env;
+const env = pick(
+  process.env,
+  ["OMDB_API_KEY", "SENTRY_AUTH_TOKEN"],
+  true,
+) as Record<string, string>;
 
 const devMode = process.argv.includes("--dev");
 
@@ -31,11 +35,11 @@ const destDir = path.resolve(__dirname, "../dist");
 //   and the file itself was in destDir instead of destDir/popup)
 await copyFile(
   path.join(srcDir, "popup/index.html"),
-  path.join(destDir, "popup/index.html")
+  path.join(destDir, "popup/index.html"),
 );
 await makeAndMoveManifest(target);
 
-const config = {
+const config: esbuild.BuildOptions = {
   entryPoints: [
     { in: path.join(srcDir, "content-script/index.ts"), out: "content-script" },
     {
@@ -47,7 +51,7 @@ const config = {
   ],
   bundle: true,
   define: {
-    "BUILDTIME_ENV.OMDB_API_KEY": `"${process.env.OMDB_API_KEY}"`,
+    "BUILDTIME_ENV.OMDB_API_KEY": `"${env["OMDB_API_KEY"]}"`,
     "BUILDTIME_ENV.DEBUG_MODE": devMode ? "true" : "false",
   },
   logLevel: devMode ? "info" : "warning",
@@ -62,7 +66,7 @@ const config = {
     ? []
     : [
         sentryEsbuildPlugin({
-          authToken: SENTRY_AUTH_TOKEN,
+          authToken: env["SENTRY_AUTH_TOKEN"],
           org: "none-t24",
           project: "sift-web-ext",
         }),
@@ -76,32 +80,56 @@ if (devMode) {
   await esbuild.build(config);
 }
 
-function stripScheme(url) {
+function stripScheme(url: string) {
   return url.replace(/^[^:]+:\/\//, "");
 }
 
-async function makeAndMoveManifest(target) {
+async function makeAndMoveManifest(target: string) {
   const [template, browserSpecificUpdates] = (
     await Promise.all(
       ["./manifest.json", `${target}/manifest.json`]
         .map((filename) => path.join(rootDir, filename))
         .map((filename) =>
-          fs.promises.readFile(filename, { encoding: "utf-8" })
-        )
+          fs.promises.readFile(filename, { encoding: "utf-8" }),
+        ),
     )
-  ).map(JSON.parse);
+  ).map((x) => JSON.parse(x));
 
   const destPath = path.join(destDir, "manifest.json");
   await fs.promises.writeFile(
     destPath,
     await prettier.format(
       JSON.stringify({ ...template, ...browserSpecificUpdates }),
-      { filepath: destPath }
-    )
+      { filepath: destPath },
+    ),
   );
 }
 
-async function copyFile(src, dest) {
+async function copyFile(src: string, dest: string) {
   await fse.ensureDir(path.dirname(dest));
   await fs.promises.copyFile(src, dest);
+}
+
+// importing this function from 'src/common/utils.ts' fails because node
+//   requires file-extensions to be specified for all imports, and the imports
+//   in the files inside src are currently not written that way
+type IsOptional = boolean;
+function pick(
+  obj: Record<string, unknown>,
+  keys: string[] | Record<string, IsOptional>,
+  defaultRequired: boolean = false,
+): Record<string, unknown> {
+  if (Array.isArray(keys))
+    keys = keys.reduce((acc, k) => ({ ...acc, [k]: defaultRequired }), {});
+
+  const retval: Record<string, unknown> = {};
+
+  for (const k in keys) {
+    const isRequired = keys[k];
+
+    if (!(k in obj) && isRequired) retval[k] = obj[k];
+    else throw new Error(`Required key ${k} is absent`);
+  }
+
+  return retval;
 }
