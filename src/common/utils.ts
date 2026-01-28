@@ -40,9 +40,9 @@ export function pick(
   const retval: Record<string, unknown> = {};
 
   for (const k in keys) {
-    const isOptional = keys[k];
+    const isRequired = keys[k];
 
-    if (k in obj || isOptional) retval[k] = obj[k];
+    if (!(k in obj) && isRequired) retval[k] = obj[k];
     else throw new Error(`Required key ${k} is absent`);
   }
 
