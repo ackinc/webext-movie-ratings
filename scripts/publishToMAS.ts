@@ -1,8 +1,13 @@
 import "dotenv/config";
 import * as fs from "node:fs";
 import jwt from "jsonwebtoken";
+import { delayMs, pick } from "./common.ts";
 
-const { MAS_JWT_ISSUER, MAS_JWT_SECRET, MAS_ADDON_GUID } = process.env;
+const { MAS_JWT_ISSUER, MAS_JWT_SECRET, MAS_ADDON_GUID } = pick(
+  process.env,
+  ["MAS_JWT_ISSUER", "MAS_JWT_SECRET", "MAS_ADDON_GUID"],
+  true,
+) as Record<string, string>;
 
 /* constants */
 const baseUrl = `https://addons.mozilla.org`;
@@ -20,7 +25,7 @@ const authToken = getAuthToken();
 const uploadUuid = await uploadPackage();
 console.log(`MAS: package upload succeeded`);
 
-const sourceUuid = await uploadSource();
+await uploadSource();
 console.log(`MAS: source package upload succeeded`);
 
 // WARN: this step always errors out, and appears to not be needed
@@ -30,17 +35,17 @@ console.log(`MAS: source package upload succeeded`);
 /* helpers */
 
 function getAuthToken() {
-  var issuedAt = Math.floor(Date.now() / 1000);
-  var payload = {
+  const issuedAt = Math.floor(Date.now() / 1000);
+  const payload = {
     iss: MAS_JWT_ISSUER,
     jti: Math.random().toString(),
     iat: issuedAt,
     exp: issuedAt + 120,
   };
-  return jwt.sign(payload, MAS_JWT_SECRET, { algorithm: "HS256" });
+  return jwt.sign(payload, MAS_JWT_SECRET!, { algorithm: "HS256" });
 }
 
-async function uploadPackage() {
+async function uploadPackage(): Promise<string> {
   const file = new File([fs.readFileSync("./dist.zip")], "dist.zip", {
     type: "application/zip",
   });
@@ -65,10 +70,11 @@ async function uploadPackage() {
   const body = await response.json();
   if (!ok) {
     throw new Error(
-      `MAS: request to upload new package failed with status ${status}. Details: ${JSON.stringify(body)}`
+      `MAS: request to upload new package failed with status ${status}. Details: ${JSON.stringify(body)}`,
     );
   }
-  let { uuid, processed, valid, validation } = body;
+  const { uuid, processed, valid } = body;
+  let { validation } = body;
 
   let uploadState = !processed
     ? uploadStates.IN_PROGRESS
@@ -88,14 +94,14 @@ async function uploadPackage() {
 
   if (uploadState !== uploadStates.SUCCEEDED) {
     throw new Error(
-      `MAS: request to upload new package failed. Details: ${JSON.stringify({ uploadState, validation })}`
+      `MAS: request to upload new package failed. Details: ${JSON.stringify({ uploadState, validation })}`,
     );
   }
 
   return uuid;
 }
 
-async function fetchUploadStatus(uuid) {
+async function fetchUploadStatus(uuid: string) {
   const response = await fetch(`${baseUrl}/api/v5/addons/upload/${uuid}/`, {
     method: "GET",
     headers: {
@@ -106,7 +112,7 @@ async function fetchUploadStatus(uuid) {
   const body = await response.json();
   if (!ok) {
     throw new Error(
-      `MAS: request to fetch upload status of new package failed with status ${status}. Details: ${JSON.stringify(body)}`
+      `MAS: request to fetch upload status of new package failed with status ${status}. Details: ${JSON.stringify(body)}`,
     );
   }
   const { processed, valid, validation } = body;
@@ -143,44 +149,40 @@ async function uploadSource() {
         // "Content-Type": "multipart/form-data",
       },
       body: formData,
-    }
+    },
   );
   const { ok, status } = response;
   const body = await response.json();
   if (!ok) {
     throw new Error(
-      `MAS: request to upload source package failed with status ${status}. Details: ${JSON.stringify(body)}`
+      `MAS: request to upload source package failed with status ${status}. Details: ${JSON.stringify(body)}`,
     );
   }
 
   return body.uuid;
 }
 
-async function _publishPackage() {
-  const response = await fetch(
-    `${baseUrl}/api/v5/addons/addon/${MAS_ADDON_GUID}/versions/`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `JWT ${authToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        compatibility: ["android", "firefox"],
-        source: sourceUuid,
-        upload: uploadUuid,
-      }),
-    }
-  );
-  const { ok, status } = response;
-  if (!ok) {
-    const body = await response.json();
-    throw new Error(
-      `CWS: request to publish new package failed with status ${status}. Details: ${JSON.stringify(body)}`
-    );
-  }
-}
-
-async function delayMs(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+// async function _publishPackage() {
+//   const response = await fetch(
+//     `${baseUrl}/api/v5/addons/addon/${MAS_ADDON_GUID}/versions/`,
+//     {
+//       method: "POST",
+//       headers: {
+//         Authorization: `JWT ${authToken}`,
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({
+//         compatibility: ["android", "firefox"],
+//         source: sourceUuid,
+//         upload: uploadUuid,
+//       }),
+//     },
+//   );
+//   const { ok, status } = response;
+//   if (!ok) {
+//     const body = await response.json();
+//     throw new Error(
+//       `CWS: request to publish new package failed with status ${status}. Details: ${JSON.stringify(body)}`,
+//     );
+//   }
+// }

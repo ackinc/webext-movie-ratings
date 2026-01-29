@@ -5,6 +5,7 @@ import * as path from "node:path";
 import * as prettier from "prettier";
 import * as fse from "fs-extra";
 import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
+import { pick } from "./common.ts";
 
 const env = pick(
   process.env,
@@ -108,40 +109,4 @@ async function makeAndMoveManifest(target: string) {
 async function copyFile(src: string, dest: string) {
   await fse.ensureDir(path.dirname(dest));
   await fs.promises.copyFile(src, dest);
-}
-
-// Ideally, we'd import this function from 'src/common/utils.ts', where
-//   it is already defined. However:
-// - when using node's native TS support, importing this function from
-//   'src/common/utils.ts' fails because node requires file extensions
-//   to be specified for all imports, and the imports in the files
-//   inside src are currently not written that way
-// - when using the tsx tool, which doesn't require extensions to be specified
-//   in imports, we still run into errors because utils.ts imports other files
-//   that expect to be running in the browser, where 'chrome' is defined in
-//   the global scope
-// Since I don't want to remove the invariant that code inside 'src' is running
-//   inside the browser, I've decided that the best way forward is to duplicate
-//   the method and associated type definitions here
-type IsOptional = boolean;
-function pick(
-  obj: Record<string, unknown>,
-  keys: string[] | Record<string, IsOptional>,
-  defaultRequired: boolean = false,
-): Record<string, unknown> {
-  if (Array.isArray(keys))
-    keys = keys.reduce((acc, k) => ({ ...acc, [k]: defaultRequired }), {});
-
-  const retval: Record<string, unknown> = {};
-
-  for (const k in keys) {
-    const isRequired = keys[k];
-
-    if (!(k in obj) && isRequired)
-      throw new Error(`Required key ${k} is absent`);
-
-    retval[k] = obj[k];
-  }
-
-  return retval;
 }

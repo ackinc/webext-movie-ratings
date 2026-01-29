@@ -1,13 +1,25 @@
 import "dotenv/config";
 import * as fs from "node:fs";
 
+import { delayMs, pick } from "./common.ts";
+
 const {
   CWS_PUBLISHER_ID,
   CWS_EXTENSION_ID,
   GOOGLE_OAUTH_CLIENT_ID,
   GOOGLE_OAUTH_CLIENT_SECRET,
   GOOGLE_REFRESH_TOKEN,
-} = process.env;
+} = pick(
+  process.env,
+  [
+    "CWS_PUBLISHER_ID",
+    "CWS_EXTENSION_ID",
+    "GOOGLE_OAUTH_CLIENT_ID",
+    "GOOGLE_OAUTH_CLIENT_SECRET",
+    "GOOGLE_REFRESH_TOKEN",
+  ],
+  true,
+);
 
 /* constants */
 const cwsBaseUrl = `https://chromewebstore.googleapis.com`;
@@ -56,7 +68,7 @@ async function getAccessToken() {
   const body = await response.json();
   if (!ok) {
     throw new Error(
-      `CWS: request to obtain access token failed with status ${status}. Details: ${JSON.stringify(body)}`
+      `CWS: request to obtain access token failed with status ${status}. Details: ${JSON.stringify(body)}`,
     );
   }
   const { access_token: accessToken } = body;
@@ -76,7 +88,7 @@ async function uploadPackage() {
   const body = await response.json();
   if (!ok || body.uploadState === "FAILED") {
     throw new Error(
-      `CWS: request to upload new package failed with status ${status}. Details: ${JSON.stringify(body)}`
+      `CWS: request to upload new package failed with status ${status}. Details: ${JSON.stringify(body)}`,
     );
   }
   let { uploadState } = body;
@@ -93,7 +105,7 @@ async function uploadPackage() {
 
   if (uploadState !== uploadStates.SUCCEEDED) {
     throw new Error(
-      `CWS: request to upload new package failed. Details: ${JSON.stringify({ uploadState })}`
+      `CWS: request to upload new package failed. Details: ${JSON.stringify({ uploadState })}`,
     );
   }
 }
@@ -108,7 +120,7 @@ async function fetchUploadStatus() {
   const body = await response.json();
   if (!response.ok) {
     throw new Error(
-      `CWS: request to fetch upload status of new package failed with status ${response.status}. Details: ${JSON.stringify(body)}`
+      `CWS: request to fetch upload status of new package failed with status ${response.status}. Details: ${JSON.stringify(body)}`,
     );
   }
   const { lastAsyncUploadState: uploadState } = body;
@@ -126,11 +138,7 @@ async function publishPackage() {
   if (!ok) {
     const body = await response.json();
     throw new Error(
-      `CWS: request to publish new package failed with status ${status}. Details: ${JSON.stringify(body)}`
+      `CWS: request to publish new package failed with status ${status}. Details: ${JSON.stringify(body)}`,
     );
   }
-}
-
-async function delayMs(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

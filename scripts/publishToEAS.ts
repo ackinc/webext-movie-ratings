@@ -1,7 +1,12 @@
 import "dotenv/config";
 import * as fs from "node:fs";
+import { delayMs, pick } from "./common.ts";
 
-const { EAS_CLIENT_ID, EAS_PUBLISH_API_KEY, EAS_PRODUCT_ID } = process.env;
+const { EAS_CLIENT_ID, EAS_PUBLISH_API_KEY, EAS_PRODUCT_ID } = pick(
+  process.env,
+  ["EAS_CLIENT_ID", "EAS_PUBLISH_API_KEY", "EAS_PRODUCT_ID"],
+  true,
+) as Record<string, string>;
 
 /* constants */
 const easBaseUrl = `https://api.addons.microsoftedge.microsoft.com`;
@@ -31,18 +36,18 @@ async function uploadPackage() {
       headers: {
         Authorization: `ApiKey ${EAS_PUBLISH_API_KEY}`,
         "Content-Type": "application/zip",
-        "X-ClientID": EAS_CLIENT_ID,
+        "X-ClientID": EAS_CLIENT_ID!,
       },
       body: fs.readFileSync("./dist.zip"),
-    }
+    },
   );
   const { ok, status, headers } = response;
   if (!ok) {
     throw new Error(
-      `EAS: request to upload new package failed with status ${status}.`
+      `EAS: request to upload new package failed with status ${status}.`,
     );
   }
-  const operationId = headers.get("location");
+  const operationId = headers.get("location")!;
 
   let uploadState = uploadStates.IN_PROGRESS;
   while (uploadState === uploadStates.IN_PROGRESS) {
@@ -58,27 +63,27 @@ async function uploadPackage() {
 
   if (uploadState !== uploadStates.SUCCEEDED) {
     throw new Error(
-      `EAS: request to upload new package failed. Details: ${JSON.stringify({ uploadState })}`
+      `EAS: request to upload new package failed. Details: ${JSON.stringify({ uploadState })}`,
     );
   }
 }
 
-async function fetchUploadStatus(operationId) {
+async function fetchUploadStatus(operationId: string) {
   const response = await fetch(
     `${easBaseUrl}/v1/products/${EAS_PRODUCT_ID}/submissions/draft/package/operations/${operationId}`,
     {
       method: "GET",
       headers: {
         Authorization: `ApiKey ${EAS_PUBLISH_API_KEY}`,
-        "X-ClientID": EAS_CLIENT_ID,
+        "X-ClientID": EAS_CLIENT_ID!,
       },
-    }
+    },
   );
   const { ok, status } = response;
   const body = await response.json();
   if (!ok) {
     throw new Error(
-      `EAS: request to fetch upload status of new package failed with status ${status}. Details: ${JSON.stringify(body)}`
+      `EAS: request to fetch upload status of new package failed with status ${status}. Details: ${JSON.stringify(body)}`,
     );
   }
 
@@ -93,19 +98,15 @@ async function publishPackage() {
       method: "POST",
       headers: {
         Authorization: `ApiKey ${EAS_PUBLISH_API_KEY}`,
-        "X-ClientID": EAS_CLIENT_ID,
+        "X-ClientID": EAS_CLIENT_ID!,
       },
-    }
+    },
   );
   const { ok, status } = response;
   if (!ok) {
     const body = await response.json();
     throw new Error(
-      `CWS: request to publish new package failed with status ${status}. Details: ${JSON.stringify(body)}`
+      `CWS: request to publish new package failed with status ${status}. Details: ${JSON.stringify(body)}`,
     );
   }
-}
-
-async function delayMs(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
