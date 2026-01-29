@@ -1,4 +1,13 @@
-import { ONE_HOUR_IN_MS, ONE_WEEK_IN_MS, browser, omit } from "./common";
+import {
+  ONE_HOUR_IN_MS,
+  ONE_WEEK_IN_MS,
+  browser,
+  getSetting,
+  setSetting,
+  pick,
+  MessageType,
+  SettingsKey,
+} from "./common";
 import type {
   Program,
   IMDBData,
@@ -7,7 +16,6 @@ import type {
   SWErrorResponse,
   OmdbApiResponse,
 } from "./common/types";
-import { getSetting, setSetting, MessageType, SettingsKey } from "./common";
 import { captureException } from "./common/errorReporter";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
@@ -67,10 +75,9 @@ async function fetchIMDBData(
   program: Omit<Program, "node">,
 ): Promise<IMDBData> {
   const key = getCacheKey(program);
-
   const { [key]: cached } = await browser.storage.local.get(key);
-  if (checkCachedDataIsUsable(cached as CachedIMDBData | undefined)) {
-    return omit(cached as CachedIMDBData, ["expiry"]) as IMDBData;
+  if (cached && checkCachedDataIsUsable(cached)) {
+    return pick(cached, ["imdbID", "imdbRating"]) as IMDBData;
   }
 
   const { title, type, year } = program;
@@ -107,7 +114,7 @@ async function fetchIMDBData(
   }
 
   browser.storage.local.set({ [key]: result });
-  return omit(result, ["expiry"]) as IMDBData;
+  return pick(result, ["imdbID", "imdbRating"]) as IMDBData;
 }
 
 function getCacheKey(program: Omit<Program, "node">): string {
@@ -119,9 +126,8 @@ function getCacheKey(program: Omit<Program, "node">): string {
   );
 }
 
-function checkCachedDataIsUsable(data: CachedIMDBData | undefined): boolean {
+function checkCachedDataIsUsable(data: CachedIMDBData): boolean {
   return Boolean(
-    data &&
     data.imdbRating &&
     (data.imdbID || data.imdbRating === "N/F") &&
     data.expiry > +new Date(),
