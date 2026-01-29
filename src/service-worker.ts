@@ -1,3 +1,4 @@
+import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import {
   ONE_HOUR_IN_MS,
   ONE_WEEK_IN_MS,
@@ -20,13 +21,36 @@ import { captureException } from "./common/errorReporter";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
+const ratingsStoreName = "ratingsStore";
+interface SiftDB extends DBSchema {
+  ratingsStore: {
+    key: string;
+    value: CachedIMDBData;
+  };
+}
+let db: IDBPDatabase<SiftDB>;
 
 browser.runtime.onInstalled.addListener(onInstalled);
 browser.runtime.onMessage.addListener(handleMessage);
 
 async function onInstalled() {
+  db = await prepareDB();
   await injectUpdatedContentScripts();
   await showPopupIfNotSeen();
+}
+
+async function prepareDB() {
+  return await openDB<SiftDB>("siftDb", 1, {
+    upgrade: (db, oldVersion) => {
+      if (oldVersion === 0) {
+        db.createObjectStore(ratingsStoreName, { keyPath: "key" });
+
+        // TODO: move already cached data from chrome.storage.local
+        //   to the newly created store, then clear chrome.storage.local
+        //   of cached ratings data (don't remove other stuff)
+      }
+    },
+  });
 }
 
 async function injectUpdatedContentScripts() {
@@ -75,46 +99,29 @@ async function fetchIMDBData(
   program: Omit<Program, "node">,
 ): Promise<IMDBData> {
   const key = getCacheKey(program);
-  const { [key]: cached } = await browser.storage.local.get(key);
+  const cached: CachedIMDBData | undefined = await db.get(
+    ratingsStoreName,
+    key,
+  );
   if (cached && checkCachedDataIsUsable(cached)) {
     return pick(cached, ["imdbID", "imdbRating"]) as IMDBData;
   }
 
-  const { title, type, year } = program;
-  const searchParams = new URLSearchParams({
-    apiKey: BUILDTIME_ENV.OMDB_API_KEY,
-    t: title,
-  });
-  if (type) searchParams.set("type", type);
-  if (year) searchParams.set("y", year);
-
-  const response = await fetch(
-    `https://www.omdbapi.com/?${searchParams.toString()}`,
+  const imdbData = await fetchIMDBDataFromApi(program);
+  await db.put(
+    ratingsStoreName,
+    {
+      ...imdbData,
+      key,
+      expiry:
+        +new Date() +
+        (imdbData.imdbRating === "N/F"
+          ? nfRatingCacheTime
+          : imdbRatingCacheTime),
+    },
+    key,
   );
-  const respBody = (await response.json()) as OmdbApiResponse;
-
-  let result: CachedIMDBData;
-  if ("Error" in respBody) {
-    if (respBody.Error.includes("not found")) {
-      result = {
-        imdbRating: "N/F",
-        imdbID: "",
-        expiry: +new Date() + nfRatingCacheTime,
-      };
-    } else {
-      throw new Error(respBody.Error);
-    }
-  } else {
-    const { imdbID, imdbRating } = respBody;
-    result = {
-      imdbRating,
-      imdbID,
-      expiry: +new Date() + imdbRatingCacheTime,
-    };
-  }
-
-  browser.storage.local.set({ [key]: result });
-  return pick(result, ["imdbID", "imdbRating"]) as IMDBData;
+  return imdbData;
 }
 
 function getCacheKey(program: Omit<Program, "node">): string {
@@ -132,4 +139,33 @@ function checkCachedDataIsUsable(data: CachedIMDBData): boolean {
     (data.imdbID || data.imdbRating === "N/F") &&
     data.expiry > +new Date(),
   );
+}
+
+async function fetchIMDBDataFromApi(
+  program: Omit<Program, "node">,
+): Promise<IMDBData> {
+  const { title, type, year } = program;
+  const searchParams = new URLSearchParams({
+    apiKey: BUILDTIME_ENV.OMDB_API_KEY,
+    t: title,
+  });
+  if (type) searchParams.set("type", type);
+  if (year) searchParams.set("y", year);
+
+  const response = await fetch(
+    `https://www.omdbapi.com/?${searchParams.toString()}`,
+  );
+  const respBody = (await response.json()) as OmdbApiResponse;
+
+  let result: IMDBData;
+  if ("Error" in respBody) {
+    if (!respBody.Error.includes("not found")) {
+      throw new Error(respBody.Error);
+    }
+    result = { imdbRating: "N/F", imdbID: "" };
+  } else {
+    result = pick(respBody, ["imdbID", "imdbRating"]) as IMDBData;
+  }
+
+  return result;
 }

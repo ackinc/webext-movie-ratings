@@ -17,7 +17,10 @@ export type IMDBData = {
   imdbRating: string;
 };
 
-export type CachedIMDBData = IMDBData & { expiry: number };
+export type CachedIMDBData = IMDBData & {
+  key: string;
+  expiry: number;
+};
 
 export type SWErrorResponse = {
   error: Error;
