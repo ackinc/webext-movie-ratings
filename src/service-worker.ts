@@ -5,6 +5,7 @@ import {
   browser,
   getSetting,
   setSetting,
+  omit,
   pick,
   MessageType,
   SettingsKey,
@@ -40,17 +41,32 @@ async function onInstalled() {
 }
 
 async function prepareDB() {
-  return await openDB<SiftDB>("siftDb", 1, {
+  const db = await openDB<SiftDB>("siftDb", 1, {
     upgrade: (db, oldVersion) => {
       if (oldVersion === 0) {
         db.createObjectStore(ratingsStoreName, { keyPath: "key" });
-
-        // TODO: move already cached data from chrome.storage.local
-        //   to the newly created store, then clear chrome.storage.local
-        //   of cached ratings data (don't remove other stuff)
       }
     },
   });
+
+  await migrateCachedRatingsFromOutsideIdb(db);
+
+  return db;
+}
+
+async function migrateCachedRatingsFromOutsideIdb(db: IDBPDatabase<SiftDB>) {
+  const allCachedRatingsData = omit(
+    await browser.storage.local.get(),
+    Object.values(SettingsKey),
+  );
+
+  const txn = db.transaction(ratingsStoreName, "readwrite");
+  const store = txn.objectStore(ratingsStoreName);
+  for (const [key, v] of Object.entries(allCachedRatingsData)) {
+    await store.put({ ...(v as Omit<CachedIMDBData, "key">), key });
+  }
+
+  await browser.storage.local.remove(Object.keys(allCachedRatingsData));
 }
 
 async function injectUpdatedContentScripts() {
@@ -108,19 +124,13 @@ async function fetchIMDBData(
   }
 
   const imdbData = await fetchIMDBDataFromApi(program);
-  await db.put(
-    ratingsStoreName,
-    {
-      ...imdbData,
-      key,
-      expiry:
-        +new Date() +
-        (imdbData.imdbRating === "N/F"
-          ? nfRatingCacheTime
-          : imdbRatingCacheTime),
-    },
+  await db.put(ratingsStoreName, {
+    ...imdbData,
     key,
-  );
+    expiry:
+      +new Date() +
+      (imdbData.imdbRating === "N/F" ? nfRatingCacheTime : imdbRatingCacheTime),
+  });
   return imdbData;
 }
 
