@@ -30,12 +30,13 @@ interface SiftDB extends DBSchema {
   };
 }
 let db: IDBPDatabase<SiftDB>;
-
-browser.runtime.onInstalled.addListener(onInstalled);
-browser.runtime.onMessage.addListener(handleMessage);
+(async () => {
+  db = await prepareDB();
+  browser.runtime.onInstalled.addListener(onInstalled);
+  browser.runtime.onMessage.addListener(handleMessage);
+})();
 
 async function onInstalled() {
-  db = await prepareDB();
   await injectUpdatedContentScripts();
   await showPopupIfNotSeen();
 }
