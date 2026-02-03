@@ -153,7 +153,7 @@ async function addRatingsToPrograms(allPrograms: Program[]) {
       page.addIMDBData(program, results[idx]!.value);
     } catch (e) {
       const err: Error = e instanceof Error ? e : new Error(e?.toString());
-      err.message = `Error adding imdb data to program. Program data: ${JSON.stringify(omit(program, ["node"]))}`;
+      err.message = `Error adding imdb data to program (${JSON.stringify(omit(program, ["node"]))}). ${err.message}`;
       console.error(err, program.node);
 
       captureException(err, { addViewportDims: true });
