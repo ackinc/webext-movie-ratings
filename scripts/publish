@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -eo pipefail
+
+TARGET=$1
+
+if [[ -z "$TARGET" ]]; then
+    echo "Usage: publish TARGET"
+    echo "    TARGET is one of [CWS | EAS | MAS | ALL]"
+    exit 1
+fi
+
+if [[ "$TARGET" = "EAS" || "$TARGET" = "ALL" ]]; then
+    if [[ $TARGET = "EAS" ]]; then
+        pnpm run build --target=edge --sentry-upload-srcmaps
+    else
+        pnpm run build --target=edge
+    fi
+    pnpm run zip:dist
+    node scripts/publishToEAS.ts
+fi
+
+if [[ "$TARGET" = "MAS" || "$TARGET" = "ALL" ]]; then
+    if [[ $TARGET = "MAS" ]]; then
+        pnpm run build --target=firefox --sentry-upload-srcmaps
+    else
+        pnpm run build --target=firefox
+    fi
+    pnpm run zip:dist
+    pnpm run zip:src
+    node scripts/publishToMAS.ts
+fi
+
+if [[ "$TARGET" = "CWS" || "$TARGET" = "ALL" ]]; then
+    pnpm run build --target=chrome --sentry-upload-srcmaps
+    pnpm run zip:dist
+    node scripts/publishToCWS.ts
+fi

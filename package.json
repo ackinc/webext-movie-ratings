@@ -13,10 +13,8 @@
     "zip:src": "./scripts/zipSrc.sh",
     "zip:all": "./scripts/zipAll.sh",
     "clean": "rm -rf dist/* dist.zip src.zip",
-    "publish:cws": "pnpm run build && pnpm run zip:dist && node scripts/publishToCWS.ts",
-    "publish:eas": "pnpm run build --target=edge && pnpm run zip:dist && node scripts/publishToEAS.ts",
-    "publish:mas": "pnpm run build --target=firefox && pnpm run zip:dist && pnpm run zip:src && node scripts/publishToMAS.ts",
-    "publish:all": "pnpm run publish:cws && pnpm run publish:eas && pnpm run publish:mas"
+    "publish": "./scripts/publish",
+    "publish:all": "./scripts/publish ALL"
   },
   "author": "Anirudh Nimmagadda <anirudh.nimmagadda@gmail.com>",
   "license": "ISC",

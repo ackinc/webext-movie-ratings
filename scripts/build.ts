@@ -14,6 +14,7 @@ const env = pick(
 ) as Record<string, string>;
 
 const devMode = process.argv.includes("--dev");
+const uploadSrcMapsToSentry = process.argv.includes("--sentry-upload-srcmaps");
 
 const ALLOWED_TARGETS = ["edge", "firefox", "chrome"];
 const target =
@@ -63,15 +64,15 @@ const config: esbuild.BuildOptions = {
   //   debugging experience when also using sentryEsbuildPlugin
   //   to upload them to Sentry
   sourcemap: devMode ? "inline" : "linked",
-  plugins: devMode
-    ? []
-    : [
-        sentryEsbuildPlugin({
+  plugins: [
+    uploadSrcMapsToSentry
+      ? sentryEsbuildPlugin({
           authToken: env["SENTRY_AUTH_TOKEN"],
           org: "none-t24",
           project: "sift-web-ext",
-        }),
-      ],
+        })
+      : null,
+  ].filter((x) => x),
 };
 
 if (devMode) {
