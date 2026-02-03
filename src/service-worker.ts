@@ -29,12 +29,12 @@ interface SiftDB extends DBSchema {
     value: CachedIMDBData;
   };
 }
+
+browser.runtime.onInstalled.addListener(onInstalled);
+browser.runtime.onMessage.addListener(handleMessage);
+
 let db: IDBPDatabase<SiftDB>;
-(async () => {
-  db = await prepareDB();
-  browser.runtime.onInstalled.addListener(onInstalled);
-  browser.runtime.onMessage.addListener(handleMessage);
-})();
+(async () => (db = await prepareDB()))();
 
 async function onInstalled() {
   await injectUpdatedContentScripts();
