@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 
 type VersionBumpType = "major" | "minor" | "patch";
 const versionBumpType = process.argv[2]?.replace(/^--/, "") ?? "patch";
@@ -14,6 +15,7 @@ if (!isAllowedVersionBumpType(versionBumpType)) {
   process.exit(1);
 }
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, "..");
 const fileList = ["package.json", "manifest.json"].map((f) =>
   path.join(projectRoot, f),
@@ -22,7 +24,7 @@ const fileList = ["package.json", "manifest.json"].map((f) =>
 let oldVersion: string;
 let newVersion: string;
 for (const f of fileList) {
-  const contents = await import(f);
+  const { default: contents } = await import(f, { with: { type: "json" } });
   oldVersion ??= contents.version;
   newVersion ??= bumpVersion(contents.version, versionBumpType);
   contents.version = newVersion;
@@ -85,5 +87,5 @@ function bumpVersion(oldVersion: string, versionBumpType: VersionBumpType) {
 }
 
 function isAllowedVersionBumpType(s: string): s is VersionBumpType {
-  return s in ["major", "minor", "patch"];
+  return ["major", "minor", "patch"].includes(s);
 }
