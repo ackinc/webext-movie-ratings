@@ -36,7 +36,7 @@ export const enum MessageType {
   orphanCheck = "sift:orphanCheck",
 }
 
-export const enum SettingsKey {
+export enum SettingsKey {
   errorReportingOptIn = "errorReportingOptIn",
   programFiltersSettings = "programFiltersSettings",
   popupSeenAtLeastOnce = "popupSeenAtLeastOnce",

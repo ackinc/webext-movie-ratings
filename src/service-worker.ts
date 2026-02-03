@@ -1,4 +1,15 @@
-import { ONE_HOUR_IN_MS, ONE_WEEK_IN_MS, browser, omit } from "./common";
+import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import {
+  ONE_HOUR_IN_MS,
+  ONE_WEEK_IN_MS,
+  browser,
+  getSetting,
+  setSetting,
+  omit,
+  pick,
+  MessageType,
+  SettingsKey,
+} from "./common";
 import type {
   Program,
   IMDBData,
@@ -7,18 +18,56 @@ import type {
   SWErrorResponse,
   OmdbApiResponse,
 } from "./common/types";
-import { getSetting, setSetting, MessageType, SettingsKey } from "./common";
 import { captureException } from "./common/errorReporter";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
+const ratingsStoreName = "ratingsStore";
+interface SiftDB extends DBSchema {
+  ratingsStore: {
+    key: string;
+    value: CachedIMDBData;
+  };
+}
 
 browser.runtime.onInstalled.addListener(onInstalled);
 browser.runtime.onMessage.addListener(handleMessage);
 
+let db: IDBPDatabase<SiftDB>;
+(async () => (db = await prepareDB()))();
+
 async function onInstalled() {
   await injectUpdatedContentScripts();
   await showPopupIfNotSeen();
+}
+
+async function prepareDB() {
+  const db = await openDB<SiftDB>("siftDb", 1, {
+    upgrade: (db, oldVersion) => {
+      if (oldVersion === 0) {
+        db.createObjectStore(ratingsStoreName, { keyPath: "key" });
+      }
+    },
+  });
+
+  await migrateCachedRatingsFromOutsideIdb(db);
+
+  return db;
+}
+
+async function migrateCachedRatingsFromOutsideIdb(db: IDBPDatabase<SiftDB>) {
+  const allCachedRatingsData = omit(
+    await browser.storage.local.get(),
+    Object.values(SettingsKey),
+  );
+
+  const txn = db.transaction(ratingsStoreName, "readwrite");
+  const store = txn.objectStore(ratingsStoreName);
+  for (const [key, v] of Object.entries(allCachedRatingsData)) {
+    await store.put({ ...(v as Omit<CachedIMDBData, "key">), key });
+  }
+
+  await browser.storage.local.remove(Object.keys(allCachedRatingsData));
 }
 
 async function injectUpdatedContentScripts() {
@@ -67,12 +116,45 @@ async function fetchIMDBData(
   program: Omit<Program, "node">,
 ): Promise<IMDBData> {
   const key = getCacheKey(program);
-
-  const { [key]: cached } = await browser.storage.local.get(key);
-  if (checkCachedDataIsUsable(cached as CachedIMDBData | undefined)) {
-    return omit(cached as CachedIMDBData, ["expiry"]) as IMDBData;
+  const cached: CachedIMDBData | undefined = await db.get(
+    ratingsStoreName,
+    key,
+  );
+  if (cached && checkCachedDataIsUsable(cached)) {
+    return pick(cached, ["imdbID", "imdbRating"]) as IMDBData;
   }
 
+  const imdbData = await fetchIMDBDataFromApi(program);
+  await db.put(ratingsStoreName, {
+    ...imdbData,
+    key,
+    expiry:
+      +new Date() +
+      (imdbData.imdbRating === "N/F" ? nfRatingCacheTime : imdbRatingCacheTime),
+  });
+  return imdbData;
+}
+
+function getCacheKey(program: Omit<Program, "node">): string {
+  const { title, type, year } = program;
+  return btoa(
+    [title.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
+      .filter(Boolean)
+      .join("|"),
+  );
+}
+
+function checkCachedDataIsUsable(data: CachedIMDBData): boolean {
+  return Boolean(
+    data.imdbRating &&
+    (data.imdbID || data.imdbRating === "N/F") &&
+    data.expiry > +new Date(),
+  );
+}
+
+async function fetchIMDBDataFromApi(
+  program: Omit<Program, "node">,
+): Promise<IMDBData> {
   const { title, type, year } = program;
   const searchParams = new URLSearchParams({
     apiKey: BUILDTIME_ENV.OMDB_API_KEY,
@@ -86,44 +168,15 @@ async function fetchIMDBData(
   );
   const respBody = (await response.json()) as OmdbApiResponse;
 
-  let result: CachedIMDBData;
+  let result: IMDBData;
   if ("Error" in respBody) {
-    if (respBody.Error.includes("not found")) {
-      result = {
-        imdbRating: "N/F",
-        imdbID: "",
-        expiry: +new Date() + nfRatingCacheTime,
-      };
-    } else {
+    if (!respBody.Error.includes("not found")) {
       throw new Error(respBody.Error);
     }
+    result = { imdbRating: "N/F", imdbID: "" };
   } else {
-    const { imdbID, imdbRating } = respBody;
-    result = {
-      imdbRating,
-      imdbID,
-      expiry: +new Date() + imdbRatingCacheTime,
-    };
+    result = pick(respBody, ["imdbID", "imdbRating"]) as IMDBData;
   }
 
-  browser.storage.local.set({ [key]: result });
-  return omit(result, ["expiry"]) as IMDBData;
-}
-
-function getCacheKey(program: Omit<Program, "node">): string {
-  const { title, type, year } = program;
-  return btoa(
-    [title.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
-      .filter(Boolean)
-      .join("|"),
-  );
-}
-
-function checkCachedDataIsUsable(data: CachedIMDBData | undefined): boolean {
-  return Boolean(
-    data &&
-    data.imdbRating &&
-    (data.imdbID || data.imdbRating === "N/F") &&
-    data.expiry > +new Date(),
-  );
+  return result;
 }
