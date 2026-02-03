@@ -165,7 +165,10 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
   const response: IMDBData | SWErrorResponse =
     await browser.runtime.sendMessage({
       messageType: MessageType.fetchIMDBRating,
-      data: pick(program, ["title", "type", "year"]),
+      data: {
+        program: pick(program, ["title", "type", "year"]),
+        pageUrl: location.href,
+      },
     });
   if ("error" in response) throw response.error;
   return response;
