@@ -8,7 +8,7 @@ const writeFiles = !process.argv.includes("--nowrite");
 
 if (!isAllowedVersionBumpType(versionBumpType)) {
   console.error(
-    `Error. Usage: node bumpVersion.cjs [TYPE] [--nowrite]
+    `Error. Usage: node bumpVersion.ts [TYPE] [--nowrite]
     TYPE: one of "--major", "--minor", "--patch" (default)`,
   );
   process.exit(1);
