@@ -49,7 +49,7 @@ export type NumberRange = {
 
 export type Message = {
   messageType: MessageType;
-  data: unknown;
+  data?: unknown;
 };
 
 export type IsOptional = boolean;

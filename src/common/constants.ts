@@ -34,6 +34,7 @@ export const enum MessageType {
   urlChange = "sift:urlchange",
   filterSettingsChange = "sift:filterSettingsChange",
   orphanCheck = "sift:orphanCheck",
+  healthCheck = "sift:healthCheck",
 }
 
 export enum SettingsKey {

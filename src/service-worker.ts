@@ -9,6 +9,7 @@ import {
   pick,
   MessageType,
   SettingsKey,
+  sendMessageToAllTabs,
 } from "./common";
 import type {
   Program,
@@ -39,10 +40,12 @@ browser.runtime.onInstalled.addListener(onInstalled);
 browser.runtime.onMessage.addListener(handleMessage);
 
 let db: IDBPDatabase<SiftDB>;
-(async () => (db = await prepareDB()))();
+(async () => {
+  db = await prepareDB();
+  await injectUpdatedContentScripts();
+})();
 
 async function onInstalled() {
-  await injectUpdatedContentScripts();
   await showPopupIfNotSeen();
 }
 
@@ -80,14 +83,19 @@ async function migrateCachedRatingsFromOutsideIdb(db: IDBPDatabase<SiftDB>) {
 }
 
 async function injectUpdatedContentScripts() {
-  const tabs = await browser.tabs.query({
-    url: browser.runtime.getManifest()["host_permissions"],
+  const results = await sendMessageToAllTabs({
+    messageType: MessageType.healthCheck,
   });
-  tabs.forEach((tab) => {
-    browser.scripting.executeScript({
-      files: browser.runtime.getManifest()["content_scripts"]![0]!["js"]!,
-      target: { tabId: tab.id! },
-    });
+  results.forEach(({ tab, result }) => {
+    if (
+      result.status === "rejected" &&
+      result.reason.message.includes("Receiving end does not exist")
+    ) {
+      browser.scripting.executeScript({
+        files: browser.runtime.getManifest()["content_scripts"]![0]!["js"]!,
+        target: { tabId: tab.id! },
+      });
+    }
   });
 }
 

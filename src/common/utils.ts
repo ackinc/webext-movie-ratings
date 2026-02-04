@@ -137,4 +137,5 @@ export async function sendMessageToAllTabs(message: Message) {
     reason.message = `Failed to send message ${message.messageType} to tab ${tab.id} (url: ${tab.url}). ${reason.message}`;
     console.error(reason);
   });
+  return results.map((result, idx) => ({ tab: tabs[idx]!, result }));
 }

@@ -199,7 +199,11 @@ async function fadeFilteredOutPrograms(allPrograms: Program[]) {
   });
 }
 
-function handleMessage(m: MessageEvent | Message) {
+function handleMessage(
+  m: MessageEvent | Message,
+  _s?: chrome.runtime.MessageSender,
+  sendResponse?: (response: unknown) => void,
+) {
   const { messageType, data } = m instanceof MessageEvent ? m.data : m;
 
   if (messageType === MessageType.orphanCheck) {
@@ -208,6 +212,8 @@ function handleMessage(m: MessageEvent | Message) {
     handleUrlChange();
   } else if (messageType === MessageType.filterSettingsChange) {
     handleFilterSettingsChange(data as ProgramFilterSettings);
+  } else if (messageType === MessageType.healthCheck) {
+    if (sendResponse) sendResponse("ok");
   }
 }
 
