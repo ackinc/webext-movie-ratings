@@ -161,9 +161,16 @@ async function fetchIMDBData(
 
   if (BUILDTIME_ENV.DEBUG_MODE) {
     const telemetryStore = txn.objectStore(telemetryStoreName);
-    const key = `nRequests_${pageUrl}`;
-    const cur = ((await telemetryStore.get(key)) ?? 0) as number;
-    await telemetryStore.put(cur + 1, key);
+
+    // increment the request counter
+    const intervalSizeInSeconds = 10;
+    let key = `nRequests::${Math.ceil(+new Date() / (intervalSizeInSeconds * 1000)) * intervalSizeInSeconds * 1000}`;
+    if (pageUrl) {
+      const url = new URL(pageUrl);
+      key += `::${url.origin}::${url.href}`;
+    }
+    const curCount = ((await telemetryStore.get(key)) ?? 0) as number;
+    await telemetryStore.put(curCount + 1, key);
   }
 
   return imdbData;
