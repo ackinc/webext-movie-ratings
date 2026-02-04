@@ -9,6 +9,7 @@ import {
   pick,
   MessageType,
   SettingsKey,
+  sendMessageToAllTabs,
 } from "./common";
 import type {
   Program,
@@ -23,10 +24,15 @@ import { captureException } from "./common/errorReporter";
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
 const ratingsStoreName = "ratingsStore";
+const telemetryStoreName = "telemetryStore";
 interface SiftDB extends DBSchema {
   ratingsStore: {
     key: string;
     value: CachedIMDBData;
+  };
+  telemetryStore: {
+    key: string;
+    value: unknown;
   };
 }
 
@@ -34,18 +40,24 @@ browser.runtime.onInstalled.addListener(onInstalled);
 browser.runtime.onMessage.addListener(handleMessage);
 
 let db: IDBPDatabase<SiftDB>;
-(async () => (db = await prepareDB()))();
+(async () => {
+  db = await prepareDB();
+  await injectUpdatedContentScripts();
+})();
 
 async function onInstalled() {
-  await injectUpdatedContentScripts();
   await showPopupIfNotSeen();
 }
 
 async function prepareDB() {
-  const db = await openDB<SiftDB>("siftDb", 1, {
+  const db = await openDB<SiftDB>("siftDb", 2, {
     upgrade: (db, oldVersion) => {
-      if (oldVersion === 0) {
+      if (oldVersion < 1) {
         db.createObjectStore(ratingsStoreName, { keyPath: "key" });
+      }
+
+      if (oldVersion < 2) {
+        db.createObjectStore(telemetryStoreName);
       }
     },
   });
@@ -71,14 +83,19 @@ async function migrateCachedRatingsFromOutsideIdb(db: IDBPDatabase<SiftDB>) {
 }
 
 async function injectUpdatedContentScripts() {
-  const tabs = await browser.tabs.query({
-    url: browser.runtime.getManifest()["host_permissions"],
+  const results = await sendMessageToAllTabs({
+    messageType: MessageType.healthCheck,
   });
-  tabs.forEach((tab) => {
-    browser.scripting.executeScript({
-      files: browser.runtime.getManifest()["content_scripts"]![0]!["js"]!,
-      target: { tabId: tab.id! },
-    });
+  results.forEach(({ tab, result }) => {
+    if (
+      result.status === "rejected" &&
+      result.reason.message.includes("Receiving end does not exist")
+    ) {
+      browser.scripting.executeScript({
+        files: browser.runtime.getManifest()["content_scripts"]![0]!["js"]!,
+        target: { tabId: tab.id! },
+      });
+    }
   });
 }
 
@@ -94,8 +111,11 @@ function handleMessage(
   sendResponse: (arg: IMDBData | SWErrorResponse) => void,
 ) {
   if (request.messageType === MessageType.fetchIMDBRating) {
-    const program = request.data as Omit<Program, "node">;
-    fetchIMDBData(program)
+    const { pageUrl, program } = request.data as {
+      pageUrl: string;
+      program: Omit<Program, "node">;
+    };
+    fetchIMDBData(program, pageUrl)
       .then((data) => sendResponse(data))
       .catch((e) => {
         const error = e instanceof Error ? e : new Error(e.toString());
@@ -114,6 +134,7 @@ function handleMessage(
 
 async function fetchIMDBData(
   program: Omit<Program, "node">,
+  pageUrl?: string,
 ): Promise<IMDBData> {
   const key = getCacheKey(program);
   const cached: CachedIMDBData | undefined = await db.get(
@@ -125,13 +146,26 @@ async function fetchIMDBData(
   }
 
   const imdbData = await fetchIMDBDataFromApi(program);
-  await db.put(ratingsStoreName, {
+  const txn = db.transaction(
+    [ratingsStoreName, telemetryStoreName],
+    "readwrite",
+  );
+  const ratingsStore = txn.objectStore(ratingsStoreName);
+  await ratingsStore.put({
     ...imdbData,
     key,
     expiry:
       +new Date() +
       (imdbData.imdbRating === "N/F" ? nfRatingCacheTime : imdbRatingCacheTime),
   });
+
+  if (BUILDTIME_ENV.DEBUG_MODE) {
+    const telemetryStore = txn.objectStore(telemetryStoreName);
+    const key = `nRequests_${pageUrl}`;
+    const cur = ((await telemetryStore.get(key)) ?? 0) as number;
+    await telemetryStore.put(cur + 1, key);
+  }
+
   return imdbData;
 }
 
