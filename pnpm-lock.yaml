@@ -59,6 +59,9 @@ importers:
       prettier:
         specifier: ^3.7.4
         version: 3.7.4
+      rate-limit-utils:
+        specifier: github:ackinc/rate-limit-utils
+        version: https://codeload.github.com/ackinc/rate-limit-utils/tar.gz/a04800142488f350f6457bbde88415821785f4f6
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1067,6 +1070,10 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
+
+  rate-limit-utils@https://codeload.github.com/ackinc/rate-limit-utils/tar.gz/a04800142488f350f6457bbde88415821785f4f6:
+    resolution: {tarball: https://codeload.github.com/ackinc/rate-limit-utils/tar.gz/a04800142488f350f6457bbde88415821785f4f6}
+    version: 1.0.0
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -2224,6 +2231,8 @@ snapshots:
   proxy-from-env@1.1.0: {}
 
   punycode@2.3.1: {}
+
+  rate-limit-utils@https://codeload.github.com/ackinc/rate-limit-utils/tar.gz/a04800142488f350f6457bbde88415821785f4f6: {}
 
   react-is@16.13.1: {}
 

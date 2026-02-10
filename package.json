@@ -42,6 +42,7 @@
     "nouislider": "^15.8.1",
     "preact": "^10.28.2",
     "prettier": "^3.7.4",
+    "rate-limit-utils": "github:ackinc/rate-limit-utils",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.50.0"
   },

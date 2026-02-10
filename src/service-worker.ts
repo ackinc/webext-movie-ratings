@@ -1,4 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import { limitThroughput } from "rate-limit-utils";
 import {
   ONE_HOUR_IN_MS,
   ONE_WEEK_IN_MS,
@@ -39,6 +40,7 @@ interface SiftDB extends DBSchema {
 browser.runtime.onInstalled.addListener(onInstalled);
 browser.runtime.onMessage.addListener(handleMessage);
 
+const rateLimitedFetch = limitThroughput(fetch.bind(globalThis), 50);
 let db: IDBPDatabase<SiftDB>;
 (async () => {
   db = await prepareDB();
@@ -204,7 +206,7 @@ async function fetchIMDBDataFromApi(
   if (type) searchParams.set("type", type);
   if (year) searchParams.set("y", year);
 
-  const response = await fetch(
+  const response = await rateLimitedFetch(
     `https://www.omdbapi.com/?${searchParams.toString()}`,
   );
   const respBody = (await response.json()) as OmdbApiResponse;
