@@ -49,3 +49,5 @@ export const defaultProgramFilterSettings: ProgramFilterSettings = {
   excludeUnratedPrograms: true,
   transparency: 75,
 };
+
+export const telemetryIntervalSizeInSeconds = 1;

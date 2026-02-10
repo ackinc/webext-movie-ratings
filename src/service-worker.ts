@@ -1,4 +1,5 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import { limitThroughput } from "rate-limit-utils";
 import {
   ONE_HOUR_IN_MS,
   ONE_WEEK_IN_MS,
@@ -9,6 +10,7 @@ import {
   pick,
   MessageType,
   SettingsKey,
+  telemetryIntervalSizeInSeconds,
   sendMessageToAllTabs,
 } from "./common";
 import type {
@@ -39,6 +41,7 @@ interface SiftDB extends DBSchema {
 browser.runtime.onInstalled.addListener(onInstalled);
 browser.runtime.onMessage.addListener(handleMessage);
 
+const rateLimitedFetch = limitThroughput(patchedFetch, 50);
 let db: IDBPDatabase<SiftDB>;
 (async () => {
   db = await prepareDB();
@@ -115,7 +118,7 @@ function handleMessage(
       pageUrl: string;
       program: Omit<Program, "node">;
     };
-    fetchIMDBData(program, pageUrl)
+    getIMDBData(program, pageUrl)
       .then((data) => sendResponse(data))
       .catch((e) => {
         const error = e instanceof Error ? e : new Error(e.toString());
@@ -132,10 +135,19 @@ function handleMessage(
   return true;
 }
 
-async function fetchIMDBData(
+async function getIMDBData(
   program: Omit<Program, "node">,
   pageUrl?: string,
 ): Promise<IMDBData> {
+  if (BUILDTIME_ENV.DEBUG_MODE) {
+    let key = `nRatingRequests::${getCurrentTelemetryInterval()}`;
+    if (pageUrl) {
+      const url = new URL(pageUrl);
+      key += `::${url.origin}::${url.href}`;
+    }
+    await logEventForTelemetry(key);
+  }
+
   const key = getCacheKey(program);
   const cached: CachedIMDBData | undefined = await db.get(
     ratingsStoreName,
@@ -158,20 +170,6 @@ async function fetchIMDBData(
       +new Date() +
       (imdbData.imdbRating === "N/F" ? nfRatingCacheTime : imdbRatingCacheTime),
   });
-
-  if (BUILDTIME_ENV.DEBUG_MODE) {
-    const telemetryStore = txn.objectStore(telemetryStoreName);
-
-    // increment the request counter
-    const intervalSizeInSeconds = 10;
-    let key = `nRequests::${Math.ceil(+new Date() / (intervalSizeInSeconds * 1000)) * intervalSizeInSeconds * 1000}`;
-    if (pageUrl) {
-      const url = new URL(pageUrl);
-      key += `::${url.origin}::${url.href}`;
-    }
-    const curCount = ((await telemetryStore.get(key)) ?? 0) as number;
-    await telemetryStore.put(curCount + 1, key);
-  }
 
   return imdbData;
 }
@@ -204,7 +202,7 @@ async function fetchIMDBDataFromApi(
   if (type) searchParams.set("type", type);
   if (year) searchParams.set("y", year);
 
-  const response = await fetch(
+  const response = await rateLimitedFetch(
     `https://www.omdbapi.com/?${searchParams.toString()}`,
   );
   const respBody = (await response.json()) as OmdbApiResponse;
@@ -220,4 +218,30 @@ async function fetchIMDBDataFromApi(
   }
 
   return result;
+}
+
+async function patchedFetch(...args: Parameters<typeof fetch>) {
+  const promise = fetch(...args);
+
+  if (BUILDTIME_ENV.DEBUG_MODE) {
+    const key = `nApiCalls::${getCurrentTelemetryInterval()}`;
+    await logEventForTelemetry(key);
+  }
+
+  return promise;
+}
+
+function getCurrentTelemetryInterval() {
+  return (
+    Math.ceil(+new Date() / (telemetryIntervalSizeInSeconds * 1000)) *
+    telemetryIntervalSizeInSeconds *
+    1000
+  );
+}
+
+async function logEventForTelemetry(key: string) {
+  const txn = db.transaction(telemetryStoreName, "readwrite");
+  const telemetryStore = txn.objectStore(telemetryStoreName);
+  const curCount = ((await telemetryStore.get(key)) as number) ?? 0;
+  await telemetryStore.put(curCount + 1, key);
 }
