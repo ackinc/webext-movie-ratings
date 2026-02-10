@@ -1,3 +1,8 @@
+### v6.3.0
+
+- Now rate-limiting requests to the OMDB API
+- Added telemetry (local-dev ONLY) to help understand rate of requests for ratings, and rate at which API calls are made
+
 ### v6.2.0
 
 - Extension now reinjects content scripts into already-open OTT tabs when re-enabled after previously being disabled
