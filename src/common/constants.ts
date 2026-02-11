@@ -4,6 +4,7 @@ export const enum CssClasses {
   styleNode = "sift-style",
   imdbDataNode = "sift-imdb-data",
   filteredOutProgramNode = "sift-filtered-out-program",
+  downloadCatalogBtn = "sift-dl-catalog-btn",
 }
 
 export const ONE_HOUR_IN_MS = 1000 * 60 * 60;

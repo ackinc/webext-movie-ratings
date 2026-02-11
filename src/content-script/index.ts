@@ -88,6 +88,12 @@ async function loop() {
 
   const msDelayBeforeNextInvocation = 1000;
 
+  if (!document.querySelector(`button.${CssClasses.downloadCatalogBtn}`)) {
+    // some sites (ex: PrimeVideo) manipulate the page after page load in a
+    //   way that causes the dl-catalog button to disappear
+    page.addDownloadCatalogButton();
+  }
+
   let programs: Program[] = [];
   try {
     programs = await findProgramsOnPage();
@@ -244,17 +250,6 @@ function haltLoop() {
 function cleanup() {
   haltLoop();
   removeMessageListeners();
-
-  const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
-  styleNode?.parentElement?.removeChild(styleNode);
-
-  const programs = page.findPrograms();
-  programs.forEach((p) => {
-    p.node.classList.remove(CssClasses.filteredOutProgramNode);
-    (page.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
-      p.node,
-    );
-  });
-
+  page.cleanup();
   console.log("sift: orphaned content script cleanup complete");
 }

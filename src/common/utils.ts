@@ -139,3 +139,12 @@ export async function sendMessageToAllTabs(message: Message) {
   });
   return results.map((result, idx) => ({ tab: tabs[idx]!, result }));
 }
+
+export function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.setAttribute("href", url);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}

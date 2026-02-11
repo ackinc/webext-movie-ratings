@@ -3,8 +3,10 @@ import type { ProgramContainer, Program, IMDBData } from "../common/types";
 import {
   CssClasses,
   defaultProgramFilterSettings,
+  downloadBlob,
   getIMDBLink,
   getSetting,
+  omit,
   type ProgramFilterSettings,
   SettingsKey,
 } from "../common";
@@ -22,6 +24,41 @@ export default class AbstractPage {
 
   async initialize() {
     await this.injectStyles();
+    this.addDownloadCatalogButton();
+  }
+
+  cleanup() {
+    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
+    styleNode?.parentElement?.removeChild(styleNode);
+
+    const dlCatalogBtn = document.querySelector(
+      `button.${CssClasses.downloadCatalogBtn}`,
+    );
+    dlCatalogBtn?.parentElement?.removeChild(dlCatalogBtn);
+
+    const programs = this.findPrograms();
+    programs.forEach((p) => {
+      p.node.classList.remove(CssClasses.filteredOutProgramNode);
+      (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
+        p.node,
+      );
+    });
+  }
+
+  addDownloadCatalogButton() {
+    const btn = document.createElement("button");
+    btn.innerText = "Download catalog";
+    btn.classList.add(CssClasses.downloadCatalogBtn);
+    btn.addEventListener("click", () => {
+      const programs = this.findPrograms().map((p) => omit(p, ["node"]));
+      const dataStr = Array.from(new Set(programs.map((p) => p["title"])))
+        .sort()
+        .join("\n");
+      const blob = new Blob([dataStr], { type: "text/plain" });
+      downloadBlob(blob, "catalog.txt");
+    });
+
+    document.body.appendChild(btn);
   }
 
   findPrograms(): Program[] {
@@ -84,8 +121,20 @@ valid containers:\n\t${programContainers
 
     const styleNode = document.createElement("style");
     styleNode.classList.add(CssClasses.styleNode);
-    styleNode.innerHTML =
-      makeFilteredOutProgramNodeStylesClause(filterSettings);
+    styleNode.innerHTML = `
+      .${CssClasses.downloadCatalogBtn} {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 1000;
+        height: 40px;
+        background-color: white;
+        padding: 4px 16px;
+        color: black;
+      }
+
+      ${makeFilteredOutProgramNodeStylesClause(filterSettings)}
+    `;
     document.head.appendChild(styleNode);
   }
 
