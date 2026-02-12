@@ -4,3 +4,4 @@ declare const BUILDTIME_ENV: {
 };
 
 declare module "*.css";
+declare module "*.svg";
