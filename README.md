@@ -23,7 +23,7 @@
 
 ### Build instructions
 
-- Tested with node v24.0.1 and pnpm v10.26.0
+- Tested with node v24 and pnpm v10
 - Build commands:
   - `pnpm run build --target=chrome` for chrome
   - `pnpm run build --target=firefox` for firefox
@@ -40,3 +40,4 @@
 [omdbapi-link]: https://omdbapi.com
 [omdbapi-patreon-link]: https://www.patreon.com/join/omdb
 [demo-video-link]: https://youtu.be/NXBS0n9awSw?si=L8c6MUpSu6qVoDbj
+[github-link]: https://github.com/ackinc/webext-movie-ratings
