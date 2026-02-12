@@ -1,17 +1,18 @@
 .feedback-collection {
   position: absolute;
   bottom: 8px;
-  right: 8px;
+  right: 16px;
 }
 
-.feedback-collection .btn-expand {
+.feedback-collection .btn-toggle-expand {
   background-color: transparent;
   border: 0;
   cursor: pointer;
   text-decoration: underline;
+  white-space: nowrap;
 }
 
-.feedback-collection .btn-expand:hover {
+.feedback-collection .btn-toggle-expand:hover {
   color: rgb(11, 87, 208);
 }
 
@@ -29,11 +30,10 @@
   align-items: center;
 }
 
-.feedback-collection.expanded .btn-close {
+.feedback-collection.expanded .btn-toggle-expand {
   position: absolute;
-  top: 16px;
+  bottom: 8px;
   right: 16px;
-  z-index: 2;
 }
 
 .feedback-collection.expanded .instructions {
