@@ -24,6 +24,19 @@ export default class AbstractPage {
     await this.injectStyles();
   }
 
+  cleanup() {
+    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
+    styleNode?.parentElement?.removeChild(styleNode);
+
+    const programs = this.findPrograms();
+    programs.forEach((p) => {
+      p.node.classList.remove(CssClasses.filteredOutProgramNode);
+      (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
+        p.node,
+      );
+    });
+  }
+
   findPrograms(): Program[] {
     const programContainerNodes = this.findProgramContainerNodes();
     const programContainers = programContainerNodes

@@ -244,17 +244,6 @@ function haltLoop() {
 function cleanup() {
   haltLoop();
   removeMessageListeners();
-
-  const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
-  styleNode?.parentElement?.removeChild(styleNode);
-
-  const programs = page.findPrograms();
-  programs.forEach((p) => {
-    p.node.classList.remove(CssClasses.filteredOutProgramNode);
-    (page.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
-      p.node,
-    );
-  });
-
+  page.cleanup();
   console.log("sift: orphaned content script cleanup complete");
 }
