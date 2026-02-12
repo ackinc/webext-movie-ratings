@@ -56,6 +56,9 @@ const config: esbuild.BuildOptions = {
     "BUILDTIME_ENV.OMDB_API_KEY": `"${env["OMDB_API_KEY"]}"`,
     "BUILDTIME_ENV.DEBUG_MODE": devMode ? "true" : "false",
   },
+  loader: {
+    ".svg": "dataurl",
+  },
   logLevel: devMode ? "info" : "warning",
   outdir: destDir,
   target: "es2020",
