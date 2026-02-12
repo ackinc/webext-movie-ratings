@@ -1,3 +1,7 @@
+### v6.3.1
+
+- Added a CTA for users to provide feedback
+
 ### v6.3.0
 
 - Now rate-limiting requests to the OMDB API
