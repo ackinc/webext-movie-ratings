@@ -82,7 +82,7 @@ function removeMessageListeners() {
 
   // when extension is turned off, browser.runtime is sometimes
   //   undefined by the time this line is reached
-  // if we don't block the error, it will interfere with subsequent
+  // if we don't preempt the error, it will interfere with subsequent
   //   parts of the cleanup operation
   browser.runtime?.onMessage.removeListener(handleMessage);
 }
