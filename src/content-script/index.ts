@@ -79,7 +79,12 @@ function addMessageListeners() {
 
 function removeMessageListeners() {
   window.removeEventListener("message", handleMessage);
-  browser.runtime.onMessage.removeListener(handleMessage);
+
+  // when extension is turned off, browser.runtime is sometimes
+  //   undefined by the time this line is reached
+  // if we don't block the error, it will interfere with subsequent
+  //   parts of the cleanup operation
+  browser.runtime?.onMessage.removeListener(handleMessage);
 }
 
 async function loop() {
