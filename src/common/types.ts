@@ -53,3 +53,9 @@ export type Message = {
 };
 
 export type IsOptional = boolean;
+
+export type UrlPath = string;
+export type Selector = string;
+export type SelectorStatus = number | "probablyOutOfDate";
+export type SelectorStatusForPathname = Record<Selector, SelectorStatus>;
+export type SelectorStatusForSite = Record<UrlPath, SelectorStatusForPathname>;

@@ -1,14 +1,22 @@
 import AbstractProgramNode from "./AbstractProgramNode";
-import type { ProgramContainer, Program, IMDBData } from "../common/types";
+import type {
+  ProgramContainer,
+  Program,
+  IMDBData,
+  SelectorStatusForSite,
+} from "../common/types";
 import {
   CssClasses,
   defaultProgramFilterSettings,
   getIMDBLink,
   getSetting,
+  setSetting,
   type ProgramFilterSettings,
   SettingsKey,
+  selectorFailureThreshold,
 } from "../common";
 import { makeFilteredOutProgramNodeStylesClause } from "./utils";
+import { captureException } from "common/errorReporter";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
@@ -105,10 +113,13 @@ valid containers:\n\t${programContainers
   findProgramContainerNodes(): HTMLElement[] {
     const pathname = window.location.pathname + window.location.search;
     const selectors = this.getProgramContainerNodeSelectors(pathname);
-    const nodes = selectors.map((s) =>
+    const results = selectors.map((s) =>
       Array.from(document.querySelectorAll<HTMLElement>(s)),
     );
-    return nodes.flat();
+
+    this.updateSelectorStatuses(pathname, selectors, results);
+
+    return results.flat();
   }
 
   getProgramContainerNodeSelectors(_urlPath: string): string[] {
@@ -143,5 +154,47 @@ valid containers:\n\t${programContainers
     node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : data.imdbRating}`;
     node.addEventListener("click", (e) => e.stopPropagation());
     return node;
+  }
+
+  async updateSelectorStatuses(
+    pathname: string,
+    selectors: string[],
+    results: HTMLElement[][],
+  ) {
+    const hostname = window.location.hostname;
+    const selectorStatusKey = `selectorStatus_${hostname}`;
+    const selectorStatusForSite = ((await getSetting(selectorStatusKey)) ??
+      {}) as SelectorStatusForSite;
+    if (!selectorStatusForSite[pathname]) {
+      selectorStatusForSite[pathname] = {};
+    }
+    const selectorStatusForPathname = selectorStatusForSite[pathname];
+
+    selectors.forEach((sel, i) => {
+      const nodes = results[i]!;
+      if (nodes.length > 0) {
+        selectorStatusForPathname[sel] = 0;
+      } else if (
+        typeof selectorStatusForPathname[sel] === "number" &&
+        selectorStatusForPathname[sel] < selectorFailureThreshold
+      ) {
+        selectorStatusForPathname[sel]++;
+      } else if (
+        typeof selectorStatusForPathname[sel] === "number" &&
+        selectorStatusForPathname[sel] >= selectorFailureThreshold
+      ) {
+        captureException(
+          new Error(
+            `Potentially out of date selector. ${JSON.stringify({ hostname, pathname, selector: sel })}`,
+          ),
+        );
+        selectorStatusForPathname[sel] = "probablyOutOfDate";
+      } else {
+        // no nodes were found for this selector, but it is already marked
+        //   out-of-date, so nothing to do
+      }
+    });
+
+    await setSetting(selectorStatusKey, selectorStatusForSite);
   }
 }
