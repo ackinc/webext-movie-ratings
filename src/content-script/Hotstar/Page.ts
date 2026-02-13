@@ -51,8 +51,8 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     `;
   }
 
-  override findProgramContainerNodes(): HTMLElement[] {
-    const selectors = [
+  override getProgramContainerNodeSelectors(_urlPath: string): string[] {
+    return [
       // seen everywhere on the site, but there are variants
       //   - the most common variant has the title inside
       //   - there is a variant with the title outside (search results)
@@ -70,7 +70,6 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
       // "more like this" section of program page, when visited from category page
       'div[data-testid="section-scroller"]',
     ];
-    return Array.from(document.querySelectorAll(selectors.join(", ")));
   }
 
   override getTitleFromProgramContainerNode(node: HTMLElement): string {

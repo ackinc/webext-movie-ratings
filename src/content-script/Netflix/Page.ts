@@ -73,16 +73,14 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     `;
   }
 
-  override findProgramContainerNodes(): HTMLElement[] {
-    const selectors = [
+  override getProgramContainerNodeSelectors(_urlPath: string): string[] {
+    return [
       "div.lolomoRow",
       "div.titleGroup--wrapper",
       "div.moreLikeThis--wrapper",
       "div.gallery",
       'section[data-uia="search-gallery"]',
     ];
-    const nodes = document.querySelectorAll<HTMLElement>(selectors.join(","));
-    return Array.from(nodes);
   }
 
   override getTitleFromProgramContainerNode(

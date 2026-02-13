@@ -44,8 +44,8 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     `;
   }
 
-  override findProgramContainerNodes(): HTMLElement[] {
-    const selectors = [
+  override getProgramContainerNodeSelectors(_urlPath: string): string[] {
+    return [
       // /movie
       'section[data-testid="standard-carousel"]',
 
@@ -65,7 +65,6 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       // search results preview pane
       'div[data-testid="navigation-bar-content-cards-below"]',
     ];
-    return Array.from(document.querySelectorAll(selectors.join(",")));
   }
 
   override getTitleFromProgramContainerNode(

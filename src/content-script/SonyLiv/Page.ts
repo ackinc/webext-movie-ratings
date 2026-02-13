@@ -93,12 +93,12 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     `;
   }
 
-  override findProgramContainerNodes(): HTMLElement[] {
-    if (["/custompage/sports"].some((x) => location.pathname.includes(x))) {
+  override getProgramContainerNodeSelectors(urlPath: string): string[] {
+    if (["/custompage/sports"].some((x) => urlPath.includes(x))) {
       return [];
     }
 
-    const selectors = [
+    return [
       // lists on home and top-level categories (tv shows, movies, ...) pages
       // also shows on hovering over "movies" link on home and other pages
       "div.layout-main-container",
@@ -114,7 +114,6 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
       // mobile web
       "div.page-position > div.potraitTrayCards",
     ];
-    return Array.from(document.querySelectorAll(selectors.join(",")));
   }
 
   override getTitleFromProgramContainerNode(node: HTMLElement): string {

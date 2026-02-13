@@ -45,15 +45,14 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     `;
   }
 
-  override findProgramContainerNodes(): HTMLElement[] {
+  override getProgramContainerNodeSelectors(urlPath: string): string[] {
     // user is on MLS (sports) page
-    if (location.pathname.includes("/channel/mls")) return [];
+    if (urlPath.includes("/channel/mls")) return [];
 
-    const selectors = [
+    return [
       'div.section[data-testid="section-container"]',
       "ul.search-suggestions",
     ];
-    return Array.from(document.querySelectorAll(selectors.join(", ")));
   }
 
   override getTitleFromProgramContainerNode(

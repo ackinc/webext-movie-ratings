@@ -103,6 +103,15 @@ valid containers:\n\t${programContainers
   }
 
   findProgramContainerNodes(): HTMLElement[] {
+    const pathname = window.location.pathname + window.location.search;
+    const selectors = this.getProgramContainerNodeSelectors(pathname);
+    const nodes = selectors.map((s) =>
+      Array.from(document.querySelectorAll<HTMLElement>(s)),
+    );
+    return nodes.flat();
+  }
+
+  getProgramContainerNodeSelectors(_urlPath: string): string[] {
     throw new Error("Not implemented");
   }
 

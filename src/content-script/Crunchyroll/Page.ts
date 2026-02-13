@@ -59,8 +59,8 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
     `;
   }
 
-  override findProgramContainerNodes(): HTMLElement[] {
-    const selectors = [
+  override getProgramContainerNodeSelectors(_urlPath: string): string[] {
+    return [
       // home page (pre log-in)
       'section.cr-browse-section[data-t="browse-section"]',
 
@@ -85,7 +85,6 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
       "div.erc-movies-results",
       "div.erc-episodes-results",
     ];
-    return Array.from(document.querySelectorAll(selectors.join(",")));
   }
 
   override getTitleFromProgramContainerNode(
