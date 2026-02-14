@@ -10,7 +10,7 @@ import {
   makeFetchTransport,
   Scope,
 } from "@sentry/react";
-import { getSetting, SettingsKey } from ".";
+import { browser, getSetting, SettingsKey } from ".";
 
 // filter integrations that use the global variable
 const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
@@ -32,6 +32,7 @@ const client = new BrowserClient({
 });
 
 const scope = new Scope();
+scope.setTags({ extensionVersion: browser.runtime.getManifest().version });
 scope.setClient(client);
 
 client.init();
