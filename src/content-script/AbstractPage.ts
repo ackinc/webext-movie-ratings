@@ -10,7 +10,7 @@ import {
   defaultProgramFilterSettings,
   getIMDBLink,
   getSetting,
-  setSetting,
+  storage,
   type ProgramFilterSettings,
   SettingsKey,
   selectorFailureThreshold,
@@ -163,7 +163,7 @@ valid containers:\n\t${programContainers
   ) {
     const hostname = window.location.hostname;
     const selectorStatusKey = `selectorStatus_${hostname}`;
-    const selectorStatusForSite = ((await getSetting(selectorStatusKey)) ??
+    const selectorStatusForSite = ((await storage.get(selectorStatusKey)) ??
       {}) as SelectorStatusForSite;
     if (!selectorStatusForSite[pathname]) {
       selectorStatusForSite[pathname] = {};
@@ -174,27 +174,25 @@ valid containers:\n\t${programContainers
       const nodes = results[i]!;
       if (nodes.length > 0) {
         selectorStatusForPathname[sel] = 0;
+      } else if (selectorStatusForPathname[sel] === "probablyOutOfDate") {
+        // no nodes were found for this selector, but it is already marked
+        //   out-of-date, so nothing to do
       } else if (
         typeof selectorStatusForPathname[sel] === "number" &&
         selectorStatusForPathname[sel] < selectorFailureThreshold
       ) {
         selectorStatusForPathname[sel]++;
-      } else if (
-        typeof selectorStatusForPathname[sel] === "number" &&
-        selectorStatusForPathname[sel] >= selectorFailureThreshold
-      ) {
+      } else {
+        // failure threshold has been reached; an error should be captured
         captureException(
           new Error(
             `Potentially out of date selector. ${JSON.stringify({ hostname, pathname, selector: sel })}`,
           ),
         );
         selectorStatusForPathname[sel] = "probablyOutOfDate";
-      } else {
-        // no nodes were found for this selector, but it is already marked
-        //   out-of-date, so nothing to do
       }
     });
 
-    await setSetting(selectorStatusKey, selectorStatusForSite);
+    await storage.set(selectorStatusKey, selectorStatusForSite);
   }
 }
