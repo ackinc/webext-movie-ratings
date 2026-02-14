@@ -114,6 +114,12 @@ function handleMessage(
   sendResponse: (arg: IMDBData | SWErrorResponse) => void,
 ) {
   if (request.messageType === MessageType.fetchIMDBRating) {
+    if (!db) {
+      const error = new Error("idb connection not ready");
+      sendResponse({ error });
+      return;
+    }
+
     const { pageUrl, program } = request.data as {
       pageUrl: string;
       program: Omit<Program, "node">;
