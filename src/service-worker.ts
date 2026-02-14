@@ -131,10 +131,10 @@ function handleMessage(
     getIMDBData(program, pageUrl)
       .then((data) => sendResponse(data))
       .catch((e) => {
-        const error = e instanceof Error ? e : new Error(e.toString());
-        error.message = `Failed to fetch rating. Program: ${JSON.stringify(program)}. Error: ${error.message}`;
+        const error = e instanceof Error ? e : new Error(`${e}`);
+        error.message = `Failed to fetch rating. Error: ${error.message}`;
         sendResponse({ error });
-        captureException(error);
+        captureException(error, { context: { program } });
       });
   } else {
     const err = new Error(`Unknown message type: ${request.messageType}`);

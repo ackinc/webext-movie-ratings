@@ -9,6 +9,7 @@ import {
   getDefaultIntegrations,
   makeFetchTransport,
   Scope,
+  type Context,
 } from "@sentry/react";
 import { browser, getSetting, SettingsKey } from ".";
 
@@ -39,15 +40,23 @@ client.init();
 
 export function captureException(
   e: unknown,
-  opts: { addViewportDims: boolean } = { addViewportDims: false },
+  metadata: {
+    context?: Record<string, Context>;
+    tags?: Record<string, boolean | number | string>;
+  } = {},
 ) {
   e = e instanceof Error ? e : new Error(`${e}`);
 
-  if (opts.addViewportDims) {
-    const clonedScope = scope.clone();
-    clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
-    clonedScope.captureException(e);
-  } else {
-    scope.captureException(e);
+  const clonedScope = scope.clone();
+  if (globalThis.constructor.name === "Window") {
+    const dims = { vw: window.innerWidth, vh: window.innerHeight };
+    clonedScope.setContext("pageDims", dims);
   }
+  if (metadata.context) {
+    Object.entries(metadata.context).forEach(([ctxName, ctxData]) => {
+      clonedScope.setContext(ctxName, ctxData);
+    });
+  }
+  if (metadata.tags) clonedScope.setTags(metadata.tags);
+  clonedScope.captureException(e);
 }
