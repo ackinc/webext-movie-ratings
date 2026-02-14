@@ -44,8 +44,12 @@ browser.runtime.onMessage.addListener(handleMessage);
 const rateLimitedFetch = limitThroughput(patchedFetch, 50);
 let db: IDBPDatabase<SiftDB>;
 (async () => {
-  db = await prepareDB();
-  await injectUpdatedContentScripts();
+  try {
+    db = await prepareDB();
+    await injectUpdatedContentScripts();
+  } catch (e) {
+    captureException(e);
+  }
 })();
 
 async function onInstalled() {

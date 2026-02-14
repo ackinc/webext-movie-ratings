@@ -38,9 +38,11 @@ scope.setClient(client);
 client.init();
 
 export function captureException(
-  e: Error,
+  e: unknown,
   opts: { addViewportDims: boolean } = { addViewportDims: false },
 ) {
+  e = e instanceof Error ? e : new Error(`${e}`);
+
   if (opts.addViewportDims) {
     const clonedScope = scope.clone();
     clonedScope.setTags({ vw: window.innerWidth, vh: window.innerHeight });
