@@ -174,6 +174,9 @@ valid containers:\n\t${programContainers
       const nodes = results[i]!;
       if (nodes.length > 0) {
         selectorStatusForPathname[sel] = 0;
+      } else if (!(sel in selectorStatusForPathname)) {
+        // no nodes were found for this selector, and none were expected
+        //   anyway
       } else if (selectorStatusForPathname[sel] === "probablyOutOfDate") {
         // no nodes were found for this selector, but it is already marked
         //   out-of-date, so nothing to do
