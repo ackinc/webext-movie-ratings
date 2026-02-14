@@ -1,6 +1,6 @@
-# ![](images/logoCircularMinimal32.png) Sift
+# ![Sift logo](images/logoCircularMinimal32.png) Sift
 
-### What does this extension do? [10s Demo][demo-video-link]
+## What does this extension do? [10s Demo][demo-video-link]
 
 - adds the IMDB rating of a movie / tv show next to it's tile on the page
 - clicking on the rating opens the movie's IMDB page in a new tab
@@ -8,11 +8,11 @@
 
 ![Sift](misc/screenshots/what_does_this_extension_do.png)
 
-### Get it for:
+## Get it for
 
 [![Chrome](images/chrome32.png)][chrome-link] &nbsp; [![Edge](images/edge32.png)][edge-link] &nbsp; [![Firefox](images/firefox32.png)][firefox-link]
 
-### Supported OTT platforms:
+## Supported OTT platforms
 
 - Netflix
 - Amazon Prime Video
@@ -21,7 +21,7 @@
 - SonyLIV
 - Crunchyroll
 
-### Build instructions
+## Build instructions
 
 - Tested with node v24 and pnpm v10
 - Build commands:
@@ -30,7 +30,7 @@
   - `pnpm run build --target=edge` for edge
 - Install dev dependencies before building
 
-### Misc
+## Misc
 
 - Movie ratings are sourced from Brian Fritz's [OMDB API][omdbapi-link]; if you found this extension useful, consider donating via Brian's [Patreon][omdbapi-patreon-link]
 
