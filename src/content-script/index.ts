@@ -160,12 +160,10 @@ async function addRatingsToPrograms(allPrograms: Program[]) {
     try {
       page.addIMDBData(program, results[idx]!.value);
     } catch (e) {
-      const error: Error = e instanceof Error ? e : new Error(`${e}`);
-      error.message = `Error adding imdb data to program. ${error.message}`;
-      captureException(error, {
+      captureException(e, {
         context: { program: omit(program, ["node"]) as Omit<Program, "node"> },
       });
-      console.error(error, program, program.node);
+      console.error(e, program, program.node);
     }
   });
 }
