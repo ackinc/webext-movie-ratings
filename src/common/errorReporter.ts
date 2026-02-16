@@ -38,13 +38,11 @@ scope.setClient(client);
 
 client.init();
 
-export function captureException(
-  e: unknown,
-  metadata: {
-    context?: Record<string, Context>;
-    tags?: Record<string, boolean | number | string>;
-  } = {},
-) {
+export type ExceptionMetadata = {
+  context?: Record<string, Context>;
+  tags?: Record<string, boolean | number | string>;
+};
+export function captureException(e: unknown, metadata: ExceptionMetadata = {}) {
   e = e instanceof Error ? e : new Error(`${e}`);
 
   const clonedScope = scope.clone();
