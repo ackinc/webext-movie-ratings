@@ -20,6 +20,7 @@ import { captureException } from "common/errorReporter";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
+  #isMarkedForCleanup: boolean = false;
 
   constructor() {
     this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
@@ -35,6 +36,8 @@ export default class AbstractPage {
   }
 
   cleanup() {
+    this.#isMarkedForCleanup = true;
+
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
     styleNode?.parentElement?.removeChild(styleNode);
 
@@ -128,7 +131,9 @@ valid containers:\n\t${programContainers
       Array.from(document.querySelectorAll<HTMLElement>(s)),
     );
 
-    this.updateSelectorStatuses(pathname, selectors, results);
+    if (!this.#isMarkedForCleanup) {
+      this.updateSelectorStatuses(pathname, selectors, results);
+    }
 
     return results.flat();
   }
