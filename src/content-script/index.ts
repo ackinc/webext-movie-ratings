@@ -43,7 +43,7 @@ let loopAbortController: AbortController;
     addMessageListeners();
     loopTimeout = setTimeout(loop, 0);
   } catch (e) {
-    captureException(e as Error, { addViewportDims: true });
+    captureException(e);
     throw e;
   }
 })();
@@ -105,12 +105,15 @@ async function loop() {
   } catch (e) {
     loopTimeout = undefined;
 
-    if ((e as Error).message.startsWith("Extension context invalidated")) {
+    if (
+      e instanceof Error &&
+      e.message.startsWith("Extension context invalidated")
+    ) {
       cleanup();
       return;
     }
 
-    captureException(e as Error, { addViewportDims: true });
+    captureException(e);
     throw e;
   }
 }
@@ -125,7 +128,7 @@ async function findProgramsOnPage(): Promise<Program[]> {
     try {
       programs = page.findPrograms();
     } catch (e) {
-      const thisErr = e instanceof Error ? e : new Error(e?.toString());
+      const thisErr = e instanceof Error ? e : new Error(`${e}`);
       console.error(thisErr);
       errors.push(thisErr);
 
@@ -157,11 +160,10 @@ async function addRatingsToPrograms(allPrograms: Program[]) {
     try {
       page.addIMDBData(program, results[idx]!.value);
     } catch (e) {
-      const err: Error = e instanceof Error ? e : new Error(e?.toString());
-      err.message = `Error adding imdb data to program (${JSON.stringify(omit(program, ["node"]))}). ${err.message}`;
-      console.error(err, program.node);
-
-      captureException(err, { addViewportDims: true });
+      captureException(e, {
+        context: { program: omit(program, ["node"]) as Omit<Program, "node"> },
+      });
+      console.error(e, program, program.node);
     }
   });
 }
@@ -175,7 +177,7 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
         pageUrl: location.href,
       },
     });
-  if ("error" in response) throw response.error;
+  if ("error" in response) throw new Error(response.error);
   return response;
 }
 

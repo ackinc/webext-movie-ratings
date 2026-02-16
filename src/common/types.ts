@@ -23,7 +23,7 @@ export type CachedIMDBData = IMDBData & {
 };
 
 export type SWErrorResponse = {
-  error: Error;
+  error: string;
 };
 
 export type OmdbApiResponse =

@@ -21,7 +21,10 @@ import type {
   SWErrorResponse,
   OmdbApiResponse,
 } from "./common/types";
-import { captureException } from "./common/errorReporter";
+import {
+  captureException,
+  type ExceptionMetadata,
+} from "./common/errorReporter";
 
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
@@ -117,32 +120,32 @@ function handleMessage(
   _sender: chrome.runtime.MessageSender,
   sendResponse: (arg: IMDBData | SWErrorResponse) => void,
 ) {
-  if (request.messageType === MessageType.fetchIMDBRating) {
-    if (!db) {
-      const error = new Error("idb connection not ready");
-      sendResponse({ error });
-      return;
-    }
+  try {
+    if (request.messageType === MessageType.fetchIMDBRating) {
+      if (!db) throw new Error("idb connection not ready");
 
-    const { pageUrl, program } = request.data as {
-      pageUrl: string;
-      program: Omit<Program, "node">;
-    };
-    getIMDBData(program, pageUrl)
-      .then((data) => sendResponse(data))
-      .catch((e) => {
-        const error = e instanceof Error ? e : new Error(e.toString());
-        error.message = `Failed to fetch rating. Program: ${JSON.stringify(program)}. Error: ${error.message}`;
-        sendResponse({ error });
-        captureException(error);
-      });
-  } else {
-    const err = new Error(`Unknown message type: ${request.messageType}`);
-    captureException(err);
-    throw err;
+      const { pageUrl, program } = request.data as {
+        pageUrl: string;
+        program: Omit<Program, "node">;
+      };
+      getIMDBData(program, pageUrl)
+        .then((data) => sendResponse(data))
+        .catch((e) => handleError(e, { context: { program } }));
+    } else {
+      throw new Error(`Unknown message type: ${request.messageType}`);
+    }
+  } catch (e) {
+    handleError(e);
   }
 
   return true;
+
+  function handleError(e: unknown, metadata?: ExceptionMetadata) {
+    const error = e instanceof Error ? e : new Error(`${e}`);
+    sendResponse({ error: error.message });
+    if (error.message === "idb connection not ready") return;
+    captureException(error, metadata);
+  }
 }
 
 async function getIMDBData(
