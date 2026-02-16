@@ -1,5 +1,9 @@
 # Changelog
 
+## v6.3.4
+
+- Errors will not group better in Sentry (moved unhelpfully specific information outside error message)
+
 ## v6.3.1
 
 - Added a CTA for users to provide feedback
