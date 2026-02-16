@@ -23,9 +23,11 @@ export default class AbstractPage {
 
   constructor() {
     this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
-    this.findProgramsInProgramContainer =
-      this.findProgramsInProgramContainer.bind(this);
+    this.findProgramNodesInProgramContainer =
+      this.findProgramNodesInProgramContainer.bind(this);
     this.isValidProgramContainer = this.isValidProgramContainer.bind(this);
+    this.isValidProgramNode = this.isValidProgramNode.bind(this);
+    this.isValidProgram = this.isValidProgram.bind(this);
   }
 
   async initialize() {
@@ -53,7 +55,16 @@ export default class AbstractPage {
         node,
       }))
       .filter(this.isValidProgramContainer);
-    const programs = programContainers.map(this.findProgramsInProgramContainer);
+
+    const programNodesPerPC = programContainers.map(
+      this.findProgramNodesInProgramContainer,
+    );
+    const ctor = this.constructor as typeof AbstractPage;
+    const programsPerPC = programNodesPerPC.map((nodes) =>
+      nodes
+        .map((node) => ({ node, ...ctor.ProgramNode.extractData(node) }))
+        .filter(this.isValidProgram),
+    );
 
     // logging a single message allows us to take advantage of the duplicate log message suppression
     //   feature built-in to browser consoles
@@ -61,7 +72,7 @@ export default class AbstractPage {
       console.debug(
         `Found ${programContainers.length} / ${programContainerNodes.length} \
 valid containers:\n\t${programContainers
-          .map((pc, idx) => logPC(pc, programs[idx]!))
+          .map((pc, idx) => logPC(pc, programsPerPC[idx]!))
           .join("\n\t")}`,
       );
     }
@@ -70,7 +81,7 @@ valid containers:\n\t${programContainers
     // if there is a valid program container with 0 programs, there might have been a
     //   website markup change
 
-    return programs.flat();
+    return programsPerPC.flat();
 
     function logPC(pc: ProgramContainer, programsInPc: Program[]) {
       const maxProgramTitles = 5;
@@ -134,8 +145,31 @@ valid containers:\n\t${programContainers
     throw new Error("Not implemented");
   }
 
-  findProgramsInProgramContainer(_pContainer: ProgramContainer): Program[] {
+  isValidProgramNode(_pNode: HTMLElement): boolean {
+    return true;
+  }
+
+  isValidProgram(program: Program): boolean {
+    return !!program.title;
+  }
+
+  // NOTE: when implementing this in a subclass, ensure every selector appearing
+  //   in getProgramContainerNodeSelectors is covered
+  getProgramNodeSelectors(_pContainer: ProgramContainer): string[] {
     throw new Error("Not implemented");
+  }
+
+  findProgramNodesInProgramContainer(
+    pContainer: ProgramContainer,
+  ): HTMLElement[] {
+    const pNodeSelectors = this.getProgramNodeSelectors(pContainer);
+    const pNodesPerSelector = pNodeSelectors.map((sel) =>
+      Array.from(pContainer.node.querySelectorAll<HTMLElement>(sel)),
+    );
+
+    // TODO: update selector statuses
+
+    return pNodesPerSelector.flat().filter(this.isValidProgramNode);
   }
 
   createIMDBDataNode(data: IMDBData): HTMLElement {

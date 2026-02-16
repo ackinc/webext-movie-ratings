@@ -1,7 +1,7 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses } from "../../common";
+import { CssClasses, ErrorMessages } from "../../common";
 import ProgramNode from "./ProgramNode";
-import type { Program, ProgramContainer } from "../../common/types";
+import type { ProgramContainer } from "../../common/types";
 
 class SonyLivPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -163,35 +163,40 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     );
   }
 
-  override findProgramsInProgramContainer(
-    pContainer: ProgramContainer,
-  ): Program[] {
+  override isValidProgramNode(pNode: HTMLElement): boolean {
+    const ctor = this.constructor as typeof SonyLivPage;
+    return ctor.ProgramNode.isMovieOrSeries(pNode);
+  }
+
+  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
 
-    const selector = node.matches("div.layout-main-container")
-      ? "a.trending-tray-link,a.landscape-link,a.portrait-link,a.multipurpose-portrait-link"
-      : node.matches("div.listinpage_wrapper")
-        ? "a[title]"
-        : node.matches("div.page-position > div.potraitTrayCards")
-          ? "a.link_container"
-          : node.matches("div.PopularSearchContainer")
-            ? "a[id],div.sonyliv-original-block-wrap"
-            : node.matches("div.searchWrapperContainer")
-              ? "a[id]"
-              : null;
-    if (!selector) return [];
+    if (node.matches("div.layout-main-container")) {
+      return [
+        "a.trending-tray-link",
+        "a.landscape-link",
+        "a.portrait-link",
+        "a.multipurpose-portrait-link",
+      ];
+    }
 
-    const ctor = this.constructor as typeof SonyLivPage;
-    const programNodes = Array.from(
-      node.querySelectorAll<HTMLElement>(selector),
-    ).filter(ctor.ProgramNode.isMovieOrSeries);
-    const programs = programNodes
-      .map((node) => ({
-        node,
-        ...ctor.ProgramNode.extractData(node),
-      }))
-      .filter(({ title }) => !!title);
-    return programs;
+    if (node.matches("div.listinpage_wrapper")) {
+      return ["a[title]"];
+    }
+
+    if (node.matches("div.PopularSearchContainer")) {
+      return ["a[id]", "div.sonyliv-original-block-wrap"];
+    }
+
+    if (node.matches("div.searchWrapperContainer")) {
+      return ["a[id]"];
+    }
+
+    if (node.matches("div.page-position > div.potraitTrayCards")) {
+      return ["a.link_container"];
+    }
+
+    throw new Error(ErrorMessages.unrecognizedProgramContainer);
   }
 }
 

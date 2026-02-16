@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses } from "../../common";
-import type { ProgramContainer, Program } from "../../common/types";
+import { CssClasses, ErrorMessages } from "../../common";
+import type { ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
 export default class AppleTvPage extends AbstractPage {
@@ -80,28 +80,23 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     return Boolean(pContainer.title);
   }
 
-  override findProgramsInProgramContainer(
-    pContainer: ProgramContainer,
-  ): Program[] {
-    const selector = pContainer.node.matches(
-      'div.section[data-testid="section-container"]',
-    )
-      ? "ul > li button.epic-showcase-item,ul > li a.lockup,ul > li div.lockup"
-      : pContainer.node.matches("ul.search-suggestions")
-        ? "div.search-hint-lockup"
-        : null;
-    const programNodes: HTMLElement[] = selector
-      ? Array.from(pContainer.node.querySelectorAll(selector))
-      : [];
+  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+    const { node } = pContainer;
+    if (
+      ['div.section[data-testid="section-container"]'].some((sel) =>
+        node.matches(sel),
+      )
+    ) {
+      return [
+        "ul > li button.epic-showcase-item",
+        "ul > li a.lockup,ul > li div.lockup",
+      ];
+    }
 
-    const ctor = this.constructor as typeof AppleTvPage;
-    const programs: Program[] = programNodes
-      .map((node) => {
-        const extractedData = ctor.ProgramNode.extractData(node);
-        return { node, ...extractedData };
-      })
-      .filter(({ title }) => !!title);
+    if (["ul.search-suggestions"].some((sel) => node.matches(sel))) {
+      return ["div.search-hint-lockup"];
+    }
 
-    return programs;
+    throw new Error(ErrorMessages.unrecognizedProgramContainer);
   }
 }
