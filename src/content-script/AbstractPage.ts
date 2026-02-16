@@ -3,6 +3,7 @@ import type {
   ProgramContainer,
   Program,
   IMDBData,
+  Selector,
   SelectorStatusForSite,
 } from "../common/types";
 import {
@@ -53,9 +54,10 @@ export default class AbstractPage {
   findPrograms(): Program[] {
     const programContainerNodes = this.findProgramContainerNodes();
     const programContainers = programContainerNodes
-      .map((node) => ({
+      .map(([node, selector]) => ({
         title: this.getTitleFromProgramContainerNode(node),
         node,
+        selector,
       }))
       .filter(this.isValidProgramContainer);
 
@@ -124,7 +126,9 @@ valid containers:\n\t${programContainers
     document.head.appendChild(styleNode);
   }
 
-  findProgramContainerNodes(): HTMLElement[] {
+  findProgramContainerNodes(): [HTMLElement, Selector][] {
+    // TODO: ideally remove path and search variables from pathname
+    // Example: /genres/123/movie/456 => /genres/:id/movie/:id
     const pathname = window.location.pathname + window.location.search;
     const selectors = this.getProgramContainerNodeSelectors(pathname);
     const results = selectors.map((s) =>
@@ -135,7 +139,11 @@ valid containers:\n\t${programContainers
       this.updateSelectorStatuses(pathname, selectors, results);
     }
 
-    return results.flat();
+    return results
+      .map((nodes, i) =>
+        nodes.map((node) => [node, selectors[i]] as [HTMLElement, Selector]),
+      )
+      .flat();
   }
 
   getProgramContainerNodeSelectors(_urlPath: string): string[] {
@@ -167,14 +175,21 @@ valid containers:\n\t${programContainers
   findProgramNodesInProgramContainer(
     pContainer: ProgramContainer,
   ): HTMLElement[] {
-    const pNodeSelectors = this.getProgramNodeSelectors(pContainer);
-    const pNodesPerSelector = pNodeSelectors.map((sel) =>
+    const selectors = this.getProgramNodeSelectors(pContainer);
+    const results = selectors.map((sel) =>
       Array.from(pContainer.node.querySelectorAll<HTMLElement>(sel)),
     );
 
-    // TODO: update selector statuses
+    if (!this.#isMarkedForCleanup) {
+      const pathname = window.location.pathname + window.location.search;
+      this.updateSelectorStatuses(
+        pathname,
+        selectors.map((sel) => `${pContainer.selector} ${sel}`),
+        results,
+      );
+    }
 
-    return pNodesPerSelector.flat().filter(this.isValidProgramNode);
+    return results.flat().filter(this.isValidProgramNode);
   }
 
   createIMDBDataNode(data: IMDBData): HTMLElement {
