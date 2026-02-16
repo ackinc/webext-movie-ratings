@@ -179,7 +179,7 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
         pageUrl: location.href,
       },
     });
-  if ("error" in response) throw response.error;
+  if ("error" in response) throw new Error(response.error);
   return response;
 }
 
