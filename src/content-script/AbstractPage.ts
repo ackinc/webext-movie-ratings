@@ -181,6 +181,8 @@ valid containers:\n\t${programContainers
     );
 
     if (!this.#isMarkedForCleanup) {
+      // TODO: ideally remove path and search variables from pathname
+      // Example: /genres/123/movie/456 => /genres/:id/movie/:id
       const pathname = window.location.pathname + window.location.search;
       this.updateSelectorStatuses(
         pathname,
@@ -210,6 +212,8 @@ valid containers:\n\t${programContainers
     return node;
   }
 
+  // TODO: when an outdated selector is removed from the codebase, we
+  //   need a way to remove it from selector status storage area as well
   async updateSelectorStatuses(
     pathname: string,
     selectors: string[],
