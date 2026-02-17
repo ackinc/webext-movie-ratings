@@ -3,6 +3,9 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "types": ["chrome"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "sourceMap": true,
 
     // since we're using preact
     "jsx": "react-jsx",
