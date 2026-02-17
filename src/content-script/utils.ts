@@ -36,9 +36,9 @@ export function updateFilteredOutProgramNodeStyles(
 export async function getSelectorStatusForCurrentSite(): Promise<SelectorStatusForSite> {
   const hostname = window.location.hostname;
   const selectorStatusKey = `selectorStatus_${hostname}`;
-  const selectorStatusForSite = ((await storage.get(selectorStatusKey)) ??
-    {}) as SelectorStatusForSite;
-  return selectorStatusForSite;
+  const selectorStatusForSite =
+    await storage.get<SelectorStatusForSite>(selectorStatusKey);
+  return selectorStatusForSite ?? ({} as SelectorStatusForSite);
 }
 
 export async function setSelectorStatusForCurrentSite(
