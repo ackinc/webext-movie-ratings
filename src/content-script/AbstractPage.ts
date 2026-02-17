@@ -150,7 +150,11 @@ valid containers:\n\t${programContainers
     );
 
     if (!this.#isMarkedForCleanup) {
-      this.updateSelectorStatuses(selectors, results);
+      this.updateSelectorStatuses(selectors, results).catch((e) => {
+        if (e.message?.startsWith("Extension context invalidated")) return;
+        captureException(e);
+        throw e;
+      });
     }
 
     return results
@@ -198,7 +202,11 @@ valid containers:\n\t${programContainers
       this.updateSelectorStatuses(
         selectors.map((sel) => `${pContainer.selector} ${sel}`),
         results,
-      );
+      ).catch((e) => {
+        if (e.message?.startsWith("Extension context invalidated")) return;
+        captureException(e);
+        throw e;
+      });
     }
 
     return results.flat().filter(this.isValidProgramNode);
