@@ -4,20 +4,23 @@ import type {
   Program,
   IMDBData,
   Selector,
-  SelectorStatusForSite,
+  UrlPath,
 } from "../common/types";
 import {
   CssClasses,
   defaultProgramFilterSettings,
   getIMDBLink,
   getSetting,
-  storage,
   type ProgramFilterSettings,
   SettingsKey,
   selectorFailureThreshold,
   standardizeUrlPath,
 } from "../common";
-import { makeFilteredOutProgramNodeStylesClause } from "./utils";
+import {
+  getSelectorStatusForCurrentSite,
+  makeFilteredOutProgramNodeStylesClause,
+  setSelectorStatusForCurrentSite,
+} from "./utils";
 import { captureException } from "common/errorReporter";
 
 export default class AbstractPage {
@@ -206,20 +209,12 @@ valid containers:\n\t${programContainers
     return node;
   }
 
-  // TODO: when an outdated selector is removed from the codebase, we
-  //   need a way to remove it from selector status storage area as well
   async updateSelectorStatuses(selectors: string[], results: HTMLElement[][]) {
-    const hostname = window.location.hostname;
+    const selectorStatusForSite = await getSelectorStatusForCurrentSite();
     const pathname = standardizeUrlPath(
       window.location.pathname + window.location.search,
     );
-
-    const selectorStatusKey = `selectorStatus_${hostname}`;
-    const selectorStatusForSite = ((await storage.get(selectorStatusKey)) ??
-      {}) as SelectorStatusForSite;
-    if (!selectorStatusForSite[pathname]) {
-      selectorStatusForSite[pathname] = {};
-    }
+    if (!selectorStatusForSite[pathname]) selectorStatusForSite[pathname] = {};
     const selectorStatusForPathname = selectorStatusForSite[pathname];
 
     selectors.forEach((sel, i) => {
@@ -241,13 +236,20 @@ valid containers:\n\t${programContainers
         // failure threshold has been reached; an error should be captured
         captureException(
           new Error(
-            `Potentially out of date selector. ${JSON.stringify({ hostname, pathname, selector: sel })}`,
+            `Potentially out of date selector: ${JSON.stringify({ pathname, selector: sel })}`,
           ),
         );
         selectorStatusForPathname[sel] = "probablyOutOfDate";
       }
     });
 
-    await storage.set(selectorStatusKey, selectorStatusForSite);
+    await setSelectorStatusForCurrentSite(selectorStatusForSite);
+  }
+
+  // selectors should only ever be abandoned for a particular pathname,
+  //   not site-wide, since a selector that stops working for one page
+  //   may still be active on another page of the same site
+  getAbandonedSelectors(): [UrlPath, Selector][] {
+    return [];
   }
 }

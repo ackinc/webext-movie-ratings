@@ -1,5 +1,5 @@
-import { clampNum, CssClasses } from "../common";
-import type { ProgramFilterSettings } from "../common";
+import { clampNum, CssClasses, storage } from "../common";
+import type { ProgramFilterSettings, SelectorStatusForSite } from "../common";
 
 export function makeFilteredOutProgramNodeStylesClause(
   filterSettings: ProgramFilterSettings,
@@ -31,4 +31,20 @@ export function updateFilteredOutProgramNodeStyles(
     styleNode.textContent.replace(fopnRegexp, "").trim(),
     makeFilteredOutProgramNodeStylesClause(filterSettings),
   ].join("\n");
+}
+
+export async function getSelectorStatusForCurrentSite(): Promise<SelectorStatusForSite> {
+  const hostname = window.location.hostname;
+  const selectorStatusKey = `selectorStatus_${hostname}`;
+  const selectorStatusForSite = ((await storage.get(selectorStatusKey)) ??
+    {}) as SelectorStatusForSite;
+  return selectorStatusForSite;
+}
+
+export async function setSelectorStatusForCurrentSite(
+  updatedStatus: SelectorStatusForSite,
+): Promise<void> {
+  const hostname = window.location.hostname;
+  const selectorStatusKey = `selectorStatus_${hostname}`;
+  await storage.set(selectorStatusKey, updatedStatus);
 }
