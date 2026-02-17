@@ -1,5 +1,9 @@
 # Changelog
 
+## v6.4.0
+
+- Added logic for early detection of website markup changes - if a selector that was returning results (either program containers or programs) on a particular page suddenly stops returning results, we now report that as an error in Sentry
+
 ## v6.3.4
 
 - Errors will not group better in Sentry (moved unhelpfully specific information outside error message)
