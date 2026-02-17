@@ -1,30 +1,30 @@
 import { test } from "node:test";
 import * as assert from "node:assert";
-import { standardizeUrlPath } from "../src/common/utils.ts";
+import { getGeneralizedUrlPath } from "../src/common/utils.ts";
 
-test("standardizeUrlPath", (t) => {
+test("getGeneralizeUrlPath", (t) => {
   t.test("should replace numbers in path segments with :n", () => {
     assert.strictEqual(
-      standardizeUrlPath("/genres/123/movies/456"),
+      getGeneralizedUrlPath("/genres/123/movies/456"),
       "/genres/:n/movies/:n",
     );
   });
 
-  t.test("handles trailing slashes in url path", () => {
+  t.test("doesn't mind trailing slashes in url path", () => {
     assert.strictEqual(
-      standardizeUrlPath("/genres/123/movies/456/"),
+      getGeneralizedUrlPath("/genres/123/movies/456/"),
       "/genres/:n/movies/:n/",
     );
   });
 
   t.test("leaves generic paths untouched", () => {
-    assert.strictEqual(standardizeUrlPath("/"), "/");
-    assert.strictEqual(standardizeUrlPath("/a/b/c"), "/a/b/c");
+    assert.strictEqual(getGeneralizedUrlPath("/"), "/");
+    assert.strictEqual(getGeneralizedUrlPath("/a/b/c"), "/a/b/c");
   });
 
-  t.test("replaces numbers in search params too", () => {
+  t.test("replaces values in search params too", () => {
     assert.strictEqual(
-      standardizeUrlPath("/genres/123/movies/456?w=789&h=012"),
+      getGeneralizedUrlPath("/genres/123/movies/456?w=7a8b9c&h=0a1b2c"),
       "/genres/:n/movies/:n?w=:n&h=:n",
     );
   });

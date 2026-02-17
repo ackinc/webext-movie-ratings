@@ -141,6 +141,9 @@ export async function sendMessageToAllTabs(message: Message) {
 }
 
 // see tests/utils.test.ts for examples
-export function standardizeUrlPath(path: string) {
-  return path.replace(/(\/|=)\d+(\/|\b)/g, (_m, p1, p2) => `${p1}:n${p2}`);
+export function getGeneralizedUrlPath(href: string) {
+  const url = new URL(href.startsWith("/") ? `tmp://${href}` : href);
+  url.pathname = url.pathname.replace(/\/\d+(\/|\b)/g, (_m, p1) => `/:n${p1}`);
+  url.search = url.search.replace(/=[^&#]+/g, "=:n");
+  return url.pathname + url.search;
 }

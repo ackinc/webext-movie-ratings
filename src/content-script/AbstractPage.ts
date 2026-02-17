@@ -9,12 +9,12 @@ import type {
 import {
   CssClasses,
   defaultProgramFilterSettings,
+  getGeneralizedUrlPath,
   getIMDBLink,
   getSetting,
   type ProgramFilterSettings,
   SettingsKey,
   selectorFailureThreshold,
-  standardizeUrlPath,
 } from "../common";
 import {
   getSelectorStatusForCurrentSite,
@@ -211,9 +211,7 @@ valid containers:\n\t${programContainers
 
   async updateSelectorStatuses(selectors: string[], results: HTMLElement[][]) {
     const selectorStatusForSite = await getSelectorStatusForCurrentSite();
-    const pathname = standardizeUrlPath(
-      window.location.pathname + window.location.search,
-    );
+    const pathname = getGeneralizedUrlPath(window.location.href);
     if (!selectorStatusForSite[pathname]) selectorStatusForSite[pathname] = {};
     const selectorStatusForPathname = selectorStatusForSite[pathname];
 
