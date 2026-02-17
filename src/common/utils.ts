@@ -60,6 +60,17 @@ export function omit(
   return retval;
 }
 
+export function omitBy(
+  obj: Record<string, unknown>,
+  predFn: (key: string) => boolean,
+): Record<string, unknown> {
+  const retval = { ...obj };
+  for (const key of Object.keys(retval)) {
+    if (predFn(key)) delete retval[key];
+  }
+  return retval;
+}
+
 export function findAncestor(
   node: HTMLElement,
   predFn: (node2: HTMLElement) => boolean,
