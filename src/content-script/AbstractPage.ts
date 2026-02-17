@@ -22,6 +22,7 @@ import {
   setSelectorStatusForCurrentSite,
 } from "./utils";
 import { captureException } from "../common/errorReporter";
+import { limitConcurrency } from "rate-limit-utils";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
@@ -34,6 +35,14 @@ export default class AbstractPage {
     this.isValidProgramContainer = this.isValidProgramContainer.bind(this);
     this.isValidProgramNode = this.isValidProgramNode.bind(this);
     this.isValidProgram = this.isValidProgram.bind(this);
+
+    // we want callers to be able to call this method without awaiting it as it may
+    //   cause performance issues since it is called many times in the hot path
+    //   of findProgramContainerNodes and findProgramNodesInProgramContainer
+    this.updateSelectorStatuses = limitConcurrency(
+      this.updateSelectorStatuses.bind(this),
+      1,
+    );
   }
 
   async initialize() {
