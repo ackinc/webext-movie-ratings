@@ -57,7 +57,7 @@ export type IsOptional = boolean;
 
 export type UrlPath = string;
 export type Selector = string;
-export type NumSelectorFailures = number;
-export type SelectorStatus = NumSelectorFailures | "probablyOutOfDate";
+export type FailureCount = number;
+export type SelectorStatus = FailureCount | "probablyOutOfDate";
 export type SelectorStatusForPathname = Record<Selector, SelectorStatus>;
 export type SelectorStatusForSite = Record<UrlPath, SelectorStatusForPathname>;
