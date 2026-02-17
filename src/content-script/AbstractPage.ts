@@ -21,7 +21,7 @@ import {
   makeFilteredOutProgramNodeStylesClause,
   setSelectorStatusForCurrentSite,
 } from "./utils";
-import { captureException } from "common/errorReporter";
+import { captureException } from "../common/errorReporter";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
