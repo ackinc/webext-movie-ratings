@@ -36,9 +36,13 @@ export default class AbstractPage {
     this.isValidProgramNode = this.isValidProgramNode.bind(this);
     this.isValidProgram = this.isValidProgram.bind(this);
 
-    // we want callers to be able to call this method without awaiting it as it may
-    //   cause performance issues since it is called many times in the hot path
-    //   of findProgramContainerNodes and findProgramNodesInProgramContainer
+    // this async method is called many times in the hot path of findPrograms
+    //   without being awaited; concurrent executions will interfere with
+    //   each other, since they will read from and write to the same storage
+    //   area; limiting concurrency to 1 effectively makes it synchronous,
+    //   but also allows the hot path to continue without waiting for it to
+    //   complete, which should help with performance as perceived by the
+    //   extension user
     this.updateSelectorStatuses = limitConcurrency(
       this.updateSelectorStatuses.bind(this),
       1,
