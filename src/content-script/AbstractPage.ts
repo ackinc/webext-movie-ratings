@@ -37,7 +37,7 @@ export default class AbstractPage {
   }
 
   async initialize() {
-    await this.injectStyles();
+    await Promise.all([this.injectStyles(), this.pruneOutdatedSelectors()]);
   }
 
   cleanup() {
@@ -249,7 +249,16 @@ valid containers:\n\t${programContainers
   // selectors should only ever be abandoned for a particular pathname,
   //   not site-wide, since a selector that stops working for one page
   //   may still be active on another page of the same site
-  getAbandonedSelectors(): [UrlPath, Selector][] {
-    return [];
+  getAbandonedSelectors(): Record<UrlPath, Selector[]> {
+    return {};
+  }
+
+  async pruneOutdatedSelectors() {
+    const status = await getSelectorStatusForCurrentSite();
+    const abandoned = this.getAbandonedSelectors();
+    Object.entries(abandoned).forEach(([pathname, selectors]) =>
+      selectors.forEach((s) => delete status[pathname]![s]),
+    );
+    await setSelectorStatusForCurrentSite(status);
   }
 }
