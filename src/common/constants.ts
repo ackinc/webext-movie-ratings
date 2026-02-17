@@ -56,6 +56,7 @@ export const telemetryIntervalSizeInSeconds = 1;
 //   nodes) return zero nodes consecutively for us to assume it is out of
 //   date due to a website markup change
 export const selectorFailureThreshold = 30;
+export const selectorStatusKeyPrefix = "selectorStatus_";
 
 export const enum ErrorMessages {
   unrecognizedProgramContainer = "ProgramContainerNode does not match a recognized selector",
