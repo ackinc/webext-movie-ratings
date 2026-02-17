@@ -139,3 +139,8 @@ export async function sendMessageToAllTabs(message: Message) {
   });
   return results.map((result, idx) => ({ tab: tabs[idx]!, result }));
 }
+
+// ex: /genres/123/movies/456?size=789 => /genres/:n/movies/:n?size=:n
+export function standardizeUrlPath(path: string) {
+  return path.replace(/\/\d+(\/|$)/g, (_m, p1) => `/:n${p1}`);
+}
