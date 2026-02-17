@@ -23,6 +23,13 @@ export default defineConfig([
       globals: { ...globals.node },
     },
   },
+  {
+    basePath: "tests",
+    files: ["**/*.ts"],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
   pluginJs.configs.recommended,
   ...pluginTs.configs.recommended,
   {
