@@ -1,7 +1,7 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { CssClasses } from "../../common";
-import type { ProgramContainer, Program } from "../../common/types";
+import { CssClasses, ErrorMessages } from "../../common";
+import type { ProgramContainer } from "../../common/types";
 
 export default class NetflixPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -73,16 +73,14 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     `;
   }
 
-  override findProgramContainerNodes(): HTMLElement[] {
-    const selectors = [
+  override getProgramContainerNodeSelectors(): string[] {
+    return [
       "div.lolomoRow",
       "div.titleGroup--wrapper",
       "div.moreLikeThis--wrapper",
       "div.gallery",
       'section[data-uia="search-gallery"]',
     ];
-    const nodes = document.querySelectorAll<HTMLElement>(selectors.join(","));
-    return Array.from(nodes);
   }
 
   override getTitleFromProgramContainerNode(
@@ -140,47 +138,25 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     return Boolean(pContainer.title);
   }
 
-  override findProgramsInProgramContainer(
-    pContainer: ProgramContainer,
-  ): Program[] {
+  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
 
-    let programNodes: HTMLElement[] = [];
-
     if (
-      ["lolomoRow", "gallery"].some((cName) =>
-        node.classList.contains(cName),
-      ) ||
-      node.getAttribute("data-uia") === "search-video-gallery"
-    ) {
-      programNodes = Array.from(
-        node.querySelectorAll("div.title-card-container"),
-      );
-    }
-
-    if (
-      ["moreLikeThis--wrapper", "titleGroup--wrapper"].some((cName) =>
-        node.classList.contains(cName),
+      ["div.lolomoRow", "div.titleGroup--wrapper", "div.gallery"].some((sel) =>
+        node.matches(sel),
       )
     ) {
-      programNodes = Array.from(
-        node.querySelectorAll("div.titleCard--container"),
-      );
+      return ["div.title-card-container"];
+    }
+
+    if (node.matches("div.moreLikeThis--wrapper")) {
+      return ["div.titleCard--container"];
     }
 
     if (node.matches('section[data-uia="search-gallery"]')) {
-      programNodes = Array.from(
-        node.querySelectorAll('a[data-uia="search-gallery-video-card"]'),
-      );
+      return ['a[data-uia="search-gallery-video-card"]'];
     }
 
-    const ctor = this.constructor as typeof NetflixPage;
-    const programs = programNodes
-      .map((node) => ({
-        node,
-        ...ctor.ProgramNode.extractData(node),
-      }))
-      .filter(({ title }) => title);
-    return programs;
+    throw new Error(ErrorMessages.unrecognizedProgramContainer);
   }
 }

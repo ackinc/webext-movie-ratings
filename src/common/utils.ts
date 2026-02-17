@@ -60,6 +60,17 @@ export function omit(
   return retval;
 }
 
+export function omitBy(
+  obj: Record<string, unknown>,
+  predFn: (key: string) => boolean,
+): Record<string, unknown> {
+  const retval = { ...obj };
+  for (const key of Object.keys(retval)) {
+    if (predFn(key)) delete retval[key];
+  }
+  return retval;
+}
+
 export function findAncestor(
   node: HTMLElement,
   predFn: (node2: HTMLElement) => boolean,
@@ -138,4 +149,12 @@ export async function sendMessageToAllTabs(message: Message) {
     console.error(reason);
   });
   return results.map((result, idx) => ({ tab: tabs[idx]!, result }));
+}
+
+// see tests/utils.test.ts for examples
+export function getGeneralizedUrlPath(href: string) {
+  const url = new URL(href.startsWith("/") ? `tmp://${href}` : href);
+  url.pathname = url.pathname.replace(/\/\d+(\/|\b)/g, (_m, p1) => `/:n${p1}`);
+  url.search = url.search.replace(/=[^&#]+/g, "=:n");
+  return url.pathname + url.search;
 }

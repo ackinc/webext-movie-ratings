@@ -6,11 +6,12 @@ import {
   browser,
   getSetting,
   setSetting,
-  omit,
+  omitBy,
   pick,
   MessageType,
   SettingsKey,
   telemetryIntervalSizeInSeconds,
+  selectorStatusKeyPrefix,
   sendMessageToAllTabs,
 } from "./common";
 import type {
@@ -78,9 +79,12 @@ async function prepareDB() {
 }
 
 async function migrateCachedRatingsFromOutsideIdb(db: IDBPDatabase<SiftDB>) {
-  const allCachedRatingsData = omit(
-    await browser.storage.local.get(),
-    Object.values(SettingsKey),
+  const allCachedData = await browser.storage.local.get();
+  const allCachedRatingsData = omitBy(
+    allCachedData,
+    (k) =>
+      (Object.values(SettingsKey) as string[]).includes(k) ||
+      k.startsWith(selectorStatusKeyPrefix),
   );
 
   const txn = db.transaction(ratingsStoreName, "readwrite");

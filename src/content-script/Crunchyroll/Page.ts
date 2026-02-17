@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses } from "../../common";
-import type { ProgramContainer, Program } from "../../common/types";
+import { CssClasses, ErrorMessages } from "../../common";
+import type { ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
 export default class CrunchyrollPage extends AbstractPage {
@@ -59,8 +59,8 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
     `;
   }
 
-  override findProgramContainerNodes(): HTMLElement[] {
-    const selectors = [
+  override getProgramContainerNodeSelectors(): string[] {
+    return [
       // home page (pre log-in)
       'section.cr-browse-section[data-t="browse-section"]',
 
@@ -85,7 +85,6 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
       "div.erc-movies-results",
       "div.erc-episodes-results",
     ];
-    return Array.from(document.querySelectorAll(selectors.join(",")));
   }
 
   override getTitleFromProgramContainerNode(
@@ -154,65 +153,44 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
     );
   }
 
-  override findProgramsInProgramContainer(
-    pContainer: ProgramContainer,
-  ): Program[] {
+  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
 
-    let programNodes: HTMLElement[] = [];
-
     if (node.matches('section.cr-browse-section[data-t="browse-section"]')) {
-      programNodes = Array.from(
-        node.querySelectorAll('div[data-t="carousel-card-wrapper"]'),
-      );
-    } else if (node.matches("div.dynamic-feed-wrapper > div[data-id]")) {
-      programNodes = Array.from(
-        node.querySelectorAll(
-          [
-            'div[data-t="carousel-card-wrapper"]',
-            'div[data-t^="episode-card"]',
-            'div[data-t^="watch-list-card"]',
-            'div[data-t="release-episode-card-stack"]',
-            'div[data-t="release-episode-card"]',
-            'div[data-t="single-show-card"]',
-          ].join(","),
-        ),
-      );
-    } else if (node.matches("div.erc-browse-collection")) {
-      programNodes = Array.from(node.querySelectorAll("div.browse-card"));
-    } else if (node.matches("div.erc-alphabetical-virtual-list")) {
-      programNodes = Array.from(
-        node.querySelectorAll('div[data-t="series-card"]'),
-      );
-    } else if (node.matches("div.erc-genres-collection")) {
-      programNodes = Array.from(
-        node.querySelectorAll('div[data-t="carousel-card-wrapper"]'),
-      );
-    } else if (node.matches("div.erc-similar-to")) {
-      programNodes = Array.from(
-        node.querySelectorAll('div[data-t="carousel-card-wrapper"]'),
-      );
-    } else if (node.matches("div.erc-top-results,div.erc-series-results")) {
-      programNodes = Array.from(
-        node.querySelectorAll('div[data-t="search-series-card"]'),
-      );
-    } else if (node.matches("div.erc-movies-results")) {
-      programNodes = Array.from(
-        node.querySelectorAll('div[data-t="search-movie-card"]'),
-      );
-    } else if (node.matches("div.erc-episodes-results")) {
-      programNodes = Array.from(
-        node.querySelectorAll('div[data-t="search-episode-card"]'),
-      );
+      return ['div[data-t="carousel-card-wrapper"]'];
+    }
+    if (node.matches("div.dynamic-feed-wrapper > div[data-id]")) {
+      return [
+        'div[data-t="carousel-card-wrapper"]',
+        'div[data-t^="episode-card"]',
+        'div[data-t^="watch-list-card"]',
+        'div[data-t="release-episode-card-stack"]',
+        'div[data-t="release-episode-card"]',
+        'div[data-t="single-show-card"]',
+      ];
+    }
+    if (node.matches("div.erc-browse-collection")) {
+      return ["div.browse-card"];
+    }
+    if (node.matches("div.erc-alphabetical-virtual-list")) {
+      return ['div[data-t="series-card"]'];
+    }
+    if (node.matches("div.erc-genres-collection")) {
+      return ['div[data-t="carousel-card-wrapper"]'];
+    }
+    if (node.matches("div.erc-similar-to")) {
+      return ['div[data-t="carousel-card-wrapper"]'];
+    }
+    if (node.matches("div.erc-top-results,div.erc-series-results")) {
+      return ['div[data-t="search-series-card"]'];
+    }
+    if (node.matches("div.erc-movies-results")) {
+      return ['div[data-t="search-movie-card"]'];
+    }
+    if (node.matches("div.erc-episodes-results")) {
+      return ['div[data-t="search-episode-card"]'];
     }
 
-    const ctor = this.constructor as typeof CrunchyrollPage;
-    const programs = programNodes
-      .map((node) => ({
-        node,
-        ...ctor.ProgramNode.extractData(node),
-      }))
-      .filter(({ title }) => !!title);
-    return programs;
+    throw new Error(ErrorMessages.unrecognizedProgramContainer);
   }
 }

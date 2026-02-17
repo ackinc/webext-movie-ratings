@@ -51,8 +51,8 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     `;
   }
 
-  override findProgramContainerNodes(): HTMLElement[] {
-    const selectors = [
+  override getProgramContainerNodeSelectors(): string[] {
+    return [
       // seen everywhere on the site, but there are variants
       //   - the most common variant has the title inside
       //   - there is a variant with the title outside (search results)
@@ -70,7 +70,6 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
       // "more like this" section of program page, when visited from category page
       'div[data-testid="section-scroller"]',
     ];
-    return Array.from(document.querySelectorAll(selectors.join(", ")));
   }
 
   override getTitleFromProgramContainerNode(node: HTMLElement): string {
@@ -117,24 +116,16 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     );
   }
 
-  override findProgramsInProgramContainer(
-    pContainer: ProgramContainer,
-  ): Program[] {
-    const { node } = pContainer;
+  override isValidProgramNode(pNode: HTMLElement): boolean {
     const ctor = this.constructor as typeof HotstarPage;
+    return ctor.ProgramNode.isMovieOrSeries(pNode);
+  }
 
-    const programNodes = (
-      Array.from(
-        node.querySelectorAll('div[data-testid="tray-card-default"]'),
-      ) as HTMLElement[]
-    ).filter(ctor.ProgramNode.isMovieOrSeries);
-    const programs = programNodes
-      .map((node) => ({
-        node,
-        ...ctor.ProgramNode.extractData(node),
-      }))
-      // drop program nodes for which data extraction failed
-      .filter(({ title, type }) => title && type);
-    return programs;
+  override getProgramNodeSelectors(_pContainer: ProgramContainer): string[] {
+    return ['div[data-testid="tray-card-default"]'];
+  }
+
+  override isValidProgram({ title, type }: Program): boolean {
+    return Boolean(title && type);
   }
 }

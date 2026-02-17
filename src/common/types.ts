@@ -1,6 +1,7 @@
 import { MessageType } from "./constants";
 
 export type ProgramContainer = {
+  selector: string;
   node: HTMLElement;
   title: string;
 };
@@ -53,3 +54,10 @@ export type Message = {
 };
 
 export type IsOptional = boolean;
+
+export type UrlPath = string;
+export type Selector = string;
+export type FailureCount = number;
+export type SelectorStatus = "active" | FailureCount | "probablyOutOfDate";
+export type SelectorStatusForPathname = Record<Selector, SelectorStatus>;
+export type SelectorStatusForSite = Record<UrlPath, SelectorStatusForPathname>;

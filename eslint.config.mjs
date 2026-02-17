@@ -18,7 +18,14 @@ export default defineConfig([
   },
   {
     basePath: "scripts",
-    files: ["**/*.?(c|m)js"],
+    files: ["**/*.ts"],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
+  {
+    basePath: "tests",
+    files: ["**/*.ts"],
     languageOptions: {
       globals: { ...globals.node },
     },

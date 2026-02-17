@@ -1,30 +1,62 @@
 import AbstractProgramNode from "./AbstractProgramNode";
-import type { ProgramContainer, Program, IMDBData } from "../common/types";
+import type {
+  ProgramContainer,
+  Program,
+  IMDBData,
+  Selector,
+  UrlPath,
+} from "../common/types";
 import {
   CssClasses,
   defaultProgramFilterSettings,
+  getGeneralizedUrlPath,
   getIMDBLink,
   getSetting,
   type ProgramFilterSettings,
   SettingsKey,
+  selectorFailureThreshold,
+  ErrorMessages,
 } from "../common";
-import { makeFilteredOutProgramNodeStylesClause } from "./utils";
+import {
+  getSelectorStatusForCurrentSite,
+  makeFilteredOutProgramNodeStylesClause,
+  setSelectorStatusForCurrentSite,
+} from "./utils";
+import { captureException } from "../common/errorReporter";
+import { limitConcurrency } from "rate-limit-utils";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
+  #isMarkedForCleanup: boolean = false;
 
   constructor() {
     this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
-    this.findProgramsInProgramContainer =
-      this.findProgramsInProgramContainer.bind(this);
+    this.findProgramNodesInProgramContainer =
+      this.findProgramNodesInProgramContainer.bind(this);
     this.isValidProgramContainer = this.isValidProgramContainer.bind(this);
+    this.isValidProgramNode = this.isValidProgramNode.bind(this);
+    this.isValidProgram = this.isValidProgram.bind(this);
+
+    // this async method is called many times in the hot path of findPrograms
+    //   without being awaited; concurrent executions will interfere with
+    //   each other, since they will read from and write to the same storage
+    //   area; limiting concurrency to 1 effectively makes it synchronous,
+    //   but also allows the hot path to continue without waiting for it to
+    //   complete, which should help with performance as perceived by the
+    //   extension user
+    this.updateSelectorStatuses = limitConcurrency(
+      this.updateSelectorStatuses.bind(this),
+      1,
+    );
   }
 
   async initialize() {
-    await this.injectStyles();
+    await Promise.all([this.injectStyles(), this.pruneOutdatedSelectors()]);
   }
 
   cleanup() {
+    this.#isMarkedForCleanup = true;
+
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
     styleNode?.parentElement?.removeChild(styleNode);
 
@@ -40,12 +72,22 @@ export default class AbstractPage {
   findPrograms(): Program[] {
     const programContainerNodes = this.findProgramContainerNodes();
     const programContainers = programContainerNodes
-      .map((node) => ({
+      .map(([node, selector]) => ({
         title: this.getTitleFromProgramContainerNode(node),
         node,
+        selector,
       }))
       .filter(this.isValidProgramContainer);
-    const programs = programContainers.map(this.findProgramsInProgramContainer);
+
+    const programNodesPerPC = programContainers.map(
+      this.findProgramNodesInProgramContainer,
+    );
+    const ctor = this.constructor as typeof AbstractPage;
+    const programsPerPC = programNodesPerPC.map((nodes) =>
+      nodes
+        .map((node) => ({ node, ...ctor.ProgramNode.extractData(node) }))
+        .filter(this.isValidProgram),
+    );
 
     // logging a single message allows us to take advantage of the duplicate log message suppression
     //   feature built-in to browser consoles
@@ -53,7 +95,7 @@ export default class AbstractPage {
       console.debug(
         `Found ${programContainers.length} / ${programContainerNodes.length} \
 valid containers:\n\t${programContainers
-          .map((pc, idx) => logPC(pc, programs[idx]!))
+          .map((pc, idx) => logPC(pc, programsPerPC[idx]!))
           .join("\n\t")}`,
       );
     }
@@ -62,7 +104,7 @@ valid containers:\n\t${programContainers
     // if there is a valid program container with 0 programs, there might have been a
     //   website markup change
 
-    return programs.flat();
+    return programsPerPC.flat();
 
     function logPC(pc: ProgramContainer, programsInPc: Program[]) {
       const maxProgramTitles = 5;
@@ -102,7 +144,28 @@ valid containers:\n\t${programContainers
     document.head.appendChild(styleNode);
   }
 
-  findProgramContainerNodes(): HTMLElement[] {
+  findProgramContainerNodes(): [HTMLElement, Selector][] {
+    const selectors = this.getProgramContainerNodeSelectors();
+    const results = selectors.map((s) =>
+      Array.from(document.querySelectorAll<HTMLElement>(s)),
+    );
+
+    if (!this.#isMarkedForCleanup) {
+      this.updateSelectorStatuses(selectors, results).catch((e) => {
+        if (e.message?.startsWith("Extension context invalidated")) return;
+        captureException(e);
+        throw e;
+      });
+    }
+
+    return results
+      .map((nodes, i) =>
+        nodes.map((node) => [node, selectors[i]] as [HTMLElement, Selector]),
+      )
+      .flat();
+  }
+
+  getProgramContainerNodeSelectors(): string[] {
     throw new Error("Not implemented");
   }
 
@@ -114,8 +177,40 @@ valid containers:\n\t${programContainers
     throw new Error("Not implemented");
   }
 
-  findProgramsInProgramContainer(_pContainer: ProgramContainer): Program[] {
+  isValidProgramNode(_pNode: HTMLElement): boolean {
+    return true;
+  }
+
+  isValidProgram(program: Program): boolean {
+    return !!program.title;
+  }
+
+  // NOTE: when implementing this in a subclass, ensure every selector appearing
+  //   in getProgramContainerNodeSelectors is covered
+  getProgramNodeSelectors(_pContainer: ProgramContainer): string[] {
     throw new Error("Not implemented");
+  }
+
+  findProgramNodesInProgramContainer(
+    pContainer: ProgramContainer,
+  ): HTMLElement[] {
+    const selectors = this.getProgramNodeSelectors(pContainer);
+    const results = selectors.map((sel) =>
+      Array.from(pContainer.node.querySelectorAll<HTMLElement>(sel)),
+    );
+
+    if (!this.#isMarkedForCleanup) {
+      this.updateSelectorStatuses(
+        selectors.map((sel) => `${pContainer.selector} ${sel}`),
+        results,
+      ).catch((e) => {
+        if (e.message?.startsWith("Extension context invalidated")) return;
+        captureException(e);
+        throw e;
+      });
+    }
+
+    return results.flat().filter(this.isValidProgramNode);
   }
 
   createIMDBDataNode(data: IMDBData): HTMLElement {
@@ -134,5 +229,56 @@ valid containers:\n\t${programContainers
     node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : data.imdbRating}`;
     node.addEventListener("click", (e) => e.stopPropagation());
     return node;
+  }
+
+  async updateSelectorStatuses(selectors: string[], results: HTMLElement[][]) {
+    const selectorStatusForSite = await getSelectorStatusForCurrentSite();
+    const pathname = getGeneralizedUrlPath(window.location.href);
+    if (!selectorStatusForSite[pathname]) selectorStatusForSite[pathname] = {};
+    const selectorStatusForPathname = selectorStatusForSite[pathname];
+
+    selectors.forEach((sel, i) => {
+      const nodes = results[i]!;
+      if (nodes.length > 0) {
+        selectorStatusForPathname[sel] = "active";
+      } else if (!(sel in selectorStatusForPathname)) {
+        // no nodes were found for this selector, and none were expected
+        //   anyway
+      } else if (selectorStatusForPathname[sel] === "probablyOutOfDate") {
+        // no nodes were found for this selector, but it is already marked
+        //   out-of-date, so nothing to do
+      } else if (selectorStatusForPathname[sel] === "active") {
+        // start the failure count
+        selectorStatusForPathname[sel] = 1;
+      } else if (selectorStatusForPathname[sel]! < selectorFailureThreshold) {
+        ++selectorStatusForPathname[sel]!;
+      } else {
+        selectorStatusForPathname[sel] = "probablyOutOfDate";
+
+        // failure threshold has been reached; an error should be captured
+        captureException(
+          new Error(ErrorMessages.potentiallyOutOfDateSelector + `: ${sel}`),
+          { tags: { pathname, selector: sel } },
+        );
+      }
+    });
+
+    await setSelectorStatusForCurrentSite(selectorStatusForSite);
+  }
+
+  // selectors should only ever be abandoned for a particular pathname,
+  //   not site-wide, since a selector that stops working for one page
+  //   may still be active on another page of the same site
+  getAbandonedSelectors(): Record<UrlPath, Selector[]> {
+    return {};
+  }
+
+  async pruneOutdatedSelectors() {
+    const status = await getSelectorStatusForCurrentSite();
+    const abandoned = this.getAbandonedSelectors();
+    Object.entries(abandoned).forEach(([pathname, selectors]) =>
+      selectors.forEach((s) => delete status[pathname]![s]),
+    );
+    await setSelectorStatusForCurrentSite(status);
   }
 }

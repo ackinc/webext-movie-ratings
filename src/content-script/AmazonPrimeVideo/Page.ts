@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses } from "../../common";
+import { CssClasses, ErrorMessages } from "../../common";
 import type { IMDBData, ProgramContainer, Program } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -44,8 +44,8 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     `;
   }
 
-  override findProgramContainerNodes(): HTMLElement[] {
-    const selectors = [
+  override getProgramContainerNodeSelectors(): string[] {
+    return [
       // /movie
       'section[data-testid="standard-carousel"]',
 
@@ -65,7 +65,6 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       // search results preview pane
       'div[data-testid="navigation-bar-content-cards-below"]',
     ];
-    return Array.from(document.querySelectorAll(selectors.join(",")));
   }
 
   override getTitleFromProgramContainerNode(
@@ -110,40 +109,33 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     return true;
   }
 
-  override findProgramsInProgramContainer(
-    pContainer: ProgramContainer,
-  ): Program[] {
+  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
-    const testid = node.dataset["testid"] ?? "";
-
-    let programNodes: HTMLElement[] = [];
     if (
       [
-        "standard-carousel",
-        "charts-carousel",
-        "charts-container",
-        "grid-container",
-      ].includes(testid)
+        'section[data-testid="standard-carousel"]',
+        'section[data-testid="charts-container"]',
+        'div[data-testid="grid-container"]',
+      ].some((sel) => node.matches(sel))
     ) {
-      programNodes = Array.from(
-        node.querySelectorAll("article[data-card-title]"),
-      );
-    } else if (testid === "super-carousel") {
-      programNodes = Array.from(
-        node.querySelectorAll('article[data-testid="super-carousel-card"]'),
-      );
-    } else if (testid === "navigation-bar-content-cards-below") {
-      programNodes = Array.from(node.querySelectorAll("article > a"));
+      return ["article[data-card-title]"];
     }
 
-    const ctor = this.constructor as typeof AmazonPrimeVideoPage;
-    const programs = programNodes
-      .map((node) => ({
-        node,
-        ...ctor.ProgramNode.extractData(node),
-      }))
-      .filter(({ title }) => !!title);
-    return programs;
+    if (
+      ['section[data-testid="super-carousel"]'].some((sel) => node.matches(sel))
+    ) {
+      return ['article[data-testid="super-carousel-card"]'];
+    }
+
+    if (
+      ['div[data-testid="navigation-bar-content-cards-below"]'].some((sel) =>
+        node.matches(sel),
+      )
+    ) {
+      return ["article > a"];
+    }
+
+    throw new Error(ErrorMessages.unrecognizedProgramContainer);
   }
 
   override checkIMDBDataAlreadyAdded(program: Program): boolean {

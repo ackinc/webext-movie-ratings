@@ -9,9 +9,9 @@ import {
   getDefaultIntegrations,
   makeFetchTransport,
   Scope,
-  type Context,
 } from "@sentry/react";
-import { browser, getSetting, SettingsKey } from ".";
+import type { Context, ErrorEvent, EventHint } from "@sentry/react";
+import { browser, getSetting, ErrorMessages, SettingsKey } from ".";
 
 // filter integrations that use the global variable
 const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
@@ -26,8 +26,21 @@ const client = new BrowserClient({
   stackParser: defaultStackParser,
   integrations: integrations,
 
-  beforeSend: async (evt) =>
-    (await getSetting(SettingsKey.errorReportingOptIn)) ? evt : null,
+  beforeSend: async (evt: ErrorEvent, hint: EventHint) => {
+    const optedIn = Boolean(await getSetting(SettingsKey.errorReportingOptIn));
+    if (!optedIn) return null;
+
+    const errMsg = (hint.originalException as Error)?.message;
+    if (errMsg?.startsWith(ErrorMessages.potentiallyOutOfDateSelector)) {
+      evt.fingerprint = [
+        "{{ default }}",
+        "{{ tags.pathname }}",
+        "{{ tags.selector }}",
+      ];
+    }
+
+    return evt;
+  },
   environment: BUILDTIME_ENV.DEBUG_MODE ? "development" : "production",
   maxValueLength: 2048,
 });
