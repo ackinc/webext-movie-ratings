@@ -220,26 +220,27 @@ valid containers:\n\t${programContainers
     selectors.forEach((sel, i) => {
       const nodes = results[i]!;
       if (nodes.length > 0) {
-        selectorStatusForPathname[sel] = 0;
+        selectorStatusForPathname[sel] = "active";
       } else if (!(sel in selectorStatusForPathname)) {
         // no nodes were found for this selector, and none were expected
         //   anyway
       } else if (selectorStatusForPathname[sel] === "probablyOutOfDate") {
         // no nodes were found for this selector, but it is already marked
         //   out-of-date, so nothing to do
-      } else if (
-        typeof selectorStatusForPathname[sel] === "number" &&
-        selectorStatusForPathname[sel] < selectorFailureThreshold
-      ) {
-        selectorStatusForPathname[sel]++;
+      } else if (selectorStatusForPathname[sel] === "active") {
+        // start the failure count
+        selectorStatusForPathname[sel] = 1;
+      } else if (selectorStatusForPathname[sel]! < selectorFailureThreshold) {
+        ++selectorStatusForPathname[sel]!;
       } else {
+        selectorStatusForPathname[sel] = "probablyOutOfDate";
+
         // failure threshold has been reached; an error should be captured
         captureException(
           new Error(
             `Potentially out of date selector: ${JSON.stringify({ pathname, selector: sel })}`,
           ),
         );
-        selectorStatusForPathname[sel] = "probablyOutOfDate";
       }
     });
 
