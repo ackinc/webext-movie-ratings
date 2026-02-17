@@ -51,7 +51,7 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     `;
   }
 
-  override getProgramContainerNodeSelectors(_urlPath: string): string[] {
+  override getProgramContainerNodeSelectors(): string[] {
     return [
       // seen everywhere on the site, but there are variants
       //   - the most common variant has the title inside

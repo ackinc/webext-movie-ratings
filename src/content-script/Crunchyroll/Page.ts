@@ -59,7 +59,7 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
     `;
   }
 
-  override getProgramContainerNodeSelectors(_urlPath: string): string[] {
+  override getProgramContainerNodeSelectors(): string[] {
     return [
       // home page (pre log-in)
       'section.cr-browse-section[data-t="browse-section"]',

@@ -73,7 +73,7 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     `;
   }
 
-  override getProgramContainerNodeSelectors(_urlPath: string): string[] {
+  override getProgramContainerNodeSelectors(): string[] {
     return [
       "div.lolomoRow",
       "div.titleGroup--wrapper",

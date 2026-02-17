@@ -93,8 +93,8 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     `;
   }
 
-  override getProgramContainerNodeSelectors(urlPath: string): string[] {
-    if (["/custompage/sports"].some((x) => urlPath.includes(x))) {
+  override getProgramContainerNodeSelectors(): string[] {
+    if (["/custompage/sports"].some((x) => location.pathname.includes(x))) {
       return [];
     }
 

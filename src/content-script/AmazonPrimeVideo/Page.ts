@@ -44,7 +44,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     `;
   }
 
-  override getProgramContainerNodeSelectors(_urlPath: string): string[] {
+  override getProgramContainerNodeSelectors(): string[] {
     return [
       // /movie
       'section[data-testid="standard-carousel"]',

@@ -127,15 +127,15 @@ valid containers:\n\t${programContainers
   }
 
   findProgramContainerNodes(): [HTMLElement, Selector][] {
-    // TODO: ideally remove path and search variables from pathname
-    // Example: /genres/123/movie/456 => /genres/:id/movie/:id
-    const pathname = window.location.pathname + window.location.search;
-    const selectors = this.getProgramContainerNodeSelectors(pathname);
+    const selectors = this.getProgramContainerNodeSelectors();
     const results = selectors.map((s) =>
       Array.from(document.querySelectorAll<HTMLElement>(s)),
     );
 
     if (!this.#isMarkedForCleanup) {
+      // TODO: ideally remove path and search variables from pathname
+      // Example: /genres/123/movie/456 => /genres/:id/movie/:id
+      const pathname = window.location.pathname + window.location.search;
       this.updateSelectorStatuses(pathname, selectors, results);
     }
 
@@ -146,7 +146,7 @@ valid containers:\n\t${programContainers
       .flat();
   }
 
-  getProgramContainerNodeSelectors(_urlPath: string): string[] {
+  getProgramContainerNodeSelectors(): string[] {
     throw new Error("Not implemented");
   }
 
