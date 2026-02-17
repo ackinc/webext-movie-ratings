@@ -142,14 +142,15 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     const { node } = pContainer;
 
     if (
-      [
-        "div.lolomoRow",
-        "div.titleGroup--wrapper",
-        "div.moreLikeThis--wrapper",
-        "div.gallery",
-      ].some((sel) => node.matches(sel))
+      ["div.lolomoRow", "div.titleGroup--wrapper", "div.gallery"].some((sel) =>
+        node.matches(sel),
+      )
     ) {
       return ["div.title-card-container"];
+    }
+
+    if (node.matches("div.moreLikeThis--wrapper")) {
+      return ["div.titleCard--container"];
     }
 
     if (node.matches('section[data-uia="search-gallery"]')) {
