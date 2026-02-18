@@ -28,7 +28,6 @@ const client = new BrowserClient({
 
   beforeSend: async (evt: ErrorEvent, hint: EventHint) => {
     if (BUILDTIME_ENV.DEBUG_MODE) {
-      // TODO: how to make sure context and tags are all logged?
       console.error(evt);
       console.error(hint);
     }
@@ -52,7 +51,9 @@ const client = new BrowserClient({
 });
 
 const scope = new Scope();
-scope.setTags({ extensionVersion: browser.runtime.getManifest().version });
+if (browser.runtime) {
+  scope.setTags({ extensionVersion: browser.runtime.getManifest().version });
+}
 scope.setClient(client);
 
 client.init();

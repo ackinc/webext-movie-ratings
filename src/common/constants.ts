@@ -60,5 +60,6 @@ export const selectorStatusKeyPrefix = "selectorStatus_";
 
 export const enum ErrorMessages {
   unrecognizedProgramContainer = "ProgramContainerNode does not match a recognized selector",
+  unrecognizedProgramNode = "ProgramNode does not match a recognized selector",
   potentiallyOutOfDateSelector = "Potentially out of date selector",
 }

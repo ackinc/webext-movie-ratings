@@ -1,4 +1,4 @@
-import { MessageType } from "../common";
+import { MessageType } from "../common/constants";
 
 patchHistoryPushStateAndReplaceState();
 
