@@ -147,7 +147,10 @@ function handleMessage(
   function handleError(e: unknown, metadata?: ExceptionMetadata) {
     const error = e instanceof Error ? e : new Error(`${e}`);
     sendResponse({ error: error.message });
-    if (error.message === "idb connection not ready") return;
+
+    // let's capture these for a bit so we know how often they occur
+    // if (error.message === "idb connection not ready") return;
+
     captureException(error, metadata);
   }
 }
