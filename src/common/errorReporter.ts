@@ -51,7 +51,9 @@ const client = new BrowserClient({
 });
 
 const scope = new Scope();
-scope.setTags({ extensionVersion: browser.runtime.getManifest().version });
+if (browser.runtime) {
+  scope.setTags({ extensionVersion: browser.runtime.getManifest().version });
+}
 scope.setClient(client);
 
 client.init();
