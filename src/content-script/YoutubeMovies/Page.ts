@@ -32,6 +32,7 @@ export default class YoutubeMoviesPage extends AbstractPage {
   }
 
   override getProgramContainerNodeSelectors(): string[] {
+    if (location.pathname !== "/feed/storefront") return [];
     return ["ytd-item-section-renderer"];
   }
 

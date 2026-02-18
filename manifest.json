@@ -21,7 +21,7 @@
         "https://www.amazon.com/gp/video/*",
         "https://tv.apple.com/*",
         "https://www.crunchyroll.com/*",
-        "https://*.youtube.com/feed/storefront*"
+        "https://*.youtube.com/*"
       ]
     },
     {
@@ -34,7 +34,7 @@
         "https://www.amazon.com/gp/video/*",
         "https://tv.apple.com/*",
         "https://www.crunchyroll.com/*",
-        "https://*.youtube.com/feed/storefront*"
+        "https://*.youtube.com/*"
       ],
       "world": "MAIN"
     }
@@ -56,6 +56,6 @@
     "https://www.amazon.com/gp/video/*",
     "https://tv.apple.com/*",
     "https://www.crunchyroll.com/*",
-    "https://*.youtube.com/feed/storefront*"
+    "https://*.youtube.com/*"
   ]
 }
