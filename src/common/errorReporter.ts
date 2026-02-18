@@ -28,8 +28,9 @@ const client = new BrowserClient({
 
   beforeSend: async (evt: ErrorEvent, hint: EventHint) => {
     if (BUILDTIME_ENV.DEBUG_MODE) {
-      console.error(evt);
-      console.error(hint);
+      console.error(hint.originalException);
+      console.error(evt.tags);
+      console.error(evt.contexts);
     }
 
     const optedIn = Boolean(await getSetting(SettingsKey.errorReportingOptIn));
