@@ -2,7 +2,6 @@ import {
   browser,
   defaultProgramFilterSettings,
   pick,
-  omit,
   invert,
   delayMs,
   getSetting,
@@ -129,11 +128,12 @@ async function findProgramsOnPage(): Promise<Program[]> {
       programs = page.findPrograms();
     } catch (e) {
       const thisErr = e instanceof Error ? e : new Error(`${e}`);
+
+      // we expect this to be a temporary error caused by the page not
+      //   having loaded yet, so we'll log it and then retry after a delay
+      // it doesn't make sense to capture these errors in Sentry
       console.error(thisErr);
       errors.push(thisErr);
-
-      // the error may have been caused by the page not having finished
-      //   loading, so we'll give it some time
       await delayMs(msDelayBetweenRetries);
     }
   } while (!programs && errors.length < maxConsecutiveErrors);
@@ -160,10 +160,7 @@ async function addRatingsToPrograms(allPrograms: Program[]) {
     try {
       page.addIMDBData(program, results[idx]!.value);
     } catch (e) {
-      captureException(e, {
-        context: { program: omit(program, ["node"]) as Omit<Program, "node"> },
-      });
-      console.error(e, program, program.node);
+      captureException(e, { context: { program } });
     }
   });
 }
@@ -226,7 +223,7 @@ function handleMessage(
 
 function handleUrlChange() {
   if (page && loopTimeout === undefined) {
-    console.log(`Sift: resuming paused loop on page change`);
+    console.log(`sift: resuming paused loop on page change`);
     loopTimeout = setTimeout(loop, 0);
   }
 }

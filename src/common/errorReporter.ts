@@ -28,6 +28,7 @@ const client = new BrowserClient({
 
   beforeSend: async (evt: ErrorEvent, hint: EventHint) => {
     if (BUILDTIME_ENV.DEBUG_MODE) {
+      // TODO: how to make sure context and tags are all logged?
       console.error(evt);
       console.error(hint);
     }
