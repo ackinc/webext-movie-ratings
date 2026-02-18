@@ -28,12 +28,24 @@ export default class YoutubeMoviesPage extends AbstractPage {
     font-weight: 500;
     line-height: 1.8rem;
 }
+
+ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode} {
+    background-color: transparent;
+    outline: 1px solid rgba(0, 0, 0, 0.1);
+}
     `;
   }
 
   override getProgramContainerNodeSelectors(): string[] {
-    if (location.pathname !== "/feed/storefront") return [];
-    return ["ytd-item-section-renderer"];
+    if (location.pathname === "/feed/storefront") {
+      return ["ytd-item-section-renderer"];
+    }
+
+    if (location.pathname === "/watch") {
+      return ["ytd-watch-next-secondary-results-renderer > div#items"];
+    }
+
+    return [];
   }
 
   override getTitleFromProgramContainerNode(
@@ -47,6 +59,14 @@ export default class YoutubeMoviesPage extends AbstractPage {
       );
     }
 
+    if (
+      pContainerNode.matches(
+        "ytd-watch-next-secondary-results-renderer > div#items",
+      )
+    ) {
+      return "More like this";
+    }
+
     throw new Error(ErrorMessages.unrecognizedProgramContainer);
   }
 
@@ -58,6 +78,10 @@ export default class YoutubeMoviesPage extends AbstractPage {
     const { node } = pContainer;
     if (node.matches("ytd-item-section-renderer")) {
       return ["ytd-grid-movie-renderer"];
+    }
+
+    if (node.matches("ytd-watch-next-secondary-results-renderer > div#items")) {
+      return ["ytd-compact-movie-renderer"];
     }
 
     throw new Error(ErrorMessages.unrecognizedProgramContainer);
