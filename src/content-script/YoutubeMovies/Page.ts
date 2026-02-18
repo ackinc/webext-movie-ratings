@@ -20,6 +20,7 @@ export default class YoutubeMoviesPage extends AbstractPage {
     padding: 0 4px;
 
     background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 2px;
     color: #606060;
     text-decoration: none;
 
@@ -32,6 +33,7 @@ export default class YoutubeMoviesPage extends AbstractPage {
 ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode} {
     background-color: transparent;
     outline: 1px solid rgba(0, 0, 0, 0.1);
+    outline-offset: -1px;
 }
     `;
   }
