@@ -1,5 +1,6 @@
 import { browser, languages, SettingsKey } from "./constants";
 import type { Message, IsOptional } from "./types";
+import { captureException } from "./errorReporter";
 
 export function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -145,8 +146,13 @@ export async function sendMessageToAllTabs(message: Message) {
     const tab = tabs[idx]!;
     const { reason } = result;
     if (reason.message.includes("Receiving end does not exist")) return;
-    reason.message = `Failed to send message ${message.messageType} to tab ${tab.id} (url: ${tab.url}). ${reason.message}`;
-    console.error(reason);
+    reason.message = `Failed to send message to tab. ${reason.message}`;
+    captureException(reason, {
+      context: {
+        tab: pick(tab as unknown as Record<string, unknown>, ["id", "url"]),
+        message,
+      },
+    });
   });
   return results.map((result, idx) => ({ tab: tabs[idx]!, result }));
 }
