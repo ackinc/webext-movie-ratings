@@ -20,7 +20,8 @@
         "https://www.primevideo.com/*",
         "https://www.amazon.com/gp/video/*",
         "https://tv.apple.com/*",
-        "https://www.crunchyroll.com/*"
+        "https://www.crunchyroll.com/*",
+        "https://*.youtube.com/feed/storefront*"
       ]
     },
     {
@@ -32,7 +33,8 @@
         "https://www.primevideo.com/*",
         "https://www.amazon.com/gp/video/*",
         "https://tv.apple.com/*",
-        "https://www.crunchyroll.com/*"
+        "https://www.crunchyroll.com/*",
+        "https://*.youtube.com/feed/storefront*"
       ],
       "world": "MAIN"
     }
@@ -53,6 +55,7 @@
     "https://www.primevideo.com/*",
     "https://www.amazon.com/gp/video/*",
     "https://tv.apple.com/*",
-    "https://www.crunchyroll.com/*"
+    "https://www.crunchyroll.com/*",
+    "https://*.youtube.com/feed/storefront*"
   ]
 }

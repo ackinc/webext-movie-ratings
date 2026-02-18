@@ -24,6 +24,7 @@ import NetflixPage from "./Netflix/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
+import YoutubeMoviesPage from "./YoutubeMovies/Page";
 import { updateFilteredOutProgramNodeStyles } from "./utils";
 
 let page: AbstractPage;
@@ -43,7 +44,6 @@ let loopAbortController: AbortController;
     loopTimeout = setTimeout(loop, 0);
   } catch (e) {
     captureException(e);
-    throw e;
   }
 })();
 
@@ -64,6 +64,8 @@ async function initializePage() {
     page = new AppleTVPage();
   } else if (location.hostname === "www.crunchyroll.com") {
     page = new CrunchyrollPage();
+  } else if (location.hostname === "www.youtube.com") {
+    page = new YoutubeMoviesPage();
   } else {
     throw new Error("Page not recognized");
   }
