@@ -7,10 +7,11 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Run bump-version",
+      "name": "Run program",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/scripts/bumpVersion.ts",
-      "args": ["--minor"],
+      "program": "${file}",
+      "cwd": "${workspaceFolder}",
+      "args": [],
       "outFiles": ["${workspaceFolder}/**/*.js"]
     }
   ]
