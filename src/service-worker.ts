@@ -137,6 +137,8 @@ function handleMessage(
         .catch((e) => handleError(e, { context: { program } }));
 
       return true; // keeps channel open until sendReponse is called
+    } else if (request.messageType === MessageType.placeholder) {
+      // do something here if desired
     } else {
       throw new Error(`Unknown message type: ${request.messageType}`);
     }
