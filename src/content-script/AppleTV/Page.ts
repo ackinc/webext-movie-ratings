@@ -67,7 +67,11 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
       );
     }
 
-    return pContainerNode.getAttribute("aria-label") ?? "";
+    if (pContainerNode.matches("ul.search-suggestions")) {
+      return pContainerNode.getAttribute("aria-label") ?? "";
+    }
+
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {

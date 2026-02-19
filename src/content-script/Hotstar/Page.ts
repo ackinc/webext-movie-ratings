@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { CssClasses } from "../../common";
+import { CssClasses, ErrorMessages } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 
 export default class HotstarPage extends AbstractPage {
@@ -73,23 +73,24 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
   }
 
   override getTitleFromProgramContainerNode(node: HTMLElement): string {
+    if (node.matches("div.tray-container")) {
+      if (
+        (node.firstElementChild as HTMLElement)!.dataset["testid"] ===
+        "grid-container"
+      ) {
+        // search page (when nothing entered into search bar)
+        return node.querySelector("p.TITLE1")?.textContent ?? "";
+      }
+
+      // everywhere else
+      return (
+        (node.firstChild as HTMLElement)?.querySelector("h2")?.textContent ?? ""
+      );
+    }
+
     // search page (when something entered into search bar)
     if (node.matches("div.search-results")) {
       return node.querySelector("p.TITLE1")?.textContent ?? "Search results";
-    }
-
-    // search page (when nothing entered into search bar)
-    if (
-      node.matches("div.tray-container") &&
-      (node.firstElementChild as HTMLElement)!.dataset["testid"] ===
-        "grid-container"
-    ) {
-      return node.querySelector("p.TITLE1")?.textContent ?? "";
-    }
-
-    // search page (when something entered into search bar)
-    if (node.matches("div.search-results")) {
-      return node.querySelector("p.TITLE1")?.textContent ?? "";
     }
 
     // category page
@@ -101,10 +102,7 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
       return node.querySelector("button h2")?.textContent ?? "";
     }
 
-    // the most common program container
-    return (
-      (node.firstChild as HTMLElement)?.querySelector("h2")?.textContent ?? ""
-    );
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer({ title }: ProgramContainer): boolean {

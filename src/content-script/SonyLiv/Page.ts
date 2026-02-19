@@ -125,13 +125,6 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
       return node.querySelector("h1.listingHeadert")?.textContent ?? "";
     }
 
-    if (node.matches("div.page-position > div.potraitTrayCards")) {
-      const titleWrapper = node.previousElementSibling;
-      if (titleWrapper?.matches("div.ty-wrapper")) {
-        return titleWrapper.querySelector("h3")?.textContent?.trim() ?? "";
-      }
-    }
-
     if (node.matches("div.PopularSearchContainer")) {
       return node.querySelector("h1")?.textContent ?? "Search results";
     }
@@ -143,7 +136,16 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
       );
     }
 
-    return "";
+    if (node.matches("div.page-position > div.potraitTrayCards")) {
+      const titleWrapper = node.previousElementSibling;
+      if (titleWrapper?.matches("div.ty-wrapper")) {
+        return titleWrapper.querySelector("h3")?.textContent?.trim() ?? "";
+      }
+
+      return "";
+    }
+
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {

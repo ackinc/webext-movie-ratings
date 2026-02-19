@@ -86,22 +86,29 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
   override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
-    const { classList } = pContainerNode;
+    if (pContainerNode.matches("div.lolomoRow")) {
+      return (
+        pContainerNode.querySelector(":scope > h2 div.row-header-title")
+          ?.textContent ??
+        pContainerNode.querySelector(":scope > h2.rowTitle")?.textContent ??
+        ""
+      );
+    }
 
-    if (classList.contains("moreLikeThis--wrapper")) {
+    if (pContainerNode.matches("div.titleGroup--wrapper")) {
+      return (
+        pContainerNode.querySelector(".titleGroup--header")?.textContent ?? ""
+      );
+    }
+
+    if (pContainerNode.matches("div.moreLikeThis--wrapper")) {
       return (
         pContainerNode.querySelector(":scope > h3.moreLikeThis--header")
           ?.textContent ?? ""
       );
     }
 
-    if (classList.contains("titleGroup--wrapper")) {
-      return (
-        pContainerNode.querySelector(".titleGroup--header")?.textContent ?? ""
-      );
-    }
-
-    if (classList.contains("gallery")) {
+    if (pContainerNode.matches("div.gallery")) {
       const pContainerParent = pContainerNode.parentNode as HTMLElement;
 
       if (pContainerParent.matches('div[data-uia="modal-content-wrapper"]')) {
@@ -118,20 +125,11 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
       }
     }
 
-    if (classList.contains("lolomoRow")) {
-      return (
-        pContainerNode.querySelector(":scope > h2 div.row-header-title")
-          ?.textContent ??
-        pContainerNode.querySelector(":scope > h2.rowTitle")?.textContent ??
-        ""
-      );
-    }
-
     if (pContainerNode.matches('section[data-uia="search-gallery"]')) {
       return "Search results";
     }
 
-    return "";
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {

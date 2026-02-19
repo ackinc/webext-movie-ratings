@@ -143,7 +143,7 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
       return pContainerNode.querySelector("h1,h2")?.textContent ?? "";
     }
 
-    return "";
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
