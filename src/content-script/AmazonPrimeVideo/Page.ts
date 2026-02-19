@@ -70,12 +70,12 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
   override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
-    const testid = pContainerNode.dataset["testid"] ?? "";
-
     if (
-      ["standard-carousel", "super-carousel", "charts-container"].includes(
-        testid,
-      )
+      [
+        'section[data-testid="standard-carousel"]',
+        'section[data-testid="super-carousel"]',
+        'section[data-testid="charts-container"]',
+      ].some((x) => pContainerNode.matches(x))
     ) {
       return (
         pContainerNode.querySelector('h2 span[data-testid="carousel-title"]')
@@ -83,11 +83,11 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       );
     }
 
-    if (testid === "collection-carousel") {
+    if (pContainerNode.matches('section[data-testid="collection-carousel"]')) {
       return "";
     }
 
-    if (testid === "grid-container") {
+    if (pContainerNode.matches('div[data-testid="grid-container"]')) {
       return (
         // search results page
         pContainerNode.querySelector("h2")?.textContent ??
@@ -98,11 +98,15 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       );
     }
 
-    if (testid === "navigation-bar-content-cards-below") {
+    if (
+      pContainerNode.matches(
+        'div[data-testid="navigation-bar-content-cards-below"]',
+      )
+    ) {
       return "Search results preview";
     }
 
-    return "";
+    throw new Error(ErrorMessages.unrecognizedProgramContainer);
   }
 
   override isValidProgramContainer(_pContainer: ProgramContainer): boolean {
