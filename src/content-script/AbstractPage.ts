@@ -100,10 +100,6 @@ valid containers:\n\t${programContainers
       );
     }
 
-    // WARN
-    // if there is a valid program container with 0 programs, there might have been a
-    //   website markup change
-
     return programsPerPC.flat();
 
     function logPC(pc: ProgramContainer, programsInPc: Program[]) {
