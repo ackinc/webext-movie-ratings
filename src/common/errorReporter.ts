@@ -28,9 +28,19 @@ const client = new BrowserClient({
 
   beforeSend: async (evt: ErrorEvent, hint: EventHint) => {
     if (BUILDTIME_ENV.DEBUG_MODE) {
+      // calls to console.error from extension service worker appear
+      //   in the extension error log at chrome://extensions (or equiv. in
+      //   other browsers)
+      // while this channel logs errors properly, it doesn't do well with
+      //   other objects - what appears is "[object Object]" instead of
+      //   actually useful data
+      // by logging error metadata with console.log instead of console.error,
+      //   we prevent useless ("[object Object]") stuff from filling up the
+      //   extension error log, while still allowing the observation of the
+      //   error metadata from the SW's devtools console
       console.error(hint.originalException);
-      console.error(evt.tags);
-      console.error(evt.contexts);
+      console.log(evt.tags);
+      console.log(evt.contexts);
     }
 
     const optedIn = Boolean(await getSetting(SettingsKey.errorReportingOptIn));
