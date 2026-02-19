@@ -119,8 +119,20 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     return ctor.ProgramNode.isMovieOrSeries(pNode);
   }
 
-  override getProgramNodeSelectors(_pContainer: ProgramContainer): string[] {
-    return ['div[data-testid="tray-card-default"]'];
+  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+    const { node } = pContainer;
+    if (
+      [
+        "div.tray-container",
+        "div.search-results",
+        "div#page-container",
+        'div[data-testid="section-scroller"]',
+      ].some((s) => node.matches(s))
+    ) {
+      return ['div[data-testid="tray-card-default"]'];
+    }
+
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override isValidProgram({ title, type }: Program): boolean {
