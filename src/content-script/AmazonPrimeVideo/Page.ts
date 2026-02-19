@@ -109,10 +109,6 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 
-  override isValidProgramContainer(_pContainer: ProgramContainer): boolean {
-    return true;
-  }
-
   override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
     if (

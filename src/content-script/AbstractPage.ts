@@ -174,7 +174,7 @@ valid containers:\n\t${programContainers
   }
 
   isValidProgramContainer(_pContainer: ProgramContainer): boolean {
-    throw new Error("Not implemented");
+    return true;
   }
 
   isValidProgramNode(_pNode: HTMLElement): boolean {
