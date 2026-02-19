@@ -106,7 +106,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       return "Search results preview";
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(_pContainer: ProgramContainer): boolean {
@@ -139,7 +139,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       return ["article > a"];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 
   override checkIMDBDataAlreadyAdded(program: Program): boolean {

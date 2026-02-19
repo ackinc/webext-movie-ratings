@@ -191,6 +191,6 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
       return ['div[data-t="search-episode-card"]'];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 }

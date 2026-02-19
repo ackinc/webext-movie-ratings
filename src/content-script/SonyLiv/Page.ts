@@ -196,7 +196,7 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
       return ["a.link_container"];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 }
 

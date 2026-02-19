@@ -157,6 +157,6 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
       return ['a[data-uia="search-gallery-video-card"]'];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 }

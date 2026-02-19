@@ -69,7 +69,7 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
       return "More like this";
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
@@ -86,6 +86,6 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
       return ["ytd-compact-movie-renderer"];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 }

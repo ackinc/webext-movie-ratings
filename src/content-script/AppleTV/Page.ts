@@ -97,6 +97,6 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
       return ["div.search-hint-lockup"];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
   }
 }
