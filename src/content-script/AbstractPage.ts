@@ -15,7 +15,7 @@ import {
   type ProgramFilterSettings,
   SettingsKey,
   selectorFailureThreshold,
-  ErrorMessages,
+  ErrorMessage,
 } from "../common";
 import {
   getSelectorStatusForCurrentSite,
@@ -253,7 +253,7 @@ valid containers:\n\t${programContainers
 
         // failure threshold has been reached; an error should be captured
         captureException(
-          new Error(ErrorMessages.potentiallyOutOfDateSelector + `: ${sel}`),
+          new Error(ErrorMessage.potentiallyOutOfDateSelector + `: ${sel}`),
           { tags: { pathname, selector: sel } },
         );
       }

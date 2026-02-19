@@ -1,6 +1,6 @@
 import AbstractProgramNode from "../AbstractProgramNode";
 import type { Program } from "../../common/types";
-import { ErrorMessages } from "common";
+import { ErrorMessage } from "common";
 
 export default class ProgramNode extends AbstractProgramNode {
   static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
@@ -18,7 +18,7 @@ export default class ProgramNode extends AbstractProgramNode {
       };
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramNode);
+    throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 
   static override insertIMDBNode(
@@ -41,6 +41,6 @@ export default class ProgramNode extends AbstractProgramNode {
       return;
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramNode);
+    throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 }

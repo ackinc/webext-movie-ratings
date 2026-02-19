@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { CssClasses, ErrorMessages } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 
 export default class NetflixPage extends AbstractPage {
@@ -129,7 +129,7 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
       return "Search results";
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
@@ -155,6 +155,6 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
       return ['a[data-uia="search-gallery-video-card"]'];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 }

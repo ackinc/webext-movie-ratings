@@ -59,7 +59,7 @@ export const telemetryIntervalSizeInSeconds = 1;
 export const selectorFailureThreshold = 30;
 export const selectorStatusKeyPrefix = "selectorStatus_";
 
-export const enum ErrorMessages {
+export const enum ErrorMessage {
   unrecognizedProgramContainerNode = "ProgramContainerNode does not match a recognized selector",
   unrecognizedProgramNode = "ProgramNode does not match a recognized selector",
   potentiallyOutOfDateSelector = "Potentially out of date selector",

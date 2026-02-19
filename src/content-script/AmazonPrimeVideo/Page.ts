@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses, ErrorMessages } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import type { IMDBData, ProgramContainer, Program } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -106,7 +106,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       return "Search results preview";
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
@@ -135,7 +135,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       return ["article > a"];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override checkIMDBDataAlreadyAdded(program: Program): boolean {

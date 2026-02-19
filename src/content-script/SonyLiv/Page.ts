@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses, ErrorMessages } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import ProgramNode from "./ProgramNode";
 import type { ProgramContainer } from "../../common/types";
 
@@ -145,7 +145,7 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
       return "";
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
@@ -198,7 +198,7 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
       return ["a.link_container"];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 }
 

@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { CssClasses, ErrorMessages } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 
 export default class HotstarPage extends AbstractPage {
@@ -102,7 +102,7 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
       return node.querySelector("button h2")?.textContent ?? "";
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer({ title }: ProgramContainer): boolean {

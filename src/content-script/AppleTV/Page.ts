@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses, ErrorMessages } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -71,7 +71,7 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
       return pContainerNode.getAttribute("aria-label") ?? "";
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
@@ -101,6 +101,6 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
       return ["div.search-hint-lockup"];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 }

@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses, ErrorMessages } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -143,7 +143,7 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
       return pContainerNode.querySelector("h1,h2")?.textContent ?? "";
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
@@ -191,6 +191,6 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
       return ['div[data-t="search-episode-card"]'];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 }

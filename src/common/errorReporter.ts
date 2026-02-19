@@ -11,7 +11,7 @@ import {
   Scope,
 } from "@sentry/react";
 import type { Context, ErrorEvent, EventHint } from "@sentry/react";
-import { browser, getSetting, ErrorMessages, SettingsKey } from ".";
+import { browser, getSetting, ErrorMessage, SettingsKey } from ".";
 
 // filter integrations that use the global variable
 const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
@@ -47,7 +47,7 @@ const client = new BrowserClient({
     if (!optedIn) return null;
 
     const errMsg = (hint.originalException as Error)?.message;
-    if (errMsg?.startsWith(ErrorMessages.potentiallyOutOfDateSelector)) {
+    if (errMsg?.startsWith(ErrorMessage.potentiallyOutOfDateSelector)) {
       evt.fingerprint = [
         "{{ default }}",
         "{{ tags.pathname }}",

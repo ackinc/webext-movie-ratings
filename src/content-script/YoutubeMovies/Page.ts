@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses, ErrorMessages } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -69,7 +69,7 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
       return "More like this";
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
@@ -86,6 +86,6 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
       return ["ytd-compact-movie-renderer"];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainerNode);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 }
