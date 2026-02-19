@@ -135,6 +135,8 @@ function handleMessage(
       getIMDBData(program, pageUrl)
         .then((data) => sendResponse(data))
         .catch((e) => handleError(e, { context: { program } }));
+
+      return true; // keeps channel open until sendReponse is called
     } else {
       throw new Error(`Unknown message type: ${request.messageType}`);
     }
@@ -142,7 +144,7 @@ function handleMessage(
     handleError(e);
   }
 
-  return true;
+  return false;
 
   function handleError(e: unknown, metadata?: ExceptionMetadata) {
     const error = e instanceof Error ? e : new Error(`${e}`);
