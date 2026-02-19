@@ -3,10 +3,6 @@ import { extractProgramTitle } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override isMovieOrSeries(_programNode: HTMLElement): boolean {
-    return true;
-  }
-
   static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
     if (programNode.matches('div[data-t="carousel-card-wrapper"]')) {
       const title =

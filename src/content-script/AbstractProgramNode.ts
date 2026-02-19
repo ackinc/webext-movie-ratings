@@ -3,7 +3,7 @@ import type { Program } from "../common/types";
 
 export default class AbstractProgramNode {
   static isMovieOrSeries(_programNode: HTMLElement): boolean {
-    throw new Error("Not implemented");
+    return true;
   }
 
   static extractData(_programNode: HTMLElement): Omit<Program, "node"> {
