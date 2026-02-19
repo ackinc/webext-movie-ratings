@@ -16,6 +16,7 @@
 
 - Netflix
 - Amazon Prime Video
+- Youtube Movies
 - AppleTV+
 - Hotstar
 - SonyLIV
