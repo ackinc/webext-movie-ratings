@@ -3,14 +3,6 @@ import type { Program } from "../../common/types";
 import { ErrorMessages } from "common";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override isMovieOrSeries(programNode: HTMLElement): boolean {
-    return (
-      programNode
-        .querySelector("div.details ytd-channel-name span.yt-formatted-string")
-        ?.textContent.trim() === "YouTube Movies"
-    );
-  }
-
   static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
     if (programNode.matches("ytd-grid-movie-renderer")) {
       const titleNode = programNode.querySelector("span#video-title");
