@@ -164,3 +164,7 @@ export function getGeneralizedUrlPath(href: string) {
   url.search = url.search.replace(/=[^&#]+/g, "=:n");
   return url.pathname + url.search;
 }
+
+export function ensureError(e: unknown): asserts e is Error {
+  if (!(e instanceof Error)) throw new Error("Assertion failed", { cause: e });
+}

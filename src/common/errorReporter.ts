@@ -12,6 +12,7 @@ import {
 } from "@sentry/react";
 import type { Context, ErrorEvent, EventHint } from "@sentry/react";
 import { browser, getSetting, ErrorMessage, SettingsKey } from ".";
+import { DataExtractionError } from "./customErrors";
 
 // filter integrations that use the global variable
 const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
@@ -87,5 +88,11 @@ export function captureException(e: unknown, metadata: ExceptionMetadata = {}) {
     });
   }
   if (metadata.tags) clonedScope.setTags(metadata.tags);
+  if (e instanceof DataExtractionError) {
+    clonedScope.setContext("datasource", {
+      node: e.node,
+      selector: e.selector,
+    });
+  }
   clonedScope.captureException(e);
 }

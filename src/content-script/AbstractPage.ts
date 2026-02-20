@@ -16,12 +16,14 @@ import {
   SettingsKey,
   selectorFailureThreshold,
   ErrorMessage,
+  ensureError,
 } from "../common";
 import {
   getSelectorStatusForCurrentSite,
   makeFilteredOutProgramNodeStylesClause,
   setSelectorStatusForCurrentSite,
 } from "./utils";
+import { DataExtractionError } from "common/customErrors";
 import { captureException } from "../common/errorReporter";
 import { limitConcurrency } from "rate-limit-utils";
 
@@ -72,11 +74,8 @@ export default class AbstractPage {
   findPrograms(): Program[] {
     const programContainerNodes = this.findProgramContainerNodes();
     const programContainers = programContainerNodes
-      .map(([node, selector]) => ({
-        title: this.getTitleFromProgramContainerNode(node),
-        node,
-        selector,
-      }))
+      .map(this.#safeCreateProgramContainer)
+      .filter((x) => !!x)
       .filter(this.isValidProgramContainer);
 
     const programNodesPerPC = programContainers.map(
@@ -112,6 +111,38 @@ valid containers:\n\t${programContainers
       }`;
     }
   }
+
+  // This method encapsulates the handling of the different kinds of errors
+  //   that can occur when we try to create a ProgramContainer from a likely
+  //   element found on the webpage
+  // Some errors - like ErrorMessage.unrecognizedProgramContainerNode - are
+  //   "showstoppers" - they need to be identified and fixed at build-time.
+  // This method throws these errors so the extension can be brought to an
+  //   immediate halt.
+  // Other errors - like those caused by a failure to extract PC title data
+  //   due to a website markup change - are not showstoppers. If extraction
+  //   for a particular PC fails, it shouldn't affect the processing of some
+  //   other PC.
+  // This method ensures such errors are caught and logged/captured,
+  //   but does not rethrow them up the call stack
+  #safeCreateProgramContainer = ([node, selector]: [
+    HTMLElement,
+    Selector,
+  ]): ProgramContainer | null => {
+    try {
+      const title = this.getTitleFromProgramContainerNode(node);
+      return { title, node, selector };
+    } catch (e) {
+      ensureError(e);
+
+      if (e.message === ErrorMessage.unrecognizedProgramContainerNode) {
+        throw e;
+      }
+
+      captureException(DataExtractionError.from(e, node, selector));
+      return null;
+    }
+  };
 
   checkIMDBDataAlreadyAdded(program: Program): boolean {
     return !!(this.constructor as typeof AbstractPage).ProgramNode.getIMDBNode(
