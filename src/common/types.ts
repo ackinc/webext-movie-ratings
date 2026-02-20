@@ -1,7 +1,7 @@
 import { MessageType } from "./constants";
 
 export type ProgramContainer = {
-  selector: string;
+  selector: Selector;
   node: HTMLElement;
   title: string;
 };

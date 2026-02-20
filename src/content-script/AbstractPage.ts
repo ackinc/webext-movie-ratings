@@ -122,13 +122,17 @@ valid containers:\n\t${programContainers
   //   other PC.
   // This method ensures such errors are caught and logged/captured,
   //   but does not rethrow them up the call stack
-  #safeCreateProgramContainer = ([node, selector]: [
-    HTMLElement,
-    Selector,
-  ]): ProgramContainer | null => {
+
+  #safeCreateProgramContainer = ({
+    node,
+    selector,
+  }: Pick<ProgramContainer, "selector" | "node">): ProgramContainer | null => {
     try {
-      const title = this.getTitleFromProgramContainerNode(node);
-      return { title, node, selector };
+      return {
+        selector,
+        node,
+        title: this.getTitleFromProgramContainerNode(node),
+      };
     } catch (e) {
       ensureError(e);
 
@@ -168,7 +172,7 @@ valid containers:\n\t${programContainers
     document.head.appendChild(styleNode);
   }
 
-  #findProgramContainerNodes(): [HTMLElement, Selector][] {
+  #findProgramContainerNodes(): Pick<ProgramContainer, "selector" | "node">[] {
     const selectors = this.getProgramContainerNodeSelectors();
     const results = selectors.map((s) =>
       Array.from(document.querySelectorAll<HTMLElement>(s)),
@@ -183,7 +187,7 @@ valid containers:\n\t${programContainers
 
     return results
       .map((nodes, i) =>
-        nodes.map((node) => [node, selectors[i]] as [HTMLElement, Selector]),
+        nodes.map((node) => ({ node, selector: selectors[i]! })),
       )
       .flat();
   }
