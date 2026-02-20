@@ -53,6 +53,21 @@ export function pick(
   return retval;
 }
 
+export function pickBy(
+  obj: Record<string, unknown>,
+  predFn: (value: unknown, key: string) => boolean = invert(isNullOrUndef),
+) {
+  const retval: Record<string, unknown> = {};
+  for (const k in obj) {
+    if (predFn(obj[k], k)) retval[k] = obj[k];
+  }
+  return retval;
+}
+
+export function isNullOrUndef(x: unknown) {
+  return x == void 0;
+}
+
 export function omit(
   obj: Record<string, unknown>,
   keys: string[],
@@ -64,11 +79,11 @@ export function omit(
 
 export function omitBy(
   obj: Record<string, unknown>,
-  predFn: (key: string) => boolean,
+  predFn: (value: unknown, key: string) => boolean = isNullOrUndef,
 ): Record<string, unknown> {
   const retval = { ...obj };
-  for (const key of Object.keys(retval)) {
-    if (predFn(key)) delete retval[key];
+  for (const key in obj) {
+    if (predFn(obj[key], key)) delete retval[key];
   }
   return retval;
 }

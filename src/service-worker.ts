@@ -82,7 +82,7 @@ async function migrateCachedRatingsFromOutsideIdb(db: IDBPDatabase<SiftDB>) {
   const allCachedData = await browser.storage.local.get();
   const allCachedRatingsData = omitBy(
     allCachedData,
-    (k) =>
+    (_v, k) =>
       (Object.values(SettingsKey) as string[]).includes(k) ||
       k.startsWith(selectorStatusKeyPrefix),
   );
