@@ -36,7 +36,6 @@ export default class AbstractPage {
     this.findProgramNodesInProgramContainer =
       this.findProgramNodesInProgramContainer.bind(this);
     this.isValidProgramContainer = this.isValidProgramContainer.bind(this);
-    this.isValidProgramNode = this.isValidProgramNode.bind(this);
     this.isValidProgram = this.isValidProgram.bind(this);
 
     // this async method is called many times in the hot path of findPrograms
@@ -204,10 +203,6 @@ valid containers:\n\t${programContainers
     return true;
   }
 
-  isValidProgramNode(_pNode: HTMLElement): boolean {
-    return true;
-  }
-
   isValidProgram(program: Program): boolean {
     return !!program.title;
   }
@@ -236,7 +231,11 @@ valid containers:\n\t${programContainers
       });
     }
 
-    return results.flat().filter(this.isValidProgramNode);
+    return results
+      .flat()
+      .filter(
+        (this.constructor as typeof AbstractPage).ProgramNode.isMovieOrSeries,
+      );
   }
 
   createIMDBDataNode(data: IMDBData): HTMLElement {

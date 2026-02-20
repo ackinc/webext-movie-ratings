@@ -114,11 +114,6 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     );
   }
 
-  override isValidProgramNode(pNode: HTMLElement): boolean {
-    const ctor = this.constructor as typeof HotstarPage;
-    return ctor.ProgramNode.isMovieOrSeries(pNode);
-  }
-
   override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
     if (

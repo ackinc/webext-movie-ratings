@@ -165,11 +165,6 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     );
   }
 
-  override isValidProgramNode(pNode: HTMLElement): boolean {
-    const ctor = this.constructor as typeof SonyLivPage;
-    return ctor.ProgramNode.isMovieOrSeries(pNode);
-  }
-
   override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
 
