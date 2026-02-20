@@ -134,7 +134,9 @@ function handleMessage(
       };
       getIMDBData(program, pageUrl)
         .then((data) => sendResponse(data))
-        .catch((e) => handleError(e, { context: { program } }));
+        .catch((e) =>
+          handleError(e, { context: { program, location: { href: pageUrl } } }),
+        );
 
       return true; // keeps channel open until sendReponse is called
     } else if (request.messageType === MessageType.placeholder) {
