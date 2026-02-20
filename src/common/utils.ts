@@ -1,6 +1,7 @@
+// this module is for simple, self-contained helper fns
+
 import { browser, languages, SettingsKey } from "./constants";
-import type { Message, IsOptional } from "./types";
-import { captureException } from "./errorReporter";
+import type { IsOptional } from "./types";
 
 export function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -131,30 +132,6 @@ export function extractProgramTitle(str: string): string {
       // title should end with alphabet or number
       .replace(/[^A-Za-z0-9]*$/, "")
   );
-}
-
-export async function sendMessageToAllTabs(message: Message) {
-  const tabs = await browser.tabs.query({
-    url: browser.runtime.getManifest()["host_permissions"],
-  });
-  const results = await Promise.allSettled(
-    tabs.map((tab) => browser.tabs.sendMessage(tab.id as number, message)),
-  );
-  results.forEach((result, idx) => {
-    if (result.status === "fulfilled") return;
-
-    const tab = tabs[idx]!;
-    const { reason } = result;
-    if (reason.message.includes("Receiving end does not exist")) return;
-    reason.message = `Failed to send message to tab. ${reason.message}`;
-    captureException(reason, {
-      context: {
-        tab: pick(tab as unknown as Record<string, unknown>, ["id", "url"]),
-        message,
-      },
-    });
-  });
-  return results.map((result, idx) => ({ tab: tabs[idx]!, result }));
 }
 
 // see tests/utils.test.ts for examples
