@@ -201,6 +201,7 @@ valid containers:\n\t${programContainers
   }
 
   isValidProgramContainer(_pContainer: ProgramContainer): boolean {
+    // on some sites, a pContainer is valid even if it doesn't have a title
     return true;
   }
 
