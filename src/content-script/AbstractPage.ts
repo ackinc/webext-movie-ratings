@@ -181,7 +181,6 @@ valid containers:\n\t${programContainers
       this.updateSelectorStatuses(selectors, results).catch((e) => {
         if (e.message?.startsWith("Extension context invalidated")) return;
         captureException(e);
-        throw e;
       });
     }
 
@@ -234,7 +233,6 @@ valid containers:\n\t${programContainers
       ).catch((e) => {
         if (e.message?.startsWith("Extension context invalidated")) return;
         captureException(e);
-        throw e;
       });
     }
 
