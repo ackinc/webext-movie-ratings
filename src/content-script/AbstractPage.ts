@@ -187,7 +187,7 @@ valid containers:\n\t${programContainers
     );
   }
 
-  async injectStyles() {
+  protected async injectStyles() {
     const filterSettings =
       ((await getSetting(SettingsKey.programFiltersSettings)) as
         | ProgramFilterSettings
@@ -223,26 +223,28 @@ valid containers:\n\t${programContainers
       .flat();
   }
 
-  getProgramContainerNodeSelectors(): string[] {
+  protected getProgramContainerNodeSelectors(): string[] {
     throw new Error("Not implemented");
   }
 
-  getTitleFromProgramContainerNode(_pContainerNode: HTMLElement): string {
+  protected getTitleFromProgramContainerNode(
+    _pContainerNode: HTMLElement,
+  ): string {
     throw new Error("Not implemented");
   }
 
-  isValidProgramContainer(_pContainer: ProgramContainer): boolean {
+  protected isValidProgramContainer(_pContainer: ProgramContainer): boolean {
     // on some sites, a pContainer is valid even if it doesn't have a title
     return true;
   }
 
-  isValidProgram(program: Program): boolean {
+  protected isValidProgram(program: Program): boolean {
     return !!program.title;
   }
 
   // NOTE: when implementing this in a subclass, ensure every selector appearing
   //   in getProgramContainerNodeSelectors is covered
-  getProgramNodeSelectors(_pContainer: ProgramContainer): string[] {
+  protected getProgramNodeSelectors(_pContainer: ProgramContainer): string[] {
     throw new Error("Not implemented");
   }
 
@@ -332,7 +334,7 @@ valid containers:\n\t${programContainers
   // selectors should only ever be abandoned for a particular pathname,
   //   not site-wide, since a selector that stops working for one page
   //   may still be active on another page of the same site
-  getAbandonedSelectors(): Record<UrlPath, Selector[]> {
+  protected getAbandonedSelectors(): Record<UrlPath, Selector[]> {
     return {};
   }
 
