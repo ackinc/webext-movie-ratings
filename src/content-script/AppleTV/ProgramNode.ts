@@ -1,10 +1,9 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { ErrorMessage, type Program } from "common";
+import { ErrorMessage } from "../../common";
+import type { Program, ProgramData } from "../../common";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override extractProgramData(
-    programNode: HTMLElement,
-  ): Omit<Program, "node"> {
+  static override extractProgramData(programNode: HTMLElement): ProgramData {
     let title: string = "";
     let type: Program["type"] | undefined = location.pathname.includes(
       "/movie/",

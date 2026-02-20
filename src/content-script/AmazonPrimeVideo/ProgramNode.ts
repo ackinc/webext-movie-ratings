@@ -1,11 +1,9 @@
 import AbstractProgramNode from "../AbstractProgramNode";
 import { ErrorMessage, extractProgramTitle } from "../../common";
-import type { Program } from "../../common/types";
+import type { ProgramData } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override extractProgramData(
-    programNode: HTMLElement,
-  ): Omit<Program, "node"> {
+  static override extractProgramData(programNode: HTMLElement): ProgramData {
     if (programNode.matches("article[data-card-title]")) {
       const type =
         programNode.dataset["cardEntityType"] === "Movie"

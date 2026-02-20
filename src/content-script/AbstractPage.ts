@@ -1,7 +1,9 @@
 import AbstractProgramNode from "./AbstractProgramNode";
 import type {
   ProgramContainer,
+  ProgramContainerData,
   Program,
+  ProgramData,
   IMDBData,
   Selector,
   UrlPath,
@@ -78,10 +80,10 @@ export default class AbstractPage {
     const programNodesPerPC = programContainers.map(
       this.#findProgramNodesInProgramContainer,
     );
-    const ctor = this.constructor as typeof AbstractPage;
     const programsPerPC = programNodesPerPC.map((nodes) =>
       nodes
-        .map((node) => ({ node, ...ctor.ProgramNode.extractProgramData(node) }))
+        .map(this.#safeCreateProgram)
+        .filter((x) => !!x)
         .filter(this.isValidProgram),
     );
 
@@ -109,24 +111,27 @@ valid containers:\n\t${programContainers
     }
   }
 
-  // This method encapsulates the handling of the different kinds of errors
-  //   that can occur when we try to create a ProgramContainer from a likely
-  //   element found on the webpage
+  // The #safeCreateX methods below encapsulate the handling of the different
+  //   kinds of errors that can occur when we try to create a ProgramContainer
+  //   or Program from a likely element found on the webpage
   // Some errors - like ErrorMessage.unrecognizedProgramContainerNode - are
   //   "showstoppers" - they need to be identified and fixed at build-time.
   // This method throws these errors so the extension can be brought to an
   //   immediate halt.
   // Other errors - like those caused by a failure to extract PC title data
   //   due to a website markup change - are not showstoppers. If extraction
-  //   for a particular PC fails, it shouldn't affect the processing of some
-  //   other PC.
-  // This method ensures such errors are caught and logged/captured,
+  //   for a particular PC/Program fails, it shouldn't affect the processing
+  //   of some other PC/Program.
+  // These methods ensure non-showstopper errors are caught and logged/captured,
   //   but does not rethrow them up the call stack
 
   #safeCreateProgramContainer = ({
     node,
     selector,
-  }: Pick<ProgramContainer, "selector" | "node">): ProgramContainer | null => {
+  }: Omit<
+    ProgramContainer,
+    keyof ProgramContainerData
+  >): ProgramContainer | null => {
     try {
       return {
         selector,
@@ -137,6 +142,29 @@ valid containers:\n\t${programContainers
       ensureError(e);
 
       if (e.message === ErrorMessage.unrecognizedProgramContainerNode) {
+        throw e;
+      }
+
+      captureException(DataExtractionError.from(e, node, selector));
+      return null;
+    }
+  };
+
+  #safeCreateProgram = ({
+    node,
+    selector,
+  }: Omit<Program, keyof ProgramData>): Program | null => {
+    try {
+      const ctor = this.constructor as typeof AbstractPage;
+      return {
+        selector,
+        node,
+        ...ctor.ProgramNode.extractProgramData(node),
+      };
+    } catch (e) {
+      ensureError(e);
+
+      if (e.message === ErrorMessage.unrecognizedProgramNode) {
         throw e;
       }
 
@@ -172,7 +200,10 @@ valid containers:\n\t${programContainers
     document.head.appendChild(styleNode);
   }
 
-  #findProgramContainerNodes(): Pick<ProgramContainer, "selector" | "node">[] {
+  #findProgramContainerNodes(): Omit<
+    ProgramContainer,
+    keyof ProgramContainerData
+  >[] {
     const selectors = this.getProgramContainerNodeSelectors();
     const results = selectors.map((s) =>
       Array.from(document.querySelectorAll<HTMLElement>(s)),
@@ -217,10 +248,12 @@ valid containers:\n\t${programContainers
 
   #findProgramNodesInProgramContainer = (
     pContainer: ProgramContainer,
-  ): HTMLElement[] => {
+  ): Omit<Program, keyof ProgramData>[] => {
     const selectors = this.getProgramNodeSelectors(pContainer);
     const results = selectors.map((sel) =>
-      Array.from(pContainer.node.querySelectorAll<HTMLElement>(sel)),
+      Array.from(pContainer.node.querySelectorAll<HTMLElement>(sel)).filter(
+        (this.constructor as typeof AbstractPage).ProgramNode.isMovieOrSeries,
+      ),
     );
 
     if (!this.#isMarkedForCleanup) {
@@ -234,10 +267,13 @@ valid containers:\n\t${programContainers
     }
 
     return results
-      .flat()
-      .filter(
-        (this.constructor as typeof AbstractPage).ProgramNode.isMovieOrSeries,
-      );
+      .map((nodes, idx) =>
+        nodes.map((node) => ({
+          node,
+          selector: `${pContainer.selector} ${selectors[idx]}`,
+        })),
+      )
+      .flat();
   };
 
   #createIMDBDataNode(data: IMDBData): HTMLElement {

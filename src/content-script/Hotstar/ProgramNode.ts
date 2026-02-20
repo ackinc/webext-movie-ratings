@@ -1,6 +1,6 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import type { Program } from "../../common/types";
-import { ErrorMessage } from "common";
+import type { Program, ProgramData } from "../../common/types";
+import { ErrorMessage } from "../../common";
 
 export default class ProgramNode extends AbstractProgramNode {
   static override isMovieOrSeries(programNode: HTMLElement): boolean {
@@ -20,9 +20,7 @@ export default class ProgramNode extends AbstractProgramNode {
     }
   }
 
-  static override extractProgramData(
-    programNode: HTMLElement,
-  ): Omit<Program, "node"> {
+  static override extractProgramData(programNode: HTMLElement): ProgramData {
     if (programNode.matches('div[data-testid="tray-card-default"]')) {
       const disambiguatingNode = programNode.querySelector(
         'div[data-testid="action"]',

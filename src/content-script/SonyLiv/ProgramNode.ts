@@ -1,6 +1,6 @@
 import AbstractProgramNode from "../AbstractProgramNode";
 import { extractProgramTitle, ErrorMessage } from "../../common";
-import type { Program } from "../../common/types";
+import type { Program, ProgramData } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
   static override isMovieOrSeries(programNode: HTMLElement): boolean {
@@ -17,9 +17,7 @@ export default class ProgramNode extends AbstractProgramNode {
     return ["/movies", "/shows", "/trailer"].some((x) => href.startsWith(x));
   }
 
-  static override extractProgramData(
-    programNode: HTMLElement,
-  ): Omit<Program, "node"> {
+  static override extractProgramData(programNode: HTMLElement): ProgramData {
     let title: string;
     let type: Program["type"] | undefined;
 
