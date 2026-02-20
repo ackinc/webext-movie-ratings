@@ -196,8 +196,13 @@ async function getIMDBData(
 
 function getCacheKey(program: Omit<Program, "node">): string {
   const { title, type, year } = program;
+  // using btoa directly on a title with non-latin1 chars (without
+  //   encoding to utf-8 first) will throw
+  const utf8EncodedTitle = String.fromCharCode(
+    ...new TextEncoder().encode(title),
+  );
   return btoa(
-    [title.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
+    [utf8EncodedTitle.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
       .filter(Boolean)
       .join("|"),
   );
