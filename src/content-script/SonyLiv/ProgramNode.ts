@@ -3,17 +3,17 @@ import { extractProgramTitle, ErrorMessage } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override isMovieOrSeries(node: HTMLElement): boolean {
-    if (node.matches("a.trending-tray-link")) {
+  static override isMovieOrSeries(programNode: HTMLElement): boolean {
+    if (programNode.matches("a.trending-tray-link")) {
       // we can't say for sure, so always return true
       return true;
     }
 
-    if (node.matches("div.sonyliv-original-block-wrap")) {
+    if (programNode.matches("div.sonyliv-original-block-wrap")) {
       return true;
     }
 
-    const href = node.getAttribute("href") ?? "";
+    const href = programNode.getAttribute("href") ?? "";
     return ["/movies", "/shows", "/trailer"].some((x) => href.startsWith(x));
   }
 

@@ -3,8 +3,10 @@ import type { Program } from "../../common/types";
 import { ErrorMessage } from "common";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override isMovieOrSeries(node: HTMLElement): boolean {
-    const disambiguatingNode = node.querySelector('div[data-testid="action"]');
+  static override isMovieOrSeries(programNode: HTMLElement): boolean {
+    const disambiguatingNode = programNode.querySelector(
+      'div[data-testid="action"]',
+    );
 
     if (disambiguatingNode?.getAttribute("aria-label")) {
       return /,(Movie|Show)$/.test(
