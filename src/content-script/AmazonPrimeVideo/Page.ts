@@ -139,10 +139,6 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
   }
 
   override checkIMDBDataAlreadyAdded(program: Program): boolean {
-    const hasImdbNode = !!(
-      this.constructor as typeof AbstractPage
-    ).ProgramNode.getIMDBNode(program.node);
-
     // NOTE: SEARCH_RESULTS_PREVIEW_PANE
     // in search results preview pane, previews are updated in-place,
     //   meaning as user continues typing in search bar, they may be
@@ -150,7 +146,12 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     const isInSearchResultsPreviewPane = program.node.matches(
       'div[data-testid="navigation-bar-content-cards-below"] article > a',
     );
-    return hasImdbNode && !isInSearchResultsPreviewPane;
+    if (isInSearchResultsPreviewPane) return false;
+
+    const hasImdbNode = !!(
+      this.constructor as typeof AbstractPage
+    ).ProgramNode.getIMDBNode(program.node);
+    return hasImdbNode;
   }
 
   override addIMDBData(program: Program, data: IMDBData) {
