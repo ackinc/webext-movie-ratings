@@ -1,5 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { extractProgramTitle } from "../../common";
+import { extractProgramTitle, ErrorMessage } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -44,7 +44,17 @@ export default class ProgramNode extends AbstractProgramNode {
         "";
 
       type = node.querySelector("strong.episode-count") ? "series" : "movie";
-    } else {
+    } else if (
+      [
+        "div.layout-main-container a.trending-tray-link",
+        "div.layout-main-container a.landscape-link",
+        "div.layout-main-container a.portrait-link",
+        "div.layout-main-container a.multipurpose-portrait-link",
+        "div.listinpage_wrapper a[title]",
+        "div.searchWrapperContainer a[id]",
+        "div.page-position > div.potraitTrayCards a.link_container",
+      ].some((s) => node.matches(s))
+    ) {
       title =
         node.getAttribute("title") ||
         node
@@ -60,6 +70,8 @@ export default class ProgramNode extends AbstractProgramNode {
         : href?.startsWith("/shows")
           ? "series"
           : undefined;
+    } else {
+      throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
 
     return { title: extractProgramTitle(title), ...(type ? { type } : {}) };

@@ -1,5 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { extractProgramTitle } from "../../common";
+import { ErrorMessage, extractProgramTitle } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -36,6 +36,6 @@ export default class ProgramNode extends AbstractProgramNode {
       };
     }
 
-    return { title: "" };
+    throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 }

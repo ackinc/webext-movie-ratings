@@ -1,5 +1,6 @@
 import AbstractProgramNode from "../AbstractProgramNode";
 import type { Program } from "../../common/types";
+import { ErrorMessage } from "common";
 
 export default class ProgramNode extends AbstractProgramNode {
   static override isMovieOrSeries(node: HTMLElement): boolean {
@@ -18,22 +19,29 @@ export default class ProgramNode extends AbstractProgramNode {
   }
 
   static override extractData(node: HTMLElement): Omit<Program, "node"> {
-    const disambiguatingNode = node.querySelector('div[data-testid="action"]');
+    if (node.matches('div[data-testid="tray-card-default"]')) {
+      const disambiguatingNode = node.querySelector(
+        'div[data-testid="action"]',
+      );
 
-    const title =
-      disambiguatingNode?.querySelector("article img")?.getAttribute("alt") ??
-      "";
+      const title =
+        disambiguatingNode?.querySelector("article img")?.getAttribute("alt") ??
+        "";
 
-    let type: Program["type"];
-    if (disambiguatingNode?.getAttribute("aria-label")) {
-      const ariaLabel = disambiguatingNode.getAttribute("aria-label")!;
-      type = ariaLabel?.endsWith("Movie") ? "movie" : "series";
-    } else {
-      const href = disambiguatingNode?.firstElementChild?.getAttribute("href");
-      type = href?.includes("/movies/") ? "movie" : "series";
+      let type: Program["type"];
+      if (disambiguatingNode?.getAttribute("aria-label")) {
+        const ariaLabel = disambiguatingNode.getAttribute("aria-label")!;
+        type = ariaLabel?.endsWith("Movie") ? "movie" : "series";
+      } else {
+        const href =
+          disambiguatingNode?.firstElementChild?.getAttribute("href");
+        type = href?.includes("/movies/") ? "movie" : "series";
+      }
+
+      return { title, type };
     }
 
-    return { title, type };
+    throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 
   static override insertIMDBNode(

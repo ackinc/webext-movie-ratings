@@ -1,5 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { extractProgramTitle } from "../../common";
+import { ErrorMessage, extractProgramTitle } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -24,7 +24,12 @@ export default class ProgramNode extends AbstractProgramNode {
       return { title };
     }
 
-    if (programNode.matches('div[data-t^="release-episode-card"]')) {
+    if (
+      [
+        'div[data-t="release-episode-card-stack"]',
+        'div[data-t="release-episode-card"]',
+      ].some((sel) => programNode.matches(sel))
+    ) {
       const title = extractProgramTitle(
         programNode.querySelector("h4")?.textContent ?? "",
       );
@@ -68,7 +73,7 @@ export default class ProgramNode extends AbstractProgramNode {
       return { title };
     }
 
-    return { title: "" };
+    throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 
   static override insertIMDBNode(
