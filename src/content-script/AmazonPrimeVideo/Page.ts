@@ -155,8 +155,6 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
   }
 
   override addIMDBData(program: Program, data: IMDBData) {
-    const ratingNode = this.createIMDBDataNode(data);
-
     // see note about SEARCH_RESULTS_PREVIEW_PANE
     const isInSearchResultsPreviewPane = program.node.matches(
       'div[data-testid="navigation-bar-content-cards-below"] article > a',
@@ -167,9 +165,6 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       );
     }
 
-    (this.constructor as typeof AbstractPage).ProgramNode.insertIMDBNode(
-      program.node,
-      ratingNode,
-    );
+    super.addIMDBData(program, data);
   }
 }

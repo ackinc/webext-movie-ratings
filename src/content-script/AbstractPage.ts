@@ -33,8 +33,6 @@ export default class AbstractPage {
 
   constructor() {
     this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
-    this.findProgramNodesInProgramContainer =
-      this.findProgramNodesInProgramContainer.bind(this);
     this.isValidProgramContainer = this.isValidProgramContainer.bind(this);
     this.isValidProgram = this.isValidProgram.bind(this);
 
@@ -52,7 +50,7 @@ export default class AbstractPage {
   }
 
   async initialize() {
-    await Promise.all([this.injectStyles(), this.pruneOutdatedSelectors()]);
+    await Promise.all([this.injectStyles(), this.#pruneOutdatedSelectors()]);
   }
 
   cleanup() {
@@ -71,14 +69,14 @@ export default class AbstractPage {
   }
 
   findPrograms(): Program[] {
-    const programContainerNodes = this.findProgramContainerNodes();
+    const programContainerNodes = this.#findProgramContainerNodes();
     const programContainers = programContainerNodes
       .map(this.#safeCreateProgramContainer)
       .filter((x) => !!x)
       .filter(this.isValidProgramContainer);
 
     const programNodesPerPC = programContainers.map(
-      this.findProgramNodesInProgramContainer,
+      this.#findProgramNodesInProgramContainer,
     );
     const ctor = this.constructor as typeof AbstractPage;
     const programsPerPC = programNodesPerPC.map((nodes) =>
@@ -150,7 +148,7 @@ valid containers:\n\t${programContainers
   }
 
   addIMDBData(program: Program, data: IMDBData) {
-    const ratingNode = this.createIMDBDataNode(data);
+    const ratingNode = this.#createIMDBDataNode(data);
     (this.constructor as typeof AbstractPage).ProgramNode.insertIMDBNode(
       program.node,
       ratingNode,
@@ -170,7 +168,7 @@ valid containers:\n\t${programContainers
     document.head.appendChild(styleNode);
   }
 
-  findProgramContainerNodes(): [HTMLElement, Selector][] {
+  #findProgramContainerNodes(): [HTMLElement, Selector][] {
     const selectors = this.getProgramContainerNodeSelectors();
     const results = selectors.map((s) =>
       Array.from(document.querySelectorAll<HTMLElement>(s)),
@@ -213,9 +211,9 @@ valid containers:\n\t${programContainers
     throw new Error("Not implemented");
   }
 
-  findProgramNodesInProgramContainer(
+  #findProgramNodesInProgramContainer = (
     pContainer: ProgramContainer,
-  ): HTMLElement[] {
+  ): HTMLElement[] => {
     const selectors = this.getProgramNodeSelectors(pContainer);
     const results = selectors.map((sel) =>
       Array.from(pContainer.node.querySelectorAll<HTMLElement>(sel)),
@@ -236,9 +234,9 @@ valid containers:\n\t${programContainers
       .filter(
         (this.constructor as typeof AbstractPage).ProgramNode.isMovieOrSeries,
       );
-  }
+  };
 
-  createIMDBDataNode(data: IMDBData): HTMLElement {
+  #createIMDBDataNode(data: IMDBData): HTMLElement {
     const node = document.createElement("a");
     node.classList.add(CssClasses.imdbDataNode);
     node.dataset["imdbID"] = data.imdbID;
@@ -298,7 +296,7 @@ valid containers:\n\t${programContainers
     return {};
   }
 
-  async pruneOutdatedSelectors() {
+  async #pruneOutdatedSelectors() {
     const status = await getSelectorStatusForCurrentSite();
     const abandoned = this.getAbandonedSelectors();
     Object.entries(abandoned).forEach(([pathname, selectors]) =>
