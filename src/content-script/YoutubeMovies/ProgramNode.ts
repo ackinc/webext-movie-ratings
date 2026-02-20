@@ -3,7 +3,9 @@ import type { Program } from "../../common/types";
 import { ErrorMessage } from "common";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
+  static override extractProgramData(
+    programNode: HTMLElement,
+  ): Omit<Program, "node"> {
     if (programNode.matches("ytd-grid-movie-renderer")) {
       const titleNode = programNode.querySelector("span#video-title");
       return {

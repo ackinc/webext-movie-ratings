@@ -84,7 +84,7 @@ export default class AbstractPage {
     const ctor = this.constructor as typeof AbstractPage;
     const programsPerPC = programNodesPerPC.map((nodes) =>
       nodes
-        .map((node) => ({ node, ...ctor.ProgramNode.extractData(node) }))
+        .map((node) => ({ node, ...ctor.ProgramNode.extractProgramData(node) }))
         .filter(this.isValidProgram),
     );
 

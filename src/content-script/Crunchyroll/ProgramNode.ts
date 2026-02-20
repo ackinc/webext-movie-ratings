@@ -3,7 +3,9 @@ import { ErrorMessage, extractProgramTitle } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
+  static override extractProgramData(
+    programNode: HTMLElement,
+  ): Omit<Program, "node"> {
     if (programNode.matches('div[data-t="carousel-card-wrapper"]')) {
       const title =
         programNode.querySelector('h3[data-t="title"]')?.textContent ??

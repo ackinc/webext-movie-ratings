@@ -18,9 +18,11 @@ export default class ProgramNode extends AbstractProgramNode {
     }
   }
 
-  static override extractData(node: HTMLElement): Omit<Program, "node"> {
-    if (node.matches('div[data-testid="tray-card-default"]')) {
-      const disambiguatingNode = node.querySelector(
+  static override extractProgramData(
+    programNode: HTMLElement,
+  ): Omit<Program, "node"> {
+    if (programNode.matches('div[data-testid="tray-card-default"]')) {
+      const disambiguatingNode = programNode.querySelector(
         'div[data-testid="action"]',
       );
 

@@ -9,7 +9,7 @@ export default class AbstractProgramNode {
   // ensure implementations throw ErrorMessage.unrecognizedProgramNode if
   //   _programNode does not match any of the selectors returned by
   //   page.getProgramNodeSelectors
-  static extractData(_programNode: HTMLElement): Omit<Program, "node"> {
+  static extractProgramData(_programNode: HTMLElement): Omit<Program, "node"> {
     throw new Error("Not implemented");
   }
 

@@ -3,7 +3,9 @@ import { ErrorMessage, extractProgramTitle } from "../../common";
 import type { Program } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
+  static override extractProgramData(
+    programNode: HTMLElement,
+  ): Omit<Program, "node"> {
     let title: string = "";
 
     if (

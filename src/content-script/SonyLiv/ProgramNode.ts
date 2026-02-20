@@ -17,33 +17,39 @@ export default class ProgramNode extends AbstractProgramNode {
     return ["/movies", "/shows", "/trailer"].some((x) => href.startsWith(x));
   }
 
-  static override extractData(node: HTMLElement): Omit<Program, "node"> {
+  static override extractProgramData(
+    programNode: HTMLElement,
+  ): Omit<Program, "node"> {
     let title: string;
     let type: Program["type"] | undefined;
 
-    if (node.matches("div.PopularSearchContainer a[id]")) {
+    if (programNode.matches("div.PopularSearchContainer a[id]")) {
       title =
-        node
+        programNode
           .getAttribute("href")
           ?.split("/")
           .at(-1)
           ?.replace(/-\d+$/, "")
           .replace("-", " ") ?? "";
 
-      const href = node.getAttribute("href");
+      const href = programNode.getAttribute("href");
       type = href?.startsWith("/movies")
         ? "movie"
         : href?.startsWith("/shows")
           ? "series"
           : undefined;
     } else if (
-      node.matches("div.PopularSearchContainer div.sonyliv-original-block-wrap")
+      programNode.matches(
+        "div.PopularSearchContainer div.sonyliv-original-block-wrap",
+      )
     ) {
       title =
-        node.querySelector("div.sonyliv-original-right-sec h2")?.textContent ??
-        "";
+        programNode.querySelector("div.sonyliv-original-right-sec h2")
+          ?.textContent ?? "";
 
-      type = node.querySelector("strong.episode-count") ? "series" : "movie";
+      type = programNode.querySelector("strong.episode-count")
+        ? "series"
+        : "movie";
     } else if (
       [
         "div.layout-main-container a.trending-tray-link",
@@ -53,18 +59,18 @@ export default class ProgramNode extends AbstractProgramNode {
         "div.listinpage_wrapper a[title]",
         "div.searchWrapperContainer a[id]",
         "div.page-position > div.potraitTrayCards a.link_container",
-      ].some((s) => node.matches(s))
+      ].some((s) => programNode.matches(s))
     ) {
       title =
-        node.getAttribute("title") ||
-        node
+        programNode.getAttribute("title") ||
+        programNode
           .querySelector("div.album-cover-container > img[title]")
           ?.getAttribute("title") ||
         // search preview
-        node.querySelector("img.card-img")?.getAttribute("alt") ||
+        programNode.querySelector("img.card-img")?.getAttribute("alt") ||
         "";
 
-      const href = node.getAttribute("href");
+      const href = programNode.getAttribute("href");
       type = href?.startsWith("/movies")
         ? "movie"
         : href?.startsWith("/shows")
