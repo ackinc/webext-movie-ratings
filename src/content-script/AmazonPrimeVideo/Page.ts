@@ -55,7 +55,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       // /movie ("top 10 movies in ...", ...)
       'section[data-testid="charts-container"]',
 
-      // /movie (way down the page: "cinema-like ...")
+      // /movie (way down the page: "cinema-like experience at home ...")
       'section[data-testid="collection-carousel"]',
 
       // /movie -> click "see more"
@@ -122,7 +122,10 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     }
 
     if (
-      ['section[data-testid="super-carousel"]'].some((sel) => node.matches(sel))
+      [
+        'section[data-testid="super-carousel"]',
+        'section[data-testid="collection-carousel"]',
+      ].some((sel) => node.matches(sel))
     ) {
       return ['article[data-testid="super-carousel-card"]'];
     }
