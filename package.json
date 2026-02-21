@@ -1,6 +1,6 @@
 {
   "name": "sift-movie-ratings-webextension",
-  "version": "7.0.1",
+  "version": "7.0.2",
   "main": "index.js",
   "scripts": {
     "test": "tsx tests/*.test.ts",
