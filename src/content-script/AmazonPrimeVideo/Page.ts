@@ -32,14 +32,19 @@ article[data-card-title] .${CssClasses.imdbDataNode} {
 
 article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     position: absolute;
-    top: 4px;
-    left: 4px;
+    top: 0;
+    left: 0;
     z-index: 3;
     margin: 0;
-    border-radius: 8px;
-    padding: 4px 8px;
-    background-color: #000;
-    opacity: 0.8;
+    border-radius: 0;
+    border-bottom-right-radius: 3px;
+    padding: 3px 7px;
+    background-color: white;
+    color: black !important;
+    opacity: 1;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: var(--fable-typography-label-90-line-height);
 }
     `;
   }
