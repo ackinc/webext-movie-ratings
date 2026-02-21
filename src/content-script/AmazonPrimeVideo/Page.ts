@@ -70,6 +70,8 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
   override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
+    let title: string;
+
     if (
       [
         'section[data-testid="standard-carousel"]',
@@ -77,36 +79,36 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
         'section[data-testid="charts-container"]',
       ].some((x) => pContainerNode.matches(x))
     ) {
-      return (
-        pContainerNode.querySelector('h2 span[data-testid="carousel-title"]')
-          ?.textContent ?? ""
-      );
-    }
-
-    if (pContainerNode.matches('section[data-testid="collection-carousel"]')) {
-      return "";
-    }
-
-    if (pContainerNode.matches('div[data-testid="grid-container"]')) {
-      return (
+      title = pContainerNode.querySelector(
+        'h2 span[data-testid="carousel-title"]',
+      )!.textContent;
+    } else if (
+      pContainerNode.matches('section[data-testid="collection-carousel"]')
+    ) {
+      title = "Untitled";
+    } else if (pContainerNode.matches('div[data-testid="grid-container"]')) {
+      if (location.pathname.startsWith("/search/")) {
         // search results page
-        pContainerNode.querySelector("h2")?.textContent ??
-        // "see more"
-        pContainerNode.parentElement!.firstElementChild!.querySelector("h1")
-          ?.textContent ??
-        ""
-      );
-    }
-
-    if (
+        title = pContainerNode.querySelector("h2")!.textContent;
+      } else {
+        // from main movies/shows page, click "see more" in any
+        //   program container
+        title =
+          pContainerNode.parentElement!.firstElementChild!.querySelector(
+            "h1",
+          )!.textContent;
+      }
+    } else if (
       pContainerNode.matches(
         'div[data-testid="navigation-bar-content-cards-below"]',
       )
     ) {
-      return "Search results preview";
+      title = "Search results preview";
+    } else {
+      throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
     }
 
-    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
+    return title.trim();
   }
 
   override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {

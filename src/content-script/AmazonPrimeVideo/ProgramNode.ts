@@ -12,7 +12,7 @@ export default class ProgramNode extends AbstractProgramNode {
             ? "series"
             : null;
       return {
-        title: extractProgramTitle(programNode.dataset["cardTitle"] ?? ""),
+        title: extractProgramTitle(programNode.dataset["cardTitle"]!),
         ...(type ? { type } : {}),
       };
     }
@@ -21,8 +21,8 @@ export default class ProgramNode extends AbstractProgramNode {
       return {
         title: extractProgramTitle(
           programNode
-            .querySelector("a.shared-poster-link")
-            ?.getAttribute("aria-label") ?? "",
+            .querySelector("a.shared-poster-link")!
+            .getAttribute("aria-label")!,
         ),
       };
     }
@@ -30,9 +30,7 @@ export default class ProgramNode extends AbstractProgramNode {
     // search results preview pane
     if (programNode.matches("article > a")) {
       return {
-        title: extractProgramTitle(
-          programNode.getAttribute("aria-label") ?? "",
-        ),
+        title: extractProgramTitle(programNode.getAttribute("aria-label")!),
       };
     }
 
