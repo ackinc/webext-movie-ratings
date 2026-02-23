@@ -1,5 +1,10 @@
 # Changelog
 
+## v7.0.3
+
+- Methods responsible for extracting data from the webpage - `Page::getTitleForProgramContainerNode` and `ProgramNode::extractProgramData` - no longer suppress (most) errors caused by webpage markup changes. This means extension breakage due to markup changes should surface faster when error-reporting is enabled
+- Fixed bug where ratings weren't showing up on various parts of SonyLIV
+
 ## v7.0.0
 
 - Added support for YoutubeMovies
