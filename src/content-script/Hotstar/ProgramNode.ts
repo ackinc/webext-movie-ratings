@@ -24,20 +24,20 @@ export default class ProgramNode extends AbstractProgramNode {
     if (programNode.matches('div[data-testid="tray-card-default"]')) {
       const disambiguatingNode = programNode.querySelector(
         'div[data-testid="action"]',
-      );
+      )!;
 
-      const title =
-        disambiguatingNode?.querySelector("article img")?.getAttribute("alt") ??
-        "";
+      const title = disambiguatingNode
+        .querySelector("article img")!
+        .getAttribute("alt")!;
 
       let type: Program["type"];
-      if (disambiguatingNode?.getAttribute("aria-label")) {
+      if (disambiguatingNode.getAttribute("aria-label")) {
         const ariaLabel = disambiguatingNode.getAttribute("aria-label")!;
-        type = ariaLabel?.endsWith("Movie") ? "movie" : "series";
+        type = ariaLabel.endsWith("Movie") ? "movie" : "series";
       } else {
         const href =
-          disambiguatingNode?.firstElementChild?.getAttribute("href");
-        type = href?.includes("/movies/") ? "movie" : "series";
+          disambiguatingNode.firstElementChild!.getAttribute("href")!;
+        type = href.includes("/movies/") ? "movie" : "series";
       }
 
       return { title, type };
@@ -55,8 +55,10 @@ export default class ProgramNode extends AbstractProgramNode {
         'div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-label]))',
       )
     ) {
-      const titleNode = programNode.querySelector("a span[title]");
-      titleNode?.insertAdjacentElement("afterend", imdbNode);
+      const titleNode = programNode.querySelector(
+        'a span[title]:not([title=""])',
+      )!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
       return;
     }
 
