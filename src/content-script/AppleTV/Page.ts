@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses, ErrorMessages } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -47,10 +47,15 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
 
   override getProgramContainerNodeSelectors(): string[] {
     // user is on MLS (sports) page
-    if (location.pathname.includes("/channel/mls")) return [];
+    if (
+      ["/channel/mls", "/channel/formula-1/"].some((x) =>
+        location.pathname.includes(x),
+      )
+    )
+      return [];
 
     return [
-      'div.section[data-testid="section-container"]',
+      'div.section[data-testid="section-container"]:has(div.header)',
       "ul.search-suggestions",
     ];
   }
@@ -58,16 +63,21 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
   override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
+    let title: string;
+
     if (
       pContainerNode.matches('div.section[data-testid="section-container"]')
     ) {
-      return (
-        pContainerNode.querySelector("div.header h2 span.dir-wrapper")
-          ?.textContent ?? ""
-      );
+      title = pContainerNode.querySelector(
+        "div.header h2 span.dir-wrapper",
+      )!.textContent;
+    } else if (pContainerNode.matches("ul.search-suggestions")) {
+      title = pContainerNode.getAttribute("aria-label")!;
+    } else {
+      throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
     }
 
-    return pContainerNode.getAttribute("aria-label") ?? "";
+    return title.trim();
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
@@ -77,7 +87,9 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     if (["/person/"].some((x) => location.pathname.includes(x)))
       return pContainer.title !== "Guest Appearances";
 
-    return Boolean(pContainer.title);
+    return Boolean(
+      pContainer.title && !pContainer.title.startsWith("Live Sports"),
+    );
   }
 
   override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
@@ -89,7 +101,8 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     ) {
       return [
         "ul > li button.epic-showcase-item",
-        "ul > li a.lockup,ul > li div.lockup",
+        "ul > li a.lockup",
+        "ul > li div.lockup",
       ];
     }
 
@@ -97,6 +110,6 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
       return ["div.search-hint-lockup"];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 }

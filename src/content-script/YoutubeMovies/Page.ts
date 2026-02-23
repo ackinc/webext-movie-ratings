@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses, ErrorMessages } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -54,11 +54,9 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
     pContainerNode: HTMLElement,
   ): string {
     if (pContainerNode.matches("ytd-item-section-renderer")) {
-      return (
-        pContainerNode
-          .querySelector("div#title-container div#title-text")
-          ?.textContent.trim() ?? ""
-      );
+      return pContainerNode
+        .querySelector("div#title-container div#title-text")!
+        .textContent.trim();
     }
 
     if (
@@ -69,7 +67,7 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
       return "More like this";
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
@@ -86,6 +84,6 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
       return ["ytd-compact-movie-renderer"];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 }

@@ -82,7 +82,7 @@ async function migrateCachedRatingsFromOutsideIdb(db: IDBPDatabase<SiftDB>) {
   const allCachedData = await browser.storage.local.get();
   const allCachedRatingsData = omitBy(
     allCachedData,
-    (k) =>
+    (_v, k) =>
       (Object.values(SettingsKey) as string[]).includes(k) ||
       k.startsWith(selectorStatusKeyPrefix),
   );
@@ -134,7 +134,13 @@ function handleMessage(
       };
       getIMDBData(program, pageUrl)
         .then((data) => sendResponse(data))
-        .catch((e) => handleError(e, { context: { program } }));
+        .catch((e) =>
+          handleError(e, { context: { program, location: { href: pageUrl } } }),
+        );
+
+      return true; // keeps channel open until sendReponse is called
+    } else if (request.messageType === MessageType.placeholder) {
+      // do something here if desired
     } else {
       throw new Error(`Unknown message type: ${request.messageType}`);
     }
@@ -142,7 +148,7 @@ function handleMessage(
     handleError(e);
   }
 
-  return true;
+  return false;
 
   function handleError(e: unknown, metadata?: ExceptionMetadata) {
     const error = e instanceof Error ? e : new Error(`${e}`);

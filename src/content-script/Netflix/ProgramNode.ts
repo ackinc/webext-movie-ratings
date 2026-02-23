@@ -1,18 +1,28 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { extractProgramTitle } from "../../common";
-import type { Program } from "../../common/types";
+import { ErrorMessage, extractProgramTitle } from "../../common";
+import type { ProgramData } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override isMovieOrSeries(): boolean {
-    return true;
-  }
-
-  static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
+  static override extractProgramData(programNode: HTMLElement): ProgramData {
     let title: string = "";
-    if (programNode.matches("div.title-card-container")) {
-      title = programNode.querySelector("a")?.getAttribute("aria-label") ?? "";
+
+    if (programNode.matches("div.billboard div.info.meta-layer")) {
+      title = programNode
+        .querySelector("div.titleWrapper img")!
+        .getAttribute("alt")!;
+    } else if (
+      ["div.title-card-container"].some((s) => programNode.matches(s))
+    ) {
+      title = programNode.querySelector("a")!.getAttribute("aria-label")!;
+    } else if (
+      [
+        "div.titleCard--container",
+        'a[data-uia="search-gallery-video-card"][aria-label]',
+      ].some((s) => programNode.matches(s))
+    ) {
+      title = programNode.getAttribute("aria-label")!;
     } else {
-      title = programNode.getAttribute("aria-label") ?? "";
+      throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
 
     const metadataWrapperNode = programNode.querySelector(
@@ -29,7 +39,7 @@ export default class ProgramNode extends AbstractProgramNode {
       : null;
     const year =
       type === "movie" && metadataWrapperNode
-        ? metadataWrapperNode.querySelector("div.year")?.textContent
+        ? metadataWrapperNode.querySelector("div.year")!.textContent
         : null;
 
     return {
@@ -39,5 +49,19 @@ export default class ProgramNode extends AbstractProgramNode {
       //   when querying omdbapi
       ...(year ? { year } : {}),
     };
+  }
+
+  static override insertIMDBNode(
+    programNode: HTMLElement,
+    imdbNode: HTMLElement,
+  ) {
+    if (programNode.matches("div.billboard div.info.meta-layer")) {
+      const titleNode = programNode.querySelector("div.billboard-title");
+      titleNode!.insertAdjacentElement("afterend", imdbNode);
+
+      return;
+    }
+
+    programNode.appendChild(imdbNode);
   }
 }

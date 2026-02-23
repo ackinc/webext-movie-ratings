@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { CssClasses } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 
 export default class HotstarPage extends AbstractPage {
@@ -54,57 +54,50 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
   override getProgramContainerNodeSelectors(): string[] {
     return [
       // seen everywhere on the site, but there are variants
-      //   - the most common variant has the title inside
-      //   - there is a variant with the title outside (search results)
-      // we don't consider the variants with title outside to be legit;
-      //   other selectors will be used to identify a suitable parent
-      //   as the program container for these cases
+      // - the most common variant has the title inside
+      // - there are variants with the title outside (search results)
       "div.tray-container",
-
-      // search pane, when something entered into search bar
-      "div.search-results",
-
-      // category page
-      "div#page-container",
-
-      // "more like this" section of program page, when visited from category page
-      'div[data-testid="section-scroller"]',
     ];
   }
 
   override getTitleFromProgramContainerNode(node: HTMLElement): string {
-    // search page (when something entered into search bar)
-    if (node.matches("div.search-results")) {
-      return node.querySelector("p.TITLE1")?.textContent ?? "Search results";
+    if (node.matches("div.tray-container")) {
+      // search results page
+      if (
+        node.parentElement?.classList.contains("search-results") ||
+        /* hotstar is weird */
+        node.parentElement?.parentElement?.classList.contains("search-results")
+      ) {
+        // When search bar is empty, hotstar displays a placeholder program
+        //   list, which does contain a title
+        // Actually entering a search query causes the placeholder programs
+        //   to be replaced by actual search results
+        return node.querySelector("p.TITLE1")?.textContent ?? "Search results";
+      }
+
+      // category page
+      if (
+        node.parentElement?.previousElementSibling?.classList.contains(
+          "headerSpace",
+        )
+      ) {
+        return node.parentElement.previousElementSibling.querySelector("h4")!
+          .textContent;
+      }
+
+      // program page
+      if (
+        node.parentElement?.parentElement?.parentElement?.parentElement
+          ?.dataset["testid"] === "scroll-section-More Like This"
+      ) {
+        return "More Like This";
+      }
+
+      // everywhere else
+      return (node.firstChild as HTMLElement)!.querySelector("h2")!.textContent;
     }
 
-    // search page (when nothing entered into search bar)
-    if (
-      node.matches("div.tray-container") &&
-      (node.firstElementChild as HTMLElement)!.dataset["testid"] ===
-        "grid-container"
-    ) {
-      return node.querySelector("p.TITLE1")?.textContent ?? "";
-    }
-
-    // search page (when something entered into search bar)
-    if (node.matches("div.search-results")) {
-      return node.querySelector("p.TITLE1")?.textContent ?? "";
-    }
-
-    // category page
-    if (node.matches("div#page-container")) {
-      return node.querySelector("div.headerSpace h4")?.textContent ?? "";
-    }
-
-    if (node.matches('div[data-testid="section-scroller"]')) {
-      return node.querySelector("button h2")?.textContent ?? "";
-    }
-
-    // the most common program container
-    return (
-      (node.firstChild as HTMLElement)?.querySelector("h2")?.textContent ?? ""
-    );
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer({ title }: ProgramContainer): boolean {
@@ -116,13 +109,13 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     );
   }
 
-  override isValidProgramNode(pNode: HTMLElement): boolean {
-    const ctor = this.constructor as typeof HotstarPage;
-    return ctor.ProgramNode.isMovieOrSeries(pNode);
-  }
+  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+    const { node } = pContainer;
+    if (node.matches("div.tray-container")) {
+      return ['div[data-testid="tray-card-default"]'];
+    }
 
-  override getProgramNodeSelectors(_pContainer: ProgramContainer): string[] {
-    return ['div[data-testid="tray-card-default"]'];
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override isValidProgram({ title, type }: Program): boolean {

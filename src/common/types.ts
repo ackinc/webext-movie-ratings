@@ -1,17 +1,22 @@
 import { MessageType } from "./constants";
 
-export type ProgramContainer = {
-  selector: string;
-  node: HTMLElement;
+export type ProgramContainerData = {
   title: string;
 };
-
-export type Program = {
+export type ProgramContainer = {
+  selector: Selector;
   node: HTMLElement;
+} & ProgramContainerData;
+
+export type ProgramData = {
   title: string;
   type?: "movie" | "series";
   year?: string;
 };
+export type Program = {
+  selector: Selector;
+  node: HTMLElement;
+} & ProgramData;
 
 export type IMDBData = {
   imdbID: string;

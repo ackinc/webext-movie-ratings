@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses, ErrorMessages } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import type { IMDBData, ProgramContainer, Program } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -32,14 +32,19 @@ article[data-card-title] .${CssClasses.imdbDataNode} {
 
 article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     position: absolute;
-    top: 4px;
-    left: 4px;
+    top: 0;
+    left: 0;
     z-index: 3;
     margin: 0;
-    border-radius: 8px;
-    padding: 4px 8px;
-    background-color: #000;
-    opacity: 0.8;
+    border-radius: 0;
+    border-bottom-right-radius: 3px;
+    padding: 3px 7px;
+    background-color: white;
+    color: black !important;
+    opacity: 1;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: var(--fable-typography-label-90-line-height);
 }
     `;
   }
@@ -70,43 +75,45 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
   override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
-    const testid = pContainerNode.dataset["testid"] ?? "";
+    let title: string;
 
     if (
-      ["standard-carousel", "super-carousel", "charts-container"].includes(
-        testid,
+      [
+        'section[data-testid="standard-carousel"]',
+        'section[data-testid="super-carousel"]',
+        'section[data-testid="charts-container"]',
+      ].some((x) => pContainerNode.matches(x))
+    ) {
+      title = pContainerNode.querySelector(
+        'h2 span[data-testid="carousel-title"]',
+      )!.textContent;
+    } else if (
+      pContainerNode.matches('section[data-testid="collection-carousel"]')
+    ) {
+      title = "Untitled";
+    } else if (pContainerNode.matches('div[data-testid="grid-container"]')) {
+      if (location.pathname.startsWith("/search/")) {
+        // search results page
+        title = pContainerNode.querySelector("h2")!.textContent;
+      } else {
+        // from main movies/shows page, click "see more" in any
+        //   program container
+        title =
+          pContainerNode.parentElement!.firstElementChild!.querySelector(
+            "h1",
+          )!.textContent;
+      }
+    } else if (
+      pContainerNode.matches(
+        'div[data-testid="navigation-bar-content-cards-below"]',
       )
     ) {
-      return (
-        pContainerNode.querySelector('h2 span[data-testid="carousel-title"]')
-          ?.textContent ?? ""
-      );
+      title = "Search results preview";
+    } else {
+      throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
     }
 
-    if (testid === "collection-carousel") {
-      return "";
-    }
-
-    if (testid === "grid-container") {
-      return (
-        // search results page
-        pContainerNode.querySelector("h2")?.textContent ??
-        // "see more"
-        pContainerNode.parentElement!.firstElementChild!.querySelector("h1")
-          ?.textContent ??
-        ""
-      );
-    }
-
-    if (testid === "navigation-bar-content-cards-below") {
-      return "Search results preview";
-    }
-
-    return "";
-  }
-
-  override isValidProgramContainer(_pContainer: ProgramContainer): boolean {
-    return true;
+    return title.trim();
   }
 
   override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
@@ -138,14 +145,10 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       return ["article > a"];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override checkIMDBDataAlreadyAdded(program: Program): boolean {
-    const hasImdbNode = !!(
-      this.constructor as typeof AbstractPage
-    ).ProgramNode.getIMDBNode(program.node);
-
     // NOTE: SEARCH_RESULTS_PREVIEW_PANE
     // in search results preview pane, previews are updated in-place,
     //   meaning as user continues typing in search bar, they may be
@@ -153,12 +156,15 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     const isInSearchResultsPreviewPane = program.node.matches(
       'div[data-testid="navigation-bar-content-cards-below"] article > a',
     );
-    return hasImdbNode && !isInSearchResultsPreviewPane;
+    if (isInSearchResultsPreviewPane) return false;
+
+    const hasImdbNode = !!(
+      this.constructor as typeof AbstractPage
+    ).ProgramNode.getIMDBNode(program.node);
+    return hasImdbNode;
   }
 
   override addIMDBData(program: Program, data: IMDBData) {
-    const ratingNode = this.createIMDBDataNode(data);
-
     // see note about SEARCH_RESULTS_PREVIEW_PANE
     const isInSearchResultsPreviewPane = program.node.matches(
       'div[data-testid="navigation-bar-content-cards-below"] article > a',
@@ -169,9 +175,6 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       );
     }
 
-    (this.constructor as typeof AbstractPage).ProgramNode.insertIMDBNode(
-      program.node,
-      ratingNode,
-    );
+    super.addIMDBData(program, data);
   }
 }

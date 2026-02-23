@@ -35,6 +35,7 @@ export const enum MessageType {
   filterSettingsChange = "sift:filterSettingsChange",
   orphanCheck = "sift:orphanCheck",
   healthCheck = "sift:healthCheck",
+  placeholder = "sift:placeholderForTestingAndDebugging",
 }
 
 export enum SettingsKey {
@@ -58,8 +59,8 @@ export const telemetryIntervalSizeInSeconds = 1;
 export const selectorFailureThreshold = 30;
 export const selectorStatusKeyPrefix = "selectorStatus_";
 
-export const enum ErrorMessages {
-  unrecognizedProgramContainer = "ProgramContainerNode does not match a recognized selector",
+export const enum ErrorMessage {
+  unrecognizedProgramContainerNode = "ProgramContainerNode does not match a recognized selector",
   unrecognizedProgramNode = "ProgramNode does not match a recognized selector",
   potentiallyOutOfDateSelector = "Potentially out of date selector",
 }

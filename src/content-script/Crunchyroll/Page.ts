@@ -1,5 +1,5 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses, ErrorMessages } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
@@ -55,6 +55,7 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
   flex-shrink: 0;
   font-size: 0.625rem;
   font-weight: bold;
+  line-height: 16px;
 }
     `;
   }
@@ -65,9 +66,11 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
       'section.cr-browse-section[data-t="browse-section"]',
 
       // home page (post log-in)
-      "div.dynamic-feed-wrapper > div[data-id]",
+      'div.dynamic-feed-wrapper > div[data-id]:has(div[class^="feed-header"])',
+      'div.dynamic-feed-wrapper > div[data-id]:has(div[data-t="single-show-card"])',
 
-      // category-specific page ("popular", "new", ...)
+      // non-genre category page ("popular", "new", ...)
+      // simulcast season page
       "div.erc-browse-collection",
 
       // "browse all anime" page
@@ -95,44 +98,57 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
         'section.cr-browse-section[data-t="browse-section"]',
       )
     ) {
-      return pContainerNode.querySelector("h2.title")?.textContent ?? "";
+      return pContainerNode.querySelector("h2.title")!.textContent;
     }
 
-    if (pContainerNode.matches("div.dynamic-feed-wrapper > div[data-id]")) {
-      return pContainerNode.querySelector("div[id] h2")?.textContent ?? "";
+    if (
+      pContainerNode.matches(
+        'div.dynamic-feed-wrapper > div[data-id]:has(div[class^="feed-header"])',
+      )
+    ) {
+      return pContainerNode.querySelector("div[id] h2")!.textContent;
+    }
+
+    if (
+      pContainerNode.matches(
+        'div.dynamic-feed-wrapper > div[data-id]:has(div[data-t="single-show-card"])',
+      )
+    ) {
+      return "Untitled (single-show container)";
     }
 
     if (pContainerNode.matches("div.erc-browse-collection")) {
-      return (
-        // genre pages
-        pContainerNode.querySelector("h2")?.textContent ??
-        // simulcast season page
-        pContainerNode.parentElement?.querySelector("div.header h1")
-          ?.textContent ??
-        // genre > category page (ex: "Action / Popular")
-        pContainerNode.parentElement?.parentElement?.querySelector(
+      if (location.pathname.startsWith("/simulcast")) {
+        return pContainerNode.parentElement!.querySelector("div.header h1")!
+          .textContent;
+      }
+
+      // "popular" subcategory page within a genre (ex: /videos/action/popular)
+      if (
+        location.pathname.split("/").length === 4 &&
+        location.pathname.endsWith("/popular")
+      ) {
+        return pContainerNode.parentElement!.parentElement!.querySelector(
           "div.breadcrumbs-with-filters div.subgenres-breadcrumbs",
-        )?.textContent ??
-        ""
-      );
+        )!.textContent;
+      }
+
+      // non-genre category pages (ex: "New", "Popular")
+      return pContainerNode.querySelector("h2")!.textContent;
     }
 
     if (pContainerNode.matches("div.erc-alphabetical-virtual-list")) {
-      return (
-        pContainerNode.parentElement?.parentElement?.querySelector("h1")
-          ?.textContent ?? ""
-      );
+      return pContainerNode.parentElement!.parentElement!.querySelector("h1")!
+        .textContent;
     }
 
     if (pContainerNode.matches("div.erc-genres-collection")) {
-      return (
-        pContainerNode.querySelector("div.collection-header h2")?.textContent ??
-        ""
-      );
+      return pContainerNode.querySelector("div.collection-header h2")!
+        .textContent;
     }
 
     if (pContainerNode.matches("div.erc-similar-to")) {
-      return pContainerNode.querySelector("h3")?.textContent ?? "";
+      return pContainerNode.querySelector("h3")!.textContent;
     }
 
     if (
@@ -140,10 +156,10 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
         "div.erc-top-results,div.erc-series-results,div.erc-movies-results,div.erc-episodes-results",
       )
     ) {
-      return pContainerNode.querySelector("h1,h2")?.textContent ?? "";
+      return pContainerNode.querySelector("h1,h2")!.textContent;
     }
 
-    return "";
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
@@ -159,15 +175,25 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
     if (node.matches('section.cr-browse-section[data-t="browse-section"]')) {
       return ['div[data-t="carousel-card-wrapper"]'];
     }
-    if (node.matches("div.dynamic-feed-wrapper > div[data-id]")) {
+    if (
+      node.matches(
+        'div.dynamic-feed-wrapper > div[data-id]:has(div[class^="feed-header"])',
+      )
+    ) {
       return [
         'div[data-t="carousel-card-wrapper"]',
         'div[data-t^="episode-card"]',
         'div[data-t^="watch-list-card"]',
         'div[data-t="release-episode-card-stack"]',
         'div[data-t="release-episode-card"]',
-        'div[data-t="single-show-card"]',
       ];
+    }
+    if (
+      node.matches(
+        'div.dynamic-feed-wrapper > div[data-id]:has(div[data-t="single-show-card"])',
+      )
+    ) {
+      return ['div[data-t="single-show-card"]'];
     }
     if (node.matches("div.erc-browse-collection")) {
       return ["div.browse-card"];
@@ -191,6 +217,6 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
       return ['div[data-t="search-episode-card"]'];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 }

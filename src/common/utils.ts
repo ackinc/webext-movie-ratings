@@ -1,6 +1,7 @@
+// this module is for simple, self-contained helper fns
+
 import { browser, languages, SettingsKey } from "./constants";
-import type { Message, IsOptional } from "./types";
-import { captureException } from "./errorReporter";
+import type { IsOptional } from "./types";
 
 export function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -52,6 +53,21 @@ export function pick(
   return retval;
 }
 
+export function pickBy(
+  obj: Record<string, unknown>,
+  predFn: (value: unknown, key: string) => boolean = invert(isNullOrUndef),
+) {
+  const retval: Record<string, unknown> = {};
+  for (const k in obj) {
+    if (predFn(obj[k], k)) retval[k] = obj[k];
+  }
+  return retval;
+}
+
+export function isNullOrUndef(x: unknown) {
+  return x == void 0;
+}
+
 export function omit(
   obj: Record<string, unknown>,
   keys: string[],
@@ -63,11 +79,11 @@ export function omit(
 
 export function omitBy(
   obj: Record<string, unknown>,
-  predFn: (key: string) => boolean,
+  predFn: (value: unknown, key: string) => boolean = isNullOrUndef,
 ): Record<string, unknown> {
   const retval = { ...obj };
-  for (const key of Object.keys(retval)) {
-    if (predFn(key)) delete retval[key];
+  for (const key in obj) {
+    if (predFn(obj[key], key)) delete retval[key];
   }
   return retval;
 }
@@ -122,6 +138,9 @@ export function extractProgramTitle(str: string): string {
     //   end with these words?
     /Movie|Series$/,
     /: Restored Version$/i,
+    /\(Extended Version\)$/i,
+    /\(Extended Edition\)$/i,
+    /- Extended Edition$/i,
   ];
   toRemove.forEach((x) => (title = title.replace(x, "")));
   return (
@@ -133,34 +152,14 @@ export function extractProgramTitle(str: string): string {
   );
 }
 
-export async function sendMessageToAllTabs(message: Message) {
-  const tabs = await browser.tabs.query({
-    url: browser.runtime.getManifest()["host_permissions"],
-  });
-  const results = await Promise.allSettled(
-    tabs.map((tab) => browser.tabs.sendMessage(tab.id as number, message)),
-  );
-  results.forEach((result, idx) => {
-    if (result.status === "fulfilled") return;
-
-    const tab = tabs[idx]!;
-    const { reason } = result;
-    if (reason.message.includes("Receiving end does not exist")) return;
-    reason.message = `Failed to send message to tab. ${reason.message}`;
-    captureException(reason, {
-      context: {
-        tab: pick(tab as unknown as Record<string, unknown>, ["id", "url"]),
-        message,
-      },
-    });
-  });
-  return results.map((result, idx) => ({ tab: tabs[idx]!, result }));
-}
-
 // see tests/utils.test.ts for examples
 export function getGeneralizedUrlPath(href: string) {
   const url = new URL(href.startsWith("/") ? `tmp://${href}` : href);
   url.pathname = url.pathname.replace(/\/\d+(\/|\b)/g, (_m, p1) => `/:n${p1}`);
   url.search = url.search.replace(/=[^&#]+/g, "=:n");
   return url.pathname + url.search;
+}
+
+export function ensureError(e: unknown): asserts e is Error {
+  if (!(e instanceof Error)) throw new Error("Assertion failed", { cause: e });
 }

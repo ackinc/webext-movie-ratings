@@ -1,48 +1,44 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { extractProgramTitle } from "../../common";
-import type { Program } from "../../common/types";
+import { ErrorMessage, extractProgramTitle } from "../../common";
+import type { ProgramData } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override isMovieOrSeries(_programNode: HTMLElement): boolean {
-    return true;
-  }
-
-  static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
+  static override extractProgramData(programNode: HTMLElement): ProgramData {
     if (programNode.matches('div[data-t="carousel-card-wrapper"]')) {
-      const title =
-        programNode.querySelector('h3[data-t="title"]')?.textContent ??
-        // the carousel-card-wrapper nodes in the pre-login page
-        //   don't have the data-t attr on the title h3
-        programNode.querySelector("h3")?.textContent ??
-        "";
+      const title = programNode.querySelector("h3")!.textContent;
       return { title };
     }
 
     if (programNode.matches('div[data-t^="episode-card"]')) {
-      const title = programNode.querySelector("small")?.textContent ?? "";
+      const title = programNode.querySelector("small")!.textContent;
       return { title };
     }
 
     if (programNode.matches('div[data-t^="watch-list-card"]')) {
-      const title = programNode.querySelector("h3")?.textContent ?? "";
+      const title = programNode.querySelector("h3")!.textContent;
       return { title };
     }
 
-    if (programNode.matches('div[data-t^="release-episode-card"]')) {
+    if (
+      [
+        'div[data-t="release-episode-card-stack"]',
+        'div[data-t="release-episode-card"]',
+      ].some((sel) => programNode.matches(sel))
+    ) {
       const title = extractProgramTitle(
-        programNode.querySelector("h4")?.textContent ?? "",
+        programNode.querySelector("h4")!.textContent,
       );
       return { title };
     }
 
     if (programNode.matches('div[data-t="single-show-card"]')) {
-      const title = programNode.querySelector("h2")?.textContent ?? "";
+      const title = programNode.querySelector("h2")!.textContent;
       return { title };
     }
 
     if (programNode.matches("div.browse-card")) {
       const title =
-        programNode.querySelector('h3[data-t="title"]')?.textContent ?? "";
+        programNode.querySelector('h3[data-t="title"]')!.textContent;
       return { title };
     }
 
@@ -51,28 +47,28 @@ export default class ProgramNode extends AbstractProgramNode {
       //   node; this means we can't just take the textContent of the h2,
       //   for that would contain the imdb node's text as well
       const title =
-        programNode.querySelector("h2")?.firstElementChild?.textContent ?? "";
+        programNode.querySelector("h2")!.firstElementChild!.textContent;
       return { title };
     }
 
     if (programNode.matches('div[data-t="search-series-card"]')) {
-      const title = programNode.querySelector("h2")?.textContent ?? "";
+      const title = programNode.querySelector("h2")!.textContent;
       return { title };
     }
 
     if (programNode.matches('div[data-t="search-movie-card"]')) {
-      const title = programNode.querySelector("h2")?.textContent ?? "";
+      const title = programNode.querySelector("h2")!.textContent;
       return { title };
     }
 
     if (programNode.matches('div[data-t="search-episode-card"]')) {
-      const title =
-        programNode.querySelector('small[data-t="series-title"]')
-          ?.textContent ?? "";
+      const title = programNode.querySelector(
+        'small[data-t="series-title"]',
+      )!.textContent;
       return { title };
     }
 
-    return { title: "" };
+    throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 
   static override insertIMDBNode(

@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { CssClasses, ErrorMessages } from "../../common";
+import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 
 export default class NetflixPage extends AbstractPage {
@@ -23,9 +23,13 @@ a.${CssClasses.imdbDataNode} {
   color: #999999;
   display: block;
   font-family: ${pageFontFamily};
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   margin: 4px 0 0 4px;
+}
+
+div.billboard div.info.meta-layer .${CssClasses.imdbDataNode} {
+  margin: 0;
 }
 
 div.title-card-container .${CssClasses.imdbDataNode} {
@@ -46,12 +50,10 @@ div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode}
   top: 4px;
   left: 4px;
   margin: 0;
-  padding: 4px 8px;
-  background-color: #141414;
-  border-radius: 8px;
-  color: #d2d2d2;
-  font-size: 16px;
-  font-weight: normal;
+  padding: 0 4px;
+  background-color: #0000007f;
+  border-radius: 0;
+  color: white;
 }
 
 .titleCard--metadataWrapper a.${CssClasses.imdbDataNode} {
@@ -63,19 +65,18 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
   top: 4px;
   left: 4px;
   margin: 0;
-  padding: 4px 8px;
-  background-color: #141414;
-  border-radius: 8px;
-  color: #d2d2d2;
-  font-size: 16px;
-  font-weight: normal;
+  padding: 0 4px;
+  background-color: #0000007f;
+  border-radius: 0;
+  color: white;
 }
     `;
   }
 
   override getProgramContainerNodeSelectors(): string[] {
     return [
-      "div.lolomoRow",
+      "div.billboard",
+      "div.lolomoRow:not(.lolomoPreview)",
       "div.titleGroup--wrapper",
       "div.moreLikeThis--wrapper",
       "div.gallery",
@@ -86,52 +87,49 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
   override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
-    const { classList } = pContainerNode;
-
-    if (classList.contains("moreLikeThis--wrapper")) {
-      return (
-        pContainerNode.querySelector(":scope > h3.moreLikeThis--header")
-          ?.textContent ?? ""
-      );
+    if (pContainerNode.matches("div.billboard")) {
+      return "Billboard";
     }
 
-    if (classList.contains("titleGroup--wrapper")) {
-      return (
-        pContainerNode.querySelector(".titleGroup--header")?.textContent ?? ""
-      );
-    }
-
-    if (classList.contains("gallery")) {
-      const pContainerParent = pContainerNode.parentNode as HTMLElement;
-
-      if (pContainerParent.matches('div[data-uia="modal-content-wrapper"]')) {
-        return pContainerNode.previousElementSibling?.textContent ?? "";
-      } else {
-        return (
-          pContainerParent.previousElementSibling?.querySelector("div.title")
-            ?.textContent ||
-          pContainerParent.previousElementSibling?.querySelector(
-            "div.aro-genre-details > span.genreTitle",
-          )?.textContent ||
-          ""
-        );
-      }
-    }
-
-    if (classList.contains("lolomoRow")) {
+    if (pContainerNode.matches("div.lolomoRow:not(.lolomoPreview)")) {
       return (
         pContainerNode.querySelector(":scope > h2 div.row-header-title")
           ?.textContent ??
-        pContainerNode.querySelector(":scope > h2.rowTitle")?.textContent ??
-        ""
+        pContainerNode.querySelector(":scope > h2.rowTitle")!.textContent
       );
+    }
+
+    if (pContainerNode.matches("div.titleGroup--wrapper")) {
+      return pContainerNode.querySelector(".titleGroup--header")!.textContent;
+    }
+
+    if (pContainerNode.matches("div.moreLikeThis--wrapper")) {
+      return pContainerNode.querySelector(":scope > h3.moreLikeThis--header")!
+        .textContent;
+    }
+
+    if (pContainerNode.matches("div.gallery")) {
+      const pContainerParent = pContainerNode.parentNode as HTMLElement;
+
+      if (pContainerParent.matches('div[data-uia="modal-content-wrapper"]')) {
+        return pContainerNode.previousElementSibling!.textContent;
+      } else {
+        return (
+          /* My List page */
+          pContainerParent.previousElementSibling!.querySelector("div.title")
+            ?.textContent ||
+          pContainerParent.previousElementSibling!.querySelector(
+            "div.aro-genre-details > span.genreTitle",
+          )!.textContent
+        );
+      }
     }
 
     if (pContainerNode.matches('section[data-uia="search-gallery"]')) {
       return "Search results";
     }
 
-    return "";
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   override isValidProgramContainer(pContainer: ProgramContainer): boolean {
@@ -141,10 +139,16 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
   override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
 
+    if (node.matches("div.billboard")) {
+      return ["div.info.meta-layer"];
+    }
+
     if (
-      ["div.lolomoRow", "div.titleGroup--wrapper", "div.gallery"].some((sel) =>
-        node.matches(sel),
-      )
+      [
+        "div.lolomoRow:not(.lolomoPreview)",
+        "div.titleGroup--wrapper",
+        "div.gallery",
+      ].some((sel) => node.matches(sel))
     ) {
       return ["div.title-card-container"];
     }
@@ -154,9 +158,9 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     }
 
     if (node.matches('section[data-uia="search-gallery"]')) {
-      return ['a[data-uia="search-gallery-video-card"]'];
+      return ['a[data-uia="search-gallery-video-card"][aria-label]'];
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramContainer);
+    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 }

@@ -1,46 +1,55 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import type { Program } from "../../common/types";
+import { ErrorMessage } from "../../common";
+import type { Program, ProgramData } from "../../common";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override isMovieOrSeries(programNode: HTMLElement): boolean {
-    return !!programNode;
-  }
-
-  static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
+  static override extractProgramData(programNode: HTMLElement): ProgramData {
     let title: string = "";
+    let type: Program["type"] | undefined = location.pathname.includes(
+      "/movie/",
+    )
+      ? "movie"
+      : location.pathname.includes("/show/")
+        ? "series"
+        : undefined;
 
-    if (programNode.matches("ul > li a.lockup,ul > li div.lockup")) {
+    if (programNode.matches("ul > li button.epic-showcase-item")) {
+      title = programNode.getAttribute("aria-label")!;
+    } else if (["ul > li a.lockup"].some((s) => programNode.matches(s))) {
+      const href = programNode.getAttribute("href")!;
+
+      // if this attr exists, its value is reliable and should be preferred to
+      //   whatever can be extracted from the href
       title =
         programNode.querySelector("div.content img")?.getAttribute("alt") ?? "";
 
-      if (!title && programNode.matches("ul > li a.lockup")) {
-        const href = programNode.getAttribute("href");
-        const hrefParts = href?.split("/") ?? [];
+      if (!title) {
+        const hrefParts = href.split("/");
         const titleIdx =
           Math.max(hrefParts.indexOf("movie"), hrefParts.indexOf("show")) + 1;
-        title = hrefParts[titleIdx]?.replace(/-/g, " ") ?? "";
+        title =
+          titleIdx === 0
+            ? "" /* not a movie or series */
+            : hrefParts[titleIdx]!.replace(/-/g, " ");
       }
-    } else if (programNode.matches("ul > li button.epic-showcase-item")) {
-      title = programNode.getAttribute("aria-label") ?? "";
-    } else if (programNode.matches("div.search-hint-lockup")) {
-      title =
-        programNode.querySelector(
-          'div[data-testid="search-hint-lockup-title"] > span',
-        )?.textContent ?? "";
-    }
 
-    let type: Program["type"];
-    if (location.pathname.includes("/movie/")) {
-      type = "movie";
-    } else if (location.pathname.includes("/show/")) {
-      type = "series";
-    } else if (programNode.matches("ul > li a.lockup")) {
-      const href = programNode.getAttribute("href");
-      type = href?.includes("/movie/")
-        ? "movie"
-        : href?.includes("/show/")
-          ? "series"
-          : undefined;
+      if (!type) {
+        type = href.includes("/movie/")
+          ? "movie"
+          : href.includes("/show/")
+            ? "series"
+            : undefined;
+      }
+    } else if (["ul > li div.lockup"].some((s) => programNode.matches(s))) {
+      title = programNode
+        .querySelector("div.content img")!
+        .getAttribute("alt")!;
+    } else if (programNode.matches("div.search-hint-lockup")) {
+      title = programNode.querySelector(
+        'div[data-testid="search-hint-lockup-title"] > span',
+      )!.textContent;
+    } else {
+      throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
 
     return { title, ...(type ? { type } : {}) };

@@ -1,32 +1,20 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import type { Program } from "../../common/types";
-import { ErrorMessages } from "common";
+import type { ProgramData } from "../../common/types";
+import { ErrorMessage } from "../../common";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override isMovieOrSeries(programNode: HTMLElement): boolean {
-    return (
-      programNode
-        .querySelector("div.details ytd-channel-name span.yt-formatted-string")
-        ?.textContent.trim() === "YouTube Movies"
-    );
-  }
-
-  static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
+  static override extractProgramData(programNode: HTMLElement): ProgramData {
     if (programNode.matches("ytd-grid-movie-renderer")) {
-      const titleNode = programNode.querySelector("span#video-title");
-      return {
-        title: titleNode?.textContent.trim() ?? "",
-      };
+      const titleNode = programNode.querySelector("span#video-title")!;
+      return { title: titleNode.textContent.trim() };
     }
 
     if (programNode.matches("ytd-compact-movie-renderer")) {
-      const titleNode = programNode.querySelector("h3#movie-title");
-      return {
-        title: titleNode?.textContent.trim() ?? "",
-      };
+      const titleNode = programNode.querySelector("h3#movie-title")!;
+      return { title: titleNode.textContent.trim() };
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramNode);
+    throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 
   static override insertIMDBNode(
@@ -49,6 +37,6 @@ export default class ProgramNode extends AbstractProgramNode {
       return;
     }
 
-    throw new Error(ErrorMessages.unrecognizedProgramNode);
+    throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 }

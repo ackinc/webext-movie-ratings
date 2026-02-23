@@ -1,13 +1,9 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { extractProgramTitle } from "../../common";
-import type { Program } from "../../common/types";
+import { ErrorMessage, extractProgramTitle } from "../../common";
+import type { ProgramData } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override isMovieOrSeries(programNode: HTMLElement): boolean {
-    return !!programNode;
-  }
-
-  static override extractData(programNode: HTMLElement): Omit<Program, "node"> {
+  static override extractProgramData(programNode: HTMLElement): ProgramData {
     if (programNode.matches("article[data-card-title]")) {
       const type =
         programNode.dataset["cardEntityType"] === "Movie"
@@ -16,7 +12,7 @@ export default class ProgramNode extends AbstractProgramNode {
             ? "series"
             : null;
       return {
-        title: extractProgramTitle(programNode.dataset["cardTitle"] ?? ""),
+        title: extractProgramTitle(programNode.dataset["cardTitle"]!),
         ...(type ? { type } : {}),
       };
     }
@@ -25,8 +21,8 @@ export default class ProgramNode extends AbstractProgramNode {
       return {
         title: extractProgramTitle(
           programNode
-            .querySelector("a.shared-poster-link")
-            ?.getAttribute("aria-label") ?? "",
+            .querySelector("a.shared-poster-link")!
+            .getAttribute("aria-label")!,
         ),
       };
     }
@@ -34,12 +30,10 @@ export default class ProgramNode extends AbstractProgramNode {
     // search results preview pane
     if (programNode.matches("article > a")) {
       return {
-        title: extractProgramTitle(
-          programNode.getAttribute("aria-label") ?? "",
-        ),
+        title: extractProgramTitle(programNode.getAttribute("aria-label")!),
       };
     }
 
-    return { title: "" };
+    throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 }

@@ -1,7 +1,9 @@
 import AbstractProgramNode from "./AbstractProgramNode";
 import type {
   ProgramContainer,
+  ProgramContainerData,
   Program,
+  ProgramData,
   IMDBData,
   Selector,
   UrlPath,
@@ -15,13 +17,15 @@ import {
   type ProgramFilterSettings,
   SettingsKey,
   selectorFailureThreshold,
-  ErrorMessages,
+  ErrorMessage,
+  ensureError,
 } from "../common";
 import {
   getSelectorStatusForCurrentSite,
   makeFilteredOutProgramNodeStylesClause,
   setSelectorStatusForCurrentSite,
 } from "./utils";
+import { DataExtractionError } from "common/customErrors";
 import { captureException } from "../common/errorReporter";
 import { limitConcurrency } from "rate-limit-utils";
 
@@ -31,10 +35,7 @@ export default class AbstractPage {
 
   constructor() {
     this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
-    this.findProgramNodesInProgramContainer =
-      this.findProgramNodesInProgramContainer.bind(this);
     this.isValidProgramContainer = this.isValidProgramContainer.bind(this);
-    this.isValidProgramNode = this.isValidProgramNode.bind(this);
     this.isValidProgram = this.isValidProgram.bind(this);
 
     // this async method is called many times in the hot path of findPrograms
@@ -51,7 +52,7 @@ export default class AbstractPage {
   }
 
   async initialize() {
-    await Promise.all([this.injectStyles(), this.pruneOutdatedSelectors()]);
+    await Promise.all([this.injectStyles(), this.#pruneOutdatedSelectors()]);
   }
 
   cleanup() {
@@ -70,22 +71,19 @@ export default class AbstractPage {
   }
 
   findPrograms(): Program[] {
-    const programContainerNodes = this.findProgramContainerNodes();
+    const programContainerNodes = this.#findProgramContainerNodes();
     const programContainers = programContainerNodes
-      .map(([node, selector]) => ({
-        title: this.getTitleFromProgramContainerNode(node),
-        node,
-        selector,
-      }))
+      .map(this.#safeCreateProgramContainer)
+      .filter((x) => !!x)
       .filter(this.isValidProgramContainer);
 
     const programNodesPerPC = programContainers.map(
-      this.findProgramNodesInProgramContainer,
+      this.#findProgramNodesInProgramContainer,
     );
-    const ctor = this.constructor as typeof AbstractPage;
     const programsPerPC = programNodesPerPC.map((nodes) =>
       nodes
-        .map((node) => ({ node, ...ctor.ProgramNode.extractData(node) }))
+        .map(this.#safeCreateProgram)
+        .filter((x) => !!x)
         .filter(this.isValidProgram),
     );
 
@@ -100,15 +98,11 @@ valid containers:\n\t${programContainers
       );
     }
 
-    // WARN
-    // if there is a valid program container with 0 programs, there might have been a
-    //   website markup change
-
     return programsPerPC.flat();
 
     function logPC(pc: ProgramContainer, programsInPc: Program[]) {
       const maxProgramTitles = 5;
-      return `${pc.title} [${programsInPc.length}]: ${
+      return `${pc.title} [sel: ${pc.selector}] [${programsInPc.length}]: ${
         programsInPc
           .slice(0, maxProgramTitles)
           .map((p) => p.title)
@@ -117,6 +111,68 @@ valid containers:\n\t${programContainers
     }
   }
 
+  // The #safeCreateX methods below encapsulate the handling of the different
+  //   kinds of errors that can occur when we try to create a ProgramContainer
+  //   or Program from a likely element found on the webpage
+  // Some errors - like ErrorMessage.unrecognizedProgramContainerNode - are
+  //   "showstoppers" - they need to be identified and fixed at build-time.
+  // This method throws these errors so the extension can be brought to an
+  //   immediate halt.
+  // Other errors - like those caused by a failure to extract PC title data
+  //   due to a website markup change - are not showstoppers. If extraction
+  //   for a particular PC/Program fails, it shouldn't affect the processing
+  //   of some other PC/Program.
+  // These methods ensure non-showstopper errors are caught and logged/captured,
+  //   but does not rethrow them up the call stack
+
+  #safeCreateProgramContainer = ({
+    node,
+    selector,
+  }: Omit<
+    ProgramContainer,
+    keyof ProgramContainerData
+  >): ProgramContainer | null => {
+    try {
+      return {
+        selector,
+        node,
+        title: this.getTitleFromProgramContainerNode(node),
+      };
+    } catch (e) {
+      ensureError(e);
+
+      if (e.message === ErrorMessage.unrecognizedProgramContainerNode) {
+        throw e;
+      }
+
+      captureException(DataExtractionError.from(e, node, selector));
+      return null;
+    }
+  };
+
+  #safeCreateProgram = ({
+    node,
+    selector,
+  }: Omit<Program, keyof ProgramData>): Program | null => {
+    try {
+      const ctor = this.constructor as typeof AbstractPage;
+      return {
+        selector,
+        node,
+        ...ctor.ProgramNode.extractProgramData(node),
+      };
+    } catch (e) {
+      ensureError(e);
+
+      if (e.message === ErrorMessage.unrecognizedProgramNode) {
+        throw e;
+      }
+
+      captureException(DataExtractionError.from(e, node, selector));
+      return null;
+    }
+  };
+
   checkIMDBDataAlreadyAdded(program: Program): boolean {
     return !!(this.constructor as typeof AbstractPage).ProgramNode.getIMDBNode(
       program.node,
@@ -124,14 +180,14 @@ valid containers:\n\t${programContainers
   }
 
   addIMDBData(program: Program, data: IMDBData) {
-    const ratingNode = this.createIMDBDataNode(data);
+    const ratingNode = this.#createIMDBDataNode(data);
     (this.constructor as typeof AbstractPage).ProgramNode.insertIMDBNode(
       program.node,
       ratingNode,
     );
   }
 
-  async injectStyles() {
+  protected async injectStyles() {
     const filterSettings =
       ((await getSetting(SettingsKey.programFiltersSettings)) as
         | ProgramFilterSettings
@@ -144,7 +200,10 @@ valid containers:\n\t${programContainers
     document.head.appendChild(styleNode);
   }
 
-  findProgramContainerNodes(): [HTMLElement, Selector][] {
+  #findProgramContainerNodes(): Omit<
+    ProgramContainer,
+    keyof ProgramContainerData
+  >[] {
     const selectors = this.getProgramContainerNodeSelectors();
     const results = selectors.map((s) =>
       Array.from(document.querySelectorAll<HTMLElement>(s)),
@@ -154,49 +213,49 @@ valid containers:\n\t${programContainers
       this.updateSelectorStatuses(selectors, results).catch((e) => {
         if (e.message?.startsWith("Extension context invalidated")) return;
         captureException(e);
-        throw e;
       });
     }
 
     return results
       .map((nodes, i) =>
-        nodes.map((node) => [node, selectors[i]] as [HTMLElement, Selector]),
+        nodes.map((node) => ({ node, selector: selectors[i]! })),
       )
       .flat();
   }
 
-  getProgramContainerNodeSelectors(): string[] {
+  protected getProgramContainerNodeSelectors(): string[] {
     throw new Error("Not implemented");
   }
 
-  getTitleFromProgramContainerNode(_pContainerNode: HTMLElement): string {
+  protected getTitleFromProgramContainerNode(
+    _pContainerNode: HTMLElement,
+  ): string {
     throw new Error("Not implemented");
   }
 
-  isValidProgramContainer(_pContainer: ProgramContainer): boolean {
-    throw new Error("Not implemented");
-  }
-
-  isValidProgramNode(_pNode: HTMLElement): boolean {
+  protected isValidProgramContainer(_pContainer: ProgramContainer): boolean {
+    // on some sites, a pContainer is valid even if it doesn't have a title
     return true;
   }
 
-  isValidProgram(program: Program): boolean {
+  protected isValidProgram(program: Program): boolean {
     return !!program.title;
   }
 
   // NOTE: when implementing this in a subclass, ensure every selector appearing
   //   in getProgramContainerNodeSelectors is covered
-  getProgramNodeSelectors(_pContainer: ProgramContainer): string[] {
+  protected getProgramNodeSelectors(_pContainer: ProgramContainer): string[] {
     throw new Error("Not implemented");
   }
 
-  findProgramNodesInProgramContainer(
+  #findProgramNodesInProgramContainer = (
     pContainer: ProgramContainer,
-  ): HTMLElement[] {
+  ): Omit<Program, keyof ProgramData>[] => {
     const selectors = this.getProgramNodeSelectors(pContainer);
     const results = selectors.map((sel) =>
-      Array.from(pContainer.node.querySelectorAll<HTMLElement>(sel)),
+      Array.from(pContainer.node.querySelectorAll<HTMLElement>(sel)).filter(
+        (this.constructor as typeof AbstractPage).ProgramNode.isMovieOrSeries,
+      ),
     );
 
     if (!this.#isMarkedForCleanup) {
@@ -206,14 +265,20 @@ valid containers:\n\t${programContainers
       ).catch((e) => {
         if (e.message?.startsWith("Extension context invalidated")) return;
         captureException(e);
-        throw e;
       });
     }
 
-    return results.flat().filter(this.isValidProgramNode);
-  }
+    return results
+      .map((nodes, idx) =>
+        nodes.map((node) => ({
+          node,
+          selector: `${pContainer.selector} ${selectors[idx]}`,
+        })),
+      )
+      .flat();
+  };
 
-  createIMDBDataNode(data: IMDBData): HTMLElement {
+  #createIMDBDataNode(data: IMDBData): HTMLElement {
     const node = document.createElement("a");
     node.classList.add(CssClasses.imdbDataNode);
     node.dataset["imdbID"] = data.imdbID;
@@ -257,7 +322,7 @@ valid containers:\n\t${programContainers
 
         // failure threshold has been reached; an error should be captured
         captureException(
-          new Error(ErrorMessages.potentiallyOutOfDateSelector + `: ${sel}`),
+          new Error(ErrorMessage.potentiallyOutOfDateSelector + `: ${sel}`),
           { tags: { pathname, selector: sel } },
         );
       }
@@ -269,11 +334,11 @@ valid containers:\n\t${programContainers
   // selectors should only ever be abandoned for a particular pathname,
   //   not site-wide, since a selector that stops working for one page
   //   may still be active on another page of the same site
-  getAbandonedSelectors(): Record<UrlPath, Selector[]> {
+  protected getAbandonedSelectors(): Record<UrlPath, Selector[]> {
     return {};
   }
 
-  async pruneOutdatedSelectors() {
+  async #pruneOutdatedSelectors() {
     const status = await getSelectorStatusForCurrentSite();
     const abandoned = this.getAbandonedSelectors();
     Object.entries(abandoned).forEach(([pathname, selectors]) =>

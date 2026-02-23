@@ -1,12 +1,15 @@
 import { CssClasses } from "../common";
-import type { Program } from "../common/types";
+import type { ProgramData } from "../common/types";
 
 export default class AbstractProgramNode {
   static isMovieOrSeries(_programNode: HTMLElement): boolean {
-    throw new Error("Not implemented");
+    return true;
   }
 
-  static extractData(_programNode: HTMLElement): Omit<Program, "node"> {
+  // ensure implementations throw ErrorMessage.unrecognizedProgramNode if
+  //   _programNode does not match any of the selectors returned by
+  //   page.getProgramNodeSelectors
+  static extractProgramData(_programNode: HTMLElement): ProgramData {
     throw new Error("Not implemented");
   }
 

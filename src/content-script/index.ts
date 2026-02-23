@@ -3,7 +3,6 @@ import {
   defaultProgramFilterSettings,
   pick,
   invert,
-  delayMs,
   getSetting,
   MessageType,
   SettingsKey,
@@ -92,11 +91,11 @@ async function loop() {
   const thisLoopAbortController = new AbortController();
   loopAbortController = thisLoopAbortController;
 
-  const msDelayBeforeNextInvocation = 1000;
+  const msDelayBeforeNextInvocation = 2000;
 
   let programs: Program[] = [];
   try {
-    programs = await findProgramsOnPage();
+    programs = page.findPrograms();
     await addRatingsToPrograms(programs);
     await fadeFilteredOutPrograms(programs);
 
@@ -115,33 +114,7 @@ async function loop() {
     }
 
     captureException(e);
-    throw e;
   }
-}
-
-async function findProgramsOnPage(): Promise<Program[]> {
-  const maxConsecutiveErrors = 5;
-  const errors = [];
-  const msDelayBetweenRetries = 2000;
-
-  let programs: Program[] | undefined;
-  do {
-    try {
-      programs = page.findPrograms();
-    } catch (e) {
-      const thisErr = e instanceof Error ? e : new Error(`${e}`);
-
-      // we expect this to be a temporary error caused by the page not
-      //   having loaded yet, so we'll log it and then retry after a delay
-      // it doesn't make sense to capture these errors in Sentry
-      console.error(thisErr);
-      errors.push(thisErr);
-      await delayMs(msDelayBetweenRetries);
-    }
-  } while (!programs && errors.length < maxConsecutiveErrors);
-
-  if (!programs) throw errors.at(-1);
-  return programs as Program[];
 }
 
 async function addRatingsToPrograms(allPrograms: Program[]) {
