@@ -21,64 +21,62 @@ export default class ProgramNode extends AbstractProgramNode {
     let title: string;
     let type: Program["type"] | undefined;
 
-    if (programNode.matches("div.PopularSearchContainer a[id]")) {
-      title =
-        programNode
-          .getAttribute("href")
-          ?.split("/")
-          .at(-1)
-          ?.replace(/-\d+$/, "")
-          .replace("-", " ") ?? "";
-
-      const href = programNode.getAttribute("href");
-      type = href?.startsWith("/movies")
-        ? "movie"
-        : href?.startsWith("/shows")
-          ? "series"
-          : undefined;
-    } else if (
-      programNode.matches(
-        "div.PopularSearchContainer div.sonyliv-original-block-wrap",
-      )
-    ) {
-      title =
-        programNode.querySelector("div.sonyliv-original-right-sec h2")
-          ?.textContent ?? "";
-
-      type = programNode.querySelector("strong.episode-count")
-        ? "series"
-        : "movie";
-    } else if (
+    if (
       [
-        "div.layout-main-container a.trending-tray-link",
-        "div.layout-main-container a.landscape-link",
-        "div.layout-main-container a.portrait-link",
-        "div.layout-main-container a.multipurpose-portrait-link",
-        "div.listinpage_wrapper a[title]",
+        "div.layout-main-container:has(> div.listView) a.portrait-link",
+        "div.layout-main-container:has(> div.slick-slider) a.trending-tray-link",
+        "div.layout-main-container:has(> div.slick-slider) a.portrait-link",
+        "div.layout-main-container:has(> div.slick-slider) a.multipurpose-portrait-link",
         "div.searchWrapperContainer a[id]",
         "div.page-position > div.potraitTrayCards a.link_container",
       ].some((s) => programNode.matches(s))
     ) {
       title =
+        programNode.getAttribute("aria-label") ||
         programNode.getAttribute("title") ||
         programNode
           .querySelector("div.album-cover-container > img[title]")
           ?.getAttribute("title") ||
         // search preview
-        programNode.querySelector("img.card-img")?.getAttribute("alt") ||
-        "";
+        programNode.querySelector("img.card-img")!.getAttribute("alt")!;
 
-      const href = programNode.getAttribute("href");
-      type = href?.startsWith("/movies")
-        ? "movie"
-        : href?.startsWith("/shows")
-          ? "series"
-          : undefined;
+      type = getProgramTypeFromHref(programNode.getAttribute("href")!);
+    } else if (
+      programNode.matches(
+        "div.layout-main-container:has(> div.slick-slider) a.landscape-link",
+      )
+    ) {
+      title = programNode.querySelector("h4.c-show-title")!.textContent;
+      type = getProgramTypeFromHref(programNode.getAttribute("href")!);
+    } else if (programNode.matches("div.PopularSearchContainer a[id]")) {
+      const href = programNode.getAttribute("href")!;
+      title = href.split("/").at(-1)!.replace(/-\d+$/, "").replace("-", " ");
+      type = getProgramTypeFromHref(href);
+    } else if (
+      programNode.matches(
+        "div.PopularSearchContainer div.sonyliv-original-block-wrap",
+      )
+    ) {
+      title = programNode.querySelector(
+        "div.sonyliv-original-right-sec h2",
+      )!.textContent;
+
+      type = programNode.querySelector("strong.episode-count")
+        ? "series"
+        : "movie";
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
 
     return { title: extractProgramTitle(title), ...(type ? { type } : {}) };
+
+    function getProgramTypeFromHref(href: string): Program["type"] | undefined {
+      return href.startsWith("/movies")
+        ? "movie"
+        : href.startsWith("/shows")
+          ? "series"
+          : undefined;
+    }
   }
 
   static override insertIMDBNode(
