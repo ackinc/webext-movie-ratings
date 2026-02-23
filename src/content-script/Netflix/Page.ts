@@ -23,7 +23,7 @@ a.${CssClasses.imdbDataNode} {
   color: #999999;
   display: block;
   font-family: ${pageFontFamily};
-  font-size: 16px;
+  font-size: 14px;
   font-weight: bold;
   margin: 4px 0 0 4px;
 }
@@ -50,12 +50,10 @@ div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode}
   top: 4px;
   left: 4px;
   margin: 0;
-  padding: 4px 8px;
-  background-color: #141414;
-  border-radius: 8px;
-  color: #d2d2d2;
-  font-size: 16px;
-  font-weight: normal;
+  padding: 0 4px;
+  background-color: #0000007f;
+  border-radius: 0;
+  color: white;
 }
 
 .titleCard--metadataWrapper a.${CssClasses.imdbDataNode} {
@@ -67,12 +65,10 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
   top: 4px;
   left: 4px;
   margin: 0;
-  padding: 4px 8px;
-  background-color: #141414;
-  border-radius: 8px;
-  color: #d2d2d2;
-  font-size: 16px;
-  font-weight: normal;
+  padding: 0 4px;
+  background-color: #0000007f;
+  border-radius: 0;
+  color: white;
 }
     `;
   }
@@ -162,7 +158,7 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     }
 
     if (node.matches('section[data-uia="search-gallery"]')) {
-      return ['a[data-uia="search-gallery-video-card"]'];
+      return ['a[data-uia="search-gallery-video-card"][aria-label]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

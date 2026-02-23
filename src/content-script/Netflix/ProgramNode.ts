@@ -17,7 +17,7 @@ export default class ProgramNode extends AbstractProgramNode {
     } else if (
       [
         "div.titleCard--container",
-        'a[data-uia="search-gallery-video-card"]',
+        'a[data-uia="search-gallery-video-card"][aria-label]',
       ].some((s) => programNode.matches(s))
     ) {
       title = programNode.getAttribute("aria-label")!;
