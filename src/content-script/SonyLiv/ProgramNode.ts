@@ -57,7 +57,9 @@ export default class ProgramNode extends AbstractProgramNode {
         title = href.split("/").at(-1)!.replace(/-\d+$/, "").replace("-", " ");
         type = getProgramTypeFromHref(href);
       } else {
-        title = programNode.querySelector("img.card-img")!.getAttribute("alt")!;
+        const img = programNode.querySelector("img.card-img");
+        if (img) title = img.getAttribute("alt")!;
+        else title = ""; // page is still loading
       }
     } else if (
       programNode.matches(
