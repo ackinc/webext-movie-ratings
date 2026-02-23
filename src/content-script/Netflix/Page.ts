@@ -75,7 +75,7 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
 
   override getProgramContainerNodeSelectors(): string[] {
     return [
-      "div.lolomoRow",
+      "div.lolomoRow:not(.lolomoPreview)",
       "div.titleGroup--wrapper",
       "div.moreLikeThis--wrapper",
       "div.gallery",
@@ -86,41 +86,36 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
   override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
-    if (pContainerNode.matches("div.lolomoRow")) {
+    if (pContainerNode.matches("div.lolomoRow:not(.lolomoPreview)")) {
       return (
         pContainerNode.querySelector(":scope > h2 div.row-header-title")
           ?.textContent ??
-        pContainerNode.querySelector(":scope > h2.rowTitle")?.textContent ??
-        ""
+        pContainerNode.querySelector(":scope > h2.rowTitle")!.textContent
       );
     }
 
     if (pContainerNode.matches("div.titleGroup--wrapper")) {
-      return (
-        pContainerNode.querySelector(".titleGroup--header")?.textContent ?? ""
-      );
+      return pContainerNode.querySelector(".titleGroup--header")!.textContent;
     }
 
     if (pContainerNode.matches("div.moreLikeThis--wrapper")) {
-      return (
-        pContainerNode.querySelector(":scope > h3.moreLikeThis--header")
-          ?.textContent ?? ""
-      );
+      return pContainerNode.querySelector(":scope > h3.moreLikeThis--header")!
+        .textContent;
     }
 
     if (pContainerNode.matches("div.gallery")) {
       const pContainerParent = pContainerNode.parentNode as HTMLElement;
 
       if (pContainerParent.matches('div[data-uia="modal-content-wrapper"]')) {
-        return pContainerNode.previousElementSibling?.textContent ?? "";
+        return pContainerNode.previousElementSibling!.textContent;
       } else {
         return (
-          pContainerParent.previousElementSibling?.querySelector("div.title")
+          /* My List page */
+          pContainerParent.previousElementSibling!.querySelector("div.title")
             ?.textContent ||
-          pContainerParent.previousElementSibling?.querySelector(
+          pContainerParent.previousElementSibling!.querySelector(
             "div.aro-genre-details > span.genreTitle",
-          )?.textContent ||
-          ""
+          )!.textContent
         );
       }
     }
@@ -140,9 +135,11 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     const { node } = pContainer;
 
     if (
-      ["div.lolomoRow", "div.titleGroup--wrapper", "div.gallery"].some((sel) =>
-        node.matches(sel),
-      )
+      [
+        "div.lolomoRow:not(.lolomoPreview)",
+        "div.titleGroup--wrapper",
+        "div.gallery",
+      ].some((sel) => node.matches(sel))
     ) {
       return ["div.title-card-container"];
     }
