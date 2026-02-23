@@ -14,35 +14,40 @@ export default class ProgramNode extends AbstractProgramNode {
         : undefined;
 
     if (programNode.matches("ul > li button.epic-showcase-item")) {
-      title = programNode.getAttribute("aria-label") ?? "";
+      title = programNode.getAttribute("aria-label")!;
     } else if (["ul > li a.lockup"].some((s) => programNode.matches(s))) {
+      const href = programNode.getAttribute("href")!;
+
+      // if this attr exists, its value is reliable and should be preferred to
+      //   whatever can be extracted from the href
       title =
         programNode.querySelector("div.content img")?.getAttribute("alt") ?? "";
 
-      const href = programNode.getAttribute("href");
-
       if (!title) {
-        const hrefParts = href?.split("/") ?? [];
+        const hrefParts = href.split("/");
         const titleIdx =
           Math.max(hrefParts.indexOf("movie"), hrefParts.indexOf("show")) + 1;
-        title = hrefParts[titleIdx]?.replace(/-/g, " ") ?? "";
+        title =
+          titleIdx === 0
+            ? "" /* not a movie or series */
+            : hrefParts[titleIdx]!.replace(/-/g, " ");
       }
 
       if (!type) {
-        type = href?.includes("/movie/")
+        type = href.includes("/movie/")
           ? "movie"
-          : href?.includes("/show/")
+          : href.includes("/show/")
             ? "series"
             : undefined;
       }
     } else if (["ul > li div.lockup"].some((s) => programNode.matches(s))) {
-      title =
-        programNode.querySelector("div.content img")?.getAttribute("alt") ?? "";
+      title = programNode
+        .querySelector("div.content img")!
+        .getAttribute("alt")!;
     } else if (programNode.matches("div.search-hint-lockup")) {
-      title =
-        programNode.querySelector(
-          'div[data-testid="search-hint-lockup-title"] > span',
-        )?.textContent ?? "";
+      title = programNode.querySelector(
+        'div[data-testid="search-hint-lockup-title"] > span',
+      )!.textContent;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }

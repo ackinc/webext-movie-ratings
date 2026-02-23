@@ -54,11 +54,9 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
     pContainerNode: HTMLElement,
   ): string {
     if (pContainerNode.matches("ytd-item-section-renderer")) {
-      return (
-        pContainerNode
-          .querySelector("div#title-container div#title-text")
-          ?.textContent.trim() ?? ""
-      );
+      return pContainerNode
+        .querySelector("div#title-container div#title-text")!
+        .textContent.trim();
     }
 
     if (

@@ -32,14 +32,19 @@ article[data-card-title] .${CssClasses.imdbDataNode} {
 
 article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     position: absolute;
-    top: 4px;
-    left: 4px;
+    top: 0;
+    left: 0;
     z-index: 3;
     margin: 0;
-    border-radius: 8px;
-    padding: 4px 8px;
-    background-color: #000;
-    opacity: 0.8;
+    border-radius: 0;
+    border-bottom-right-radius: 3px;
+    padding: 3px 7px;
+    background-color: white;
+    color: black !important;
+    opacity: 1;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: var(--fable-typography-label-90-line-height);
 }
     `;
   }
@@ -55,7 +60,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       // /movie ("top 10 movies in ...", ...)
       'section[data-testid="charts-container"]',
 
-      // /movie (way down the page: "cinema-like ...")
+      // /movie (way down the page: "cinema-like experience at home ...")
       'section[data-testid="collection-carousel"]',
 
       // /movie -> click "see more"
@@ -70,6 +75,8 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
   override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
+    let title: string;
+
     if (
       [
         'section[data-testid="standard-carousel"]',
@@ -77,36 +84,36 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
         'section[data-testid="charts-container"]',
       ].some((x) => pContainerNode.matches(x))
     ) {
-      return (
-        pContainerNode.querySelector('h2 span[data-testid="carousel-title"]')
-          ?.textContent ?? ""
-      );
-    }
-
-    if (pContainerNode.matches('section[data-testid="collection-carousel"]')) {
-      return "";
-    }
-
-    if (pContainerNode.matches('div[data-testid="grid-container"]')) {
-      return (
+      title = pContainerNode.querySelector(
+        'h2 span[data-testid="carousel-title"]',
+      )!.textContent;
+    } else if (
+      pContainerNode.matches('section[data-testid="collection-carousel"]')
+    ) {
+      title = "Untitled";
+    } else if (pContainerNode.matches('div[data-testid="grid-container"]')) {
+      if (location.pathname.startsWith("/search/")) {
         // search results page
-        pContainerNode.querySelector("h2")?.textContent ??
-        // "see more"
-        pContainerNode.parentElement!.firstElementChild!.querySelector("h1")
-          ?.textContent ??
-        ""
-      );
-    }
-
-    if (
+        title = pContainerNode.querySelector("h2")!.textContent;
+      } else {
+        // from main movies/shows page, click "see more" in any
+        //   program container
+        title =
+          pContainerNode.parentElement!.firstElementChild!.querySelector(
+            "h1",
+          )!.textContent;
+      }
+    } else if (
       pContainerNode.matches(
         'div[data-testid="navigation-bar-content-cards-below"]',
       )
     ) {
-      return "Search results preview";
+      title = "Search results preview";
+    } else {
+      throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
     }
 
-    throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
+    return title.trim();
   }
 
   override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
@@ -122,7 +129,10 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     }
 
     if (
-      ['section[data-testid="super-carousel"]'].some((sel) => node.matches(sel))
+      [
+        'section[data-testid="super-carousel"]',
+        'section[data-testid="collection-carousel"]',
+      ].some((sel) => node.matches(sel))
     ) {
       return ['article[data-testid="super-carousel-card"]'];
     }

@@ -26,6 +26,28 @@ a.${CssClasses.imdbDataNode} {
   text-decoration: none;
 }
 
+a.trending-tray-link .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  margin: 0;
+  padding: 2px 4px;
+  background-color: #0000007f;
+  border-radius: 4px;
+  color: white;
+}
+
+a.portrait-link .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  margin: 0;
+  padding: 2px 4px;
+  background-color: #0000007f;
+  border-radius: 4px;
+  color: white;
+}
+
 div.listinpage_wrapper .innerlist a[id] div.listing-portrait-card-inner-div {
   position: relative;
 }
@@ -60,13 +82,14 @@ div.PopularSearchContainer > a[id] {
 
 div.PopularSearchContainer > a[id] .${CssClasses.imdbDataNode} {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: 6px;
+  left: 6px;
+  z-index: 1;
   margin: 0;
   padding: 4px 8px;
-  background-color: #454545;
+  background-color: #0000007f;
   border-radius: 4px;
-  color: #eaeaea;
+  color: white;
 }
 
 div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDataNode} {
@@ -98,12 +121,13 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
       return [];
     }
 
+    if (location.pathname.startsWith("/listing/")) {
+      return ["div.layout-main-container:has(> div.listView)"];
+    }
+
     return [
-      // lists on home and top-level categories (tv shows, movies, ...) pages
-      // also shows on hovering over "movies" link on home and other pages
-      "div.layout-main-container",
-      // list on second-tier category pages
-      "div.listinpage_wrapper",
+      // lists on home, movies, and shows pages
+      "div.layout-main-container:has(> div.slick-slider)",
 
       // search preview
       "div.PopularSearchContainer",
@@ -117,12 +141,18 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
   }
 
   override getTitleFromProgramContainerNode(node: HTMLElement): string {
-    if (node.matches("div.layout-main-container")) {
-      return node.querySelector("h3.layout-label")?.textContent ?? "";
+    if (node.matches("div.layout-main-container:has(> div.listView)")) {
+      return node.querySelector("span.title")!.textContent;
     }
 
-    if (node.matches("div.listinpage_wrapper")) {
-      return node.querySelector("h1.listingHeadert")?.textContent ?? "";
+    if (node.matches("div.layout-main-container:has(> div.slick-slider)")) {
+      return (
+        node.querySelector("span.title")?.textContent ??
+        /* on home page, the 'best in your language' PC has the title
+             outside the program-container */
+        node.parentElement!.parentElement!.querySelector("span.title")!
+          .textContent
+      );
     }
 
     if (node.matches("div.PopularSearchContainer")) {
@@ -130,16 +160,14 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     }
 
     if (node.matches("div.searchWrapperContainer")) {
-      return (
-        node.querySelector("div.SearchContainerGrid div.TopHeading h5")
-          ?.textContent ?? ""
-      );
+      return node.querySelector("div.SearchContainerGrid div.TopHeading h5")!
+        .textContent;
     }
 
     if (node.matches("div.page-position > div.potraitTrayCards")) {
       const titleWrapper = node.previousElementSibling;
       if (titleWrapper?.matches("div.ty-wrapper")) {
-        return titleWrapper.querySelector("h3")?.textContent?.trim() ?? "";
+        return titleWrapper.querySelector("h3")!.textContent;
       }
 
       return "";
@@ -161,6 +189,7 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
         "Trending In Sports",
         /^Indian Idol/,
         "Top Moments In Reality",
+        "Best In Cricket",
       ].some((x) => (x instanceof RegExp ? x.test(title) : x === title)),
     );
   }
@@ -168,17 +197,22 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
   override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
 
-    if (node.matches("div.layout-main-container")) {
-      return [
-        "a.trending-tray-link",
-        "a.landscape-link",
-        "a.portrait-link",
-        "a.multipurpose-portrait-link",
-      ];
+    if (node.matches("div.layout-main-container:has(> div.listView)")) {
+      return ["a.portrait-link"];
     }
 
-    if (node.matches("div.listinpage_wrapper")) {
-      return ["a[title]"];
+    if (node.matches("div.layout-main-container:has(> div.slick-slider)")) {
+      return [
+        "a.trending-tray-link",
+
+        // 'watch free episodes' list on home page
+        "a.landscape-link",
+
+        // most common program card on home and other pages
+        "a.portrait-link",
+
+        "a.multipurpose-portrait-link",
+      ];
     }
 
     if (node.matches("div.PopularSearchContainer")) {

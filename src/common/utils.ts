@@ -138,6 +138,9 @@ export function extractProgramTitle(str: string): string {
     //   end with these words?
     /Movie|Series$/,
     /: Restored Version$/i,
+    /\(Extended Version\)$/i,
+    /\(Extended Edition\)$/i,
+    /- Extended Edition$/i,
   ];
   toRemove.forEach((x) => (title = title.replace(x, "")));
   return (

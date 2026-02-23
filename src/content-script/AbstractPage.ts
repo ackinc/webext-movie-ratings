@@ -102,7 +102,7 @@ valid containers:\n\t${programContainers
 
     function logPC(pc: ProgramContainer, programsInPc: Program[]) {
       const maxProgramTitles = 5;
-      return `${pc.title} [${programsInPc.length}]: ${
+      return `${pc.title} [sel: ${pc.selector}] [${programsInPc.length}]: ${
         programsInPc
           .slice(0, maxProgramTitles)
           .map((p) => p.title)
