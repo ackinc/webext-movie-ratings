@@ -2,8 +2,10 @@ import "dotenv/config";
 import * as esbuild from "esbuild";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import * as prettier from "prettier";
 import * as fse from "fs-extra";
+import chokidar from "chokidar";
 import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
 import { pick } from "./common.ts";
 
@@ -24,26 +26,17 @@ if (!ALLOWED_TARGETS.includes(target)) {
   throw new Error(`Invalid target: ${target}`);
 }
 
-const __filename = stripScheme(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const rootDir = path.resolve(__dirname, "..");
 const srcDir = path.resolve(__dirname, "../src");
 const destDir = path.resolve(__dirname, "../dist");
 
-// was previously using the copy-loader within esbuild to copy this
-//   file, but the introduction of the sentryEsbuildPlugin broke
-//   this process; the plugin seems to be forcing esbuild to use file
-//   loader instead of copy loader for html files, while produces
-//   undesirable output
-// in general, esbuild seems focused on bundling js and css, and support
-//   for html is not great
-await copyFile(
-  path.join(srcDir, "popup/index.html"),
-  path.join(destDir, "popup/index.html"),
+const staticFiles = ["popup/index.html"].map((f) => path.join(srcDir, f));
+const manifestFiles = [`manifest.json`, `${target}/manifest.json`].map((f) =>
+  path.join(rootDir, f),
 );
-await makeAndMoveManifest(target);
-
 const config: esbuild.BuildOptions = {
   entryPoints: [
     { in: path.join(srcDir, "content-script/index.ts"), out: "content-script" },
@@ -69,6 +62,7 @@ const config: esbuild.BuildOptions = {
   // haven't been able to make sourcemaps work for the devconsole
   //   debugging experience when also using sentryEsbuildPlugin
   //   to upload them to Sentry
+  // ^WTF is this comment, you fuck?
   sourcemap: devMode ? "inline" : "linked",
   plugins: [
     uploadSrcMapsToSentry
@@ -81,39 +75,76 @@ const config: esbuild.BuildOptions = {
   ].filter((x) => x),
 };
 
-if (devMode) {
-  const ctx = await esbuild.context(config);
-  await ctx.watch();
-} else {
+// was previously using the copy-loader within esbuild to copy static
+//   files, but the introduction of the sentryEsbuildPlugin broke
+//   this process; the plugin seems to be forcing esbuild to use file
+//   loader instead of copy loader for html files, which produces
+//   undesirable output
+// in general, esbuild seems focused on bundling js and css, and support
+//   for html is not great
+await Promise.all([copyStaticFiles(staticFiles), createManifest()]);
+
+if (!devMode) {
   await esbuild.build(config);
+  process.exit(0);
 }
 
-function stripScheme(url: string) {
-  return url.replace(/^[^:]+:\/\//, "");
+const staticFileWatcher = chokidar
+  .watch(staticFiles)
+  .on("change", filewatchWrapper(copyStaticFiles));
+
+const manifestFileWatcher = chokidar
+  .watch(manifestFiles)
+  .on("change", filewatchWrapper(createManifest));
+
+const ctx = await esbuild.context(config);
+await ctx.watch();
+
+process.on("SIGINT", cleanup);
+
+// helpers
+
+type filechangeListener = (p: string, stats: fs.Stats | undefined) => void;
+function filewatchWrapper(fn: filechangeListener): filechangeListener {
+  return async (...args) => {
+    console.log(
+      `[watch] build started (change: "${path.relative(rootDir, args[0])}")`,
+    );
+    await fn(...args);
+    console.log(`[watch] build finished`);
+  };
 }
 
-async function makeAndMoveManifest(target: string) {
-  const [template, browserSpecificUpdates] = (
+async function copyStaticFiles(files: string | string[]) {
+  await Promise.all(
+    (Array.isArray(files) ? files : [files]).map((f) =>
+      copyFile(f, path.join(destDir, path.relative(srcDir, f))),
+    ),
+  );
+}
+
+async function createManifest() {
+  const manifest = (
     await Promise.all(
-      ["./manifest.json", `${target}/manifest.json`]
-        .map((filename) => path.join(rootDir, filename))
-        .map((filename) =>
-          fs.promises.readFile(filename, { encoding: "utf-8" }),
-        ),
+      manifestFiles.map((f) => fs.promises.readFile(f, { encoding: "utf-8" })),
     )
-  ).map((x) => JSON.parse(x));
+  ).reduce((acc, x) => ({ ...acc, ...JSON.parse(x) }), {});
 
   const destPath = path.join(destDir, "manifest.json");
   await fs.promises.writeFile(
     destPath,
-    await prettier.format(
-      JSON.stringify({ ...template, ...browserSpecificUpdates }),
-      { filepath: destPath },
-    ),
+    await prettier.format(JSON.stringify(manifest), { filepath: destPath }),
   );
 }
 
 async function copyFile(src: string, dest: string) {
   await fse.ensureDir(path.dirname(dest));
   await fs.promises.copyFile(src, dest);
+}
+
+function cleanup() {
+  console.log("Received SIGINT. Exiting ...");
+  staticFileWatcher.close();
+  manifestFileWatcher.close();
+  ctx.dispose();
 }
