@@ -132,9 +132,6 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
       // search preview
       "div.PopularSearchContainer",
 
-      // search results
-      "div.searchWrapperContainer",
-
       // mobile web
       "div.page-position > div.potraitTrayCards",
     ];
@@ -157,11 +154,6 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
 
     if (node.matches("div.PopularSearchContainer")) {
       return node.querySelector("h1")?.textContent ?? "Search results";
-    }
-
-    if (node.matches("div.searchWrapperContainer")) {
-      return node.querySelector("div.SearchContainerGrid div.TopHeading h5")!
-        .textContent;
     }
 
     if (node.matches("div.page-position > div.potraitTrayCards")) {
@@ -217,10 +209,6 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
 
     if (node.matches("div.PopularSearchContainer")) {
       return ["a[id]", "div.sonyliv-original-block-wrap"];
-    }
-
-    if (node.matches("div.searchWrapperContainer")) {
-      return ["a[id]"];
     }
 
     if (node.matches("div.page-position > div.potraitTrayCards")) {

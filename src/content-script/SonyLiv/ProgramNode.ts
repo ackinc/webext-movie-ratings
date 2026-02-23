@@ -13,8 +13,12 @@ export default class ProgramNode extends AbstractProgramNode {
       return true;
     }
 
-    const href = programNode.getAttribute("href") ?? "";
-    return ["/movies", "/shows", "/trailer"].some((x) => href.startsWith(x));
+    const href = programNode.getAttribute("href");
+    if (href) {
+      return ["/movies", "/shows", "/trailer"].some((x) => href.startsWith(x));
+    }
+
+    return true;
   }
 
   static override extractProgramData(programNode: HTMLElement): ProgramData {
@@ -27,7 +31,6 @@ export default class ProgramNode extends AbstractProgramNode {
         "div.layout-main-container:has(> div.slick-slider) a.trending-tray-link",
         "div.layout-main-container:has(> div.slick-slider) a.portrait-link",
         "div.layout-main-container:has(> div.slick-slider) a.multipurpose-portrait-link",
-        "div.searchWrapperContainer a[id]",
         "div.page-position > div.potraitTrayCards a.link_container",
       ].some((s) => programNode.matches(s))
     ) {
@@ -50,8 +53,12 @@ export default class ProgramNode extends AbstractProgramNode {
       type = getProgramTypeFromHref(programNode.getAttribute("href")!);
     } else if (programNode.matches("div.PopularSearchContainer a[id]")) {
       const href = programNode.getAttribute("href")!;
-      title = href.split("/").at(-1)!.replace(/-\d+$/, "").replace("-", " ");
-      type = getProgramTypeFromHref(href);
+      if (href) {
+        title = href.split("/").at(-1)!.replace(/-\d+$/, "").replace("-", " ");
+        type = getProgramTypeFromHref(href);
+      } else {
+        title = programNode.querySelector("img.card-img")!.getAttribute("alt")!;
+      }
     } else if (
       programNode.matches(
         "div.PopularSearchContainer div.sonyliv-original-block-wrap",
@@ -83,13 +90,6 @@ export default class ProgramNode extends AbstractProgramNode {
     programNode: HTMLElement,
     imdbNode: HTMLElement,
   ): void {
-    if (programNode.matches("div.listinpage_wrapper .innerlist a[id]")) {
-      programNode
-        .querySelector("div.listing-portrait-card-inner-div")!
-        .appendChild(imdbNode);
-      return;
-    }
-
     if (
       programNode.matches(
         "div.PopularSearchContainer div.sonyliv-original-block-wrap",
