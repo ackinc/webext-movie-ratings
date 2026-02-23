@@ -28,6 +28,10 @@ a.${CssClasses.imdbDataNode} {
   margin: 4px 0 0 4px;
 }
 
+div.billboard div.info.meta-layer .${CssClasses.imdbDataNode} {
+  margin: 0;
+}
+
 div.title-card-container .${CssClasses.imdbDataNode} {
   margin: 0;
   padding-top: 4px;
@@ -75,6 +79,7 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
 
   override getProgramContainerNodeSelectors(): string[] {
     return [
+      "div.billboard",
       "div.lolomoRow:not(.lolomoPreview)",
       "div.titleGroup--wrapper",
       "div.moreLikeThis--wrapper",
@@ -86,6 +91,10 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
   override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
+    if (pContainerNode.matches("div.billboard")) {
+      return "Billboard";
+    }
+
     if (pContainerNode.matches("div.lolomoRow:not(.lolomoPreview)")) {
       return (
         pContainerNode.querySelector(":scope > h2 div.row-header-title")
@@ -133,6 +142,10 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
 
   override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
+
+    if (node.matches("div.billboard")) {
+      return ["div.info.meta-layer"];
+    }
 
     if (
       [

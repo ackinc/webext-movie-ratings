@@ -6,7 +6,13 @@ export default class ProgramNode extends AbstractProgramNode {
   static override extractProgramData(programNode: HTMLElement): ProgramData {
     let title: string = "";
 
-    if (["div.title-card-container"].some((s) => programNode.matches(s))) {
+    if (programNode.matches("div.billboard div.info.meta-layer")) {
+      title = programNode
+        .querySelector("div.titleWrapper img")!
+        .getAttribute("alt")!;
+    } else if (
+      ["div.title-card-container"].some((s) => programNode.matches(s))
+    ) {
       title = programNode.querySelector("a")!.getAttribute("aria-label")!;
     } else if (
       [
@@ -43,5 +49,19 @@ export default class ProgramNode extends AbstractProgramNode {
       //   when querying omdbapi
       ...(year ? { year } : {}),
     };
+  }
+
+  static override insertIMDBNode(
+    programNode: HTMLElement,
+    imdbNode: HTMLElement,
+  ) {
+    if (programNode.matches("div.billboard div.info.meta-layer")) {
+      const titleNode = programNode.querySelector("div.billboard-title");
+      titleNode!.insertAdjacentElement("afterend", imdbNode);
+
+      return;
+    }
+
+    programNode.appendChild(imdbNode);
   }
 }
