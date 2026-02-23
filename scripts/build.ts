@@ -33,8 +33,11 @@ const destDir = path.resolve(__dirname, "../dist");
 
 // was previously using the copy-loader within esbuild to copy this
 //   file, but the introduction of the sentryEsbuildPlugin broke
-//   this process (outfile name for popup/index.html was mangled
-//   and the file itself was in destDir instead of destDir/popup)
+//   this process; the plugin seems to be forcing esbuild to use file
+//   loader instead of copy loader for html files, while produces
+//   undesirable output
+// in general, esbuild seems focused on bundling js and css, and support
+//   for html is not great
 await copyFile(
   path.join(srcDir, "popup/index.html"),
   path.join(destDir, "popup/index.html"),
