@@ -1,6 +1,10 @@
 import type { Selector } from "./types";
 
 export class DataExtractionError extends Error {
+  // Because the extension's main data-extraction loop runs every x seconds,
+  //   and the same data-extraction errors will occur on every loop invocation,
+  //   we risk flooding Sentry with redundant error captures
+  // The DataExtractionError caching logic below mitigates this
   static Cache: Map<string, DataExtractionError> = new Map();
 
   static from(error: Error, node: HTMLElement, selector?: Selector) {
