@@ -21,7 +21,7 @@
         "https://www.amazon.com/gp/video/*",
         "https://tv.apple.com/*",
         "https://www.crunchyroll.com/*",
-        "https://*.youtube.com/*"
+        "https://www.youtube.com/*"
       ]
     },
     {
@@ -34,7 +34,7 @@
         "https://www.amazon.com/gp/video/*",
         "https://tv.apple.com/*",
         "https://www.crunchyroll.com/*",
-        "https://*.youtube.com/*"
+        "https://www.youtube.com/*"
       ],
       "world": "MAIN"
     }
@@ -49,13 +49,13 @@
   },
   "permissions": ["scripting", "storage"],
   "host_permissions": [
-    "https://*.hotstar.com/*",
-    "https://*.sonyliv.com/*",
+    "https://www.hotstar.com/*",
+    "https://www.sonyliv.com/*",
     "https://www.netflix.com/*",
     "https://www.primevideo.com/*",
     "https://www.amazon.com/gp/video/*",
     "https://tv.apple.com/*",
     "https://www.crunchyroll.com/*",
-    "https://*.youtube.com/*"
+    "https://www.youtube.com/*"
   ]
 }
