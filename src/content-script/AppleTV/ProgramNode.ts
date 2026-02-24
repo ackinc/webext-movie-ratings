@@ -41,6 +41,8 @@ export default class ProgramNode extends AbstractProgramNode {
             : undefined;
       }
     } else if (["ul > li div.lockup"].some((s) => programNode.matches(s))) {
+      // on the search results page, search results DOM elements don't have
+      //   any info we can use to figure out which movies/shows they are
       title = programNode
         .querySelector("div.content img")!
         .getAttribute("alt")!;

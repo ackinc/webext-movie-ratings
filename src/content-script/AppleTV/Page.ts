@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import { CssClasses, ErrorMessage } from "../../common";
-import type { ProgramContainer } from "../../common/types";
+import type { Program, ProgramContainer, IMDBData } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
 export default class AppleTvPage extends AbstractPage {
@@ -111,5 +111,30 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
+  }
+
+  override checkIMDBDataAlreadyAdded(program: Program): boolean {
+    if (program.node.matches("ul.search-suggestions div.search-hint-lockup")) {
+      // search hints are updated in place; the html elems don't change as what's
+      //   typed in the search bar changes; we may be looking at ratings that were
+      //   added as hints for the previous contents of the search input
+      return false;
+    }
+
+    return super.checkIMDBDataAlreadyAdded(program);
+  }
+
+  override addIMDBData(program: Program, data: IMDBData) {
+    // see note about SEARCH_RESULTS_PREVIEW_PANE
+    const isInSearchResultsPreviewPane = program.node.matches(
+      "ul.search-suggestions div.search-hint-lockup",
+    );
+    if (isInSearchResultsPreviewPane) {
+      (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
+        program.node,
+      );
+    }
+
+    super.addIMDBData(program, data);
   }
 }
