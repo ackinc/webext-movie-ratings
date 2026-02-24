@@ -41,11 +41,17 @@ export default class ProgramNode extends AbstractProgramNode {
             : undefined;
       }
     } else if (["ul > li div.lockup"].some((s) => programNode.matches(s))) {
-      // on the search results page, search results DOM elements don't have
-      //   any info we can use to figure out which movies/shows they are
-      title = programNode
-        .querySelector("div.content img")!
-        .getAttribute("alt")!;
+      if (
+        location.pathname.endsWith("/search") &&
+        location.search.includes("term=")
+      ) {
+        // on the search results page, search results DOM elements don't have
+        //   any info we can use to figure out which movies/shows they are
+      } else {
+        title = programNode
+          .querySelector("div.content img")!
+          .getAttribute("alt")!;
+      }
     } else if (programNode.matches("div.search-hint-lockup")) {
       title = programNode.querySelector(
         'div[data-testid="search-hint-lockup-title"] > span',
