@@ -80,6 +80,7 @@ results.forEach((result) => {
   if (result.status === "rejected") console.error(result.reason);
 });
 await browserContext.close();
+console.log("All done!");
 
 // helpers
 
@@ -381,5 +382,5 @@ async function waitForPageLoad() {
 }
 
 async function waitForOutdatedSelectorRecognition() {
-  await delayMs(REPORT_ERRORS ? randBetween(30000, 35000) : 1000);
+  await delayMs(REPORT_ERRORS ? randBetween(30000, 35000) : 0);
 }
