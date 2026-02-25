@@ -13,7 +13,24 @@ const env = pick(
   ["NETFLIX_EMAIL", "NETFLIX_PASSWORD"],
   true,
 ) as Record<string, string>;
+
 const REPORT_ERRORS = process.argv.includes("--sentry-report-errors");
+const SITE_TO_TESTFN_MAP = {
+  amazonprimevideo: testPrimeVideo,
+  appletv: testAppleTV,
+  crunchyroll: testCrunchyroll,
+  hotstar: testHotstar,
+  netflix: testNetflix,
+  sonyliv: testSonyLiv,
+  youtubemovies: testYoutubeMovies,
+};
+const SITES_TO_TEST = process.argv.every((x) => !x.startsWith("--test="))
+  ? (Object.keys(SITE_TO_TESTFN_MAP) as (keyof typeof SITE_TO_TESTFN_MAP)[])
+  : (
+      Object.keys(SITE_TO_TESTFN_MAP) as (keyof typeof SITE_TO_TESTFN_MAP)[]
+    ).filter((site) =>
+      process.argv.some((x) => x.startsWith(`--test=${site}`)),
+    );
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pathToExtension = path.join(__dirname, "../dist");
@@ -53,15 +70,9 @@ await browserContext.route("**://**.ads-twitter.com/**", (r) => r.abort());
 await browserContext.route("**://www.omdbapi.com/**", ratingsApiInterceptor);
 
 await setSiftErrorReporting(REPORT_ERRORS);
-const results = await Promise.allSettled([
-  testPrimeVideo(),
-  testAppleTV(),
-  testCrunchyroll(),
-  testHotstar(),
-  testNetflix(),
-  testSonyLiv(),
-  testYoutubeMovies(),
-]);
+const results = await Promise.allSettled(
+  SITES_TO_TEST.map((site) => SITE_TO_TESTFN_MAP[site]()),
+);
 results.forEach((result) => {
   if (result.status === "rejected") console.error(result.reason);
 });
