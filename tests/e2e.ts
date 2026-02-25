@@ -163,6 +163,52 @@ async function testAppleTV() {
   await waitForOutdatedSelectorRecognition();
 }
 
+async function testCrunchyroll() {}
+
+async function testHotstar() {
+  const page = await browserContext.newPage();
+
+  await page.route("**://img10.hotstar.com/**", (r) => r.abort());
+  await page.route("**://**.sentry.io/**", (r) => r.abort());
+
+  // home page
+  await page.goto(`https://hotstar.com`);
+  await page.evaluate(scrollToBottom, undefined);
+  await waitForOutdatedSelectorRecognition();
+
+  // listing page
+  await page.getByRole("heading", { name: /latest releases/i }).click();
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, undefined);
+  await waitForOutdatedSelectorRecognition();
+
+  // program-detail
+  await page.getByTestId("tray-card-default").first().click();
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, undefined);
+  await waitForOutdatedSelectorRecognition();
+  await page.getByTestId("closeButton").first().click();
+
+  /* search */
+  await page.getByRole("tab", { name: "Search" }).click();
+  // move the mouse to the right so the left-menu's backdrop goes away
+  await page.mouse.move(200, 0);
+  // focus the search input textbox
+  const searchbarLocator = page.locator("input#searchBar");
+  await searchbarLocator.click();
+  await searchbarLocator.pressSequentially("action", { delay: 500 });
+  // wait for results to load
+  await page.getByTestId("loading").isHidden();
+  await page.evaluate(scrollToBottom, undefined);
+  await waitForOutdatedSelectorRecognition();
+}
+
+async function testNetflix() {}
+
+async function testSonyLiv() {}
+
+async function testYoutubeMovies() {}
+
 function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
