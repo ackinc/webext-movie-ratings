@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import "dotenv/config";
 import { chromium } from "playwright";
-import type { Route } from "playwright";
+import type { ElementHandle, Route } from "playwright";
 
 // TODO: can we do better?
 import { pick } from "../scripts/common.ts";
@@ -233,6 +233,9 @@ async function testHotstar() {
 
 async function testNetflix() {
   const page = await browserContext.newPage();
+  page.route("**://**.nflxvideo.net/**", (r) => r.abort());
+
+  let scrollContent: ElementHandle<HTMLElement>;
 
   await page.goto(`https://netflix.com/login`);
   try {
@@ -257,17 +260,23 @@ async function testNetflix() {
   await waitForOutdatedSelectorRecognition();
 
   // listing page
-  await page
-    .locator("div.see-all-link", { hasText: "Explore All" })
-    .first()
-    .click();
+  await page.locator("a.rowTitle", { hasText: "Explore All" }).first().click();
   await waitForPageLoad();
-  await page.evaluate(scrollToBottom, undefined);
+  scrollContent = await page.evaluateHandle(
+    () =>
+      document.querySelector<HTMLElement>(
+        'div[data-uia="modal-content-wrapper"]',
+      )!.parentElement!,
+  );
+  await page.evaluate(scrollToBottom, { scrollContent });
   await waitForOutdatedSelectorRecognition();
+  await page.locator('button[data-uia="modal-default-close-btn"]').click();
 
   // search
   await page.getByRole("button", { name: "Search" }).click();
-  await page.getByLabel("Search").pressSequentially("action", { delay: 500 });
+  await page
+    .locator("input#searchInput")
+    .pressSequentially("action", { delay: 500 });
   await waitForPageLoad();
   await page.evaluate(scrollToBottom, undefined);
   await waitForOutdatedSelectorRecognition();
@@ -282,7 +291,11 @@ async function testNetflix() {
   await waitForPageLoad();
   await page.getByRole("button", { name: "expand section" }).first().click();
   await waitForPageLoad();
-  await page.evaluate(scrollToBottom, undefined);
+  scrollContent = await page.evaluateHandle(
+    () =>
+      document.querySelector<HTMLElement>('div.detail-modal[role="dialog"]')!,
+  );
+  await page.evaluate(scrollToBottom, { scrollContent });
   await waitForOutdatedSelectorRecognition();
 
   async function login() {
@@ -308,7 +321,16 @@ function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function scrollToBottom(elem?: HTMLElement) {
+type ScrollToBottomArgs = {
+  scrollContent?: HTMLElement;
+  scrollContainer?: HTMLElement | Window;
+};
+function scrollToBottom(
+  {
+    scrollContent = document.body,
+    scrollContainer = window,
+  }: ScrollToBottomArgs = {} as ScrollToBottomArgs,
+) {
   const SCROLL_STEP = 300; // px per step
   const SCROLL_INTERVAL_MS = 500; // ms between steps
   const NEAR_BOTTOM_THRESHOLD = 600; // px from bottom to trigger a pause
@@ -318,9 +340,11 @@ function scrollToBottom(elem?: HTMLElement) {
     let pausedForLoad = false;
 
     const interval = setInterval(async () => {
-      const distanceFromBottom = elem
-        ? elem.scrollHeight - (elem.offsetHeight + elem.scrollTop)
-        : document.body.scrollHeight - (window.scrollY + window.innerHeight);
+      const distanceFromTop =
+        scrollContainer instanceof Window
+          ? scrollContainer.scrollY + scrollContainer.innerHeight
+          : scrollContainer.scrollTop + scrollContainer.offsetHeight;
+      const distanceFromBottom = scrollContent.scrollHeight - distanceFromTop;
 
       if (distanceFromBottom <= 0) {
         clearInterval(interval);
@@ -335,7 +359,7 @@ function scrollToBottom(elem?: HTMLElement) {
       }
 
       if (!pausedForLoad) {
-        (elem ?? window).scrollBy({ top: SCROLL_STEP, behavior: "smooth" });
+        scrollContainer.scrollBy({ top: SCROLL_STEP, behavior: "smooth" });
       }
     }, SCROLL_INTERVAL_MS);
   });
