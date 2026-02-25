@@ -1,14 +1,23 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
+import "dotenv/config";
 import { chromium } from "playwright";
 import type { Route } from "playwright";
 
+// TODO: can we do better?
+import { pick } from "../scripts/common.ts";
+
+const env = pick(
+  process.env,
+  ["NETFLIX_EMAIL", "NETFLIX_PASSWORD"],
+  true,
+) as Record<string, string>;
 const REPORT_ERRORS = process.argv.includes("--sentry-report-errors");
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pathToExtension = path.join(__dirname, "../dist");
-const userDataDir = `/tmp/sift-test-data-dir`;
+const userDataDir = path.join(__dirname, `../tmp/sift-e2e-test-data-dir`);
 const words = fs
   .readFileSync(path.join(__dirname, "./words.txt"), "utf-8")
   .split("\n");
@@ -57,7 +66,6 @@ results.forEach((result) => {
   if (result.status === "rejected") console.error(result.reason);
 });
 await browserContext.close();
-fs.rmSync(userDataDir, { recursive: true });
 
 // helpers
 
@@ -212,7 +220,66 @@ async function testHotstar() {
   await waitForOutdatedSelectorRecognition();
 }
 
-async function testNetflix() {}
+async function testNetflix() {
+  const page = await browserContext.newPage();
+
+  await page.goto(`https://netflix.com/login`);
+  try {
+    // if user is already logged-in, they will be redirected to /browse
+    await page.waitForURL("**/browse", { timeout: 10000 });
+  } catch (e) {
+    if ((e as Error).name !== "TimeoutError") throw e;
+
+    await login();
+  }
+
+  // home page
+  await page.evaluate(scrollToBottom, undefined);
+  await waitForOutdatedSelectorRecognition();
+
+  // listing page
+  await page
+    .locator("div.see-all-link", { hasText: "Explore All" })
+    .first()
+    .click();
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, undefined);
+  await waitForOutdatedSelectorRecognition();
+
+  // search
+  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByLabel("Search").pressSequentially("action", { delay: 500 });
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, undefined);
+  await waitForOutdatedSelectorRecognition();
+
+  // program-detail page
+  await page
+    .locator('a[data-uia="search-gallery-video-card"]')
+    .first()
+    .dispatchEvent("mouseover");
+  await waitForPageLoad();
+  await page.getByRole("button", { name: "expand to detail modal" }).click();
+  await waitForPageLoad();
+  await page.getByRole("button", { name: "expand section" }).first().click();
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, undefined);
+  await waitForOutdatedSelectorRecognition();
+
+  async function login() {
+    await page.getByLabel("Email or mobile number").fill(env["NETFLIX_EMAIL"]!);
+    await page.getByRole("button", { name: "Continue" }).click();
+    await delayMs(3000);
+    const passwordLocator = page.getByLabel("Password");
+    if (await passwordLocator.isHidden()) {
+      await page.getByText("Get Help").click();
+      await page.getByText("Use password instead").click();
+    }
+    await passwordLocator.fill(env["NETFLIX_PASSWORD"]!);
+    await page.getByRole("button", { name: "Sign In" }).click();
+    await page.waitForURL("**/browse");
+  }
+}
 
 async function testSonyLiv() {}
 
