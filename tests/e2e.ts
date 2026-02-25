@@ -154,25 +154,29 @@ async function testAppleTV() {
   const scrollablePage = await page.evaluateHandle(
     () => document.querySelector<HTMLElement>("div#scrollable-page")!,
   );
-  await page.evaluate(scrollToBottom, scrollablePage);
+  const scrollArgs = {
+    scrollContent: scrollablePage,
+    scrollContainer: scrollablePage,
+  };
+  await page.evaluate(scrollToBottom, scrollArgs);
   await waitForOutdatedSelectorRecognition();
 
   // collection page
   await page.getByRole("heading", { name: "New Releases" }).click();
   await waitForPageLoad();
-  await page.evaluate(scrollToBottom, scrollablePage);
+  await page.evaluate(scrollToBottom, scrollArgs);
   await waitForOutdatedSelectorRecognition();
 
   // program-detail page
   await page.getByTestId("lockup-container").first().click();
   await waitForPageLoad();
-  await page.evaluate(scrollToBottom, scrollablePage);
+  await page.evaluate(scrollToBottom, scrollArgs);
   await waitForOutdatedSelectorRecognition();
 
   // person page
   await page.getByTestId("person-lockup").first().click();
   await waitForPageLoad();
-  await page.evaluate(scrollToBottom, scrollablePage);
+  await page.evaluate(scrollToBottom, scrollArgs);
   await waitForOutdatedSelectorRecognition();
 
   // search feature
@@ -181,7 +185,7 @@ async function testAppleTV() {
     .first();
   await searchbarLocator.click();
   await waitForPageLoad();
-  await page.evaluate(scrollToBottom, scrollablePage);
+  await page.evaluate(scrollToBottom, scrollArgs);
   // not using randword here since most words are going to return 0 search
   //   results, and AppleTV doesn't show suggestions that don't quite match
   //   the query
@@ -190,7 +194,7 @@ async function testAppleTV() {
 
   await searchbarLocator.press("Enter");
   await waitForPageLoad();
-  await page.evaluate(scrollToBottom, scrollablePage);
+  await page.evaluate(scrollToBottom, scrollArgs);
   await waitForOutdatedSelectorRecognition();
 }
 
