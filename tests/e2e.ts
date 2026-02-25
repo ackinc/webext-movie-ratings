@@ -244,6 +244,14 @@ async function testNetflix() {
     await login();
   }
 
+  const profileSelectionLocator = page.locator(
+    'a.profile-link[data-uia="action-select-profile+primary"]',
+  );
+  if (await profileSelectionLocator.isVisible()) {
+    await profileSelectionLocator.click();
+    await waitForPageLoad();
+  }
+
   // home page
   await page.evaluate(scrollToBottom, undefined);
   await waitForOutdatedSelectorRecognition();
