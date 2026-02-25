@@ -216,8 +216,15 @@ async function testHotstar() {
   // program-detail
   await page.getByTestId("tray-card-default").first().click();
   await waitForPageLoad();
-  // TODO: scrolling the modal doesn't work
-  await page.evaluate(scrollToBottom, undefined);
+  const scrollContent = await page.evaluateHandle(
+    () =>
+      document.querySelector<HTMLElement>('div[data-testid="modalContent"]')!
+        .parentElement!,
+  );
+  await page.evaluate(scrollToBottom, {
+    scrollContent,
+    scrollContainer: scrollContent,
+  });
   await waitForOutdatedSelectorRecognition();
   await page.getByTestId("closeButton").first().click();
 
