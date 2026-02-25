@@ -20,7 +20,7 @@ const browserContext = await chromium.launchPersistentContext(userDataDir, {
     `--disable-extensions-except=${pathToExtension}`,
     `--load-extension=${pathToExtension}`,
   ],
-  viewport: { width: 1728, height: 1080 },
+  viewport: { width: 1728, height: 864 },
 });
 
 await browserContext.route(
