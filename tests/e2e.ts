@@ -259,5 +259,5 @@ async function waitForPageLoad() {
 }
 
 async function waitForOutdatedSelectorRecognition() {
-  await delayMs(randBetween(20000, 30000));
+  await delayMs(REPORT_ERRORS ? randBetween(30000, 35000) : 1000);
 }
