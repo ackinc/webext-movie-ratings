@@ -23,10 +23,24 @@ const browserContext = await chromium.launchPersistentContext(userDataDir, {
   viewport: { width: 1728, height: 864 },
 });
 
+// disable requests for media
 await browserContext.route(
   "**/*.{jpeg,jpg,png,webp,mp3,m4s,mp4,webm,avif}",
   (r) => r.abort(),
 );
+// disable tracking
+await browserContext.route("**://**.quora.com/**", (r) => r.abort());
+await browserContext.route("**://**.facebook.com/**", (r) => r.abort());
+await browserContext.route("**://**.facebook.net/**", (r) => r.abort());
+await browserContext.route("**://analytics.google.com/**", (r) => r.abort());
+await browserContext.route("**://adservice.google.com/**", (r) => r.abort());
+await browserContext.route("**://google-analytics.com/**", (r) => r.abort());
+await browserContext.route("**://**.googletagmanager.com/**", (r) => r.abort());
+await browserContext.route("**://**.doubleclick.net/**", (r) => r.abort());
+await browserContext.route("**://bat.bing.com/**", (r) => r.abort());
+await browserContext.route("**://analytics.twitter.com/**", (r) => r.abort());
+await browserContext.route("**://**.ads-twitter.com/**", (r) => r.abort());
+// mock rating API responses
 await browserContext.route("**://www.omdbapi.com/**", ratingsApiInterceptor);
 
 await setSiftErrorReporting(REPORT_ERRORS);
