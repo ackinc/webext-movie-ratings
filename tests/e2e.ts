@@ -44,7 +44,15 @@ await browserContext.route("**://**.ads-twitter.com/**", (r) => r.abort());
 await browserContext.route("**://www.omdbapi.com/**", ratingsApiInterceptor);
 
 await setSiftErrorReporting(REPORT_ERRORS);
-const results = await Promise.allSettled([testPrimeVideo(), testAppleTV()]);
+const results = await Promise.allSettled([
+  testPrimeVideo(),
+  testAppleTV(),
+  testCrunchyroll(),
+  testHotstar(),
+  testNetflix(),
+  testSonyLiv(),
+  testYoutubeMovies(),
+]);
 results.forEach((result) => {
   if (result.status === "rejected") console.error(result.reason);
 });
