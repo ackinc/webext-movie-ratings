@@ -32,6 +32,18 @@ const SITES_TO_TEST =
       ).filter((site) =>
         process.argv.some((x) => x.startsWith(`--test=${site}`)),
       );
+const MEDIA_FILE_EXTENSIONS = [
+  "jpe",
+  "jpeg",
+  "jpg",
+  "png",
+  "webp",
+  "mp3",
+  "m4s",
+  "mp4",
+  "webm",
+  "avif",
+];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pathToExtension = path.join(__dirname, "../dist");
@@ -53,9 +65,7 @@ const browserContext = await chromium.launchPersistentContext(userDataDir, {
 // disable requests for media
 await browserContext.route(
   (url) =>
-    ["jpeg", "jpg", "png", "webp", "mp3", "m4s", "mp4", "webm", "avif"].some(
-      (ext) => url.pathname.endsWith(`.${ext}`),
-    ),
+    MEDIA_FILE_EXTENSIONS.some((ext) => url.pathname.endsWith(`.${ext}`)),
   (r) => r.abort(),
 );
 // disable tracking
