@@ -77,11 +77,14 @@ await setSiftErrorReporting(REPORT_ERRORS);
 const results = await Promise.allSettled(
   SITES_TO_TEST.map((site) => SITE_TO_TESTFN_MAP[site]()),
 );
-results.forEach((result) => {
-  if (result.status === "rejected") console.error(result.reason);
-});
+const errors: Error[] = results
+  .filter((r) => r.status === "rejected")
+  .map((r) => r.reason);
+errors.forEach(console.error);
 await browserContext.close();
-console.log("All done!");
+console.log(
+  `Done with ${errors.length} error${errors.length === 1 ? "" : "s"}`,
+);
 
 // helpers
 
