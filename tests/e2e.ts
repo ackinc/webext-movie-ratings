@@ -470,7 +470,13 @@ async function testNetflix() {
   }
 }
 
-async function testSonyLiv() {}
+async function testSonyLiv() {
+  // Note: SonyLIV appears to have anti-robot detection. Visiting and trying
+  //   to navigate the webpage in Playwright eventually leads to a
+  //   net::ERR_HTTP2_PROTOCOL_ERROR in the browser console, and an
+  //   undismissable error modal on the page itself
+  // TODO
+}
 
 async function testYoutubeMovies() {
   const page = await browserContext.newPage();
