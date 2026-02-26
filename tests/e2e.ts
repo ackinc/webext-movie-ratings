@@ -10,7 +10,12 @@ import { pick } from "../scripts/common.ts";
 
 const env = pick(
   process.env,
-  ["NETFLIX_EMAIL", "NETFLIX_PASSWORD"],
+  [
+    "NETFLIX_EMAIL",
+    "NETFLIX_PASSWORD",
+    "CRUNCHYROLL_EMAIL",
+    "CRUNCHYROLL_PASSWORD",
+  ],
   true,
 ) as Record<string, string>;
 
@@ -212,7 +217,130 @@ async function testAppleTV() {
   await waitForOutdatedSelectorRecognition();
 }
 
-async function testCrunchyroll() {}
+async function testCrunchyroll() {
+  const page = await browserContext.newPage();
+  page.route("**imgsrv.crunchyroll.com/**", (r) => r.abort());
+  // crunchyroll makes a bunch of image requests to a.storyblok.com that look like
+  //   "https://a.storyblok.com/abc/def.jpg/m/360x0?a=b&..."
+  page.route(
+    (url) =>
+      url.pathname
+        .split("/")
+        .some((pathpart) =>
+          MEDIA_FILE_EXTENSIONS.some((ext) => pathpart.endsWith(`.${ext}`)),
+        ),
+    (r) => r.abort(),
+  );
+
+  await page.goto("https://crunchyroll.com");
+
+  try {
+    await page.waitForURL("**crunchyroll.com/discover", { timeout: 5000 });
+  } catch (e) {
+    if ((e as Error).name !== "TimeoutError") throw e;
+
+    await page.evaluate(scrollToBottom, undefined);
+    await login();
+  }
+
+  // home page post-login
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, undefined);
+  await waitForOutdatedSelectorRecognition();
+
+  /* top-level listing page - "New" */
+  await page
+    .getByLabel("Main Navigation")
+    .getByRole("link", { name: "New", exact: true })
+    .click();
+  await waitForPageLoad();
+  // this page has a *ton* of program tiles, all of which look alike; we
+  //   don't need to scroll all the way to the bottom
+  await page.evaluate(scrollToBottom, {
+    maxTimesToPauseForAdditionalContentToLoad: 2,
+  });
+  await waitForOutdatedSelectorRecognition();
+
+  /* another top-level listing page - "Simulcast" */
+  await page
+    .getByLabel("Main Navigation")
+    .getByRole("link", { name: "Simulcast", exact: true })
+    .click();
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, undefined);
+  await waitForOutdatedSelectorRecognition();
+
+  // genre page
+  await page
+    .getByLabel("Main Navigation")
+    .getByRole("button", { name: "Categories" })
+    .click();
+  await page.getByRole("menuitem", { name: "Action", exact: true }).click();
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, undefined);
+  await waitForOutdatedSelectorRecognition();
+
+  // genre+subcat page
+  await page
+    .getByRole("heading", { name: "Popular" })
+    .locator("+ a.view-all-link")
+    .click();
+  await waitForPageLoad();
+  // this page also has homogenous program tiles and goes on forever ...
+  await page.evaluate(scrollToBottom, { maxTimesToScroll: 10 });
+  await waitForOutdatedSelectorRecognition();
+  await page.goBack();
+
+  // genre+subgenre page
+  await page
+    .getByRole("heading", { name: "Comedy" })
+    .locator("+ a.view-all-link")
+    .click();
+  await waitForPageLoad();
+  // this page also has homogenous program tiles and goes on forever ...
+  await page.evaluate(scrollToBottom, { maxTimesToScroll: 10 });
+  await waitForOutdatedSelectorRecognition();
+  await page.goBack();
+
+  /* browse-all page */
+  await page.getByRole("button", { name: "Categories" }).click();
+  await page.getByRole("menuitem", { name: "Browse All" }).click();
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, { maxTimesToScroll: 5 });
+  await page.getByRole("button", { name: "K", exact: true }).click();
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, { maxTimesToScroll: 5 });
+  await waitForOutdatedSelectorRecognition();
+
+  // search
+  await page
+    .locator("div.header-actions")
+    .getByRole("link", { name: "Search" })
+    .click();
+  await page
+    .getByPlaceholder("Search...")
+    .pressSequentially("action", { delay: 500 });
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, undefined);
+  await waitForOutdatedSelectorRecognition();
+
+  async function login() {
+    await page
+      .getByRole("button", { name: "Log in", exact: true })
+      .first()
+      .click();
+    await page.waitForURL("**sso.crunchyroll.com/login**");
+    await page
+      .getByLabel("Email or Phone Number")
+      .fill(env["CRUNCHYROLL_EMAIL"]!);
+    await page.getByRole("button", { name: "Next" }).click();
+    await page
+      .getByLabel("Password", { exact: true })
+      .fill(env["CRUNCHYROLL_PASSWORD"]!);
+    await page.getByRole("button", { name: "Log In" }).click();
+    await page.waitForURL("**crunchyroll.com/discover");
+  }
+}
 
 async function testHotstar() {
   const page = await browserContext.newPage();
@@ -395,11 +523,15 @@ function delayMs(ms: number) {
 type ScrollToBottomArgs = {
   scrollContent?: HTMLElement;
   scrollContainer?: HTMLElement | Window;
+  maxTimesToPauseForAdditionalContentToLoad?: number;
+  maxTimesToScroll?: number;
 };
 function scrollToBottom(
   {
     scrollContent = document.body,
     scrollContainer = window,
+    maxTimesToPauseForAdditionalContentToLoad = Infinity,
+    maxTimesToScroll = Infinity,
   }: ScrollToBottomArgs = {} as ScrollToBottomArgs,
 ) {
   const SCROLL_STEP = 300; // px per step
@@ -409,6 +541,8 @@ function scrollToBottom(
 
   return new Promise<void>((resolve) => {
     let pausedForLoad = false;
+    let nTimesPaused = 0;
+    let nTimesScrolled = 0;
 
     const interval = setInterval(async () => {
       const distanceFromTop =
@@ -417,19 +551,26 @@ function scrollToBottom(
           : scrollContainer.scrollTop + scrollContainer.offsetHeight;
       const distanceFromBottom = scrollContent.scrollHeight - distanceFromTop;
 
-      if (distanceFromBottom <= 0) {
+      if (
+        distanceFromBottom <= 0 ||
+        nTimesPaused >= maxTimesToPauseForAdditionalContentToLoad ||
+        nTimesScrolled >= maxTimesToScroll
+      ) {
         clearInterval(interval);
         resolve();
         return;
       }
 
       if (distanceFromBottom <= NEAR_BOTTOM_THRESHOLD && !pausedForLoad) {
+        ++nTimesPaused;
+
         pausedForLoad = true;
         await new Promise((res) => setTimeout(res, NEAR_BOTTOM_PAUSE_MS));
         pausedForLoad = false;
       }
 
       if (!pausedForLoad) {
+        ++nTimesScrolled;
         scrollContainer.scrollBy({ top: SCROLL_STEP, behavior: "smooth" });
       }
     }, SCROLL_INTERVAL_MS);
