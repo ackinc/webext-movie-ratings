@@ -24,13 +24,14 @@ const SITE_TO_TESTFN_MAP = {
   sonyliv: testSonyLiv,
   youtubemovies: testYoutubeMovies,
 };
-const SITES_TO_TEST = process.argv.every((x) => !x.startsWith("--test="))
-  ? (Object.keys(SITE_TO_TESTFN_MAP) as (keyof typeof SITE_TO_TESTFN_MAP)[])
-  : (
-      Object.keys(SITE_TO_TESTFN_MAP) as (keyof typeof SITE_TO_TESTFN_MAP)[]
-    ).filter((site) =>
-      process.argv.some((x) => x.startsWith(`--test=${site}`)),
-    );
+const SITES_TO_TEST =
+  process.argv.indexOf("--test=all") >= 0
+    ? (Object.keys(SITE_TO_TESTFN_MAP) as (keyof typeof SITE_TO_TESTFN_MAP)[])
+    : (
+        Object.keys(SITE_TO_TESTFN_MAP) as (keyof typeof SITE_TO_TESTFN_MAP)[]
+      ).filter((site) =>
+        process.argv.some((x) => x.startsWith(`--test=${site}`)),
+      );
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pathToExtension = path.join(__dirname, "../dist");
