@@ -334,7 +334,49 @@ async function testNetflix() {
 
 async function testSonyLiv() {}
 
-async function testYoutubeMovies() {}
+async function testYoutubeMovies() {
+  const page = await browserContext.newPage();
+  page.route("**.googlevideo.com/**", (r) => r.abort());
+
+  await page.goto("https://youtube.com");
+  await waitForPageLoad();
+
+  const scrollContent = await page.evaluateHandle(
+    () => document.querySelector<HTMLElement>("ytd-app")!,
+  );
+
+  // yt movies feed
+  await page.locator('a[title="Movies"]').click();
+  await page.waitForURL("**/feed/storefront**");
+  await waitForPageLoad();
+  await page.getByRole("button", { name: "Next" }).first().click();
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, { scrollContent });
+  await waitForOutdatedSelectorRecognition();
+
+  // yt movies - view all
+  await page
+    .locator("div#title-container", { hasText: "Top selling" })
+    .getByRole("link", { name: "View all" })
+    .click();
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, { scrollContent });
+  await waitForOutdatedSelectorRecognition();
+
+  // yt movies - purchased
+  await page.getByRole("tab", { name: "Purchased" }).click();
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, { scrollContent });
+  await waitForOutdatedSelectorRecognition();
+
+  await page.getByRole("tab", { name: "Browse" }).click();
+  await waitForPageLoad();
+  // single-program page
+  await page.locator("ytd-grid-movie-renderer a#thumbnail").first().click();
+  await waitForPageLoad();
+  await page.evaluate(scrollToBottom, { scrollContent });
+  await waitForOutdatedSelectorRecognition();
+}
 
 function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
