@@ -40,7 +40,7 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
 
   override getProgramContainerNodeSelectors(): string[] {
     if (location.pathname === "/feed/storefront") {
-      return ["ytd-item-section-renderer"];
+      return ['ytd-browse[role="main"] ytd-item-section-renderer'];
     }
 
     if (location.pathname === "/watch") {
@@ -53,7 +53,23 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
   override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
-    if (pContainerNode.matches("ytd-item-section-renderer")) {
+    if (
+      pContainerNode.matches(
+        'ytd-browse[role="main"] ytd-item-section-renderer',
+      )
+    ) {
+      if (
+        document.querySelector(
+          'ytd-browse[role="main"] div#header.ytd-browse yt-tab-shape[aria-selected="true"]',
+        )?.textContent === "Purchased" &&
+        pContainerNode
+          .querySelector("div.promo-title")
+          ?.textContent?.replace(/[^\s\w]/g, "") ===
+          "You dont have any purchases"
+      ) {
+        return "";
+      }
+
       return pContainerNode
         .querySelector("div#title-container div#title-text")!
         .textContent.trim();
@@ -76,7 +92,7 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
 
   override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
-    if (node.matches("ytd-item-section-renderer")) {
+    if (node.matches('ytd-browse[role="main"] ytd-item-section-renderer')) {
       return ["ytd-grid-movie-renderer"];
     }
 

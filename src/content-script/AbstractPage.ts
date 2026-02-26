@@ -31,6 +31,13 @@ import { limitConcurrency } from "rate-limit-utils";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
+
+  // Caching these allows us to avoid a `findPrograms` call inside `cleanup`
+  // Decided this was worth doing because of the annoying data extraction
+  //   errors I was seeing during old-content-script `cleanup` after deploying
+  //   a new-content-script with a fix for those very same data extraction
+  //   errors
+  #foundPrograms: Program[] = [];
   #isMarkedForCleanup: boolean = false;
 
   constructor() {
@@ -49,6 +56,8 @@ export default class AbstractPage {
       this.updateSelectorStatuses.bind(this),
       1,
     );
+
+    this.#foundPrograms = [];
   }
 
   async initialize() {
@@ -61,13 +70,13 @@ export default class AbstractPage {
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
     styleNode?.parentElement?.removeChild(styleNode);
 
-    const programs = this.findPrograms();
-    programs.forEach((p) => {
+    while (this.#foundPrograms.length > 0) {
+      const p = this.#foundPrograms.pop()!;
       p.node.classList.remove(CssClasses.filteredOutProgramNode);
       (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
         p.node,
       );
-    });
+    }
   }
 
   findPrograms(): Program[] {
@@ -98,7 +107,8 @@ valid containers:\n\t${programContainers
       );
     }
 
-    return programsPerPC.flat();
+    this.#foundPrograms = programsPerPC.flat();
+    return this.#foundPrograms;
 
     function logPC(pc: ProgramContainer, programsInPc: Program[]) {
       const maxProgramTitles = 5;
