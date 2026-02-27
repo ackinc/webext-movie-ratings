@@ -1,7 +1,7 @@
 import "dotenv/config";
 import * as fs from "node:fs";
 import jwt from "jsonwebtoken";
-import { delayMs, pick } from "./common.ts";
+import { delayMs, pick } from "../utils/index.ts";
 
 const { MAS_JWT_ISSUER, MAS_JWT_SECRET, MAS_ADDON_GUID } = pick(
   process.env,

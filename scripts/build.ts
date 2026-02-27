@@ -7,7 +7,7 @@ import * as prettier from "prettier";
 import * as fse from "fs-extra";
 import chokidar from "chokidar";
 import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
-import { pick } from "./common.ts";
+import { pick } from "../utils/index.ts";
 
 const env = pick(
   process.env,

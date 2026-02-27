@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import * as assert from "node:assert";
-import { getGeneralizedUrlPath } from "../src/common/utils.ts";
+import { getGeneralizedUrlPath } from "../utils/index.ts";
 
 test("getGeneralizeUrlPath", (t) => {
   t.test("should replace numbers in path segments with :n", () => {

@@ -2,7 +2,7 @@
 
 import { browser, languages, SettingsKey } from "./constants";
 import type { Message } from "./types";
-import { pick } from "./utils";
+import { pick } from "../../utils";
 import { captureException } from "./errorReporter";
 
 export async function sendMessageToAllTabs(message: Message) {
