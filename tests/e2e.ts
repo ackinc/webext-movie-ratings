@@ -95,10 +95,12 @@ const errors: Error[] = results
   .filter((r) => r.status === "rejected")
   .map((r) => r.reason);
 errors.forEach(console.error);
-await browserContext.close();
 console.log(
   `Done with ${errors.length} error${errors.length === 1 ? "" : "s"}`,
 );
+if (errors.length === 0) {
+  await browserContext.close();
+}
 
 // helpers
 
