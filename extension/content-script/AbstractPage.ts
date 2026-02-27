@@ -98,7 +98,7 @@ export default class AbstractPage {
 
     // logging a single message allows us to take advantage of the duplicate log message suppression
     //   feature built-in to browser consoles
-    if (BUILDTIME_ENV.DEBUG_MODE) {
+    if (DEBUG_MODE) {
       console.debug(
         `Found ${programContainers.length} / ${programContainerNodes.length} \
 valid containers:\n\t${programContainers

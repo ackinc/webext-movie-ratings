@@ -9,9 +9,13 @@ import chokidar from "chokidar";
 import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
 import { pick } from "../utils/index.ts";
 
-const env = pick(
+const {
+  APP_ENV = "production",
+  OMDB_API_KEY,
+  SENTRY_AUTH_TOKEN,
+} = pick(
   process.env,
-  ["OMDB_API_KEY", "SENTRY_AUTH_TOKEN"],
+  ["APP_ENV", "OMDB_API_KEY", "SENTRY_AUTH_TOKEN"],
   true,
 ) as Record<string, string>;
 
@@ -49,8 +53,9 @@ const config: esbuild.BuildOptions = {
   ],
   bundle: true,
   define: {
-    "BUILDTIME_ENV.OMDB_API_KEY": `"${env["OMDB_API_KEY"]}"`,
-    "BUILDTIME_ENV.DEBUG_MODE": devMode ? "true" : "false",
+    APP_ENV: `"${APP_ENV}"`,
+    OMDB_API_KEY: `"${OMDB_API_KEY}"`,
+    DEBUG_MODE: devMode ? "true" : "false",
   },
   loader: {
     ".svg": "dataurl",
@@ -67,7 +72,7 @@ const config: esbuild.BuildOptions = {
   plugins: [
     uploadSrcMapsToSentry
       ? sentryEsbuildPlugin({
-          authToken: env["SENTRY_AUTH_TOKEN"],
+          authToken: SENTRY_AUTH_TOKEN,
           org: "none-t24",
           project: "sift-web-ext",
         })

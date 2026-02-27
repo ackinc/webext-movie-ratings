@@ -12,7 +12,9 @@ export default defineConfig([
       globals: {
         ...globals.browser,
         ...globals.webextensions,
-        BUILDTIME_ENV: "readonly",
+        APP_ENV: "readonly",
+        OMDB_API_KEY: "readonly",
+        DEBUG_MODE: "readonly",
       },
     },
   },

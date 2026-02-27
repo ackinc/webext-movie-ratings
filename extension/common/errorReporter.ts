@@ -28,7 +28,7 @@ const client = new BrowserClient({
   integrations: integrations,
 
   beforeSend: async (evt: ErrorEvent, hint: EventHint) => {
-    if (BUILDTIME_ENV.DEBUG_MODE) {
+    if (DEBUG_MODE) {
       // calls to console.error from extension service worker appear
       //   in the extension error log at chrome://extensions (or equiv. in
       //   other browsers)
@@ -58,7 +58,7 @@ const client = new BrowserClient({
 
     return evt;
   },
-  environment: BUILDTIME_ENV.DEBUG_MODE ? "development" : "production",
+  environment: APP_ENV,
   maxValueLength: 2048,
 });
 
