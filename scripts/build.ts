@@ -7,7 +7,7 @@ import * as prettier from "prettier";
 import * as fse from "fs-extra";
 import chokidar from "chokidar";
 import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
-import { pick } from "./common.ts";
+import { pick } from "../utils/index.ts";
 
 const env = pick(
   process.env,
@@ -30,7 +30,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const rootDir = path.resolve(__dirname, "..");
-const srcDir = path.resolve(__dirname, "../src");
+const srcDir = path.resolve(__dirname, "../extension");
 const destDir = path.resolve(__dirname, "../dist");
 
 const staticFiles = ["popup/index.html"].map((f) => path.join(srcDir, f));

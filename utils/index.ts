@@ -1,8 +1,5 @@
 // this module is for simple, self-contained helper fns
 
-import { browser, languages, SettingsKey } from "./constants";
-import type { IsOptional } from "./types";
-
 export function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -31,6 +28,7 @@ export function invert<T extends unknown[]>(
   return (...args) => !fn(...args);
 }
 
+type IsOptional = boolean;
 export function pick(
   obj: Record<string, unknown>,
   keys: string[] | Record<string, IsOptional>,
@@ -99,57 +97,6 @@ export function findAncestor(
 
 export function getIMDBLink(imdbID: string): string {
   return `https://www.imdb.com/title/${imdbID}`;
-}
-
-export async function getSetting(
-  key: keyof typeof SettingsKey,
-): Promise<unknown> {
-  const result = await browser.storage.local.get([key]);
-  return result[key];
-}
-
-export async function setSetting(
-  key: keyof typeof SettingsKey,
-  value: unknown,
-): Promise<void> {
-  await browser.storage.local.set({ [key]: value });
-}
-
-export function extractProgramTitle(str: string): string {
-  let title = str.trim();
-
-  const toRemove = [
-    "New TV Show",
-    "TV Show",
-    "TV Series",
-    "Web Series",
-    "Webseries",
-    // removes suffixes like "Season 1", "Season 1 Streaming Now",
-    //   "Season 1 Episode 4", and "Season 1 Episode 4: <Episode Name>"
-    /Season \d+.*$/i,
-    ...languages.map((l) => `${l} Movie`),
-    ...languages.map((l) => `(${l} Dub)`),
-    ...languages.map((l) => `(${l})`),
-    "(Dub)",
-    "(Dubs)",
-    /\sS\d+$/, // suffixes like "S09"; see https://github.com/ackinc/webext-movie-ratings/issues/1
-    /\(\d{4}\)/, // year
-    // REVIEW: are there many programs whose titles legitimately
-    //   end with these words?
-    /Movie|Series$/,
-    /: Restored Version$/i,
-    /\(Extended Version\)$/i,
-    /\(Extended Edition\)$/i,
-    /- Extended Edition$/i,
-  ];
-  toRemove.forEach((x) => (title = title.replace(x, "")));
-  return (
-    title
-      .trim()
-      .replace(/\s+/, " ")
-      // title should end with alphabet or number
-      .replace(/[^A-Za-z0-9]*$/, "")
-  );
 }
 
 // see tests/utils.test.ts for examples

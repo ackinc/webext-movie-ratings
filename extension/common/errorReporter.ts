@@ -11,7 +11,7 @@ import {
   Scope,
 } from "@sentry/react";
 import type { Context, ErrorEvent, EventHint } from "@sentry/react";
-import { browser, getSetting, ErrorMessage, SettingsKey } from ".";
+import { browser, getSetting, ErrorMessage, SettingsKey } from "../common";
 import { DataExtractionError } from "./customErrors";
 
 // filter integrations that use the global variable

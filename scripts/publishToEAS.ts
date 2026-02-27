@@ -1,6 +1,6 @@
 import "dotenv/config";
 import * as fs from "node:fs";
-import { delayMs, pick } from "./common.ts";
+import { delayMs, pick } from "../utils/index.ts";
 
 const { EAS_CLIENT_ID, EAS_PUBLISH_API_KEY, EAS_PRODUCT_ID } = pick(
   process.env,

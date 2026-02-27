@@ -6,7 +6,7 @@ import pluginTs from "typescript-eslint";
 export default defineConfig([
   { ignores: ["dist/*"] },
   {
-    basePath: "src",
+    basePath: "extension",
     files: ["**/*.@(j|t)s?(x)"],
     languageOptions: {
       globals: {

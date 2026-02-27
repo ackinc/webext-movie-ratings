@@ -5,8 +5,7 @@ import "dotenv/config";
 import { chromium } from "playwright";
 import type { ElementHandle, Route } from "playwright";
 
-// TODO: can we do better?
-import { pick } from "../scripts/common.ts";
+import { pick } from "../utils/index.ts";
 
 const env = pick(
   process.env,
