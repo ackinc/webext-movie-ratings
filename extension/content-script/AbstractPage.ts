@@ -25,7 +25,7 @@ import {
   makeFilteredOutProgramNodeStylesClause,
   setSelectorStatusForCurrentSite,
 } from "./utils";
-import { DataExtractionError } from "common/customErrors";
+import { DataExtractionError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import { limitConcurrency } from "rate-limit-utils";
 
