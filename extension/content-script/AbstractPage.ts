@@ -25,7 +25,7 @@ import {
   makeFilteredOutProgramNodeStylesClause,
   setSelectorStatusForCurrentSite,
 } from "./utils";
-import { DataExtractionError } from "common/customErrors";
+import { DataExtractionError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import { limitConcurrency } from "rate-limit-utils";
 
@@ -98,7 +98,7 @@ export default class AbstractPage {
 
     // logging a single message allows us to take advantage of the duplicate log message suppression
     //   feature built-in to browser consoles
-    if (BUILDTIME_ENV.DEBUG_MODE) {
+    if (APP_ENV === "development") {
       console.debug(
         `Found ${programContainers.length} / ${programContainerNodes.length} \
 valid containers:\n\t${programContainers
@@ -219,7 +219,7 @@ valid containers:\n\t${programContainers
       Array.from(document.querySelectorAll<HTMLElement>(s)),
     );
 
-    if (!this.#isMarkedForCleanup) {
+    if (APP_ENV === "testing" && !this.#isMarkedForCleanup) {
       this.updateSelectorStatuses(selectors, results).catch((e) => {
         if (e.message?.startsWith("Extension context invalidated")) return;
         captureException(e);
@@ -268,7 +268,7 @@ valid containers:\n\t${programContainers
       ),
     );
 
-    if (!this.#isMarkedForCleanup) {
+    if (APP_ENV === "testing" && !this.#isMarkedForCleanup) {
       this.updateSelectorStatuses(
         selectors.map((sel) => `${pContainer.selector} ${sel}`),
         results,

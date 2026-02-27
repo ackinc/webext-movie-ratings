@@ -1,7 +1,7 @@
 import "dotenv/config";
 import * as fs from "node:fs";
 
-import { delayMs, pick } from "./common.ts";
+import { delayMs, pick } from "../utils/index.ts";
 
 const {
   CWS_PUBLISHER_ID,

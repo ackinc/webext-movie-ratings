@@ -7,15 +7,19 @@ import * as prettier from "prettier";
 import * as fse from "fs-extra";
 import chokidar from "chokidar";
 import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
-import { pick } from "./common.ts";
+import { pick } from "../utils/index.ts";
 
-const env = pick(
+const {
+  APP_ENV = "production",
+  OMDB_API_KEY,
+  SENTRY_AUTH_TOKEN,
+} = pick(
   process.env,
-  ["OMDB_API_KEY", "SENTRY_AUTH_TOKEN"],
-  true,
+  { APP_ENV: false, OMDB_API_KEY: true, SENTRY_AUTH_TOKEN: true },
+  false,
 ) as Record<string, string>;
 
-const devMode = process.argv.includes("--dev");
+const watchMode = process.argv.includes("--watch");
 const uploadSrcMapsToSentry = process.argv.includes("--sentry-upload-srcmaps");
 
 const ALLOWED_TARGETS = ["edge", "firefox", "chrome"];
@@ -30,12 +34,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const rootDir = path.resolve(__dirname, "..");
-const srcDir = path.resolve(__dirname, "../src");
+const srcDir = path.resolve(__dirname, "../extension");
 const destDir = path.resolve(__dirname, "../dist");
 
 const staticFiles = ["popup/index.html"].map((f) => path.join(srcDir, f));
-const manifestFiles = [`manifest.json`, `${target}/manifest.json`].map((f) =>
-  path.join(rootDir, f),
+const manifestFiles = [`manifest.json`, `misc/${target}/manifest.json`].map(
+  (f) => path.join(rootDir, f),
 );
 const config: esbuild.BuildOptions = {
   entryPoints: [
@@ -49,13 +53,13 @@ const config: esbuild.BuildOptions = {
   ],
   bundle: true,
   define: {
-    "BUILDTIME_ENV.OMDB_API_KEY": `"${env["OMDB_API_KEY"]}"`,
-    "BUILDTIME_ENV.DEBUG_MODE": devMode ? "true" : "false",
+    APP_ENV: `"${APP_ENV}"`,
+    OMDB_API_KEY: `"${OMDB_API_KEY}"`,
   },
   loader: {
     ".svg": "dataurl",
   },
-  logLevel: devMode ? "info" : "warning",
+  logLevel: "info",
   outdir: destDir,
   target: "es2020",
 
@@ -63,11 +67,11 @@ const config: esbuild.BuildOptions = {
   //   debugging experience when also using sentryEsbuildPlugin
   //   to upload them to Sentry
   // ^WTF is this comment, you fuck?
-  sourcemap: devMode ? "inline" : "linked",
+  sourcemap: APP_ENV === "development" ? "inline" : "linked",
   plugins: [
     uploadSrcMapsToSentry
       ? sentryEsbuildPlugin({
-          authToken: env["SENTRY_AUTH_TOKEN"],
+          authToken: SENTRY_AUTH_TOKEN,
           org: "none-t24",
           project: "sift-web-ext",
         })
@@ -84,7 +88,7 @@ const config: esbuild.BuildOptions = {
 //   for html is not great
 await Promise.all([copyStaticFiles(staticFiles), createManifest()]);
 
-if (!devMode) {
+if (!watchMode) {
   await esbuild.build(config);
   process.exit(0);
 }
