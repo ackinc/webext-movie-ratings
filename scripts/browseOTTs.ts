@@ -252,6 +252,9 @@ async function testAppleTV() {
     //   results, and AppleTV doesn't show suggestions that don't quite match
     //   the query
     await searchbarLocator.pressSequentially("hijack", { delay: 500 });
+    await page
+      .getByRole("list", { name: "Suggestions" })
+      .waitFor({ state: "visible" });
     await waitForOutdatedSelectorRecognition();
 
     await searchbarLocator.press("Enter");
