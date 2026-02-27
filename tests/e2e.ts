@@ -87,6 +87,7 @@ await browserContext.route("**://**.ads-twitter.com/**", (r) => r.abort());
 // mock rating API responses
 await browserContext.route("**://www.omdbapi.com/**", ratingsApiInterceptor);
 
+const startTime = +new Date();
 await setSiftErrorReporting(REPORT_ERRORS);
 const results = await Promise.allSettled(
   SITES_TO_TEST.map((site) => SITE_TO_TESTFN_MAP[site]()),
@@ -95,8 +96,9 @@ const errors: Error[] = results
   .filter((r) => r.status === "rejected")
   .map((r) => r.reason);
 errors.forEach(console.error);
+const runDurationSeconds = Math.round((+new Date() - startTime) / 1000);
 console.log(
-  `Done with ${errors.length} error${errors.length === 1 ? "" : "s"}`,
+  `Done in ${runDurationSeconds}s with ${errors.length} error${errors.length === 1 ? "" : "s"}`,
 );
 if (errors.length === 0) {
   await browserContext.close();
@@ -128,33 +130,53 @@ async function setSiftErrorReporting(optIn: boolean = true) {
 
 async function testAmazonPrimeVideo() {
   const page = await browserContext.newPage();
+  await page.goto(`https://primevideo.com`);
 
-  await page.goto(`https://primevideo.com/movie`);
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
+  await page.getByRole("link", { name: "Movies", exact: true }).click();
+  await browseMoviesPage();
 
-  // visit a collection page
   await page.getByText("See more").first().click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
+  await browseCollectionPage();
 
-  // visit a program-detail page
   await page.locator('article[data-card-entity-type="Movie"]').first().click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
+  await browseProgramDetailPage();
 
-  // use the search feature
-  await page.getByTestId("pv-nav-search-dropdown-trigger").first().click();
-  const searchbarLocator = page
-    .locator('input#pv-search-nav[type="search"]')
-    .first();
-  await searchbarLocator.fill(randWord());
-  await searchbarLocator.press("Enter");
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
+  await useSearchFeature();
+
+  // helpers
+
+  async function browseMoviesPage() {
+    await page
+      .getByTestId("standard-carousel")
+      .first()
+      .waitFor({ state: "visible" });
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseCollectionPage() {
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseProgramDetailPage() {
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function useSearchFeature() {
+    await page.getByTestId("pv-nav-search-dropdown-trigger").first().click();
+    const searchbarLocator = page
+      .locator('input#pv-search-nav[type="search"]')
+      .first();
+    await searchbarLocator.fill(randWord());
+    await searchbarLocator.press("Enter");
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
 }
 
 async function testAppleTV() {
