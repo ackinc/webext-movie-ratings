@@ -219,7 +219,7 @@ valid containers:\n\t${programContainers
       Array.from(document.querySelectorAll<HTMLElement>(s)),
     );
 
-    if (!this.#isMarkedForCleanup) {
+    if (APP_ENV === "testing" && !this.#isMarkedForCleanup) {
       this.updateSelectorStatuses(selectors, results).catch((e) => {
         if (e.message?.startsWith("Extension context invalidated")) return;
         captureException(e);
@@ -268,7 +268,7 @@ valid containers:\n\t${programContainers
       ),
     );
 
-    if (!this.#isMarkedForCleanup) {
+    if (APP_ENV === "testing" && !this.#isMarkedForCleanup) {
       this.updateSelectorStatuses(
         selectors.map((sel) => `${pContainer.selector} ${sel}`),
         results,
