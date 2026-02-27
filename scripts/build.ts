@@ -15,8 +15,8 @@ const {
   SENTRY_AUTH_TOKEN,
 } = pick(
   process.env,
-  ["APP_ENV", "OMDB_API_KEY", "SENTRY_AUTH_TOKEN"],
-  true,
+  { APP_ENV: false, OMDB_API_KEY: true, SENTRY_AUTH_TOKEN: true },
+  false,
 ) as Record<string, string>;
 
 const watchMode = process.argv.includes("--watch");
@@ -38,8 +38,8 @@ const srcDir = path.resolve(__dirname, "../extension");
 const destDir = path.resolve(__dirname, "../dist");
 
 const staticFiles = ["popup/index.html"].map((f) => path.join(srcDir, f));
-const manifestFiles = [`manifest.json`, `${target}/manifest.json`].map((f) =>
-  path.join(rootDir, f),
+const manifestFiles = [`manifest.json`, `misc/${target}/manifest.json`].map(
+  (f) => path.join(rootDir, f),
 );
 const config: esbuild.BuildOptions = {
   entryPoints: [
