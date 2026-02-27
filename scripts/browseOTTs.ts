@@ -29,12 +29,12 @@ const SITE_TO_TESTFN_MAP = {
   youtubemovies: testYoutubeMovies,
 };
 const SITES_TO_TEST =
-  process.argv.indexOf("--test=all") >= 0
+  process.argv.indexOf("--site=all") >= 0
     ? (Object.keys(SITE_TO_TESTFN_MAP) as (keyof typeof SITE_TO_TESTFN_MAP)[])
     : (
         Object.keys(SITE_TO_TESTFN_MAP) as (keyof typeof SITE_TO_TESTFN_MAP)[]
       ).filter((site) =>
-        process.argv.some((x) => x.startsWith(`--test=${site}`)),
+        process.argv.some((x) => x.startsWith(`--site=${site}`)),
       );
 const MEDIA_FILE_EXTENSIONS = [
   "jpe",
@@ -53,7 +53,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pathToExtension = path.join(__dirname, "../dist");
 const userDataDir = path.join(__dirname, `../tmp/sift-e2e-test-data-dir`);
 const words = fs
-  .readFileSync(path.join(__dirname, "./words.txt"), "utf-8")
+  .readFileSync(path.join(__dirname, "../words.txt"), "utf-8")
   .split("\n");
 
 // Launch persistent context with extension arguments

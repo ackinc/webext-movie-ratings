@@ -4,8 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "tsx tests/*.test.ts",
-    "pretest:e2e": "APP_ENV=testing pnpm run build",
-    "test:e2e": "node tests/e2e.ts --test=all --sentry-report-errors > tmp/e2e-$(date --iso-8601=seconds | cut -d+ -f1 | sed s/[^0-9]//g).log 2>&1",
+    "prebrowseOTTs": "APP_ENV=testing pnpm run build",
+    "browseOTTs": "node scripts/browseOTTs.ts --site=all --sentry-report-errors > tmp/e2e-$(date --iso-8601=seconds | cut -d+ -f1 | sed s/[^0-9]//g).log 2>&1",
     "build:dev": "APP_ENV=development pnpm run build --watch",
     "prebuild": "pnpm run clean && cp -r images dist",
     "build": "node scripts/build.ts",
