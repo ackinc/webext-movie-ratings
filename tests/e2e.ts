@@ -221,19 +221,22 @@ async function testAppleTV() {
   }
 
   async function browseCollectionPage() {
-    await waitForPageLoad();
+    await page.getByTestId("grid-item").first().waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, scrollArgs);
     await waitForOutdatedSelectorRecognition();
   }
 
   async function browseProgramDetailPage() {
-    await waitForPageLoad();
+    await page.getByTestId("product-header").waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, scrollArgs);
     await waitForOutdatedSelectorRecognition();
   }
 
   async function browsePersonPage() {
-    await waitForPageLoad();
+    await page
+      .getByTestId("section-container")
+      .first()
+      .waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, scrollArgs);
     await waitForOutdatedSelectorRecognition();
   }
@@ -243,16 +246,18 @@ async function testAppleTV() {
       .locator('input[inputmode="search"][placeholder="Search"]')
       .first();
     await searchbarLocator.click();
-    await waitForPageLoad();
+    await page.getByTestId("grid-item").first().waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, scrollArgs);
     // not using randword here since most words are going to return 0 search
     //   results, and AppleTV doesn't show suggestions that don't quite match
     //   the query
-    await searchbarLocator.pressSequentially("genius", { delay: 500 });
+    await searchbarLocator.pressSequentially("hijack", { delay: 500 });
     await waitForOutdatedSelectorRecognition();
 
     await searchbarLocator.press("Enter");
-    await waitForPageLoad();
+    await page
+      .getByRole("heading", { name: "Top Results" })
+      .waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, scrollArgs);
     await waitForOutdatedSelectorRecognition();
   }
