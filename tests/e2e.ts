@@ -181,63 +181,81 @@ async function testAmazonPrimeVideo() {
 
 async function testAppleTV() {
   const page = await browserContext.newPage();
-
-  // home page
   await page.goto(`https://tv.apple.com`);
-  // close any open modals
-  try {
-    await page
-      .getByRole("dialog", { includeHidden: false })
-      .getByRole("button", { name: "Close" })
-      .click({ timeout: 10000 });
-  } catch (e) {
-    if ((e as Error).name !== "TimeoutError") console.error(e);
-  }
-  const scrollablePage = await page.evaluateHandle(
+
+  const scrollContent = await page.evaluateHandle(
     () => document.querySelector<HTMLElement>("div#scrollable-page")!,
   );
-  const scrollArgs = {
-    scrollContent: scrollablePage,
-    scrollContainer: scrollablePage,
-  };
-  await page.evaluate(scrollToBottom, scrollArgs);
-  await waitForOutdatedSelectorRecognition();
+  const scrollArgs = { scrollContent, scrollContainer: scrollContent };
 
-  // collection page
+  await browseHomePage();
+
   await page.getByRole("heading", { name: "New Releases" }).click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, scrollArgs);
-  await waitForOutdatedSelectorRecognition();
+  await browseCollectionPage();
 
-  // program-detail page
   await page.getByTestId("lockup-container").first().click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, scrollArgs);
-  await waitForOutdatedSelectorRecognition();
+  await browseProgramDetailPage();
 
-  // person page
   await page.getByTestId("person-lockup").first().click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, scrollArgs);
-  await waitForOutdatedSelectorRecognition();
+  await browsePersonPage();
 
-  // search feature
-  const searchbarLocator = page
-    .locator('input[inputmode="search"][placeholder="Search"]')
-    .first();
-  await searchbarLocator.click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, scrollArgs);
-  // not using randword here since most words are going to return 0 search
-  //   results, and AppleTV doesn't show suggestions that don't quite match
-  //   the query
-  await searchbarLocator.pressSequentially("genius", { delay: 500 });
-  await waitForOutdatedSelectorRecognition();
+  await useSearchFeature();
 
-  await searchbarLocator.press("Enter");
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, scrollArgs);
-  await waitForOutdatedSelectorRecognition();
+  // helpers
+
+  async function browseHomePage() {
+    await closeOpenModals();
+    await page.evaluate(scrollToBottom, scrollArgs);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function closeOpenModals() {
+    try {
+      await page
+        .getByRole("dialog", { includeHidden: false })
+        .getByRole("button", { name: "Close" })
+        .click({ timeout: 10000 });
+    } catch (e) {
+      if ((e as Error).name !== "TimeoutError") console.error(e);
+    }
+  }
+
+  async function browseCollectionPage() {
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, scrollArgs);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseProgramDetailPage() {
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, scrollArgs);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browsePersonPage() {
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, scrollArgs);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function useSearchFeature() {
+    const searchbarLocator = page
+      .locator('input[inputmode="search"][placeholder="Search"]')
+      .first();
+    await searchbarLocator.click();
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, scrollArgs);
+    // not using randword here since most words are going to return 0 search
+    //   results, and AppleTV doesn't show suggestions that don't quite match
+    //   the query
+    await searchbarLocator.pressSequentially("genius", { delay: 500 });
+    await waitForOutdatedSelectorRecognition();
+
+    await searchbarLocator.press("Enter");
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, scrollArgs);
+    await waitForOutdatedSelectorRecognition();
+  }
 }
 
 async function testCrunchyroll() {
