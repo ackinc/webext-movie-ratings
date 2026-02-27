@@ -272,98 +272,49 @@ async function testCrunchyroll() {
         ),
     (r) => r.abort(),
   );
-
   await page.goto("https://crunchyroll.com");
 
-  try {
-    await page.waitForURL("**crunchyroll.com/discover", { timeout: 5000 });
-  } catch (e) {
-    if ((e as Error).name !== "TimeoutError") throw e;
+  await browseHomePage();
 
-    await page.evaluate(scrollToBottom, undefined);
-    await login();
-  }
-
-  // home page post-login
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
-
-  /* top-level listing page - "New" */
   await page
     .getByLabel("Main Navigation")
     .getByRole("link", { name: "New", exact: true })
     .click();
-  await waitForPageLoad();
-  // this page has a *ton* of program tiles, all of which look alike; we
-  //   don't need to scroll all the way to the bottom
-  await page.evaluate(scrollToBottom, {
-    maxTimesToPauseForAdditionalContentToLoad: 2,
-  });
-  await waitForOutdatedSelectorRecognition();
+  await browseNewProgramsListingPage();
 
-  /* another top-level listing page - "Simulcast" */
   await page
     .getByLabel("Main Navigation")
     .getByRole("link", { name: "Simulcast", exact: true })
     .click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
+  await browseSimulcastTopLevelListingPage();
 
-  // genre page
   await page
     .getByLabel("Main Navigation")
     .getByRole("button", { name: "Categories" })
     .click();
   await page.getByRole("menuitem", { name: "Action", exact: true }).click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
+  await browseGenrePage();
 
-  // genre+subcat page
   await page
     .getByRole("heading", { name: "Popular" })
     .locator("+ a.view-all-link")
     .click();
-  await waitForPageLoad();
-  // this page also has homogenous program tiles and goes on forever ...
-  await page.evaluate(scrollToBottom, { maxTimesToScroll: 10 });
-  await waitForOutdatedSelectorRecognition();
-  await page.goBack();
+  await browsePopularInGenrePage();
 
-  // genre+subgenre page
+  await page.goBack();
   await page
     .getByRole("heading", { name: "Comedy" })
     .locator("+ a.view-all-link")
     .click();
-  await waitForPageLoad();
-  // this page also has homogenous program tiles and goes on forever ...
-  await page.evaluate(scrollToBottom, { maxTimesToScroll: 10 });
-  await waitForOutdatedSelectorRecognition();
-  await page.goBack();
+  await browseGenreInGenrePage();
 
-  /* browse-all page */
   await page.getByRole("button", { name: "Categories" }).click();
   await page.getByRole("menuitem", { name: "Browse All" }).click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, { maxTimesToScroll: 5 });
-  await page.getByRole("button", { name: "K", exact: true }).click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, { maxTimesToScroll: 5 });
-  await waitForOutdatedSelectorRecognition();
+  await browseAllProgramsPage();
 
-  // search
-  await page
-    .locator("div.header-actions")
-    .getByRole("link", { name: "Search" })
-    .click();
-  await page
-    .getByPlaceholder("Search...")
-    .pressSequentially("action", { delay: 500 });
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
+  await useSearchFeature();
+
+  // helpers
 
   async function login() {
     await page
@@ -380,6 +331,82 @@ async function testCrunchyroll() {
       .fill(env["CRUNCHYROLL_PASSWORD"]!);
     await page.getByRole("button", { name: "Log In" }).click();
     await page.waitForURL("**crunchyroll.com/discover");
+  }
+
+  async function browseHomePage() {
+    await loginIfNeeded();
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function loginIfNeeded() {
+    try {
+      await page.waitForURL("**crunchyroll.com/discover", { timeout: 5000 });
+    } catch (e) {
+      if ((e as Error).name !== "TimeoutError") throw e;
+
+      await page.evaluate(scrollToBottom, undefined);
+      await login();
+    }
+  }
+
+  async function browseNewProgramsListingPage() {
+    await waitForPageLoad();
+    // this page has a *ton* of program tiles, all of which look alike;
+    //   we don't need to scroll all the way to the bottom
+    await page.evaluate(scrollToBottom, {
+      maxTimesToPauseForAdditionalContentToLoad: 2,
+    });
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseSimulcastTopLevelListingPage() {
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseGenrePage() {
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browsePopularInGenrePage() {
+    await waitForPageLoad();
+    // this page also has homogenous program tiles and goes on forever ...
+    await page.evaluate(scrollToBottom, { maxTimesToScroll: 10 });
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseGenreInGenrePage() {
+    await waitForPageLoad();
+    // this page also has homogenous program tiles and goes on forever ...
+    await page.evaluate(scrollToBottom, { maxTimesToScroll: 10 });
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseAllProgramsPage() {
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, { maxTimesToScroll: 5 });
+    await page.getByRole("button", { name: "K", exact: true }).click();
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, { maxTimesToScroll: 5 });
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function useSearchFeature() {
+    await page
+      .locator("div.header-actions")
+      .getByRole("link", { name: "Search" })
+      .click();
+    await page
+      .getByPlaceholder("Search...")
+      .pressSequentially("action", { delay: 500 });
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
   }
 }
 
