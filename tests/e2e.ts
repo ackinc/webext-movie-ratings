@@ -20,7 +20,7 @@ const env = pick(
 
 const REPORT_ERRORS = process.argv.includes("--sentry-report-errors");
 const SITE_TO_TESTFN_MAP = {
-  amazonprimevideo: testPrimeVideo,
+  amazonprimevideo: testAmazonPrimeVideo,
   appletv: testAppleTV,
   crunchyroll: testCrunchyroll,
   hotstar: testHotstar,
@@ -126,7 +126,7 @@ async function setSiftErrorReporting(optIn: boolean = true) {
   await page.locator("input#optInToErrorReporting").setChecked(optIn);
 }
 
-async function testPrimeVideo() {
+async function testAmazonPrimeVideo() {
   const page = await browserContext.newPage();
 
   await page.goto(`https://primevideo.com/movie`);
