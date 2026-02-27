@@ -155,13 +155,13 @@ async function testAmazonPrimeVideo() {
   }
 
   async function browseCollectionPage() {
-    await waitForPageLoad();
+    await page.getByTestId("grid-container").waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, undefined);
     await waitForOutdatedSelectorRecognition();
   }
 
   async function browseProgramDetailPage() {
-    await waitForPageLoad();
+    await page.getByTestId("tab-content-related").waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, undefined);
     await waitForOutdatedSelectorRecognition();
   }
@@ -173,7 +173,7 @@ async function testAmazonPrimeVideo() {
       .first();
     await searchbarLocator.fill(randWord());
     await searchbarLocator.press("Enter");
-    await waitForPageLoad();
+    await page.getByTestId("grid-container").waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, undefined);
     await waitForOutdatedSelectorRecognition();
   }
