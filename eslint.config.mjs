@@ -14,7 +14,6 @@ export default defineConfig([
         ...globals.webextensions,
         APP_ENV: "readonly",
         OMDB_API_KEY: "readonly",
-        DEBUG_MODE: "readonly",
       },
     },
   },

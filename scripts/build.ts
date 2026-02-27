@@ -19,7 +19,7 @@ const {
   true,
 ) as Record<string, string>;
 
-const devMode = process.argv.includes("--dev");
+const watchMode = process.argv.includes("--watch");
 const uploadSrcMapsToSentry = process.argv.includes("--sentry-upload-srcmaps");
 
 const ALLOWED_TARGETS = ["edge", "firefox", "chrome"];
@@ -55,12 +55,11 @@ const config: esbuild.BuildOptions = {
   define: {
     APP_ENV: `"${APP_ENV}"`,
     OMDB_API_KEY: `"${OMDB_API_KEY}"`,
-    DEBUG_MODE: devMode ? "true" : "false",
   },
   loader: {
     ".svg": "dataurl",
   },
-  logLevel: devMode ? "info" : "warning",
+  logLevel: "info",
   outdir: destDir,
   target: "es2020",
 
@@ -68,7 +67,7 @@ const config: esbuild.BuildOptions = {
   //   debugging experience when also using sentryEsbuildPlugin
   //   to upload them to Sentry
   // ^WTF is this comment, you fuck?
-  sourcemap: devMode ? "inline" : "linked",
+  sourcemap: APP_ENV === "development" ? "inline" : "linked",
   plugins: [
     uploadSrcMapsToSentry
       ? sentryEsbuildPlugin({
@@ -89,7 +88,7 @@ const config: esbuild.BuildOptions = {
 //   for html is not great
 await Promise.all([copyStaticFiles(staticFiles), createManifest()]);
 
-if (!devMode) {
+if (!watchMode) {
   await esbuild.build(config);
   process.exit(0);
 }

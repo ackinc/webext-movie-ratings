@@ -28,7 +28,7 @@ const client = new BrowserClient({
   integrations: integrations,
 
   beforeSend: async (evt: ErrorEvent, hint: EventHint) => {
-    if (DEBUG_MODE) {
+    if (APP_ENV === "development") {
       // calls to console.error from extension service worker appear
       //   in the extension error log at chrome://extensions (or equiv. in
       //   other browsers)

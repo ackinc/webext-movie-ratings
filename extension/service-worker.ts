@@ -165,7 +165,7 @@ async function getIMDBData(
   program: Omit<Program, "node">,
   pageUrl?: string,
 ): Promise<IMDBData> {
-  if (DEBUG_MODE) {
+  if (["development", "testing"].includes(APP_ENV)) {
     let key = `nRatingRequests::${getCurrentTelemetryInterval()}`;
     if (pageUrl) {
       const url = new URL(pageUrl);
@@ -251,7 +251,7 @@ async function fetchIMDBDataFromApi(
 async function patchedFetch(...args: Parameters<typeof fetch>) {
   const promise = fetch(...args);
 
-  if (DEBUG_MODE) {
+  if (["development", "testing"].includes(APP_ENV)) {
     const key = `nApiCalls::${getCurrentTelemetryInterval()}`;
     await logEventForTelemetry(key);
   }
