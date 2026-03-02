@@ -293,7 +293,7 @@ async function testAppleTV() {
 }
 
 async function testCrunchyroll() {
-  const labelPrefix = `${testCrunchyroll.name}`;
+  const labelPrefix = `${testCrunchyroll.name}:`;
 
   const page = await browserContext.newPage();
   page.route("**imgsrv.crunchyroll.com/**", (r) => r.abort());
@@ -551,7 +551,6 @@ async function testNetflix() {
       await page.waitForURL("**/browse", { timeout: 10000 });
     } catch (e) {
       if ((e as Error).name !== "TimeoutError") throw e;
-
       await timerHof(login, { labelPrefix })();
     }
   }
