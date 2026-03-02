@@ -8,8 +8,8 @@ export function clampNum(val: number, min: number, max: number) {
   return val < min ? min : val > max ? max : val;
 }
 
-export async function waitFor(
-  fn: () => Promise<unknown>,
+export async function waitFor<T>(
+  fn: () => T,
   maxTries = 10,
   intervalBetweenTriesMs = 500,
 ) {
@@ -22,9 +22,9 @@ export async function waitFor(
   throw new Error("waitFor timed out");
 }
 
-export function invert<T extends unknown[]>(
-  fn: (...args: T) => boolean,
-): (...args: T) => boolean {
+export function invert<T extends (...args: Parameters<T>) => boolean>(
+  fn: T,
+): (...args: Parameters<T>) => boolean {
   return (...args) => !fn(...args);
 }
 
