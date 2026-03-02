@@ -430,7 +430,13 @@ async function testHotstar() {
   await waitForOutdatedSelectorRecognition();
 
   // listing page
-  await page.getByRole("heading", { name: /latest releases/i }).click();
+  await page
+    .getByTestId("tray-container-base-wrapper")
+    .first()
+    .getByTestId("tray-header-composite-wrapper")
+    .first()
+    .getByRole("heading")
+    .click();
   await waitForPageLoad();
   await page.evaluate(scrollToBottom, undefined);
   await waitForOutdatedSelectorRecognition();
