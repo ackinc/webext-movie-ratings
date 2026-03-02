@@ -4,8 +4,33 @@ import { fileURLToPath } from "node:url";
 import "dotenv/config";
 import { chromium } from "playwright";
 import type { ElementHandle, Route } from "playwright";
-
 import { pick } from "../utils/index.ts";
+
+const MEDIA_FILE_EXTENSIONS = [
+  "jpe",
+  "jpeg",
+  "jpg",
+  "png",
+  "webp",
+  "mp3",
+  "m4s",
+  "mp4",
+  "webm",
+  "avif",
+];
+const TRACKING_DOMAINS = [
+  "*.quora.com",
+  "*.facebook.com",
+  "*.facebook.net",
+  "analytics.google.com",
+  "adservice.google.com",
+  "google-analytics.com",
+  "*.googletagmanager.com",
+  "*.doubleclick.net",
+  "bat.bing.com",
+  "analytics.twitter.com",
+  "*.ads-twitter.com",
+];
 
 const env = pick(
   process.env,
@@ -36,18 +61,8 @@ const SITES_TO_TEST =
       ).filter((site) =>
         process.argv.some((x) => x.startsWith(`--site=${site}`)),
       );
-const MEDIA_FILE_EXTENSIONS = [
-  "jpe",
-  "jpeg",
-  "jpg",
-  "png",
-  "webp",
-  "mp3",
-  "m4s",
-  "mp4",
-  "webm",
-  "avif",
-];
+console.log(`Sites that will be tested: ${SITES_TO_TEST.join(", ")}`);
+console.time(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pathToExtension = path.join(__dirname, "../dist");
@@ -66,45 +81,55 @@ const browserContext = await chromium.launchPersistentContext(userDataDir, {
   viewport: { width: 1728, height: 864 },
 });
 
-// disable requests for media
-await browserContext.route(
-  (url) =>
-    MEDIA_FILE_EXTENSIONS.some((ext) => url.pathname.endsWith(`.${ext}`)),
-  (r) => r.abort(),
-);
-// disable tracking
-await browserContext.route("**://**.quora.com/**", (r) => r.abort());
-await browserContext.route("**://**.facebook.com/**", (r) => r.abort());
-await browserContext.route("**://**.facebook.net/**", (r) => r.abort());
-await browserContext.route("**://analytics.google.com/**", (r) => r.abort());
-await browserContext.route("**://adservice.google.com/**", (r) => r.abort());
-await browserContext.route("**://google-analytics.com/**", (r) => r.abort());
-await browserContext.route("**://**.googletagmanager.com/**", (r) => r.abort());
-await browserContext.route("**://**.doubleclick.net/**", (r) => r.abort());
-await browserContext.route("**://bat.bing.com/**", (r) => r.abort());
-await browserContext.route("**://analytics.twitter.com/**", (r) => r.abort());
-await browserContext.route("**://**.ads-twitter.com/**", (r) => r.abort());
-// mock rating API responses
-await browserContext.route("**://www.omdbapi.com/**", ratingsApiInterceptor);
+await setupRequestInterceptors();
 
-const startTime = +new Date();
 await setSiftErrorReporting(REPORT_ERRORS);
+
 const results = await Promise.allSettled(
-  SITES_TO_TEST.map((site) => SITE_TO_TESTFN_MAP[site]()),
+  SITES_TO_TEST.map((site) => timerHof(SITE_TO_TESTFN_MAP[site])()),
 );
 const errors: Error[] = results
   .filter((r) => r.status === "rejected")
   .map((r) => r.reason);
 errors.forEach(console.error);
-const runDurationSeconds = Math.round((+new Date() - startTime) / 1000);
-console.log(
-  `Done in ${runDurationSeconds}s with ${errors.length} error${errors.length === 1 ? "" : "s"}`,
-);
-if (errors.length === 0) {
-  await browserContext.close();
-}
+console.timeEnd(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
+console.log(`Done with ${errors.length} errors`);
+if (errors.length === 0) await browserContext.close();
 
 // helpers
+
+async function setupRequestInterceptors() {
+  // disable requests for media
+  await browserContext.route(
+    (url) =>
+      MEDIA_FILE_EXTENSIONS.some((ext) => url.pathname.endsWith(`.${ext}`)),
+    (r) => r.abort(),
+  );
+
+  // disable tracking
+  await Promise.all(
+    TRACKING_DOMAINS.map((d) =>
+      browserContext.route(`*://${d}/**`, (r) => r.abort()),
+    ),
+  );
+
+  // mock rating API responses
+  await browserContext.route("**://www.omdbapi.com/**", ratingsApiInterceptor);
+}
+
+// NOTE: labelPrefix is only used when label is not explicitly specified
+function timerHof<T>(
+  fn: () => T,
+  { label, labelPrefix }: { label?: string; labelPrefix?: string } = {},
+): () => Promise<T> {
+  label ??= `${labelPrefix ?? ""}${fn.name}`;
+  return async () => {
+    console.time(label);
+    const result = await fn();
+    console.timeEnd(label);
+    return result;
+  };
+}
 
 async function ratingsApiInterceptor(route: Route) {
   await delayMs(Math.floor(Math.random() * 100) + 1);
