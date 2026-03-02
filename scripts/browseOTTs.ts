@@ -447,15 +447,15 @@ async function testCrunchyroll() {
 }
 
 async function testHotstar() {
-  const page = await browserContext.newPage();
+  const labelPrefix = `${testHotstar.name}:`;
 
+  const page = await browserContext.newPage();
   await page.route("**://img10.hotstar.com/**", (r) => r.abort());
   await page.route("**://**.sentry.io/**", (r) => r.abort());
 
   // home page
   await page.goto(`https://hotstar.com`);
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
+  await timerHof(browseHomePage, { labelPrefix })();
 
   // listing page
   await page
@@ -465,105 +465,96 @@ async function testHotstar() {
     .first()
     .getByRole("heading")
     .click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
+  await timerHof(browseListingPage, { labelPrefix })();
 
   // program-detail
   await page.getByTestId("tray-card-default").first().click();
-  await waitForPageLoad();
-  const scrollContent = await page.evaluateHandle(
-    () =>
-      document.querySelector<HTMLElement>('div[data-testid="modalContent"]')!
-        .parentElement!,
-  );
-  await page.evaluate(scrollToBottom, {
-    scrollContent,
-    scrollContainer: scrollContent,
-  });
-  await waitForOutdatedSelectorRecognition();
-  await page.getByTestId("closeButton").first().click();
+  await timerHof(browseProgramDetailPage, { labelPrefix })();
 
   /* search */
-  await page.getByRole("tab", { name: "Search" }).click();
-  // move the mouse to the right so the left-menu's backdrop goes away
-  await page.mouse.move(200, 0);
-  // focus the search input textbox
-  const searchbarLocator = page.locator("input#searchBar");
-  await searchbarLocator.click();
-  await searchbarLocator.pressSequentially("action", { delay: 500 });
-  // wait for results to load
-  await page.getByTestId("loading").isHidden();
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
+  await timerHof(useSearchFeature, { labelPrefix })();
+
+  // helpers
+
+  async function browseHomePage() {
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseListingPage() {
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseProgramDetailPage() {
+    await waitForPageLoad();
+    const scrollContent = await page.evaluateHandle(
+      () =>
+        document.querySelector<HTMLElement>('div[data-testid="modalContent"]')!
+          .parentElement!,
+    );
+    await page.evaluate(scrollToBottom, {
+      scrollContent,
+      scrollContainer: scrollContent,
+    });
+    await waitForOutdatedSelectorRecognition();
+    await page.getByTestId("closeButton").first().click();
+  }
+
+  async function useSearchFeature() {
+    await page.getByRole("tab", { name: "Search" }).click();
+    // move the mouse to the right so the left-menu's backdrop goes away
+    await page.mouse.move(200, 0);
+    // focus the search input textbox
+    const searchbarLocator = page.locator("input#searchBar");
+    await searchbarLocator.click();
+    await searchbarLocator.pressSequentially(SEARCH_PHRASE, { delay: 500 });
+    // wait for results to load
+    await page.getByTestId("loading").isHidden();
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
 }
 
 async function testNetflix() {
+  const labelPrefix = `${testNetflix.name}:`;
+
   const page = await browserContext.newPage();
   page.route("**://**.nflxvideo.net/**", (r) => r.abort());
 
   let scrollContent: ElementHandle<HTMLElement>;
 
+  // redirects automatically to post-login home page if logged-in
   await page.goto(`https://netflix.com/login`);
-  try {
-    // if user is already logged-in, they will be redirected to /browse
-    await page.waitForURL("**/browse", { timeout: 10000 });
-  } catch (e) {
-    if ((e as Error).name !== "TimeoutError") throw e;
+  await timerHof(loginIfNeeded, { labelPrefix })();
+  await timerHof(dismissProfileSelectorIfNeeded, { labelPrefix })();
 
-    await login();
-  }
+  await timerHof(browseHomePage, { labelPrefix })();
 
-  const profileSelectionLocator = page.locator(
-    'a.profile-link[data-uia="action-select-profile+primary"]',
-  );
-  if (await profileSelectionLocator.isVisible()) {
-    await profileSelectionLocator.click();
-    await waitForPageLoad();
-  }
-
-  // home page
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
-
-  // listing page
   await page.locator("a.rowTitle", { hasText: "Explore All" }).first().click();
-  await waitForPageLoad();
-  scrollContent = await page.evaluateHandle(
-    () =>
-      document.querySelector<HTMLElement>(
-        'div[data-uia="modal-content-wrapper"]',
-      )!.parentElement!,
-  );
-  await page.evaluate(scrollToBottom, { scrollContent });
-  await waitForOutdatedSelectorRecognition();
-  await page.locator('button[data-uia="modal-default-close-btn"]').click();
+  await timerHof(browseListingPage, { labelPrefix })();
 
-  // search
-  await page.getByRole("button", { name: "Search" }).click();
-  await page
-    .locator("input#searchInput")
-    .pressSequentially("action", { delay: 500 });
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, undefined);
-  await waitForOutdatedSelectorRecognition();
+  await timerHof(useSearchFeature, { labelPrefix })();
 
-  // program-detail page
   await page
     .locator('a[data-uia="search-gallery-video-card"]')
     .first()
     .dispatchEvent("mouseover");
-  await waitForPageLoad();
-  await page.getByRole("button", { name: "expand to detail modal" }).click();
-  await waitForPageLoad();
-  await page.getByRole("button", { name: "expand section" }).first().click();
-  await waitForPageLoad();
-  scrollContent = await page.evaluateHandle(
-    () =>
-      document.querySelector<HTMLElement>('div.detail-modal[role="dialog"]')!,
-  );
-  await page.evaluate(scrollToBottom, { scrollContent });
-  await waitForOutdatedSelectorRecognition();
+  await timerHof(browseProgramDetailPage, { labelPrefix })();
+
+  // helpers
+
+  async function loginIfNeeded() {
+    try {
+      // if user is already logged-in, they will be redirected to /browse
+      await page.waitForURL("**/browse", { timeout: 10000 });
+    } catch (e) {
+      if ((e as Error).name !== "TimeoutError") throw e;
+
+      await timerHof(login, { labelPrefix })();
+    }
+  }
 
   async function login() {
     await page.getByLabel("Email or mobile number").fill(env["NETFLIX_EMAIL"]!);
@@ -577,6 +568,58 @@ async function testNetflix() {
     await passwordLocator.fill(env["NETFLIX_PASSWORD"]!);
     await page.getByRole("button", { name: "Sign In" }).click();
     await page.waitForURL("**/browse");
+  }
+
+  async function dismissProfileSelectorIfNeeded() {
+    const profileSelectionLocator = page.locator(
+      'a.profile-link[data-uia="action-select-profile+primary"]',
+    );
+    if (await profileSelectionLocator.isVisible()) {
+      await profileSelectionLocator.click();
+      await waitForPageLoad();
+    }
+  }
+
+  async function browseHomePage() {
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseListingPage() {
+    await waitForPageLoad();
+    scrollContent = await page.evaluateHandle(
+      () =>
+        document.querySelector<HTMLElement>(
+          'div[data-uia="modal-content-wrapper"]',
+        )!.parentElement!,
+    );
+    await page.evaluate(scrollToBottom, { scrollContent });
+    await waitForOutdatedSelectorRecognition();
+    await page.locator('button[data-uia="modal-default-close-btn"]').click();
+  }
+
+  async function useSearchFeature() {
+    await page.getByRole("button", { name: "Search" }).click();
+    await page
+      .locator("input#searchInput")
+      .pressSequentially("action", { delay: 500 });
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseProgramDetailPage() {
+    await waitForPageLoad();
+    await page.getByRole("button", { name: "expand to detail modal" }).click();
+    await waitForPageLoad();
+    await page.getByRole("button", { name: "expand section" }).first().click();
+    await waitForPageLoad();
+    scrollContent = await page.evaluateHandle(
+      () =>
+        document.querySelector<HTMLElement>('div.detail-modal[role="dialog"]')!,
+    );
+    await page.evaluate(scrollToBottom, { scrollContent });
+    await waitForOutdatedSelectorRecognition();
   }
 }
 
