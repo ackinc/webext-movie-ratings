@@ -1,4 +1,3 @@
-import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import "dotenv/config";
@@ -44,6 +43,7 @@ const env = pick(
 ) as Record<string, string>;
 
 const REPORT_ERRORS = process.argv.includes("--sentry-report-errors");
+const SEARCH_PHRASE = "hijack";
 const SITE_TO_TESTFN_MAP = {
   amazonprimevideo: testAmazonPrimeVideo,
   appletv: testAppleTV,
@@ -67,9 +67,6 @@ console.time(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pathToExtension = path.join(__dirname, "../dist");
 const userDataDir = path.join(__dirname, `../tmp/sift-e2e-test-data-dir`);
-const words = fs
-  .readFileSync(path.join(__dirname, "../words.txt"), "utf-8")
-  .split("\n");
 
 // Launch persistent context with extension arguments
 const browserContext = await chromium.launchPersistentContext(userDataDir, {
@@ -154,19 +151,21 @@ async function setSiftErrorReporting(optIn: boolean = true) {
 }
 
 async function testAmazonPrimeVideo() {
+  const labelPrefix = `${testAmazonPrimeVideo.name}:`;
+
   const page = await browserContext.newPage();
   await page.goto(`https://primevideo.com`);
 
   await page.getByRole("link", { name: "Movies", exact: true }).click();
-  await browseMoviesPage();
+  await timerHof(browseMoviesPage, { labelPrefix })();
 
   await page.getByText("See more").first().click();
-  await browseCollectionPage();
+  await timerHof(browseCollectionPage, { labelPrefix })();
 
   await page.locator('article[data-card-entity-type="Movie"]').first().click();
-  await browseProgramDetailPage();
+  await timerHof(browseProgramDetailPage, { labelPrefix })();
 
-  await useSearchFeature();
+  await timerHof(useSearchFeature, { labelPrefix })();
 
   // helpers
 
@@ -196,7 +195,7 @@ async function testAmazonPrimeVideo() {
     const searchbarLocator = page
       .locator('input#pv-search-nav[type="search"]')
       .first();
-    await searchbarLocator.fill(randWord());
+    await searchbarLocator.fill(SEARCH_PHRASE);
     await searchbarLocator.press("Enter");
     await page.getByTestId("grid-container").waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, undefined);
@@ -205,6 +204,8 @@ async function testAmazonPrimeVideo() {
 }
 
 async function testAppleTV() {
+  const labelPrefix = `${testAppleTV.name}:`;
+
   const page = await browserContext.newPage();
   await page.goto(`https://tv.apple.com`);
 
@@ -213,18 +214,18 @@ async function testAppleTV() {
   );
   const scrollArgs = { scrollContent, scrollContainer: scrollContent };
 
-  await browseHomePage();
+  await timerHof(browseHomePage, { labelPrefix })();
 
   await page.getByRole("heading", { name: "New Releases" }).click();
-  await browseCollectionPage();
+  await timerHof(browseCollectionPage, { labelPrefix })();
 
   await page.getByTestId("lockup-container").first().click();
-  await browseProgramDetailPage();
+  await timerHof(browseProgramDetailPage, { labelPrefix })();
 
   await page.getByTestId("person-lockup").first().click();
-  await browsePersonPage();
+  await timerHof(browsePersonPage, { labelPrefix })();
 
-  await useSearchFeature();
+  await timerHof(useSearchFeature, { labelPrefix })();
 
   // helpers
 
@@ -276,7 +277,7 @@ async function testAppleTV() {
     // not using randword here since most words are going to return 0 search
     //   results, and AppleTV doesn't show suggestions that don't quite match
     //   the query
-    await searchbarLocator.pressSequentially("hijack", { delay: 500 });
+    await searchbarLocator.pressSequentially(SEARCH_PHRASE, { delay: 500 });
     await page
       .getByRole("list", { name: "Suggestions" })
       .waitFor({ state: "visible" });
@@ -292,6 +293,8 @@ async function testAppleTV() {
 }
 
 async function testCrunchyroll() {
+  const labelPrefix = `${testCrunchyroll.name}`;
+
   const page = await browserContext.newPage();
   page.route("**imgsrv.crunchyroll.com/**", (r) => r.abort());
   // crunchyroll makes a bunch of image requests to a.storyblok.com that look like
@@ -307,45 +310,45 @@ async function testCrunchyroll() {
   );
   await page.goto("https://crunchyroll.com");
 
-  await browseHomePage();
+  await timerHof(browseHomePage, { labelPrefix })();
 
   await page
     .getByLabel("Main Navigation")
     .getByRole("link", { name: "New", exact: true })
     .click();
-  await browseNewProgramsListingPage();
+  await timerHof(browseNewProgramsListingPage, { labelPrefix })();
 
   await page
     .getByLabel("Main Navigation")
     .getByRole("link", { name: "Simulcast", exact: true })
     .click();
-  await browseSimulcastTopLevelListingPage();
+  await timerHof(browseSimulcastTopLevelListingPage, { labelPrefix })();
 
   await page
     .getByLabel("Main Navigation")
     .getByRole("button", { name: "Categories" })
     .click();
   await page.getByRole("menuitem", { name: "Action", exact: true }).click();
-  await browseGenrePage();
+  await timerHof(browseGenrePage, { labelPrefix })();
 
   await page
     .getByRole("heading", { name: "Popular" })
     .locator("+ a.view-all-link")
     .click();
-  await browsePopularInGenrePage();
+  await timerHof(browsePopularInGenrePage, { labelPrefix })();
 
   await page.goBack();
   await page
     .getByRole("heading", { name: "Comedy" })
     .locator("+ a.view-all-link")
     .click();
-  await browseGenreInGenrePage();
+  await timerHof(browseGenreInGenrePage, { labelPrefix })();
 
   await page.getByRole("button", { name: "Categories" }).click();
   await page.getByRole("menuitem", { name: "Browse All" }).click();
-  await browseAllProgramsPage();
+  await timerHof(browseAllProgramsPage, { labelPrefix })();
 
-  await useSearchFeature();
+  await timerHof(useSearchFeature, { labelPrefix })();
 
   // helpers
 
@@ -436,7 +439,7 @@ async function testCrunchyroll() {
       .click();
     await page
       .getByPlaceholder("Search...")
-      .pressSequentially("action", { delay: 500 });
+      .pressSequentially(SEARCH_PHRASE, { delay: 500 });
     await waitForPageLoad();
     await page.evaluate(scrollToBottom, undefined);
     await waitForOutdatedSelectorRecognition();
@@ -586,6 +589,8 @@ async function testSonyLiv() {
 }
 
 async function testYoutubeMovies() {
+  const labelPrefix = `${testYoutubeMovies.name}:`;
+
   const page = await browserContext.newPage();
   page.route("**.googlevideo.com/**", (r) => r.abort());
 
@@ -598,35 +603,53 @@ async function testYoutubeMovies() {
 
   // yt movies feed
   await page.locator('a[title="Movies"]').click();
-  await page.waitForURL("**/feed/storefront**");
-  await waitForPageLoad();
-  await page.getByRole("button", { name: "Next" }).first().click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, { scrollContent });
-  await waitForOutdatedSelectorRecognition();
+  await timerHof(browseStorefront, { labelPrefix })();
 
-  // yt movies - view all
+  // yt movies - category page
   await page
     .locator("div#title-container", { hasText: "Top selling" })
     .getByRole("link", { name: "View all" })
     .click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, { scrollContent });
-  await waitForOutdatedSelectorRecognition();
+  await timerHof(browseCategoryPage, { labelPrefix })();
 
-  // yt movies - purchased
+  // yt movies - purchases page
   await page.getByRole("tab", { name: "Purchased" }).click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, { scrollContent });
-  await waitForOutdatedSelectorRecognition();
+  await timerHof(browsePurchasesPage, { labelPrefix })();
 
-  await page.getByRole("tab", { name: "Browse" }).click();
-  await waitForPageLoad();
   // single-program page
-  await page.locator("ytd-grid-movie-renderer a#thumbnail").first().click();
-  await waitForPageLoad();
-  await page.evaluate(scrollToBottom, { scrollContent });
-  await waitForOutdatedSelectorRecognition();
+  await page.getByRole("tab", { name: "Browse" }).click();
+  await timerHof(browseSingleMoviePage, { labelPrefix })();
+
+  // helpers
+
+  async function browseStorefront() {
+    await page.waitForURL("**/feed/storefront**");
+    await waitForPageLoad();
+    await page.getByRole("button", { name: "Next" }).first().click();
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, { scrollContent });
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseCategoryPage() {
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, { scrollContent });
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browsePurchasesPage() {
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, { scrollContent });
+    await waitForOutdatedSelectorRecognition();
+  }
+
+  async function browseSingleMoviePage() {
+    await waitForPageLoad();
+    await page.locator("ytd-grid-movie-renderer a#thumbnail").first().click();
+    await waitForPageLoad();
+    await page.evaluate(scrollToBottom, { scrollContent });
+    await waitForOutdatedSelectorRecognition();
+  }
 }
 
 function delayMs(ms: number) {
@@ -688,10 +711,6 @@ function scrollToBottom(
       }
     }, SCROLL_INTERVAL_MS);
   });
-}
-
-function randWord() {
-  return words[randBetween(0, words.length)]!;
 }
 
 function randBetween(lo: number, hi: number) {
