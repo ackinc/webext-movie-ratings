@@ -197,7 +197,10 @@ async function testAmazonPrimeVideo() {
       .first();
     await searchbarLocator.fill(SEARCH_PHRASE);
     await searchbarLocator.press("Enter");
-    await page.getByTestId("grid-container").waitFor({ state: "visible" });
+    await page
+      .getByTestId("grid-container")
+      .first()
+      .waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, undefined);
     await waitForOutdatedSelectorRecognition();
   }
@@ -279,7 +282,7 @@ async function testAppleTV() {
     //   the query
     await searchbarLocator.pressSequentially(SEARCH_PHRASE, { delay: 500 });
     await page
-      .getByRole("list", { name: "Suggestions" })
+      .getByRole("listbox", { name: "Suggestions" })
       .waitFor({ state: "visible" });
     await waitForOutdatedSelectorRecognition();
 
@@ -370,7 +373,7 @@ async function testCrunchyroll() {
   }
 
   async function browseHomePage() {
-    await loginIfNeeded();
+    await timerHof(loginIfNeeded, { labelPrefix })();
     await waitForPageLoad();
     await page.evaluate(scrollToBottom, undefined);
     await waitForOutdatedSelectorRecognition();
@@ -378,12 +381,11 @@ async function testCrunchyroll() {
 
   async function loginIfNeeded() {
     try {
-      await page.waitForURL("**crunchyroll.com/discover", { timeout: 5000 });
+      await page.waitForURL("**crunchyroll.com/discover**", { timeout: 5000 });
     } catch (e) {
       if ((e as Error).name !== "TimeoutError") throw e;
-
       await page.evaluate(scrollToBottom, undefined);
-      await login();
+      await timerHof(login, { labelPrefix })();
     }
   }
 
@@ -526,10 +528,7 @@ async function testNetflix() {
   let scrollContent: ElementHandle<HTMLElement>;
 
   // redirects automatically to post-login home page if logged-in
-  await page.goto(`https://netflix.com/login`);
-  await timerHof(loginIfNeeded, { labelPrefix })();
-  await timerHof(dismissProfileSelectorIfNeeded, { labelPrefix })();
-
+  await page.goto(`https://netflix.com`);
   await timerHof(browseHomePage, { labelPrefix })();
 
   await page.locator("a.rowTitle", { hasText: "Explore All" }).first().click();
@@ -545,10 +544,16 @@ async function testNetflix() {
 
   // helpers
 
+  async function browseHomePage() {
+    await timerHof(loginIfNeeded, { labelPrefix })();
+    await timerHof(dismissProfileSelectorIfNeeded, { labelPrefix })();
+    await page.evaluate(scrollToBottom, undefined);
+    await waitForOutdatedSelectorRecognition();
+  }
+
   async function loginIfNeeded() {
     try {
-      // if user is already logged-in, they will be redirected to /browse
-      await page.waitForURL("**/browse", { timeout: 10000 });
+      await page.waitForURL("**netflix.com/browse**", { timeout: 10000 });
     } catch (e) {
       if ((e as Error).name !== "TimeoutError") throw e;
       await timerHof(login, { labelPrefix })();
@@ -577,11 +582,6 @@ async function testNetflix() {
       await profileSelectionLocator.click();
       await waitForPageLoad();
     }
-  }
-
-  async function browseHomePage() {
-    await page.evaluate(scrollToBottom, undefined);
-    await waitForOutdatedSelectorRecognition();
   }
 
   async function browseListingPage() {
