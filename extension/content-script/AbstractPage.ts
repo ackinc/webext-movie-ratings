@@ -325,7 +325,10 @@ valid containers:\n\t${programContainers
         } else /* selectorStatusForPathname[sel] === "active" */ {
           selectorStatusForPathname[sel] = "probablyOutOfDate";
           captureException(
-            new Error(ErrorMessage.potentiallyOutOfDateSelector + `: ${sel}`),
+            new Error(
+              ErrorMessage.potentiallyOutOfDateSelector +
+                ` on ${window.location.hostname}`,
+            ),
             { tags: { pathname, selector: sel } },
           );
         }
