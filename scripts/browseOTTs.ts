@@ -5,6 +5,8 @@ import { chromium } from "playwright";
 import type { ElementHandle, Route } from "playwright";
 import { pick } from "../utils/index.ts";
 
+console.log(`Script called with CLI args: ${process.argv.slice(2)}`);
+
 const MEDIA_FILE_EXTENSIONS = [
   "jpe",
   "jpeg",
@@ -68,9 +70,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pathToExtension = path.join(__dirname, "../dist");
 const userDataDir = path.join(__dirname, `../tmp/sift-e2e-test-data-dir`);
 
-// Launch persistent context with extension arguments
 const browserContext = await chromium.launchPersistentContext(userDataDir, {
-  headless: false, // Required for extensions
+  headless: false,
   args: [
     `--disable-extensions-except=${pathToExtension}`,
     `--load-extension=${pathToExtension}`,
@@ -182,7 +183,9 @@ async function testAmazonPrimeVideo() {
 
   async function browseCollectionPage() {
     await page.getByTestId("grid-container").waitFor({ state: "visible" });
-    await page.evaluate(scrollToBottom, undefined);
+    await page.evaluate(scrollToBottom, {
+      maxTimesToPauseForAdditionalContentToLoad: 2,
+    });
     await waitForOutdatedSelectorRecognition();
   }
 
