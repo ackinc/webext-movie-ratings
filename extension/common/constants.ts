@@ -42,6 +42,7 @@ export enum SettingsKey {
   errorReportingOptIn = "errorReportingOptIn",
   programFiltersSettings = "programFiltersSettings",
   popupSeenAtLeastOnce = "popupSeenAtLeastOnce",
+  outdatedSelectorDetectionEnabled = "outdatedSelectorDetectionEnabled",
 }
 
 export const defaultProgramFilterSettings: ProgramFilterSettings = {

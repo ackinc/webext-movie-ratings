@@ -206,12 +206,10 @@ valid containers:\n\t${programContainers
       Array.from(document.querySelectorAll<HTMLElement>(s)),
     );
 
-    if (APP_ENV === "testing" && !this.#isMarkedForCleanup) {
-      this.#updateSelectorStatuses(selectors, results).catch((e) => {
-        if (e.message?.startsWith("Extension context invalidated")) return;
-        captureException(e);
-      });
-    }
+    this.#updateSelectorStatuses(selectors, results).catch((e) => {
+      if (e.message?.startsWith("Extension context invalidated")) return;
+      captureException(e);
+    });
 
     return results
       .map((nodes, i) =>
@@ -255,15 +253,13 @@ valid containers:\n\t${programContainers
       ),
     );
 
-    if (APP_ENV === "testing" && !this.#isMarkedForCleanup) {
-      this.#updateSelectorStatuses(
-        selectors.map((sel) => `${pContainer.selector} ${sel}`),
-        results,
-      ).catch((e) => {
-        if (e.message?.startsWith("Extension context invalidated")) return;
-        captureException(e);
-      });
-    }
+    this.#updateSelectorStatuses(
+      selectors.map((sel) => `${pContainer.selector} ${sel}`),
+      results,
+    ).catch((e) => {
+      if (e.message?.startsWith("Extension context invalidated")) return;
+      captureException(e);
+    });
 
     return results
       .map((nodes, idx) =>
@@ -302,6 +298,14 @@ valid containers:\n\t${programContainers
   //   extension user
   #updateSelectorStatuses = limitConcurrency(
     async (selectors: string[], results: HTMLElement[][]) => {
+      if (APP_ENV !== "testing") return;
+      if (this.#isMarkedForCleanup) return;
+
+      const outdatedSelectorDetectionEnabled = await getSetting<boolean>(
+        SettingsKey.outdatedSelectorDetectionEnabled,
+      );
+      if (!outdatedSelectorDetectionEnabled) return;
+
       const selectorStatusForSite = await getSelectorStatusForCurrentSite();
       const pathname = getGeneralizedUrlPath(window.location.href);
       if (!selectorStatusForSite[pathname])
