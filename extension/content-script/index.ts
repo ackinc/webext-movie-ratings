@@ -2,7 +2,6 @@ import {
   browser,
   defaultProgramFilterSettings,
   pick,
-  invert,
   getSetting,
   MessageType,
   SettingsKey,
@@ -27,6 +26,7 @@ import YoutubeMoviesPage from "./YoutubeMovies/Page";
 import { updateFilteredOutProgramNodeStyles } from "./utils";
 
 let page: AbstractPage;
+let programFilterSettings: ProgramFilterSettings;
 
 // should *only* be set to undefined when we deliberately pause
 //   the loop due to errors
@@ -93,11 +93,18 @@ async function loop() {
 
   const msDelayBeforeNextInvocation = 2000;
 
-  let programs: Program[] = [];
   try {
-    programs = page.findPrograms();
-    await addRatingsToPrograms(programs);
-    await fadeFilteredOutPrograms(programs);
+    programFilterSettings = {
+      ...defaultProgramFilterSettings,
+      ...((await getSetting(SettingsKey.programFiltersSettings)) as
+        | ProgramFilterSettings
+        | undefined),
+    };
+
+    const programs = page.findPrograms();
+    await Promise.all(
+      programs.map((p) => addRating(p).then(fadeIfFilteredOut)),
+    );
 
     if (!thisLoopAbortController.signal.aborted) {
       loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
@@ -117,27 +124,25 @@ async function loop() {
   }
 }
 
-async function addRatingsToPrograms(allPrograms: Program[]) {
-  const programsToAddRatingsFor = allPrograms.filter(
-    invert(page.checkIMDBDataAlreadyAdded),
-  );
+async function addRating(p: Program): Promise<Program> {
+  if (page.checkIMDBDataAlreadyAdded(p)) return p;
 
-  const results = await Promise.allSettled(
-    programsToAddRatingsFor.map(fetchIMDBData),
-  );
-  programsToAddRatingsFor.forEach((program, idx) => {
-    if (results[idx]!.status === "rejected") {
-      // do nothing if the promise was rejected; the error would
-      //   already have been logged and captured in the SW
-      return;
-    }
+  let result: IMDBData;
+  try {
+    result = await fetchIMDBData(p);
+  } catch (_e) {
+    // do nothing if the promise was rejected; the error would
+    //   already have been logged and captured in the SW
+    return p;
+  }
 
-    try {
-      page.addIMDBData(program, results[idx]!.value);
-    } catch (e) {
-      captureException(e, { context: { program } });
-    }
-  });
+  try {
+    page.addIMDBData(p, result);
+  } catch (e) {
+    captureException(e, { context: { program: p } });
+  }
+
+  return p;
 }
 
 async function fetchIMDBData(program: Program): Promise<IMDBData> {
@@ -153,29 +158,24 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
   return response;
 }
 
-async function fadeFilteredOutPrograms(allPrograms: Program[]) {
-  const settings = {
-    ...defaultProgramFilterSettings,
-    ...((await getSetting(SettingsKey.programFiltersSettings)) as
-      | ProgramFilterSettings
-      | undefined),
-  };
+async function fadeIfFilteredOut(p: Program): Promise<Program> {
+  const settings = programFilterSettings;
 
-  allPrograms.forEach((p) => {
-    const imdbNode = (
-      page.constructor as typeof AbstractPage
-    ).ProgramNode.getIMDBNode(p.node);
-    if (!imdbNode) return;
+  const imdbNode = (
+    page.constructor as typeof AbstractPage
+  ).ProgramNode.getIMDBNode(p.node);
+  if (!imdbNode) return p;
 
-    const rating = parseFloat(imdbNode.dataset!["imdbRating"]!);
-    if (rating < settings.minRating || rating > settings.maxRating) {
-      p.node.classList.add(CssClasses.filteredOutProgramNode);
-    } else if (settings.excludeUnratedPrograms && Number.isNaN(rating)) {
-      p.node.classList.add(CssClasses.filteredOutProgramNode);
-    } else {
-      p.node.classList.remove(CssClasses.filteredOutProgramNode);
-    }
-  });
+  const rating = parseFloat(imdbNode.dataset!["imdbRating"]!);
+  if (rating < settings.minRating || rating > settings.maxRating) {
+    p.node.classList.add(CssClasses.filteredOutProgramNode);
+  } else if (settings.excludeUnratedPrograms && Number.isNaN(rating)) {
+    p.node.classList.add(CssClasses.filteredOutProgramNode);
+  } else {
+    p.node.classList.remove(CssClasses.filteredOutProgramNode);
+  }
+
+  return p;
 }
 
 function handleMessage(
