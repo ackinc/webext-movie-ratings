@@ -796,14 +796,16 @@ async function waitForPageLoad() {
 // this fn should be called after scrolling sufficiently far down
 //   a page so that we're sure all pc- and p-node variants have loaded
 async function attemptOutdatedSelectorRecognition() {
-  extensionServiceWorker.evaluate(async () => {
+  await extensionServiceWorker.evaluate(async () => {
+    const FIND_PROGRAMS_PAUSE = 3000;
+
     // @ts-expect-error: the 'chrome' global is available here, since this fn
     //   runs in the service-worker's scope
     await chrome.storage.local.set({ outdatedSelectorDetectionEnabled: true });
 
     // wait long enough for the content-script to run page.findPrograms at
     //   least once
-    await new Promise((res) => setTimeout(res, 3000));
+    await new Promise((res) => setTimeout(res, FIND_PROGRAMS_PAUSE));
 
     // @ts-expect-error: the 'chrome' global is available here, since this fn
     //   runs in the service-worker's scope
