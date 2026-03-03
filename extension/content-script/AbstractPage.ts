@@ -307,7 +307,7 @@ valid containers:\n\t${programContainers
       if (!outdatedSelectorDetectionEnabled) return;
 
       const selectorStatusForSite = await getSelectorStatusForCurrentSite();
-      const pathname = getGeneralizedUrlPath(window.location.href);
+      const pathname = this.getGeneralizedUrlPath(window.location.href);
       if (!selectorStatusForSite[pathname])
         selectorStatusForSite[pathname] = {};
       const selectorStatusForPathname = selectorStatusForSite[pathname];
@@ -350,5 +350,9 @@ valid containers:\n\t${programContainers
       selectors.forEach((s) => delete status[pathname]![s]),
     );
     await setSelectorStatusForCurrentSite(status);
+  }
+
+  protected getGeneralizedUrlPath(href: string): string {
+    return getGeneralizedUrlPath(href);
   }
 }

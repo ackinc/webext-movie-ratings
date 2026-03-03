@@ -121,4 +121,19 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
   override isValidProgram({ title, type }: Program): boolean {
     return Boolean(title && type);
   }
+
+  protected override getGeneralizedUrlPath(href: string): string {
+    const retval = super.getGeneralizedUrlPath(href);
+
+    const url = new URL(retval);
+    if (url.pathname.startsWith("/in/browse/")) {
+      url.pathname = url.pathname.split("/").slice(0, 4).join("/") + "/:n";
+    } else if (
+      ["/in/shows/", "/in/movies/"].some((x) => url.pathname.startsWith(x))
+    ) {
+      url.pathname = url.pathname.split("/").slice(0, 3).join("/") + "/:n";
+    }
+
+    return url.href;
+  }
 }

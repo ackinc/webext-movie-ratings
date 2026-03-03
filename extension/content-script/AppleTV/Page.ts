@@ -137,4 +137,19 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
 
     super.addIMDBData(program, data);
   }
+
+  protected override getGeneralizedUrlPath(href: string): string {
+    const retval = super.getGeneralizedUrlPath(href);
+
+    const url = new URL(retval);
+    if (
+      ["/us/show/", "/us/movie/", "/us/person/", "/us/collection/"].some((x) =>
+        url.pathname.startsWith(x),
+      )
+    ) {
+      url.pathname = url.pathname.split("/").slice(0, 3).join("/") + "/:n";
+    }
+
+    return url.href;
+  }
 }
