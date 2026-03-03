@@ -24,8 +24,15 @@ test("getGeneralizeUrlPath", (t) => {
 
   t.test("replaces values in search params too", () => {
     assert.strictEqual(
+      getGeneralizedUrlPath("/genres/123/movies/456?h=0a1b2c&w=7a8b9c"),
+      "/genres/:n/movies/:n?h=:n&w=:n",
+    );
+  });
+
+  t.test("makes order of search params irrelevant", () => {
+    assert.strictEqual(
+      getGeneralizedUrlPath("/genres/123/movies/456?h=0a1b2c&w=7a8b9c"),
       getGeneralizedUrlPath("/genres/123/movies/456?w=7a8b9c&h=0a1b2c"),
-      "/genres/:n/movies/:n?w=:n&h=:n",
     );
   });
 });

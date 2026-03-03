@@ -10,7 +10,7 @@ export default class AppleTvPage extends AbstractPage {
     super();
   }
 
-  override async injectStyles() {
+  protected override async injectStyles() {
     await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
@@ -45,7 +45,7 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     `;
   }
 
-  override getProgramContainerNodeSelectors(): string[] {
+  protected override getProgramContainerNodeSelectors(): string[] {
     // user is on MLS (sports) page
     if (
       ["/channel/mls", "/channel/formula-1/"].some((x) =>
@@ -60,7 +60,7 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     ];
   }
 
-  override getTitleFromProgramContainerNode(
+  protected override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
     let title: string;
@@ -80,7 +80,9 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     return title.trim();
   }
 
-  override isValidProgramContainer(pContainer: ProgramContainer): boolean {
+  protected override isValidProgramContainer(
+    pContainer: ProgramContainer,
+  ): boolean {
     if (["/movie/", "/show/"].some((x) => location.pathname.includes(x)))
       return pContainer.title === "Related";
 
@@ -92,7 +94,9 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     );
   }
 
-  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+  protected override getProgramNodeSelectors(
+    pContainer: ProgramContainer,
+  ): string[] {
     const { node } = pContainer;
     if (
       ['div.section[data-testid="section-container"]'].some((sel) =>
@@ -136,5 +140,19 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     }
 
     super.addIMDBData(program, data);
+  }
+
+  protected override getGeneralizedUrlPath(href: string): string {
+    let retval = super.getGeneralizedUrlPath(href);
+
+    if (
+      ["/us/show/", "/us/movie/", "/us/person/", "/us/collection/"].some((x) =>
+        retval.startsWith(x),
+      )
+    ) {
+      retval = retval.split("/").slice(0, 3).join("/") + "/:n";
+    }
+
+    return retval;
   }
 }

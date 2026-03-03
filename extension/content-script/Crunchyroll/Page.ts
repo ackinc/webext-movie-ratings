@@ -10,7 +10,7 @@ export default class CrunchyrollPage extends AbstractPage {
     super();
   }
 
-  override async injectStyles() {
+  protected override async injectStyles() {
     await super.injectStyles();
 
     const pageFontFamily = window
@@ -60,7 +60,7 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
     `;
   }
 
-  override getProgramContainerNodeSelectors(): string[] {
+  protected override getProgramContainerNodeSelectors(): string[] {
     return [
       // home page (pre log-in)
       'section.cr-browse-section[data-t="browse-section"]',
@@ -90,7 +90,7 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
     ];
   }
 
-  override getTitleFromProgramContainerNode(
+  protected override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
     if (
@@ -162,14 +162,14 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
-  override isValidProgramContainer(pContainer: ProgramContainer): boolean {
+  protected override isValidProgramContainer(pContainer: ProgramContainer): boolean {
     return Boolean(
       pContainer.title &&
       !["News Collection"].some((x) => x === pContainer.title),
     );
   }
 
-  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+  protected override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
 
     if (node.matches('section.cr-browse-section[data-t="browse-section"]')) {

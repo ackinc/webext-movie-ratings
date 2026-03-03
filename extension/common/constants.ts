@@ -42,6 +42,7 @@ export enum SettingsKey {
   errorReportingOptIn = "errorReportingOptIn",
   programFiltersSettings = "programFiltersSettings",
   popupSeenAtLeastOnce = "popupSeenAtLeastOnce",
+  outdatedSelectorDetectionEnabled = "outdatedSelectorDetectionEnabled",
 }
 
 export const defaultProgramFilterSettings: ProgramFilterSettings = {
@@ -53,10 +54,6 @@ export const defaultProgramFilterSettings: ProgramFilterSettings = {
 
 export const telemetryIntervalSizeInSeconds = 1;
 
-// how many times must a selector (that had previously returned non-zero
-//   nodes) return zero nodes consecutively for us to assume it is out of
-//   date due to a website markup change
-export const selectorFailureThreshold = 30;
 export const selectorStatusKeyPrefix = "selectorStatus_";
 
 export const enum ErrorMessage {

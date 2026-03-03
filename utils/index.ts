@@ -102,8 +102,17 @@ export function getIMDBLink(imdbID: string): string {
 // see tests/utils.test.ts for examples
 export function getGeneralizedUrlPath(href: string) {
   const url = new URL(href.startsWith("/") ? `tmp://${href}` : href);
+
+  // replace numeric identifiers with a placeholder
   url.pathname = url.pathname.replace(/\/\d+(\/|\b)/g, (_m, p1) => `/:n${p1}`);
-  url.search = url.search.replace(/=[^&#]+/g, "=:n");
+
+  // make search-param values and order of search-params irrelevant
+  const searchParamKeys = Array.from(url.searchParams.keys()).sort();
+  url.search = searchParamKeys.reduce(
+    (acc, k, idx) => `${acc}${idx > 0 ? "&" : ""}${k}=:n`,
+    "?",
+  );
+
   return url.pathname + url.search;
 }
 

@@ -10,7 +10,7 @@ export default class HotstarPage extends AbstractPage {
     super();
   }
 
-  override async injectStyles() {
+  protected override async injectStyles() {
     await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
@@ -51,7 +51,7 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     `;
   }
 
-  override getProgramContainerNodeSelectors(): string[] {
+  protected override getProgramContainerNodeSelectors(): string[] {
     return [
       // seen everywhere on the site, but there are variants
       // - the most common variant has the title inside
@@ -60,7 +60,9 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     ];
   }
 
-  override getTitleFromProgramContainerNode(node: HTMLElement): string {
+  protected override getTitleFromProgramContainerNode(
+    node: HTMLElement,
+  ): string {
     if (node.matches("div.tray-container")) {
       // search results page
       if (
@@ -100,7 +102,9 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
-  override isValidProgramContainer({ title }: ProgramContainer): boolean {
+  protected override isValidProgramContainer({
+    title,
+  }: ProgramContainer): boolean {
     return Boolean(
       title &&
       !["Popular Languages", "Popular Genres", "Popular Channels"].includes(
@@ -109,7 +113,9 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     );
   }
 
-  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+  protected override getProgramNodeSelectors(
+    pContainer: ProgramContainer,
+  ): string[] {
     const { node } = pContainer;
     if (node.matches("div.tray-container")) {
       return ['div[data-testid="tray-card-default"]'];
@@ -118,7 +124,21 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
-  override isValidProgram({ title, type }: Program): boolean {
+  protected override isValidProgram({ title, type }: Program): boolean {
     return Boolean(title && type);
+  }
+
+  protected override getGeneralizedUrlPath(href: string): string {
+    let retval = super.getGeneralizedUrlPath(href);
+
+    if (retval.startsWith("/in/browse/")) {
+      retval = retval.split("/").slice(0, 4).join("/") + "/:n";
+    } else if (
+      ["/in/shows/", "/in/movies/"].some((x) => retval.startsWith(x))
+    ) {
+      retval = retval.split("/").slice(0, 3).join("/") + "/:n";
+    }
+
+    return retval;
   }
 }

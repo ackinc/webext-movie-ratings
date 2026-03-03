@@ -16,7 +16,6 @@ import {
   getSetting,
   type ProgramFilterSettings,
   SettingsKey,
-  selectorFailureThreshold,
   ErrorMessage,
   ensureError,
 } from "../common";
@@ -44,18 +43,6 @@ export default class AbstractPage {
     this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
     this.isValidProgramContainer = this.isValidProgramContainer.bind(this);
     this.isValidProgram = this.isValidProgram.bind(this);
-
-    // this async method is called many times in the hot path of findPrograms
-    //   without being awaited; concurrent executions will interfere with
-    //   each other, since they will read from and write to the same storage
-    //   area; limiting concurrency to 1 effectively makes it synchronous,
-    //   but also allows the hot path to continue without waiting for it to
-    //   complete, which should help with performance as perceived by the
-    //   extension user
-    this.updateSelectorStatuses = limitConcurrency(
-      this.updateSelectorStatuses.bind(this),
-      1,
-    );
 
     this.#foundPrograms = [];
   }
@@ -219,12 +206,10 @@ valid containers:\n\t${programContainers
       Array.from(document.querySelectorAll<HTMLElement>(s)),
     );
 
-    if (APP_ENV === "testing" && !this.#isMarkedForCleanup) {
-      this.updateSelectorStatuses(selectors, results).catch((e) => {
-        if (e.message?.startsWith("Extension context invalidated")) return;
-        captureException(e);
-      });
-    }
+    this.#updateSelectorStatuses(selectors, results).catch((e) => {
+      if (e.message?.startsWith("Extension context invalidated")) return;
+      captureException(e);
+    });
 
     return results
       .map((nodes, i) =>
@@ -268,15 +253,13 @@ valid containers:\n\t${programContainers
       ),
     );
 
-    if (APP_ENV === "testing" && !this.#isMarkedForCleanup) {
-      this.updateSelectorStatuses(
-        selectors.map((sel) => `${pContainer.selector} ${sel}`),
-        results,
-      ).catch((e) => {
-        if (e.message?.startsWith("Extension context invalidated")) return;
-        captureException(e);
-      });
-    }
+    this.#updateSelectorStatuses(
+      selectors.map((sel) => `${pContainer.selector} ${sel}`),
+      results,
+    ).catch((e) => {
+      if (e.message?.startsWith("Extension context invalidated")) return;
+      captureException(e);
+    });
 
     return results
       .map((nodes, idx) =>
@@ -306,40 +289,55 @@ valid containers:\n\t${programContainers
     return node;
   }
 
-  async updateSelectorStatuses(selectors: string[], results: HTMLElement[][]) {
-    const selectorStatusForSite = await getSelectorStatusForCurrentSite();
-    const pathname = getGeneralizedUrlPath(window.location.href);
-    if (!selectorStatusForSite[pathname]) selectorStatusForSite[pathname] = {};
-    const selectorStatusForPathname = selectorStatusForSite[pathname];
+  // this async method is called many times in the hot path of findPrograms
+  //   without being awaited; concurrent executions will interfere with
+  //   each other, since they will read from and write to the same storage
+  //   area; limiting concurrency to 1 effectively makes it synchronous,
+  //   but also allows the hot path to continue without waiting for it to
+  //   complete, which should help with performance as perceived by the
+  //   extension user
+  #updateSelectorStatuses = limitConcurrency(
+    async (selectors: string[], results: HTMLElement[][]) => {
+      if (APP_ENV !== "testing") return;
+      if (this.#isMarkedForCleanup) return;
 
-    selectors.forEach((sel, i) => {
-      const nodes = results[i]!;
-      if (nodes.length > 0) {
-        selectorStatusForPathname[sel] = "active";
-      } else if (!(sel in selectorStatusForPathname)) {
-        // no nodes were found for this selector, and none were expected
-        //   anyway
-      } else if (selectorStatusForPathname[sel] === "probablyOutOfDate") {
-        // no nodes were found for this selector, but it is already marked
-        //   out-of-date, so nothing to do
-      } else if (selectorStatusForPathname[sel] === "active") {
-        // start the failure count
-        selectorStatusForPathname[sel] = 1;
-      } else if (selectorStatusForPathname[sel]! < selectorFailureThreshold) {
-        ++selectorStatusForPathname[sel]!;
-      } else {
-        selectorStatusForPathname[sel] = "probablyOutOfDate";
+      const outdatedSelectorDetectionEnabled = await getSetting<boolean>(
+        SettingsKey.outdatedSelectorDetectionEnabled,
+      );
+      if (!outdatedSelectorDetectionEnabled) return;
 
-        // failure threshold has been reached; an error should be captured
-        captureException(
-          new Error(ErrorMessage.potentiallyOutOfDateSelector + `: ${sel}`),
-          { tags: { pathname, selector: sel } },
-        );
-      }
-    });
+      const selectorStatusForSite = await getSelectorStatusForCurrentSite();
+      const pathname = this.getGeneralizedUrlPath(window.location.href);
+      if (!selectorStatusForSite[pathname])
+        selectorStatusForSite[pathname] = {};
+      const selectorStatusForPathname = selectorStatusForSite[pathname];
 
-    await setSelectorStatusForCurrentSite(selectorStatusForSite);
-  }
+      selectors.forEach((sel, i) => {
+        const nodes = results[i]!;
+        if (nodes.length > 0) {
+          selectorStatusForPathname[sel] = "active";
+        } else if (!(sel in selectorStatusForPathname)) {
+          // no nodes were found for this selector, and none were expected
+          //   anyway
+        } else if (selectorStatusForPathname[sel] === "probablyOutOfDate") {
+          // no nodes were found for this selector, but it is already marked
+          //   out-of-date, so nothing to do
+        } else /* selectorStatusForPathname[sel] === "active" */ {
+          selectorStatusForPathname[sel] = "probablyOutOfDate";
+          captureException(
+            new Error(
+              ErrorMessage.potentiallyOutOfDateSelector +
+                ` on ${window.location.hostname}`,
+            ),
+            { tags: { pathname, selector: sel } },
+          );
+        }
+      });
+
+      await setSelectorStatusForCurrentSite(selectorStatusForSite);
+    },
+    1,
+  );
 
   // selectors should only ever be abandoned for a particular pathname,
   //   not site-wide, since a selector that stops working for one page
@@ -355,5 +353,9 @@ valid containers:\n\t${programContainers
       selectors.forEach((s) => delete status[pathname]![s]),
     );
     await setSelectorStatusForCurrentSite(status);
+  }
+
+  protected getGeneralizedUrlPath(href: string): string {
+    return getGeneralizedUrlPath(href);
   }
 }

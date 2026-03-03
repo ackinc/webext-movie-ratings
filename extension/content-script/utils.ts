@@ -53,3 +53,7 @@ export async function setSelectorStatusForCurrentSite(
   const selectorStatusKey = `${selectorStatusKeyPrefix}${hostname}`;
   await storage.set(selectorStatusKey, updatedStatus);
 }
+
+export async function resetSelectorStatusForCurrentSite(): Promise<void> {
+  await setSelectorStatusForCurrentSite({});
+}
