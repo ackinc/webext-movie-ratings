@@ -44,18 +44,6 @@ export default class AbstractPage {
     this.isValidProgramContainer = this.isValidProgramContainer.bind(this);
     this.isValidProgram = this.isValidProgram.bind(this);
 
-    // this async method is called many times in the hot path of findPrograms
-    //   without being awaited; concurrent executions will interfere with
-    //   each other, since they will read from and write to the same storage
-    //   area; limiting concurrency to 1 effectively makes it synchronous,
-    //   but also allows the hot path to continue without waiting for it to
-    //   complete, which should help with performance as perceived by the
-    //   extension user
-    this.updateSelectorStatuses = limitConcurrency(
-      this.updateSelectorStatuses.bind(this),
-      1,
-    );
-
     this.#foundPrograms = [];
   }
 
@@ -219,7 +207,7 @@ valid containers:\n\t${programContainers
     );
 
     if (APP_ENV === "testing" && !this.#isMarkedForCleanup) {
-      this.updateSelectorStatuses(selectors, results).catch((e) => {
+      this.#updateSelectorStatuses(selectors, results).catch((e) => {
         if (e.message?.startsWith("Extension context invalidated")) return;
         captureException(e);
       });
@@ -268,7 +256,7 @@ valid containers:\n\t${programContainers
     );
 
     if (APP_ENV === "testing" && !this.#isMarkedForCleanup) {
-      this.updateSelectorStatuses(
+      this.#updateSelectorStatuses(
         selectors.map((sel) => `${pContainer.selector} ${sel}`),
         results,
       ).catch((e) => {
@@ -305,33 +293,44 @@ valid containers:\n\t${programContainers
     return node;
   }
 
-  async updateSelectorStatuses(selectors: string[], results: HTMLElement[][]) {
-    const selectorStatusForSite = await getSelectorStatusForCurrentSite();
-    const pathname = getGeneralizedUrlPath(window.location.href);
-    if (!selectorStatusForSite[pathname]) selectorStatusForSite[pathname] = {};
-    const selectorStatusForPathname = selectorStatusForSite[pathname];
+  // this async method is called many times in the hot path of findPrograms
+  //   without being awaited; concurrent executions will interfere with
+  //   each other, since they will read from and write to the same storage
+  //   area; limiting concurrency to 1 effectively makes it synchronous,
+  //   but also allows the hot path to continue without waiting for it to
+  //   complete, which should help with performance as perceived by the
+  //   extension user
+  #updateSelectorStatuses = limitConcurrency(
+    async (selectors: string[], results: HTMLElement[][]) => {
+      const selectorStatusForSite = await getSelectorStatusForCurrentSite();
+      const pathname = getGeneralizedUrlPath(window.location.href);
+      if (!selectorStatusForSite[pathname])
+        selectorStatusForSite[pathname] = {};
+      const selectorStatusForPathname = selectorStatusForSite[pathname];
 
-    selectors.forEach((sel, i) => {
-      const nodes = results[i]!;
-      if (nodes.length > 0) {
-        selectorStatusForPathname[sel] = "active";
-      } else if (!(sel in selectorStatusForPathname)) {
-        // no nodes were found for this selector, and none were expected
-        //   anyway
-      } else if (selectorStatusForPathname[sel] === "probablyOutOfDate") {
-        // no nodes were found for this selector, but it is already marked
-        //   out-of-date, so nothing to do
-      } else /* selectorStatusForPathname[sel] === "active" */ {
-        selectorStatusForPathname[sel] = "probablyOutOfDate";
-        captureException(
-          new Error(ErrorMessage.potentiallyOutOfDateSelector + `: ${sel}`),
-          { tags: { pathname, selector: sel } },
-        );
-      }
-    });
+      selectors.forEach((sel, i) => {
+        const nodes = results[i]!;
+        if (nodes.length > 0) {
+          selectorStatusForPathname[sel] = "active";
+        } else if (!(sel in selectorStatusForPathname)) {
+          // no nodes were found for this selector, and none were expected
+          //   anyway
+        } else if (selectorStatusForPathname[sel] === "probablyOutOfDate") {
+          // no nodes were found for this selector, but it is already marked
+          //   out-of-date, so nothing to do
+        } else /* selectorStatusForPathname[sel] === "active" */ {
+          selectorStatusForPathname[sel] = "probablyOutOfDate";
+          captureException(
+            new Error(ErrorMessage.potentiallyOutOfDateSelector + `: ${sel}`),
+            { tags: { pathname, selector: sel } },
+          );
+        }
+      });
 
-    await setSelectorStatusForCurrentSite(selectorStatusForSite);
-  }
+      await setSelectorStatusForCurrentSite(selectorStatusForSite);
+    },
+    1,
+  );
 
   // selectors should only ever be abandoned for a particular pathname,
   //   not site-wide, since a selector that stops working for one page
