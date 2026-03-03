@@ -70,6 +70,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pathToExtension = path.join(__dirname, "../dist");
 const userDataDir = path.join(__dirname, `../tmp/sift-e2e-test-data-dir`);
 
+// For outdated-selector-recognition to work, we need to persist
+//   selector-statuses across runs of this automation - a selector
+//   is recognized as outdated if it worked in the previous run,
+//   but not in this run
+// This is why we use the same dataDir for every run
 const browserContext = await chromium.launchPersistentContext(userDataDir, {
   headless: false,
   args: [
@@ -78,6 +83,7 @@ const browserContext = await chromium.launchPersistentContext(userDataDir, {
   ],
   viewport: { width: 1728, height: 864 },
 });
+const extensionId = await getExtensionId();
 
 await setupRequestInterceptors();
 
@@ -97,6 +103,14 @@ if (errors.length === 0) await browserContext.close();
 /////////////
 /* helpers */
 /////////////
+
+async function getExtensionId() {
+  const page = browserContext.pages()[0] ?? (await browserContext.newPage());
+  await page.goto("chrome://extensions/");
+  await page.locator("cr-toggle#devMode").click();
+  const extensionCard = page.locator("extensions-item").first();
+  return (await extensionCard.getAttribute("id"))!;
+}
 
 async function setupRequestInterceptors() {
   // disable requests for media
@@ -141,14 +155,6 @@ async function ratingsApiInterceptor(route: Route) {
 
 async function setSiftErrorReporting(optIn: boolean = true) {
   const page = browserContext.pages()[0] ?? (await browserContext.newPage());
-
-  // get extension id
-  await page.goto("chrome://extensions/");
-  await page.locator("cr-toggle#devMode").click();
-  const extensionCard = page.locator("extensions-item").first();
-  const extensionId = await extensionCard.getAttribute("id");
-
-  // opt-in to sift error reporting
   await page.goto(`chrome-extension://${extensionId}/popup/index.html`);
   await page.locator("input#optInToErrorReporting").setChecked(optIn);
 }
