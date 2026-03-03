@@ -123,17 +123,16 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
   }
 
   protected override getGeneralizedUrlPath(href: string): string {
-    const retval = super.getGeneralizedUrlPath(href);
+    let retval = super.getGeneralizedUrlPath(href);
 
-    const url = new URL(retval);
-    if (url.pathname.startsWith("/in/browse/")) {
-      url.pathname = url.pathname.split("/").slice(0, 4).join("/") + "/:n";
+    if (retval.startsWith("/in/browse/")) {
+      retval = retval.split("/").slice(0, 4).join("/") + "/:n";
     } else if (
-      ["/in/shows/", "/in/movies/"].some((x) => url.pathname.startsWith(x))
+      ["/in/shows/", "/in/movies/"].some((x) => retval.startsWith(x))
     ) {
-      url.pathname = url.pathname.split("/").slice(0, 3).join("/") + "/:n";
+      retval = retval.split("/").slice(0, 3).join("/") + "/:n";
     }
 
-    return url.href;
+    return retval;
   }
 }

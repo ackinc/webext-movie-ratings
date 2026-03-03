@@ -181,17 +181,16 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
   }
 
   protected override getGeneralizedUrlPath(href: string): string {
-    const retval = super.getGeneralizedUrlPath(href);
+    let retval = super.getGeneralizedUrlPath(href);
 
-    const url = new URL(retval);
-    url.pathname = url.pathname
+    retval = retval
       .split("/")
       .map((part) => (part.startsWith("ref=") ? "ref=:n" : part))
       .join("/");
-    if (url.pathname.startsWith("/detail/")) {
-      url.pathname = "/detail/:n" + url.pathname.split("/").slice(3).join("/");
+    if (retval.startsWith("/detail/")) {
+      retval = "/detail/:n/" + retval.split("/").slice(3).join("/");
     }
 
-    return url.href;
+    return retval;
   }
 }
