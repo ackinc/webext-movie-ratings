@@ -490,7 +490,9 @@ async function testHotstar() {
 
   async function browseListingPage() {
     await waitForPageLoad();
-    await page.evaluate(scrollToBottom, undefined);
+    await page.evaluate(scrollToBottom, {
+      maxTimesToPauseForAdditionalContentToLoad: 2,
+    });
     await waitForOutdatedSelectorRecognition();
   }
 
@@ -518,7 +520,7 @@ async function testHotstar() {
     await searchbarLocator.click();
     await searchbarLocator.pressSequentially(SEARCH_PHRASE, { delay: 500 });
     // wait for results to load
-    await page.getByTestId("loading").isHidden();
+    await page.getByTestId("loading").waitFor({ state: "hidden" });
     await page.evaluate(scrollToBottom, undefined);
     await waitForOutdatedSelectorRecognition();
   }
@@ -552,7 +554,9 @@ async function testNetflix() {
   async function browseHomePage() {
     await timerHof(loginIfNeeded, { labelPrefix })();
     await timerHof(dismissProfileSelectorIfNeeded, { labelPrefix })();
-    await page.evaluate(scrollToBottom, undefined);
+    await page.evaluate(scrollToBottom, {
+      maxTimesToPauseForAdditionalContentToLoad: 2,
+    });
     await waitForOutdatedSelectorRecognition();
   }
 
@@ -597,7 +601,10 @@ async function testNetflix() {
           'div[data-uia="modal-content-wrapper"]',
         )!.parentElement!,
     );
-    await page.evaluate(scrollToBottom, { scrollContent });
+    await page.evaluate(scrollToBottom, {
+      scrollContent,
+      maxTimesToPauseForAdditionalContentToLoad: 2,
+    });
     await waitForOutdatedSelectorRecognition();
     await page.locator('button[data-uia="modal-default-close-btn"]').click();
   }
@@ -674,13 +681,19 @@ async function testYoutubeMovies() {
     await waitForPageLoad();
     await page.getByRole("button", { name: "Next" }).first().click();
     await waitForPageLoad();
-    await page.evaluate(scrollToBottom, { scrollContent });
+    await page.evaluate(scrollToBottom, {
+      scrollContent,
+      maxTimesToScroll: 10,
+    });
     await waitForOutdatedSelectorRecognition();
   }
 
   async function browseCategoryPage() {
     await waitForPageLoad();
-    await page.evaluate(scrollToBottom, { scrollContent });
+    await page.evaluate(scrollToBottom, {
+      scrollContent,
+      maxTimesToScroll: 10,
+    });
     await waitForOutdatedSelectorRecognition();
   }
 
@@ -694,7 +707,10 @@ async function testYoutubeMovies() {
     await waitForPageLoad();
     await page.locator("ytd-grid-movie-renderer a#thumbnail").first().click();
     await waitForPageLoad();
-    await page.evaluate(scrollToBottom, { scrollContent });
+    await page.evaluate(scrollToBottom, {
+      scrollContent,
+      maxTimesToScroll: 10,
+    });
     await waitForOutdatedSelectorRecognition();
   }
 }
