@@ -178,7 +178,7 @@ async function testAmazonPrimeVideo() {
       .first()
       .waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, undefined);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browseCollectionPage() {
@@ -186,13 +186,13 @@ async function testAmazonPrimeVideo() {
     await page.evaluate(scrollToBottom, {
       maxTimesToPauseForAdditionalContentToLoad: 2,
     });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browseProgramDetailPage() {
     await page.getByTestId("tab-content-related").waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, undefined);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function useSearchFeature() {
@@ -207,7 +207,7 @@ async function testAmazonPrimeVideo() {
       .first()
       .waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, undefined);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 }
 
@@ -240,7 +240,7 @@ async function testAppleTV() {
   async function browseHomePage() {
     await closeOpenModals();
     await page.evaluate(scrollToBottom, scrollArgs);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function closeOpenModals() {
@@ -257,13 +257,13 @@ async function testAppleTV() {
   async function browseCollectionPage() {
     await page.getByTestId("grid-item").first().waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, scrollArgs);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browseProgramDetailPage() {
     await page.getByTestId("product-header").waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, scrollArgs);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browsePersonPage() {
@@ -272,7 +272,7 @@ async function testAppleTV() {
       .first()
       .waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, scrollArgs);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function useSearchFeature() {
@@ -289,14 +289,14 @@ async function testAppleTV() {
     await page
       .getByRole("listbox", { name: "Suggestions" })
       .waitFor({ state: "visible" });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
 
     await searchbarLocator.press("Enter");
     await page
       .getByRole("heading", { name: "Top Results" })
       .waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, scrollArgs);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 }
 
@@ -381,7 +381,7 @@ async function testCrunchyroll() {
     await timerHof(loginIfNeeded, { labelPrefix })();
     await waitForPageLoad();
     await page.evaluate(scrollToBottom, undefined);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function loginIfNeeded() {
@@ -401,33 +401,33 @@ async function testCrunchyroll() {
     await page.evaluate(scrollToBottom, {
       maxTimesToPauseForAdditionalContentToLoad: 2,
     });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browseSimulcastTopLevelListingPage() {
     await waitForPageLoad();
     await page.evaluate(scrollToBottom, undefined);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browseGenrePage() {
     await waitForPageLoad();
     await page.evaluate(scrollToBottom, undefined);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browsePopularInGenrePage() {
     await waitForPageLoad();
     // this page also has homogenous program tiles and goes on forever ...
     await page.evaluate(scrollToBottom, { maxTimesToScroll: 10 });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browseGenreInGenrePage() {
     await waitForPageLoad();
     // this page also has homogenous program tiles and goes on forever ...
     await page.evaluate(scrollToBottom, { maxTimesToScroll: 10 });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browseAllProgramsPage() {
@@ -436,7 +436,7 @@ async function testCrunchyroll() {
     await page.getByRole("button", { name: "K", exact: true }).click();
     await waitForPageLoad();
     await page.evaluate(scrollToBottom, { maxTimesToScroll: 5 });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function useSearchFeature() {
@@ -449,7 +449,7 @@ async function testCrunchyroll() {
       .pressSequentially(SEARCH_PHRASE, { delay: 500 });
     await waitForPageLoad();
     await page.evaluate(scrollToBottom, undefined);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 }
 
@@ -485,7 +485,7 @@ async function testHotstar() {
 
   async function browseHomePage() {
     await page.evaluate(scrollToBottom, undefined);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browseListingPage() {
@@ -493,7 +493,7 @@ async function testHotstar() {
     await page.evaluate(scrollToBottom, {
       maxTimesToPauseForAdditionalContentToLoad: 2,
     });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browseProgramDetailPage() {
@@ -507,7 +507,7 @@ async function testHotstar() {
       scrollContent,
       scrollContainer: scrollContent,
     });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
     await page.getByTestId("closeButton").first().click();
   }
 
@@ -522,7 +522,7 @@ async function testHotstar() {
     // wait for results to load
     await page.getByTestId("loading").waitFor({ state: "hidden" });
     await page.evaluate(scrollToBottom, undefined);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 }
 
@@ -557,7 +557,7 @@ async function testNetflix() {
     await page.evaluate(scrollToBottom, {
       maxTimesToPauseForAdditionalContentToLoad: 2,
     });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function loginIfNeeded() {
@@ -605,7 +605,7 @@ async function testNetflix() {
       scrollContent,
       maxTimesToPauseForAdditionalContentToLoad: 2,
     });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
     await page.locator('button[data-uia="modal-default-close-btn"]').click();
   }
 
@@ -616,7 +616,7 @@ async function testNetflix() {
       .pressSequentially("action", { delay: 500 });
     await waitForPageLoad();
     await page.evaluate(scrollToBottom, undefined);
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browseProgramDetailPage() {
@@ -630,7 +630,7 @@ async function testNetflix() {
         document.querySelector<HTMLElement>('div.detail-modal[role="dialog"]')!,
     );
     await page.evaluate(scrollToBottom, { scrollContent });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 }
 
@@ -685,7 +685,7 @@ async function testYoutubeMovies() {
       scrollContent,
       maxTimesToScroll: 10,
     });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browseCategoryPage() {
@@ -694,13 +694,13 @@ async function testYoutubeMovies() {
       scrollContent,
       maxTimesToScroll: 10,
     });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browsePurchasesPage() {
     await waitForPageLoad();
     await page.evaluate(scrollToBottom, { scrollContent });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 
   async function browseSingleMoviePage() {
@@ -711,7 +711,7 @@ async function testYoutubeMovies() {
       scrollContent,
       maxTimesToScroll: 10,
     });
-    await waitForOutdatedSelectorRecognition();
+    await attemptOutdatedSelectorRecognition();
   }
 }
 
@@ -784,6 +784,6 @@ async function waitForPageLoad() {
   await delayMs(randBetween(2000, 10000));
 }
 
-async function waitForOutdatedSelectorRecognition() {
+async function attemptOutdatedSelectorRecognition() {
   await delayMs(REPORT_ERRORS ? randBetween(30000, 35000) : 0);
 }
