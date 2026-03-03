@@ -16,7 +16,6 @@ import {
   getSetting,
   type ProgramFilterSettings,
   SettingsKey,
-  selectorFailureThreshold,
   ErrorMessage,
   ensureError,
 } from "../common";
@@ -322,15 +321,8 @@ valid containers:\n\t${programContainers
       } else if (selectorStatusForPathname[sel] === "probablyOutOfDate") {
         // no nodes were found for this selector, but it is already marked
         //   out-of-date, so nothing to do
-      } else if (selectorStatusForPathname[sel] === "active") {
-        // start the failure count
-        selectorStatusForPathname[sel] = 1;
-      } else if (selectorStatusForPathname[sel]! < selectorFailureThreshold) {
-        ++selectorStatusForPathname[sel]!;
-      } else {
+      } else /* selectorStatusForPathname[sel] === "active" */ {
         selectorStatusForPathname[sel] = "probablyOutOfDate";
-
-        // failure threshold has been reached; an error should be captured
         captureException(
           new Error(ErrorMessage.potentiallyOutOfDateSelector + `: ${sel}`),
           { tags: { pathname, selector: sel } },
