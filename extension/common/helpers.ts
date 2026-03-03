@@ -66,16 +66,16 @@ export function extractProgramTitle(str: string): string {
   );
 }
 
-export async function getSetting(
+export async function getSetting<T>(
   key: keyof typeof SettingsKey,
-): Promise<unknown> {
+): Promise<T | undefined> {
   const result = await browser.storage.local.get([key]);
-  return result[key];
+  return result[key] as T | undefined;
 }
 
-export async function setSetting(
+export async function setSetting<T>(
   key: keyof typeof SettingsKey,
-  value: unknown,
+  value: T,
 ): Promise<void> {
   await browser.storage.local.set({ [key]: value });
 }
