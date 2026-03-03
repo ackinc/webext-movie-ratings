@@ -93,7 +93,9 @@ console.timeEnd(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
 console.log(`Done with ${errors.length} errors`);
 if (errors.length === 0) await browserContext.close();
 
-// helpers
+/////////////
+/* helpers */
+/////////////
 
 async function setupRequestInterceptors() {
   // disable requests for media
