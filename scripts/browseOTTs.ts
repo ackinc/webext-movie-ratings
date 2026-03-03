@@ -33,7 +33,7 @@ const TRACKING_DOMAINS = [
   "*.ads-twitter.com",
 ];
 
-const env = pick(
+const ENV = pick(
   process.env,
   [
     "NETFLIX_EMAIL",
@@ -66,20 +66,20 @@ const SITES_TO_TEST =
 console.log(`Sites that will be tested: ${SITES_TO_TEST.join(", ")}`);
 console.time(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const pathToExtension = path.join(__dirname, "../dist");
-const userDataDir = path.join(__dirname, `../tmp/sift-e2e-test-data-dir`);
+const __DIRNAME = path.dirname(fileURLToPath(import.meta.url));
+const PATH_TO_EXTENSION = path.join(__DIRNAME, "../dist");
+const USER_DATA_DIR = path.join(__DIRNAME, `../tmp/sift-e2e-test-data-dir`);
 
 // For outdated-selector-recognition to work, we need to persist
 //   selector-statuses across runs of this automation - a selector
 //   is recognized as outdated if it worked in the previous run,
 //   but not in this run
 // This is why we use the same dataDir for every run
-const browserContext = await chromium.launchPersistentContext(userDataDir, {
+const browserContext = await chromium.launchPersistentContext(USER_DATA_DIR, {
   headless: false,
   args: [
-    `--disable-extensions-except=${pathToExtension}`,
-    `--load-extension=${pathToExtension}`,
+    `--disable-extensions-except=${PATH_TO_EXTENSION}`,
+    `--load-extension=${PATH_TO_EXTENSION}`,
   ],
   viewport: { width: 1728, height: 864 },
 });
@@ -377,11 +377,11 @@ async function testCrunchyroll() {
     await page.waitForURL("**sso.crunchyroll.com/login**");
     await page
       .getByLabel("Email or Phone Number")
-      .fill(env["CRUNCHYROLL_EMAIL"]!);
+      .fill(ENV["CRUNCHYROLL_EMAIL"]!);
     await page.getByRole("button", { name: "Next" }).click();
     await page
       .getByLabel("Password", { exact: true })
-      .fill(env["CRUNCHYROLL_PASSWORD"]!);
+      .fill(ENV["CRUNCHYROLL_PASSWORD"]!);
     await page.getByRole("button", { name: "Log In" }).click();
     await page.waitForURL("**crunchyroll.com/discover");
   }
@@ -579,7 +579,7 @@ async function testNetflix() {
   }
 
   async function login() {
-    await page.getByLabel("Email or mobile number").fill(env["NETFLIX_EMAIL"]!);
+    await page.getByLabel("Email or mobile number").fill(ENV["NETFLIX_EMAIL"]!);
     await page.getByRole("button", { name: "Continue" }).click();
     await delayMs(3000);
     const passwordLocator = page.getByLabel("Password");
@@ -587,7 +587,7 @@ async function testNetflix() {
       await page.getByText("Get Help").click();
       await page.getByText("Use password instead").click();
     }
-    await passwordLocator.fill(env["NETFLIX_PASSWORD"]!);
+    await passwordLocator.fill(ENV["NETFLIX_PASSWORD"]!);
     await page.getByRole("button", { name: "Sign In" }).click();
     await page.waitForURL("**/browse");
   }
