@@ -80,7 +80,9 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     return title.trim();
   }
 
-  protected override isValidProgramContainer(pContainer: ProgramContainer): boolean {
+  protected override isValidProgramContainer(
+    pContainer: ProgramContainer,
+  ): boolean {
     if (["/movie/", "/show/"].some((x) => location.pathname.includes(x)))
       return pContainer.title === "Related";
 
@@ -92,7 +94,9 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     );
   }
 
-  protected override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+  protected override getProgramNodeSelectors(
+    pContainer: ProgramContainer,
+  ): string[] {
     const { node } = pContainer;
     if (
       ['div.section[data-testid="section-container"]'].some((sel) =>

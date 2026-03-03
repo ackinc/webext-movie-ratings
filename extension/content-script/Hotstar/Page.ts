@@ -60,7 +60,9 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     ];
   }
 
-  protected override getTitleFromProgramContainerNode(node: HTMLElement): string {
+  protected override getTitleFromProgramContainerNode(
+    node: HTMLElement,
+  ): string {
     if (node.matches("div.tray-container")) {
       // search results page
       if (
@@ -100,7 +102,9 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
-  protected override isValidProgramContainer({ title }: ProgramContainer): boolean {
+  protected override isValidProgramContainer({
+    title,
+  }: ProgramContainer): boolean {
     return Boolean(
       title &&
       !["Popular Languages", "Popular Genres", "Popular Channels"].includes(
@@ -109,7 +113,9 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     );
   }
 
-  protected override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+  protected override getProgramNodeSelectors(
+    pContainer: ProgramContainer,
+  ): string[] {
     const { node } = pContainer;
     if (node.matches("div.tray-container")) {
       return ['div[data-testid="tray-card-default"]'];
