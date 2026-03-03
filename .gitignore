@@ -6,3 +6,5 @@ dist/*
 src.zip
 tmp
 **/*.log
+scripts/browseOTTs/data-dir/*
+!scripts/browseOTTs/data-dir/.keep

@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import "dotenv/config";
 import { chromium } from "playwright";
 import type { ElementHandle, Route } from "playwright";
-import { pick } from "../utils/index.ts";
+import { pick } from "../../utils/index.ts";
 
 console.log(`Script called with CLI args: ${process.argv.slice(2)}`);
 
@@ -67,8 +67,8 @@ console.log(`Sites that will be tested: ${SITES_TO_TEST.join(", ")}`);
 console.time(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
 
 const __DIRNAME = path.dirname(fileURLToPath(import.meta.url));
-const PATH_TO_EXTENSION = path.join(__DIRNAME, "../dist");
-const USER_DATA_DIR = path.join(__DIRNAME, `../tmp/sift-e2e-test-data-dir`);
+const PATH_TO_EXTENSION = path.join(__DIRNAME, "../../dist");
+const USER_DATA_DIR = path.join(__DIRNAME, `./data-dir`);
 
 // For outdated-selector-recognition to work, we need to persist
 //   selector-statuses across runs of this automation - a selector
