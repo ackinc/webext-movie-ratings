@@ -471,6 +471,8 @@ async function testHotstar() {
 
   // home page
   await page.goto(`https://hotstar.com`);
+  // move the mouse so the left-menu's backdrop goes away if present
+  await page.mouse.move(400, 300);
   await timerHof(browseHomePage, { labelPrefix })();
 
   // listing page
@@ -522,8 +524,8 @@ async function testHotstar() {
 
   async function useSearchFeature() {
     await page.getByRole("tab", { name: "Search" }).click();
-    // move the mouse to the right so the left-menu's backdrop goes away
-    await page.mouse.move(200, 0);
+    // move the mouse so the left-menu's backdrop goes away
+    await page.mouse.move(400, 300);
     // focus the search input textbox
     const searchbarLocator = page.locator("input#searchBar");
     await searchbarLocator.click();
