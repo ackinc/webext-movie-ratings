@@ -84,6 +84,9 @@ const browserContext = await chromium.launchPersistentContext(userDataDir, {
   viewport: { width: 1728, height: 864 },
 });
 const extensionId = await getExtensionId();
+const extensionServiceWorker = browserContext
+  .serviceWorkers()
+  .find((sw) => sw.url().includes(extensionId))!;
 
 await setupRequestInterceptors();
 
@@ -790,6 +793,17 @@ async function waitForPageLoad() {
   await delayMs(randBetween(2000, 10000));
 }
 
+// this fn should be called after scrolling sufficiently far down
+//   a page so that we're sure all pc- and p-node variants have loaded
 async function attemptOutdatedSelectorRecognition() {
-  await delayMs(REPORT_ERRORS ? randBetween(30000, 35000) : 0);
+  extensionServiceWorker.evaluate(async () => {
+    await chrome.storage.local.set({ outdatedSelectorDetectionEnabled: true });
+  });
+
+  // wait long enough for page.findPrograms to run at least once
+  await delayMs(REPORT_ERRORS ? 3000 : 0);
+
+  extensionServiceWorker.evaluate(async () => {
+    await chrome.storage.local.set({ outdatedSelectorDetectionEnabled: false });
+  });
 }
