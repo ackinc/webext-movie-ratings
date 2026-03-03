@@ -10,7 +10,7 @@ class SonyLivPage extends AbstractPage {
     super();
   }
 
-  override async injectStyles() {
+  protected override async injectStyles() {
     await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
@@ -116,7 +116,7 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     `;
   }
 
-  override getProgramContainerNodeSelectors(): string[] {
+  protected override getProgramContainerNodeSelectors(): string[] {
     if (["/custompage/sports"].some((x) => location.pathname.includes(x))) {
       return [];
     }
@@ -137,7 +137,7 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     ];
   }
 
-  override getTitleFromProgramContainerNode(node: HTMLElement): string {
+  protected override getTitleFromProgramContainerNode(node: HTMLElement): string {
     if (node.matches("div.layout-main-container:has(> div.listView)")) {
       return node.querySelector("span.title")!.textContent;
     }
@@ -168,7 +168,7 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
-  override isValidProgramContainer(pContainer: ProgramContainer): boolean {
+  protected override isValidProgramContainer(pContainer: ProgramContainer): boolean {
     const { title } = pContainer;
     return Boolean(
       title &&
@@ -186,7 +186,7 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     );
   }
 
-  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+  protected override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
 
     if (node.matches("div.layout-main-container:has(> div.listView)")) {

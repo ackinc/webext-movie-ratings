@@ -10,7 +10,7 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
     super();
   }
 
-  override async injectStyles() {
+  protected override async injectStyles() {
     await super.injectStyles();
 
     const pageFontFamily = window
@@ -49,7 +49,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     `;
   }
 
-  override getProgramContainerNodeSelectors(): string[] {
+  protected override getProgramContainerNodeSelectors(): string[] {
     return [
       // /movie
       'section[data-testid="standard-carousel"]',
@@ -72,7 +72,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     ];
   }
 
-  override getTitleFromProgramContainerNode(
+  protected override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
     let title: string;
@@ -116,7 +116,9 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     return title.trim();
   }
 
-  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+  protected override getProgramNodeSelectors(
+    pContainer: ProgramContainer,
+  ): string[] {
     const { node } = pContainer;
     if (
       [

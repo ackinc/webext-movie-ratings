@@ -10,7 +10,7 @@ export default class NetflixPage extends AbstractPage {
     super();
   }
 
-  override async injectStyles() {
+  protected override async injectStyles() {
     await super.injectStyles();
 
     const pageFontFamily = window
@@ -73,7 +73,7 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     `;
   }
 
-  override getProgramContainerNodeSelectors(): string[] {
+  protected override getProgramContainerNodeSelectors(): string[] {
     return [
       "div.billboard",
       "div.lolomoRow:not(.lolomoPreview)",
@@ -84,7 +84,7 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     ];
   }
 
-  override getTitleFromProgramContainerNode(
+  protected override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
     if (pContainerNode.matches("div.billboard")) {
@@ -132,11 +132,11 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
-  override isValidProgramContainer(pContainer: ProgramContainer): boolean {
+  protected override isValidProgramContainer(pContainer: ProgramContainer): boolean {
     return Boolean(pContainer.title);
   }
 
-  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+  protected override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
 
     if (node.matches("div.billboard")) {

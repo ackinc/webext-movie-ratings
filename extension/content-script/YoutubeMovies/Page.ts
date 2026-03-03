@@ -10,7 +10,7 @@ export default class YoutubeMoviesPage extends AbstractPage {
     super();
   }
 
-  override async injectStyles() {
+  protected override async injectStyles() {
     await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
@@ -38,7 +38,7 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
     `;
   }
 
-  override getProgramContainerNodeSelectors(): string[] {
+  protected override getProgramContainerNodeSelectors(): string[] {
     if (location.pathname === "/feed/storefront") {
       return ['ytd-browse[role="main"] ytd-item-section-renderer'];
     }
@@ -50,7 +50,7 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
     return [];
   }
 
-  override getTitleFromProgramContainerNode(
+  protected override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
     if (
@@ -86,11 +86,11 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
-  override isValidProgramContainer(pContainer: ProgramContainer): boolean {
+  protected override isValidProgramContainer(pContainer: ProgramContainer): boolean {
     return !!pContainer.title;
   }
 
-  override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+  protected override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
     const { node } = pContainer;
     if (node.matches('ytd-browse[role="main"] ytd-item-section-renderer')) {
       return ["ytd-grid-movie-renderer"];
