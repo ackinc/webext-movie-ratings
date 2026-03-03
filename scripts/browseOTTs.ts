@@ -797,6 +797,8 @@ async function waitForPageLoad() {
 //   a page so that we're sure all pc- and p-node variants have loaded
 async function attemptOutdatedSelectorRecognition() {
   extensionServiceWorker.evaluate(async () => {
+    // @ts-expect-error: the 'chrome' global is available here, since this fn runs in
+    //   the service-worker's scope
     await chrome.storage.local.set({ outdatedSelectorDetectionEnabled: true });
   });
 
@@ -804,6 +806,8 @@ async function attemptOutdatedSelectorRecognition() {
   await delayMs(REPORT_ERRORS ? 3000 : 0);
 
   extensionServiceWorker.evaluate(async () => {
+    // @ts-expect-error: the 'chrome' global is available here, since this fn runs in
+    //   the service-worker's scope
     await chrome.storage.local.set({ outdatedSelectorDetectionEnabled: false });
   });
 }
