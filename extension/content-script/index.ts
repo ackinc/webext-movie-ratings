@@ -158,7 +158,7 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
   return response;
 }
 
-async function fadeIfFilteredOut(p: Program): Promise<Program> {
+function fadeIfFilteredOut(p: Program): Program {
   const settings = programFilterSettings;
 
   const imdbNode = (

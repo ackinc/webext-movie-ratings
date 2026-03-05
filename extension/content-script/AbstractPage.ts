@@ -52,6 +52,8 @@ export default class AbstractPage {
   }
 
   cleanup() {
+    if (this.#isMarkedForCleanup) return;
+
     this.#isMarkedForCleanup = true;
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
