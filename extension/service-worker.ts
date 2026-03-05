@@ -248,7 +248,9 @@ async function fetchIMDBDataFromApi(
   return result;
 }
 
-async function patchedFetch(...args: Parameters<typeof fetch>) {
+async function patchedFetch(
+  ...args: Parameters<typeof fetch>
+): ReturnType<typeof fetch> {
   const promise = fetch(...args);
 
   if (["development", "testing"].includes(APP_ENV)) {
