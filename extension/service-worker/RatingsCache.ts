@@ -16,9 +16,11 @@ interface RatingsCacheSchema extends DBSchema {
   };
 }
 
-const ratingsStoreName = "ratingsStore";
+const storeName = "ratingsStore";
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
+
+// TODO: throw error when get/put called before db is ready
 
 export default class RatingsCache {
   db: IDBPDatabase<RatingsCacheSchema>;
@@ -27,7 +29,7 @@ export default class RatingsCache {
     const db = await openDB<RatingsCacheSchema>(DB_NAME, DB_VERSION, {
       upgrade: (db, oldVersion) => {
         if (oldVersion < 1) {
-          db.createObjectStore(ratingsStoreName, { keyPath: "key" });
+          db.createObjectStore(storeName, { keyPath: "key" });
         }
       },
     });
@@ -42,7 +44,7 @@ export default class RatingsCache {
   }
 
   async get(program: ProgramData): Promise<IMDBData | undefined> {
-    const cached = await this.db.get(ratingsStoreName, this.#getKey(program));
+    const cached = await this.db.get(storeName, this.#getKey(program));
     if (!cached || this.#checkExpired(cached)) return undefined;
     return pick(cached, ["imdbID", "imdbRating"]) as IMDBData;
   }
@@ -50,8 +52,8 @@ export default class RatingsCache {
   async put(
     programsAndRatings: { program: ProgramData; imdbData: IMDBData }[],
   ): Promise<void> {
-    const txn = this.db.transaction([ratingsStoreName], "readwrite");
-    const ratingsStore = txn.objectStore(ratingsStoreName);
+    const txn = this.db.transaction([storeName], "readwrite");
+    const ratingsStore = txn.objectStore(storeName);
 
     await Promise.all(
       programsAndRatings.map((data) =>
@@ -70,8 +72,8 @@ export default class RatingsCache {
 
   // useful when migrating previously cached data from elsewhere
   async seed(data: Record<string, CachedIMDBData>) {
-    const txn = this.db.transaction([ratingsStoreName], "readwrite");
-    const ratingsStore = txn.objectStore(ratingsStoreName);
+    const txn = this.db.transaction([storeName], "readwrite");
+    const ratingsStore = txn.objectStore(storeName);
     await Promise.all(
       Object.entries(data).map(([key, value]) =>
         ratingsStore.put({ ...value, key }),
