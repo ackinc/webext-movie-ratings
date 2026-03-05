@@ -5,6 +5,6 @@ export async function get<T>(key: string): Promise<T | undefined> {
   return result[key] as T | undefined;
 }
 
-export async function set(key: string, value: unknown): Promise<void> {
+export async function set<T>(key: string, value: T): Promise<void> {
   await browser.storage.local.set({ [key]: value });
 }

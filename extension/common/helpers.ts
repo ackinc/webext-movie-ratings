@@ -4,6 +4,7 @@ import { browser, languages, SettingsKey } from "./constants";
 import type { Message } from "./types";
 import { pick } from "../../utils";
 import { captureException } from "./errorReporter";
+import * as storage from "./storage";
 
 export async function sendMessageToAllTabs(message: Message) {
   const tabs = await browser.tabs.query({
@@ -69,13 +70,12 @@ export function extractProgramTitle(str: string): string {
 export async function getSetting<T>(
   key: keyof typeof SettingsKey,
 ): Promise<T | undefined> {
-  const result = await browser.storage.local.get([key]);
-  return result[key] as T | undefined;
+  return await storage.get<T>(key);
 }
 
 export async function setSetting<T>(
   key: keyof typeof SettingsKey,
   value: T,
 ): Promise<void> {
-  await browser.storage.local.set({ [key]: value });
+  await storage.set<T>(key, value);
 }
