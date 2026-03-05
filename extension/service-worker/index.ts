@@ -1,8 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import { limitThroughput } from "rate-limit-utils";
 import {
-  ONE_HOUR_IN_MS,
-  ONE_WEEK_IN_MS,
   browser,
   getSetting,
   setSetting,
@@ -13,7 +11,7 @@ import {
   telemetryIntervalSizeInSeconds,
   selectorStatusKeyPrefix,
   sendMessageToAllTabs,
-} from "./common";
+} from "../common";
 import type {
   Program,
   IMDBData,
@@ -21,16 +19,14 @@ import type {
   CachedIMDBData,
   SWErrorResponse,
   OmdbApiResponse,
-} from "./common/types";
+} from "../common/types";
 import {
   captureException,
   type ExceptionMetadata,
-} from "./common/errorReporter";
+} from "../common/errorReporter";
+import { DB_NAME, DB_VERSION } from "./constants";
+import RatingsCache from "./RatingsCache";
 
-const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
-const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
-const ratingsStoreName = "ratingsStore";
-const telemetryStoreName = "telemetryStore";
 interface SiftDB extends DBSchema {
   ratingsStore: {
     key: string;
@@ -42,11 +38,16 @@ interface SiftDB extends DBSchema {
   };
 }
 
+const telemetryStoreName = "telemetryStore";
+
 browser.runtime.onInstalled.addListener(onInstalled);
 browser.runtime.onMessage.addListener(handleMessage);
 
 const rateLimitedFetch = limitThroughput(patchedFetch, 50);
+
 let db: IDBPDatabase<SiftDB>;
+const ratingsCache: RatingsCache = await initializeRatingsCache();
+
 (async () => {
   try {
     db = await prepareDB();
@@ -61,39 +62,29 @@ async function onInstalled() {
 }
 
 async function prepareDB() {
-  const db = await openDB<SiftDB>("siftDb", 2, {
+  const db = await openDB<SiftDB>(DB_NAME, DB_VERSION, {
     upgrade: (db, oldVersion) => {
-      if (oldVersion < 1) {
-        db.createObjectStore(ratingsStoreName, { keyPath: "key" });
-      }
-
       if (oldVersion < 2) {
         db.createObjectStore(telemetryStoreName);
       }
     },
   });
 
-  await migrateCachedRatingsFromOutsideIdb(db);
-
   return db;
 }
 
-async function migrateCachedRatingsFromOutsideIdb(db: IDBPDatabase<SiftDB>) {
-  const allCachedData = await browser.storage.local.get();
-  const allCachedRatingsData = omitBy(
-    allCachedData,
+async function initializeRatingsCache() {
+  const allData = await browser.storage.local.get();
+  const oldCacheData = omitBy(
+    allData,
     (_v, k) =>
       (Object.values(SettingsKey) as string[]).includes(k) ||
       k.startsWith(selectorStatusKeyPrefix),
-  );
+  ) as Record<string, CachedIMDBData>;
 
-  const txn = db.transaction(ratingsStoreName, "readwrite");
-  const store = txn.objectStore(ratingsStoreName);
-  for (const [key, v] of Object.entries(allCachedRatingsData)) {
-    await store.put({ ...(v as Omit<CachedIMDBData, "key">), key });
-  }
-
-  await browser.storage.local.remove(Object.keys(allCachedRatingsData));
+  const cache: RatingsCache = await RatingsCache.createFrom(oldCacheData);
+  await browser.storage.local.remove(Object.keys(oldCacheData));
+  return cache;
 }
 
 async function injectUpdatedContentScripts() {
@@ -174,52 +165,12 @@ async function getIMDBData(
     await logEventForTelemetry(key);
   }
 
-  const key = getCacheKey(program);
-  const cached: CachedIMDBData | undefined = await db.get(
-    ratingsStoreName,
-    key,
-  );
-  if (cached && checkCachedDataIsUsable(cached)) {
-    return pick(cached, ["imdbID", "imdbRating"]) as IMDBData;
-  }
+  const cached = await ratingsCache.get(program);
+  if (cached) return cached;
 
   const imdbData = await fetchIMDBDataFromApi(program);
-  const txn = db.transaction(
-    [ratingsStoreName, telemetryStoreName],
-    "readwrite",
-  );
-  const ratingsStore = txn.objectStore(ratingsStoreName);
-  await ratingsStore.put({
-    ...imdbData,
-    key,
-    expiry:
-      +new Date() +
-      (imdbData.imdbRating === "N/F" ? nfRatingCacheTime : imdbRatingCacheTime),
-  });
-
+  await ratingsCache.put([{ program, imdbData }]);
   return imdbData;
-}
-
-function getCacheKey(program: Omit<Program, "node">): string {
-  const { title, type, year } = program;
-  // using btoa directly on a title with non-latin1 chars (without
-  //   encoding to utf-8 first) will throw
-  const utf8EncodedTitle = String.fromCharCode(
-    ...new TextEncoder().encode(title),
-  );
-  return btoa(
-    [utf8EncodedTitle.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
-      .filter(Boolean)
-      .join("|"),
-  );
-}
-
-function checkCachedDataIsUsable(data: CachedIMDBData): boolean {
-  return Boolean(
-    data.imdbRating &&
-    (data.imdbID || data.imdbRating === "N/F") &&
-    data.expiry > +new Date(),
-  );
 }
 
 async function fetchIMDBDataFromApi(
