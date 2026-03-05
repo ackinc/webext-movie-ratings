@@ -1,4 +1,3 @@
-import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import { limitThroughput } from "rate-limit-utils";
 import {
   browser,
@@ -24,33 +23,22 @@ import {
   captureException,
   type ExceptionMetadata,
 } from "../common/errorReporter";
-import { DB_NAME, DB_VERSION } from "./constants";
 import RatingsCache from "./RatingsCache";
+import TelemetryStore from "./TelemetryStore";
 
-interface SiftDB extends DBSchema {
-  ratingsStore: {
-    key: string;
-    value: CachedIMDBData;
-  };
-  telemetryStore: {
-    key: string;
-    value: unknown;
-  };
-}
-
-const telemetryStoreName = "telemetryStore";
-
-let db: IDBPDatabase<SiftDB>;
 let rateLimitedFetch: typeof fetch;
 let ratingsCache: RatingsCache;
+let telemetryStore: TelemetryStore;
 (async () => {
   try {
     browser.runtime.onInstalled.addListener(onInstalled);
     browser.runtime.onMessage.addListener(handleMessage);
 
-    db = await prepareDB();
     rateLimitedFetch = limitThroughput(patchedFetch, 50);
     ratingsCache = await initializeRatingsCache();
+    telemetryStore = await TelemetryStore.create(
+      telemetryIntervalSizeInSeconds,
+    );
     await injectUpdatedContentScripts();
   } catch (e) {
     captureException(e);
@@ -63,18 +51,6 @@ let ratingsCache: RatingsCache;
 
 async function onInstalled() {
   await showPopupIfNotSeen();
-}
-
-async function prepareDB() {
-  const db = await openDB<SiftDB>(DB_NAME, DB_VERSION, {
-    upgrade: (db, oldVersion) => {
-      if (oldVersion < 2) {
-        db.createObjectStore(telemetryStoreName);
-      }
-    },
-  });
-
-  return db;
 }
 
 async function initializeRatingsCache() {
@@ -121,8 +97,6 @@ function handleMessage(
 ) {
   try {
     if (request.messageType === MessageType.fetchIMDBRating) {
-      if (!db) throw new Error("idb connection not ready");
-
       const { pageUrl, program } = request.data as {
         pageUrl: string;
         program: Omit<Program, "node">;
@@ -161,12 +135,7 @@ async function getIMDBData(
   pageUrl?: string,
 ): Promise<IMDBData> {
   if (["development", "testing"].includes(APP_ENV)) {
-    let key = `nRatingRequests::${getCurrentTelemetryInterval()}`;
-    if (pageUrl) {
-      const url = new URL(pageUrl);
-      key += `::${url.origin}::${url.href}`;
-    }
-    await logEventForTelemetry(key);
+    await telemetryStore.logEvent("PROGRAM_RATING_REQUEST", { pageUrl });
   }
 
   const cached = await ratingsCache.get(program);
@@ -209,24 +178,8 @@ async function patchedFetch(
   const promise = fetch(...args);
 
   if (["development", "testing"].includes(APP_ENV)) {
-    const key = `nApiCalls::${getCurrentTelemetryInterval()}`;
-    await logEventForTelemetry(key);
+    await telemetryStore.logEvent("RATINGS_API_CALL");
   }
 
   return promise;
-}
-
-function getCurrentTelemetryInterval() {
-  return (
-    Math.ceil(+new Date() / (telemetryIntervalSizeInSeconds * 1000)) *
-    telemetryIntervalSizeInSeconds *
-    1000
-  );
-}
-
-async function logEventForTelemetry(key: string) {
-  const txn = db.transaction(telemetryStoreName, "readwrite");
-  const telemetryStore = txn.objectStore(telemetryStoreName);
-  const curCount = ((await telemetryStore.get(key)) as number) ?? 0;
-  await telemetryStore.put(curCount + 1, key);
 }
