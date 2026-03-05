@@ -40,22 +40,26 @@ interface SiftDB extends DBSchema {
 
 const telemetryStoreName = "telemetryStore";
 
-browser.runtime.onInstalled.addListener(onInstalled);
-browser.runtime.onMessage.addListener(handleMessage);
-
-const rateLimitedFetch = limitThroughput(patchedFetch, 50);
-
 let db: IDBPDatabase<SiftDB>;
-const ratingsCache: RatingsCache = await initializeRatingsCache();
-
+let rateLimitedFetch: typeof fetch;
+let ratingsCache: RatingsCache;
 (async () => {
   try {
+    browser.runtime.onInstalled.addListener(onInstalled);
+    browser.runtime.onMessage.addListener(handleMessage);
+
     db = await prepareDB();
+    rateLimitedFetch = limitThroughput(patchedFetch, 50);
+    ratingsCache = await initializeRatingsCache();
     await injectUpdatedContentScripts();
   } catch (e) {
     captureException(e);
   }
 })();
+
+//////////////////////////////
+//** function definitions **//
+//////////////////////////////
 
 async function onInstalled() {
   await showPopupIfNotSeen();
