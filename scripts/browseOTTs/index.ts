@@ -68,7 +68,7 @@ console.time(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
 
 const __DIRNAME = path.dirname(fileURLToPath(import.meta.url));
 const PATH_TO_EXTENSION = path.join(__DIRNAME, "../../dist");
-const USER_DATA_DIR = path.join(__DIRNAME, `./data-dir`);
+const USER_DATA_DIR = path.join(__DIRNAME, `../../tmp/browseOTTs-data-dir`);
 
 // For outdated-selector-recognition to work, we need to persist
 //   selector-statuses across runs of this automation - a selector

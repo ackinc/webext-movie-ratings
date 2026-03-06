@@ -5,6 +5,5 @@ dist/*
 .env
 src.zip
 tmp
+!tmp/.keep
 **/*.log
-scripts/browseOTTs/data-dir/*
-!scripts/browseOTTs/data-dir/.keep
