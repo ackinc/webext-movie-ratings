@@ -11,6 +11,7 @@ import {
   selectorStatusKeyPrefix,
   sendMessageToAllTabs,
   ErrorMessage,
+  storage,
 } from "../common";
 import type {
   Program,
@@ -55,7 +56,7 @@ async function onInstalled() {
 }
 
 async function initializeRatingsCache() {
-  const allData = await browser.storage.local.get();
+  const allData = await storage.getAll();
   const oldCacheData = omitBy(
     allData,
     (_v, k) =>
@@ -64,7 +65,7 @@ async function initializeRatingsCache() {
   ) as Record<string, CachedIMDBData>;
 
   const cache: RatingsCache = await RatingsCache.createFrom(oldCacheData);
-  await browser.storage.local.remove(Object.keys(oldCacheData));
+  await storage.remove(Object.keys(oldCacheData));
   return cache;
 }
 
