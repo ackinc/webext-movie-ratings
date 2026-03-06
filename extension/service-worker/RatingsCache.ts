@@ -15,6 +15,10 @@ interface RatingsCacheSchema extends DBSchema {
     value: CachedIMDBData;
   };
 }
+interface CacheEntry {
+  program: ProgramData;
+  imdbData: IMDBData;
+}
 
 const storeName = "ratingsStore";
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
@@ -47,9 +51,7 @@ export default class RatingsCache {
     return pick(cached, ["imdbID", "imdbRating"]) as IMDBData;
   }
 
-  async put(
-    programsAndRatings: { program: ProgramData; imdbData: IMDBData }[],
-  ): Promise<void> {
+  async put(programsAndRatings: CacheEntry[]): Promise<void> {
     const txn = this.db.transaction([storeName], "readwrite");
     const ratingsStore = txn.objectStore(storeName);
 
@@ -66,6 +68,11 @@ export default class RatingsCache {
         }),
       ),
     );
+  }
+
+  async putOne(entry: CacheEntry) {
+    await this.put([entry]);
+    return entry;
   }
 
   // useful when migrating previously cached data from elsewhere

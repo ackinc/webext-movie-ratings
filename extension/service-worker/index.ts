@@ -25,6 +25,7 @@ import {
 import RatingsCache from "./RatingsCache";
 import TelemetryStore from "./TelemetryStore";
 import OmdbApiClient from "./OmdbApiClient";
+import { RATING_API_REQUEST_TIMEOUT_MS } from "./constants";
 
 let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
@@ -131,27 +132,40 @@ function handleMessage(
     const errorsToIgnore: string[] = [
       ErrorMessage.ratingsCacheNotReady,
       ErrorMessage.telemetryStoreNotReady,
+      ErrorMessage.ratingsApiRequestTimedOut,
+      ErrorMessage.ratingsApiRequestAlreadyInFlight,
     ];
     if (errorsToIgnore.includes(error.message)) return;
-
     captureException(error, metadata);
   }
 }
 
-async function getIMDBData(
+function getIMDBData(
   program: Omit<Program, "node">,
   pageUrl?: string,
 ): Promise<IMDBData> {
-  if (FF_TELEMETRY_ENABLED) {
-    await telemetryStore.logEvent("PROGRAM_RATING_REQUEST", { pageUrl });
-  }
+  return new Promise((resolve, reject) => {
+    if (FF_TELEMETRY_ENABLED) {
+      telemetryStore
+        .logEvent("PROGRAM_RATING_REQUEST", { pageUrl })
+        .catch(reject);
+    }
 
-  const cached = await ratingsCache.get(program);
-  if (cached) return cached;
+    ratingsCache.get(program).then((cached) => {
+      if (cached) return resolve(cached);
 
-  const imdbData = await omdbApiClient.fetchIMDBData(program);
-  await ratingsCache.put([{ program, imdbData }]);
-  return imdbData;
+      setTimeout(
+        () => reject(new Error(ErrorMessage.ratingsApiRequestTimedOut)),
+        RATING_API_REQUEST_TIMEOUT_MS,
+      );
+
+      omdbApiClient
+        .fetchIMDBData(program)
+        .then((imdbData) => ratingsCache.putOne({ program, imdbData }))
+        .then(({ imdbData }) => resolve(imdbData))
+        .catch(reject);
+    });
+  });
 }
 
 async function fetchWithAddedTelemetry(
