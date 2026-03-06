@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo
+set -eo pipefail
 
 pnpm run build --target=firefox
 pnpm run zip:dist

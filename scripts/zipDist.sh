@@ -1,5 +1,5 @@
 #!/bin/bash
 
-set -euo
+set -eo pipefail
 
 7z a dist.zip ./dist/*
