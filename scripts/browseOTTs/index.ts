@@ -291,9 +291,6 @@ async function testAppleTV() {
     await searchbarLocator.click();
     await page.getByTestId("grid-item").first().waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, scrollArgs);
-    // not using randword here since most words are going to return 0 search
-    //   results, and AppleTV doesn't show suggestions that don't quite match
-    //   the query
     await searchbarLocator.pressSequentially(SEARCH_PHRASE, { delay: 500 });
     await page
       .getByRole("listbox", { name: "Suggestions" })
