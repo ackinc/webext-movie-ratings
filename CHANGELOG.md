@@ -1,5 +1,9 @@
 # Changelog
 
+## v7.0.6
+
+- Slow ratings-API-responses for one/more programs no longer hold up the extension from showing cached ratings wherever available
+
 ## v7.0.3
 
 - Methods responsible for extracting data from the webpage - `Page::getTitleForProgramContainerNode` and `ProgramNode::extractProgramData` - no longer suppress (most) errors caused by webpage markup changes. This means extension breakage due to markup changes should surface faster when error-reporting is enabled
