@@ -55,6 +55,7 @@ const config: esbuild.BuildOptions = {
   define: {
     APP_ENV: `"${APP_ENV}"`,
     OMDB_API_KEY: `"${OMDB_API_KEY}"`,
+    FF_TELEMETRY_ENABLED: `${["development", "testing"].includes(APP_ENV)}`,
   },
   loader: {
     ".svg": "dataurl",

@@ -20,8 +20,6 @@ const storeName = "ratingsStore";
 const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
 
-// TODO: throw error when get/put called before db is ready
-
 export default class RatingsCache {
   db: IDBPDatabase<RatingsCacheSchema>;
 

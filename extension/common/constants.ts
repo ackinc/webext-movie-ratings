@@ -60,4 +60,6 @@ export const enum ErrorMessage {
   unrecognizedProgramContainerNode = "ProgramContainerNode does not match a recognized selector",
   unrecognizedProgramNode = "ProgramNode does not match a recognized selector",
   potentiallyOutOfDateSelector = "Potentially out of date selector",
+  ratingsCacheNotReady = "The ratings cache is not ready",
+  telemetryStoreNotReady = "The telemetry store is not ready",
 }

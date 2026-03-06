@@ -10,6 +10,7 @@ import {
   telemetryIntervalSizeInSeconds,
   selectorStatusKeyPrefix,
   sendMessageToAllTabs,
+  ErrorMessage,
 } from "../common";
 import type {
   Program,
@@ -97,6 +98,11 @@ function handleMessage(
 ) {
   try {
     if (request.messageType === MessageType.fetchIMDBRating) {
+      if (!ratingsCache) throw new Error(ErrorMessage.ratingsCacheNotReady);
+      if (FF_TELEMETRY_ENABLED && !telemetryStore) {
+        throw new Error(ErrorMessage.telemetryStoreNotReady);
+      }
+
       const { pageUrl, program } = request.data as {
         pageUrl: string;
         program: Omit<Program, "node">;
@@ -123,8 +129,11 @@ function handleMessage(
     const error = e instanceof Error ? e : new Error(`${e}`);
     sendResponse({ error: error.message });
 
-    // let's capture these for a bit so we know how often they occur
-    // if (error.message === "idb connection not ready") return;
+    const errorsToIgnore: string[] = [
+      ErrorMessage.ratingsCacheNotReady,
+      ErrorMessage.telemetryStoreNotReady,
+    ];
+    if (errorsToIgnore.includes(error.message)) return;
 
     captureException(error, metadata);
   }
@@ -134,7 +143,7 @@ async function getIMDBData(
   program: Omit<Program, "node">,
   pageUrl?: string,
 ): Promise<IMDBData> {
-  if (["development", "testing"].includes(APP_ENV)) {
+  if (FF_TELEMETRY_ENABLED) {
     await telemetryStore.logEvent("PROGRAM_RATING_REQUEST", { pageUrl });
   }
 
@@ -177,7 +186,7 @@ async function patchedFetch(
 ): ReturnType<typeof fetch> {
   const promise = fetch(...args);
 
-  if (["development", "testing"].includes(APP_ENV)) {
+  if (FF_TELEMETRY_ENABLED) {
     await telemetryStore.logEvent("RATINGS_API_CALL");
   }
 
