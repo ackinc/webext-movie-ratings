@@ -1,5 +1,4 @@
-import { openDB, type DBSchema, type IDBPDatabase } from "idb";
-import { DB_NAME, DB_VERSION } from "./constants";
+import { type DBSchema, type IDBPDatabase } from "idb";
 import {
   ONE_HOUR_IN_MS,
   ONE_WEEK_IN_MS,
@@ -27,16 +26,17 @@ const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
 export default class RatingsCache {
   db: IDBPDatabase<RatingsCacheSchema>;
 
-  static async createFrom(data: Record<string, CachedIMDBData> = {}) {
-    const db = await openDB<RatingsCacheSchema>(DB_NAME, DB_VERSION, {
-      upgrade: (db, oldVersion) => {
-        if (oldVersion < 1) {
-          db.createObjectStore(storeName, { keyPath: "key" });
-        }
-      },
-    });
+  static upgradeDb(db: IDBPDatabase, oldVersion: number) {
+    if (oldVersion < 1) {
+      db.createObjectStore(storeName, { keyPath: "key" });
+    }
+  }
 
-    const cache = new RatingsCache(db);
+  static async create(
+    db: IDBPDatabase,
+    data: Record<string, CachedIMDBData> = {},
+  ) {
+    const cache = new RatingsCache(db as IDBPDatabase<RatingsCacheSchema>);
     await cache.seed(data);
     return cache;
   }

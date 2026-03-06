@@ -1,3 +1,4 @@
+import { openDB, type IDBPDatabase } from "idb";
 import {
   browser,
   getSetting,
@@ -25,7 +26,11 @@ import {
 import RatingsCache from "./RatingsCache";
 import TelemetryStore from "./TelemetryStore";
 import OmdbApiClient from "./OmdbApiClient";
-import { RATING_API_REQUEST_TIMEOUT_MS } from "./constants";
+import {
+  DB_NAME,
+  DB_VERSION,
+  RATING_API_REQUEST_TIMEOUT_MS,
+} from "./constants";
 
 let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
@@ -35,10 +40,14 @@ let omdbApiClient: OmdbApiClient;
     browser.runtime.onInstalled.addListener(onInstalled);
     browser.runtime.onMessage.addListener(handleMessage);
 
-    ratingsCache = await initializeRatingsCache();
-    telemetryStore = await TelemetryStore.create(
-      telemetryIntervalSizeInSeconds,
-    );
+    const db = await openDB(DB_NAME, DB_VERSION, {
+      upgrade: (db, oldVersion) => {
+        RatingsCache.upgradeDb(db, oldVersion);
+        TelemetryStore.upgradeDb(db, oldVersion);
+      },
+    });
+    ratingsCache = await initializeRatingsCache(db);
+    telemetryStore = await initializeTelemetryStore(db);
     omdbApiClient = new OmdbApiClient(fetchWithAddedTelemetry);
     await injectUpdatedContentScripts();
   } catch (e) {
@@ -54,7 +63,7 @@ async function onInstalled() {
   await showPopupIfNotSeen();
 }
 
-async function initializeRatingsCache() {
+async function initializeRatingsCache(db: IDBPDatabase) {
   const allData = await storage.getAll();
   const oldCacheData = omitBy(
     allData,
@@ -63,9 +72,13 @@ async function initializeRatingsCache() {
       k.startsWith(selectorStatusKeyPrefix),
   ) as Record<string, CachedIMDBData>;
 
-  const cache: RatingsCache = await RatingsCache.createFrom(oldCacheData);
+  const cache: RatingsCache = await RatingsCache.create(db, oldCacheData);
   await storage.remove(Object.keys(oldCacheData));
   return cache;
+}
+
+async function initializeTelemetryStore(db: IDBPDatabase) {
+  return await TelemetryStore.create(db, telemetryIntervalSizeInSeconds);
 }
 
 async function injectUpdatedContentScripts() {

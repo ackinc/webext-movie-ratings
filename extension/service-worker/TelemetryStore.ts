@@ -1,5 +1,4 @@
-import { openDB, type DBSchema, type IDBPDatabase } from "idb";
-import { DB_NAME, DB_VERSION } from "./constants";
+import { type DBSchema, type IDBPDatabase } from "idb";
 
 interface TelemetryStoreSchema extends DBSchema {
   telemetryStore: {
@@ -18,16 +17,17 @@ export default class TelemetryStore {
   db: IDBPDatabase<TelemetryStoreSchema>;
   intervalSizeInSeconds: number;
 
-  static async create(intervalSizeInSeconds: number) {
-    const db = await openDB<TelemetryStoreSchema>(DB_NAME, DB_VERSION, {
-      upgrade: (db, oldVersion) => {
-        if (oldVersion < 2) {
-          db.createObjectStore(storeName);
-        }
-      },
-    });
+  static upgradeDb(db: IDBPDatabase, oldVersion: number) {
+    if (oldVersion < 2) {
+      db.createObjectStore(storeName);
+    }
+  }
 
-    const store = new TelemetryStore(db, intervalSizeInSeconds);
+  static async create(db: IDBPDatabase, intervalSizeInSeconds: number) {
+    const store = new TelemetryStore(
+      db as IDBPDatabase<TelemetryStoreSchema>,
+      intervalSizeInSeconds,
+    );
     return store;
   }
 
