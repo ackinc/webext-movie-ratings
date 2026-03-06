@@ -1,10 +1,8 @@
-import { limitThroughput } from "rate-limit-utils";
 import {
   browser,
   getSetting,
   setSetting,
   omitBy,
-  pick,
   MessageType,
   SettingsKey,
   telemetryIntervalSizeInSeconds,
@@ -19,7 +17,6 @@ import type {
   Message,
   CachedIMDBData,
   SWErrorResponse,
-  OmdbApiResponse,
 } from "../common/types";
 import {
   captureException,
@@ -27,20 +24,21 @@ import {
 } from "../common/errorReporter";
 import RatingsCache from "./RatingsCache";
 import TelemetryStore from "./TelemetryStore";
+import OmdbApiClient from "./OmdbApiClient";
 
-let rateLimitedFetch: typeof fetch;
 let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
+let omdbApiClient: OmdbApiClient;
 (async () => {
   try {
     browser.runtime.onInstalled.addListener(onInstalled);
     browser.runtime.onMessage.addListener(handleMessage);
 
-    rateLimitedFetch = limitThroughput(patchedFetch, 50);
     ratingsCache = await initializeRatingsCache();
     telemetryStore = await TelemetryStore.create(
       telemetryIntervalSizeInSeconds,
     );
+    omdbApiClient = new OmdbApiClient(fetchWithAddedTelemetry);
     await injectUpdatedContentScripts();
   } catch (e) {
     captureException(e);
@@ -151,45 +149,14 @@ async function getIMDBData(
   const cached = await ratingsCache.get(program);
   if (cached) return cached;
 
-  const imdbData = await fetchIMDBDataFromApi(program);
+  const imdbData = await omdbApiClient.fetchIMDBData(program);
   await ratingsCache.put([{ program, imdbData }]);
   return imdbData;
 }
 
-async function fetchIMDBDataFromApi(
-  program: Omit<Program, "node">,
-): Promise<IMDBData> {
-  const { title, type, year } = program;
-  const searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, t: title });
-  if (type) searchParams.set("type", type);
-  if (year) searchParams.set("y", year);
-
-  const response = await rateLimitedFetch(
-    `https://www.omdbapi.com/?${searchParams.toString()}`,
-  );
-  const respBody = (await response.json()) as OmdbApiResponse;
-
-  let result: IMDBData;
-  if ("Error" in respBody) {
-    if (!respBody.Error.includes("not found")) {
-      throw new Error(respBody.Error);
-    }
-    result = { imdbRating: "N/F", imdbID: "" };
-  } else {
-    result = pick(respBody, ["imdbID", "imdbRating"]) as IMDBData;
-  }
-
-  return result;
-}
-
-async function patchedFetch(
+async function fetchWithAddedTelemetry(
   ...args: Parameters<typeof fetch>
 ): ReturnType<typeof fetch> {
-  const promise = fetch(...args);
-
-  if (FF_TELEMETRY_ENABLED) {
-    await telemetryStore.logEvent("RATINGS_API_CALL");
-  }
-
-  return promise;
+  if (FF_TELEMETRY_ENABLED) await telemetryStore.logEvent("RATINGS_API_CALL");
+  return fetch(...args);
 }

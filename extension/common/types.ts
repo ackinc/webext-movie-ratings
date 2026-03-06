@@ -32,15 +32,6 @@ export type SWErrorResponse = {
   error: string;
 };
 
-export type OmdbApiResponse =
-  | {
-      Error: string;
-    }
-  | {
-      imdbID: string;
-      imdbRating: string;
-    };
-
 export type ProgramFilterSettings = {
   minRating: number;
   maxRating: number;
