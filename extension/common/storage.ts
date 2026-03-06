@@ -5,6 +5,14 @@ export async function get<T>(key: string): Promise<T | undefined> {
   return result[key] as T | undefined;
 }
 
-export async function set(key: string, value: unknown): Promise<void> {
+export async function getAll(): Promise<Record<string, unknown>> {
+  return await browser.storage.local.get();
+}
+
+export async function set<T>(key: string, value: T): Promise<void> {
   await browser.storage.local.set({ [key]: value });
+}
+
+export async function remove(keys: string[]): Promise<void> {
+  await browser.storage.local.remove(keys);
 }
