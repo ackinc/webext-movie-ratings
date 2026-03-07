@@ -14,6 +14,7 @@ type Event =
     }
   | {
       type: "RATINGS_API_REQUEST_MADE";
+      data: { startTime: number };
     }
   | {
       type: "RATINGS_API_RESPONSE_RECEIVED";
@@ -70,9 +71,10 @@ export default class TelemetryStore {
       const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
       await telemetryStore.put(curValue + 1, key);
     } else if (event.type === "RATINGS_API_REQUEST_MADE") {
-      const key = [keyPrefixes[event.type], this.#getIntervalLabel()].join(
-        keyPartSeparator,
-      );
+      const key = [
+        keyPrefixes[event.type],
+        this.#getIntervalLabel(event.data.startTime),
+      ].join(keyPartSeparator);
 
       const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
       await telemetryStore.put(curValue + 1, key);

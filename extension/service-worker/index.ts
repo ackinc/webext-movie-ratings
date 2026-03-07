@@ -187,11 +187,15 @@ function getIMDBData(
 async function fetchWithAddedTelemetry(
   ...args: Parameters<typeof fetch>
 ): ReturnType<typeof fetch> {
+  const startTime = +new Date();
+
   if (FF_TELEMETRY_ENABLED) {
-    await telemetryStore.logEvent({ type: "RATINGS_API_REQUEST_MADE" });
+    await telemetryStore.logEvent({
+      type: "RATINGS_API_REQUEST_MADE",
+      data: { startTime },
+    });
   }
 
-  const startTime = +new Date();
   const response = await fetch(...args);
   if (FF_TELEMETRY_ENABLED) {
     await telemetryStore.logEvent({
