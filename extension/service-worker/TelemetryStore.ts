@@ -23,11 +23,6 @@ type Event =
 
 const storeName = "telemetryStore";
 const keyPartSeparator = "::";
-const keyPrefixes: Record<Event["type"], string> = {
-  PROGRAM_RATING_REQUEST_RECEIVED: "nRatingRequests",
-  RATINGS_API_REQUEST_MADE: "nApiCalls",
-  RATINGS_API_RESPONSE_RECEIVED: "sumRatingsApiResponseTimes",
-};
 
 export default class TelemetryStore {
   db: IDBPDatabase<TelemetryStoreSchema>;
@@ -60,7 +55,7 @@ export default class TelemetryStore {
     const telemetryStore = txn.objectStore(storeName);
 
     if (event.type === "PROGRAM_RATING_REQUEST_RECEIVED") {
-      let key = [keyPrefixes[event.type], this.#getIntervalLabel()].join(
+      let key = [this.#getIntervalLabel(), "nRatingRequests"].join(
         keyPartSeparator,
       );
       if (event.data.pageUrl) {
@@ -72,20 +67,32 @@ export default class TelemetryStore {
       await telemetryStore.put(curValue + 1, key);
     } else if (event.type === "RATINGS_API_REQUEST_MADE") {
       const key = [
-        keyPrefixes[event.type],
         this.#getIntervalLabel(event.data.startTime),
+        "nRatingsApiCalls",
       ].join(keyPartSeparator);
 
       const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
       await telemetryStore.put(curValue + 1, key);
     } else if (event.type === "RATINGS_API_RESPONSE_RECEIVED") {
-      const key = [
-        keyPrefixes[event.type],
-        this.#getIntervalLabel(event.data.startTime),
-      ].join(keyPartSeparator);
+      {
+        const key = [
+          this.#getIntervalLabel(event.data.startTime),
+          "nRatingsApiCallsSucceeded",
+        ].join(keyPartSeparator);
 
-      const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
-      await telemetryStore.put(curValue + event.data.durationMs, key);
+        const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
+        await telemetryStore.put(curValue + 1, key);
+      }
+
+      {
+        const key = [
+          this.#getIntervalLabel(event.data.startTime),
+          "sumRatingsApiResponseTimes",
+        ].join(keyPartSeparator);
+
+        const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
+        await telemetryStore.put(curValue + event.data.durationMs, key);
+      }
     }
   }
 
