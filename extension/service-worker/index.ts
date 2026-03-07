@@ -160,7 +160,10 @@ function getIMDBData(
   return new Promise((resolve, reject) => {
     if (FF_TELEMETRY_ENABLED) {
       telemetryStore
-        .logEvent({ type: "PROGRAM_RATING_REQUEST", data: { pageUrl } })
+        .logEvent({
+          type: "PROGRAM_RATING_REQUEST_RECEIVED",
+          data: { pageUrl },
+        })
         .catch(reject);
     }
 
@@ -185,7 +188,7 @@ async function fetchWithAddedTelemetry(
   ...args: Parameters<typeof fetch>
 ): ReturnType<typeof fetch> {
   if (FF_TELEMETRY_ENABLED) {
-    await telemetryStore.logEvent({ type: "RATINGS_API_CALL" });
+    await telemetryStore.logEvent({ type: "RATINGS_API_REQUEST_MADE" });
   }
 
   const startTime = +new Date();

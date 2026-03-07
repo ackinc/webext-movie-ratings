@@ -9,24 +9,24 @@ interface TelemetryStoreSchema extends DBSchema {
 
 type Event =
   | {
-      type: "RATINGS_API_CALL";
+      type: "PROGRAM_RATING_REQUEST_RECEIVED";
+      data: { pageUrl: string | undefined };
+    }
+  | {
+      type: "RATINGS_API_REQUEST_MADE";
     }
   | {
       type: "RATINGS_API_RESPONSE_RECEIVED";
       data: { startTime: number; durationMs: number };
-    }
-  | {
-      type: "PROGRAM_RATING_REQUEST";
-      data: { pageUrl: string | undefined };
     };
 
 const storeName = "telemetryStore";
 const keyPartSeparator = "::";
-const eventTypesToTelemetryKeyPrefixes = {
-  RATINGS_API_CALL: "nApiCalls",
+const keyPrefixes: Record<Event["type"], string> = {
+  PROGRAM_RATING_REQUEST_RECEIVED: "nRatingRequests",
+  RATINGS_API_REQUEST_MADE: "nApiCalls",
   RATINGS_API_RESPONSE_RECEIVED: "sumRatingsApiResponseTimes",
-  PROGRAM_RATING_REQUEST: "nRatingRequests",
-} as const;
+};
 
 export default class TelemetryStore {
   db: IDBPDatabase<TelemetryStoreSchema>;
@@ -58,27 +58,10 @@ export default class TelemetryStore {
     const txn = this.db.transaction(storeName, "readwrite");
     const telemetryStore = txn.objectStore(storeName);
 
-    if (event.type === "RATINGS_API_CALL") {
-      const key = [
-        eventTypesToTelemetryKeyPrefixes[event.type],
-        this.#getIntervalLabel(),
-      ].join(keyPartSeparator);
-
-      const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
-      await telemetryStore.put(curValue + 1, key);
-    } else if (event.type === "RATINGS_API_RESPONSE_RECEIVED") {
-      const key = [
-        eventTypesToTelemetryKeyPrefixes[event.type],
-        this.#getIntervalLabel(event.data.startTime),
-      ].join(keyPartSeparator);
-
-      const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
-      await telemetryStore.put(curValue + event.data.durationMs, key);
-    } else if (event.type === "PROGRAM_RATING_REQUEST") {
-      let key = [
-        eventTypesToTelemetryKeyPrefixes[event.type],
-        this.#getIntervalLabel(),
-      ].join(keyPartSeparator);
+    if (event.type === "PROGRAM_RATING_REQUEST_RECEIVED") {
+      let key = [keyPrefixes[event.type], this.#getIntervalLabel()].join(
+        keyPartSeparator,
+      );
       if (event.data.pageUrl) {
         const url = new URL(event.data.pageUrl);
         key = [key, url.origin, url.href].join(keyPartSeparator);
@@ -86,6 +69,21 @@ export default class TelemetryStore {
 
       const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
       await telemetryStore.put(curValue + 1, key);
+    } else if (event.type === "RATINGS_API_REQUEST_MADE") {
+      const key = [keyPrefixes[event.type], this.#getIntervalLabel()].join(
+        keyPartSeparator,
+      );
+
+      const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
+      await telemetryStore.put(curValue + 1, key);
+    } else if (event.type === "RATINGS_API_RESPONSE_RECEIVED") {
+      const key = [
+        keyPrefixes[event.type],
+        this.#getIntervalLabel(event.data.startTime),
+      ].join(keyPartSeparator);
+
+      const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
+      await telemetryStore.put(curValue + event.data.durationMs, key);
     }
   }
 
