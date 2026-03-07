@@ -65,25 +65,28 @@ export default class TelemetryStore {
       throw new Error(`Event type doesn't have a key prefix: ${eventType}`);
     }
 
+    const keyParts: string[] = [];
     if (eventType === "RATINGS_API_CALL") {
-      return `${eventTypesToTelemetryKeyPrefixes[eventType]}::${this.#getIntervalLabel()}`;
+      keyParts.push(
+        eventTypesToTelemetryKeyPrefixes[eventType],
+        this.#getIntervalLabel(),
+      );
     }
 
     if (eventType === "PROGRAM_RATING_REQUEST") {
-      const keyParts: string[] = [
+      keyParts.push(
         eventTypesToTelemetryKeyPrefixes[eventType],
         this.#getIntervalLabel(),
-      ];
+      );
 
       const { pageUrl } = event.data;
       if (pageUrl) {
         const url = new URL(pageUrl);
         keyParts.push(url.origin, url.href);
       }
-      return keyParts.join("::");
     }
 
-    return "" as never;
+    return keyParts.join("::");
   }
 
   // Examples:
