@@ -12,13 +12,19 @@ type Event =
       type: "RATINGS_API_CALL";
     }
   | {
+      type: "RATINGS_API_RESPONSE_RECEIVED";
+      data: { startTime: number; durationMs: number };
+    }
+  | {
       type: "PROGRAM_RATING_REQUEST";
       data: { pageUrl: string | undefined };
     };
 
 const storeName = "telemetryStore";
+const keyPartSeparator = "::";
 const eventTypesToTelemetryKeyPrefixes = {
   RATINGS_API_CALL: "nApiCalls",
+  RATINGS_API_RESPONSE_RECEIVED: "sumRatingsApiResponseTimes",
   PROGRAM_RATING_REQUEST: "nRatingRequests",
 } as const;
 
@@ -52,41 +58,35 @@ export default class TelemetryStore {
     const txn = this.db.transaction(storeName, "readwrite");
     const telemetryStore = txn.objectStore(storeName);
 
-    const key = this.#getEventKey(event);
-
-    const curCount = ((await telemetryStore.get(key)) as number) ?? 0;
-    await telemetryStore.put(curCount + 1, key);
-  }
-
-  #getEventKey(event: Event): string {
-    const { type: eventType } = event;
-
-    if (!(eventType in eventTypesToTelemetryKeyPrefixes)) {
-      throw new Error(`Event type doesn't have a key prefix: ${eventType}`);
-    }
-
-    const keyParts: string[] = [];
-    if (eventType === "RATINGS_API_CALL") {
-      keyParts.push(
-        eventTypesToTelemetryKeyPrefixes[eventType],
+    if (event.type === "RATINGS_API_CALL") {
+      const key = [
+        eventTypesToTelemetryKeyPrefixes[event.type],
         this.#getIntervalLabel(),
-      );
-    }
+      ].join(keyPartSeparator);
 
-    if (eventType === "PROGRAM_RATING_REQUEST") {
-      keyParts.push(
-        eventTypesToTelemetryKeyPrefixes[eventType],
+      const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
+      await telemetryStore.put(curValue + 1, key);
+    } else if (event.type === "RATINGS_API_RESPONSE_RECEIVED") {
+      const key = [
+        eventTypesToTelemetryKeyPrefixes[event.type],
+        this.#getIntervalLabel(event.data.startTime),
+      ].join(keyPartSeparator);
+
+      const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
+      await telemetryStore.put(curValue + event.data.durationMs, key);
+    } else if (event.type === "PROGRAM_RATING_REQUEST") {
+      let key = [
+        eventTypesToTelemetryKeyPrefixes[event.type],
         this.#getIntervalLabel(),
-      );
-
-      const { pageUrl } = event.data;
-      if (pageUrl) {
-        const url = new URL(pageUrl);
-        keyParts.push(url.origin, url.href);
+      ].join(keyPartSeparator);
+      if (event.data.pageUrl) {
+        const url = new URL(event.data.pageUrl);
+        key = [key, url.origin, url.href].join(keyPartSeparator);
       }
-    }
 
-    return keyParts.join("::");
+      const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
+      await telemetryStore.put(curValue + 1, key);
+    }
   }
 
   // Examples:

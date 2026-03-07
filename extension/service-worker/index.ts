@@ -187,5 +187,18 @@ async function fetchWithAddedTelemetry(
   if (FF_TELEMETRY_ENABLED) {
     await telemetryStore.logEvent({ type: "RATINGS_API_CALL" });
   }
-  return fetch(...args);
+
+  const startTime = +new Date();
+  const response = await fetch(...args);
+  if (FF_TELEMETRY_ENABLED) {
+    await telemetryStore.logEvent({
+      type: "RATINGS_API_RESPONSE_RECEIVED",
+      data: {
+        startTime,
+        durationMs: +new Date() - startTime,
+      },
+    });
+  }
+
+  return response;
 }
