@@ -7,6 +7,15 @@ interface TelemetryStoreSchema extends DBSchema {
   };
 }
 
+type Event =
+  | {
+      type: "RATINGS_API_CALL";
+    }
+  | {
+      type: "PROGRAM_RATING_REQUEST";
+      data: { pageUrl: string | undefined };
+    };
+
 const storeName = "telemetryStore";
 const eventTypesToTelemetryKeyPrefixes = {
   RATINGS_API_CALL: "nApiCalls",
@@ -39,25 +48,21 @@ export default class TelemetryStore {
     this.intervalSizeInSeconds = intervalSizeInSeconds;
   }
 
-  async logEvent(
-    eventType: keyof typeof eventTypesToTelemetryKeyPrefixes,
-    data?: unknown,
-  ) {
+  async logEvent(event: Event) {
     const txn = this.db.transaction(storeName, "readwrite");
     const telemetryStore = txn.objectStore(storeName);
 
-    const key = this.#getEventKey(eventType, data);
+    const key = this.#getEventKey(event);
 
     const curCount = ((await telemetryStore.get(key)) as number) ?? 0;
     await telemetryStore.put(curCount + 1, key);
   }
 
-  #getEventKey(
-    eventType: keyof typeof eventTypesToTelemetryKeyPrefixes,
-    data?: unknown,
-  ): string {
+  #getEventKey(event: Event): string {
+    const { type: eventType } = event;
+
     if (!(eventType in eventTypesToTelemetryKeyPrefixes)) {
-      throw new Error(`Unrecognized event type: ${eventType}`);
+      throw new Error(`Event type doesn't have a key prefix: ${eventType}`);
     }
 
     if (eventType === "RATINGS_API_CALL") {
@@ -65,11 +70,12 @@ export default class TelemetryStore {
     }
 
     if (eventType === "PROGRAM_RATING_REQUEST") {
-      const { pageUrl } = data as { pageUrl: string };
       const keyParts: string[] = [
         eventTypesToTelemetryKeyPrefixes[eventType],
         this.#getIntervalLabel(),
       ];
+
+      const { pageUrl } = event.data;
       if (pageUrl) {
         const url = new URL(pageUrl);
         keyParts.push(url.origin, url.href);
