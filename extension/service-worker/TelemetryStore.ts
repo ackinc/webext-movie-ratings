@@ -61,14 +61,14 @@ export default class TelemetryStore {
     }
 
     if (eventType === "RATINGS_API_CALL") {
-      return `${eventTypesToTelemetryKeyPrefixes[eventType]}::${this.#getCurrentInterval()}`;
+      return `${eventTypesToTelemetryKeyPrefixes[eventType]}::${this.#getIntervalLabel()}`;
     }
 
     if (eventType === "PROGRAM_RATING_REQUEST") {
       const { pageUrl } = data as { pageUrl: string };
       const keyParts: string[] = [
         eventTypesToTelemetryKeyPrefixes[eventType],
-        this.#getCurrentInterval().toString(),
+        this.#getIntervalLabel(),
       ];
       if (pageUrl) {
         const url = new URL(pageUrl);
@@ -83,11 +83,11 @@ export default class TelemetryStore {
   // Examples:
   // - intervalSize === 01s; 1772722745434 => 1772722746000,
   // - intervalSize === 10s; 1772722745434 => 1772722750000,
-  #getCurrentInterval(): number {
+  #getIntervalLabel(time = +new Date()): string {
     return (
-      Math.ceil(+new Date() / (this.intervalSizeInSeconds * 1000)) *
+      Math.ceil(time / (this.intervalSizeInSeconds * 1000)) *
       this.intervalSizeInSeconds *
       1000
-    );
+    ).toString();
   }
 }
