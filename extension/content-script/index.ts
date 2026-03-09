@@ -190,7 +190,7 @@ function handleMessage(
   } else if (messageType === MessageType.urlChange) {
     handleUrlChange();
   } else if (messageType === MessageType.filterSettingsChange) {
-    handleFilterSettingsChange(data as ProgramFilterSettings);
+    handleFilterSettingsChange(data);
   } else if (messageType === MessageType.healthCheck) {
     if (sendResponse) sendResponse("ok");
   }

@@ -44,10 +44,31 @@ export type NumberRange = {
   max: number;
 };
 
-export type Message = {
-  messageType: MessageType;
-  data?: unknown;
-};
+export type Message =
+  | {
+      messageType: MessageType.fetchIMDBRating;
+      data: {
+        program: Omit<Program, "node">;
+        pageUrl: string;
+      };
+    }
+  | {
+      messageType: MessageType.urlChange;
+    }
+  | {
+      messageType: MessageType.filterSettingsChange;
+      data: ProgramFilterSettings;
+    }
+  | {
+      messageType: MessageType.orphanCheck;
+    }
+  | {
+      messageType: MessageType.healthCheck;
+    }
+  | {
+      messageType: MessageType.placeholder;
+      data?: unknown;
+    };
 
 export type IsOptional = boolean;
 

@@ -117,10 +117,7 @@ function handleMessage(
         throw new Error(ErrorMessage.telemetryStoreNotReady);
       }
 
-      const { pageUrl, program } = request.data as {
-        pageUrl: string;
-        program: Omit<Program, "node">;
-      };
+      const { pageUrl, program } = request.data;
       getIMDBData(program, pageUrl)
         .then((data) => sendResponse(data))
         .catch((e) =>
