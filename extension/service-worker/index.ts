@@ -84,7 +84,7 @@ async function initializeTelemetryStore(db: IDBPDatabase) {
 
 async function injectUpdatedContentScripts() {
   const results = await sendMessageToAllTabs({
-    messageType: MessageType.healthCheck,
+    type: MessageType.healthCheck,
   });
   results.forEach(({ tab, result }) => {
     if (
@@ -111,7 +111,7 @@ function handleMessage(
   sendResponse: (arg: IMDBData | SWErrorResponse) => void,
 ) {
   try {
-    if (request.messageType === MessageType.fetchIMDBRating) {
+    if (request.type === MessageType.fetchIMDBRating) {
       if (!ratingsCache) throw new Error(ErrorMessage.ratingsCacheNotReady);
       if (FF_TELEMETRY_ENABLED && !telemetryStore) {
         throw new Error(ErrorMessage.telemetryStoreNotReady);
@@ -125,10 +125,10 @@ function handleMessage(
         );
 
       return true; // keeps channel open until sendReponse is called
-    } else if (request.messageType === MessageType.placeholder) {
+    } else if (request.type === MessageType.placeholder) {
       // do something here if desired
     } else {
-      throw new Error(`Unknown message type: ${request.messageType}`);
+      throw new Error(`Unknown message type: ${request.type}`);
     }
   } catch (e) {
     handleError(e);

@@ -46,27 +46,27 @@ export type NumberRange = {
 
 export type Message =
   | {
-      messageType: MessageType.fetchIMDBRating;
+      type: MessageType.fetchIMDBRating;
       data: {
         program: Omit<Program, "node">;
         pageUrl: string;
       };
     }
   | {
-      messageType: MessageType.urlChange;
+      type: MessageType.urlChange;
     }
   | {
-      messageType: MessageType.filterSettingsChange;
+      type: MessageType.filterSettingsChange;
       data: ProgramFilterSettings;
     }
   | {
-      messageType: MessageType.orphanCheck;
+      type: MessageType.orphanCheck;
     }
   | {
-      messageType: MessageType.healthCheck;
+      type: MessageType.healthCheck;
     }
   | {
-      messageType: MessageType.placeholder;
+      type: MessageType.placeholder;
       data?: unknown;
     };
 

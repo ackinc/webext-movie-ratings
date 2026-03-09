@@ -36,7 +36,7 @@ let loopAbortController: AbortController;
 (async () => {
   try {
     // so content scripts belonging to prev. ext. version can cleanup
-    window.postMessage({ messageType: MessageType.orphanCheck });
+    window.postMessage({ type: MessageType.orphanCheck });
 
     await initializePage();
     addMessageListeners();
@@ -148,7 +148,7 @@ async function addRating(p: Program): Promise<Program> {
 async function fetchIMDBData(program: Program): Promise<IMDBData> {
   const response: IMDBData | SWErrorResponse =
     await browser.runtime.sendMessage({
-      messageType: MessageType.fetchIMDBRating,
+      type: MessageType.fetchIMDBRating,
       data: {
         program: pick(program, ["title", "type", "year"]),
         pageUrl: location.href,
@@ -183,15 +183,15 @@ function handleMessage(
   _s?: chrome.runtime.MessageSender,
   sendResponse?: (response: unknown) => void,
 ) {
-  const { messageType, data } = m instanceof MessageEvent ? m.data : m;
+  const { type, data } = m instanceof MessageEvent ? m.data : m;
 
-  if (messageType === MessageType.orphanCheck) {
+  if (type === MessageType.orphanCheck) {
     if (!browser.runtime.id) cleanup();
-  } else if (messageType === MessageType.urlChange) {
+  } else if (type === MessageType.urlChange) {
     handleUrlChange();
-  } else if (messageType === MessageType.filterSettingsChange) {
+  } else if (type === MessageType.filterSettingsChange) {
     handleFilterSettingsChange(data);
-  } else if (messageType === MessageType.healthCheck) {
+  } else if (type === MessageType.healthCheck) {
     if (sendResponse) sendResponse("ok");
   }
 }

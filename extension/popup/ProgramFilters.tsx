@@ -108,7 +108,7 @@ function ProgramFilters() {
     // bundling the updated settings into the message saves the content
     //   scripts a lookup from storage
     await sendMessageToAllTabs({
-      messageType: MessageType.filterSettingsChange,
+      type: MessageType.filterSettingsChange,
       data: updatedSettings,
     });
   }
