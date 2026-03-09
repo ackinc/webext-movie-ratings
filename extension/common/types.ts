@@ -66,6 +66,16 @@ export type Message =
       type: MessageType.healthCheck;
     }
   | {
+      type: MessageType.webpageRatingStats;
+      data: {
+        nPrograms: number;
+        nProgramsWithNoRatingNode: number;
+        nProgramsRatedNA: number;
+        nProgramsRatedNF: number;
+        pageUrl: string;
+      };
+    }
+  | {
       type: MessageType.placeholder;
       data?: unknown;
     };

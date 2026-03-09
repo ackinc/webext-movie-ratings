@@ -106,6 +106,32 @@ async function loop() {
       programs.map((p) => addRating(p).then(fadeIfFilteredOut)),
     );
 
+    if (FF_TELEMETRY_ENABLED) {
+      const nPrograms = programs.length;
+      let nProgramsWithNoRatingNode = 0;
+      let nProgramsRatedNA = 0;
+      let nProgramsRatedNF = 0;
+
+      const ctor = page.constructor as typeof AbstractPage;
+      programs.forEach(({ node }) => {
+        const rating =
+          ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
+        if (rating === "N/A") nProgramsRatedNA++;
+        if (rating === "N/F") nProgramsRatedNF++;
+        if (!rating) nProgramsWithNoRatingNode++;
+      });
+      await browser.runtime.sendMessage({
+        type: MessageType.webpageRatingStats,
+        data: {
+          nPrograms,
+          nProgramsWithNoRatingNode,
+          nProgramsRatedNA,
+          nProgramsRatedNF,
+          pageUrl: location.href,
+        },
+      });
+    }
+
     if (!thisLoopAbortController.signal.aborted) {
       loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
     }
