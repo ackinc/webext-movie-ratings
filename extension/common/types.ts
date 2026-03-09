@@ -68,11 +68,10 @@ export type Message =
   | {
       type: MessageType.webpageRatingStats;
       data: {
-        nPrograms: number;
-        nProgramsWithNoRatingNode: number;
-        nProgramsRatedNA: number;
-        nProgramsRatedNF: number;
+        id: string;
+        stats: WebpageStats;
         pageUrl: string;
+        timestamp: number;
       };
     }
   | {
@@ -87,3 +86,10 @@ export type Selector = string;
 export type SelectorStatus = "active" | "probablyOutOfDate";
 export type SelectorStatusForPathname = Record<Selector, SelectorStatus>;
 export type SelectorStatusForSite = Record<UrlPath, SelectorStatusForPathname>;
+
+export type WebpageStats = {
+  nPrograms: number;
+  nProgramsWithNoRatingNode: number;
+  nProgramsRatedNA: number;
+  nProgramsRatedNF: number;
+};

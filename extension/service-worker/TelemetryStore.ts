@@ -1,4 +1,5 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
+import { omit, shallowEqual, type WebpageStats } from "../common";
 
 interface TelemetryStoreSchema extends DBSchema {
   telemetryStore: {
@@ -19,6 +20,15 @@ type Event =
   | {
       type: "RATINGS_API_RESPONSE_RECEIVED";
       data: { startTime: number; durationMs: number };
+    }
+  | {
+      type: "WEBPAGE_RATING_STATS_RECEIVED";
+      data: {
+        id: string;
+        stats: WebpageStats;
+        pageUrl: string;
+        timestamp: number;
+      };
     };
 
 const storeName = "telemetryStore";
@@ -93,6 +103,14 @@ export default class TelemetryStore {
         const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
         await telemetryStore.put(curValue + event.data.durationMs, key);
       }
+    } else if (event.type === "WEBPAGE_RATING_STATS_RECEIVED") {
+      const { id, pageUrl, timestamp, stats } = event.data;
+      const key = ["webpageRatingStats", pageUrl, id].join(keyPartSeparator);
+      const curVal = (await telemetryStore.get(key)) as
+        | { stats: WebpageStats; timestamp: number }
+        | undefined;
+      if (curVal && shallowEqual(stats, omit(curVal, ["timestamp"]))) return;
+      await telemetryStore.put({ ...stats, timestamp }, key);
     }
   }
 

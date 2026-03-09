@@ -125,6 +125,15 @@ function handleMessage(
         );
 
       return true; // keeps channel open until sendReponse is called
+    } else if (request.type === MessageType.webpageRatingStats) {
+      if (FF_TELEMETRY_ENABLED) {
+        telemetryStore
+          .logEvent({
+            type: "WEBPAGE_RATING_STATS_RECEIVED",
+            data: request.data,
+          })
+          .catch(handleError);
+      }
     } else if (request.type === MessageType.placeholder) {
       // do something here if desired
     } else {

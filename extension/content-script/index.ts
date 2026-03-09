@@ -28,6 +28,13 @@ import { updateFilteredOutProgramNodeStyles } from "./utils";
 let page: AbstractPage;
 let programFilterSettings: ProgramFilterSettings;
 
+// When tracking webpage-ratings-stats for telemetry:
+// - stats from when a user is scrolling a particular page (pg 1) should be
+//     logged in the same entry
+// - stats from when a user goes to pg 2 should go into a new entry
+// - stats from when a user goes back to pg 1 should also go into a new entry
+let webpageRatingStatsId: string;
+
 // should *only* be set to undefined when we deliberately pause
 //   the loop due to errors
 let loopTimeout: number | undefined;
@@ -69,7 +76,12 @@ async function initializePage() {
     throw new Error("Page not recognized");
   }
 
+  webpageRatingStatsId = createId();
   await page.initialize();
+}
+
+function createId(prefix = "sid_") {
+  return `${prefix}${Math.random().toString().split(".").at(-1)}`;
 }
 
 function addMessageListeners() {
@@ -123,11 +135,15 @@ async function loop() {
       await browser.runtime.sendMessage({
         type: MessageType.webpageRatingStats,
         data: {
-          nPrograms,
-          nProgramsWithNoRatingNode,
-          nProgramsRatedNA,
-          nProgramsRatedNF,
+          id: webpageRatingStatsId,
+          stats: {
+            nPrograms,
+            nProgramsWithNoRatingNode,
+            nProgramsRatedNA,
+            nProgramsRatedNF,
+          },
           pageUrl: location.href,
+          timestamp: +new Date(),
         },
       });
     }
@@ -223,7 +239,11 @@ function handleMessage(
 }
 
 function handleUrlChange() {
-  if (page && loopTimeout === undefined) {
+  if (!page) return;
+
+  webpageRatingStatsId = createId();
+
+  if (loopTimeout === undefined) {
     console.log(`sift: resuming paused loop on page change`);
     loopTimeout = setTimeout(loop, 0);
   }
