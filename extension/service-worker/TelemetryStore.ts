@@ -60,7 +60,7 @@ export default class TelemetryStore {
       );
       if (event.data.pageUrl) {
         const url = new URL(event.data.pageUrl);
-        key = [key, url.origin, url.href].join(keyPartSeparator);
+        key = [key, url.href].join(keyPartSeparator);
       }
 
       const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
