@@ -129,3 +129,12 @@ export function isNetworkError(e: unknown): boolean {
     ].some((x) => e.message.startsWith(x))
   );
 }
+
+export function shallowEqual(
+  objA: Record<string, unknown>,
+  objB: Record<string, unknown>,
+): boolean {
+  const keys = new Set(Object.keys(objA).concat(Object.keys(objB)));
+  for (const k of keys) if (objA[k] !== objB[k]) return false;
+  return true;
+}
