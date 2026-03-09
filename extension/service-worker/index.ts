@@ -31,6 +31,7 @@ import {
   DB_VERSION,
   RATING_API_REQUEST_TIMEOUT_MS,
 } from "./constants";
+import { isNetworkError } from "../../utils";
 
 let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
@@ -141,6 +142,8 @@ function handleMessage(
   function handleError(e: unknown, metadata?: ExceptionMetadata) {
     const error = e instanceof Error ? e : new Error(`${e}`);
     sendResponse({ error: error.message });
+
+    if (isNetworkError(e) && !navigator.onLine) return;
 
     const errorsToIgnore: string[] = [
       ErrorMessage.ratingsCacheNotReady,

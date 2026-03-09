@@ -119,3 +119,13 @@ export function getGeneralizedUrlPath(href: string) {
 export function ensureError(e: unknown): asserts e is Error {
   if (!(e instanceof Error)) throw new Error("Assertion failed", { cause: e });
 }
+
+export function isNetworkError(e: unknown): boolean {
+  return (
+    e instanceof TypeError &&
+    [
+      "Failed to fetch", // chrome/edge
+      "NetworkError when attempting to fetch resource", // firefox
+    ].some((x) => e.message.startsWith(x))
+  );
+}
