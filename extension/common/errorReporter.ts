@@ -11,7 +11,7 @@ import {
   Scope,
 } from "@sentry/react";
 import type { Context, ErrorEvent, EventHint } from "@sentry/react";
-import { browser, getSetting, ErrorMessage, SettingsKey } from "../common";
+import { browser, getSetting, ErrorMessage } from "../common";
 import { DataExtractionError } from "./customErrors";
 
 // filter integrations that use the global variable
@@ -44,7 +44,7 @@ const client = new BrowserClient({
       console.log(evt.contexts);
     }
 
-    const optedIn = Boolean(await getSetting(SettingsKey.errorReportingOptIn));
+    const optedIn = await getSetting("errorReportingOptIn");
     if (!optedIn) return null;
 
     const errMsg = (hint.originalException as Error)?.message;

@@ -1,4 +1,4 @@
-import { type ProgramFilterSettings } from "./types";
+import { type ExtensionSettings, type ProgramFilterSettings } from "./types";
 
 export const enum CssClasses {
   styleNode = "sift-style",
@@ -39,12 +39,13 @@ export const enum MessageType {
   placeholder = "sift:placeholderForTestingAndDebugging",
 }
 
-export enum SettingsKey {
-  errorReportingOptIn = "errorReportingOptIn",
-  programFiltersSettings = "programFiltersSettings",
-  popupSeenAtLeastOnce = "popupSeenAtLeastOnce",
-  outdatedSelectorDetectionEnabled = "outdatedSelectorDetectionEnabled",
-}
+export const ExtensionSettingsKeys = [
+  "errorReportingOptIn",
+  "programFiltersSettings",
+  "popupSeenAtLeastOnce",
+  "outdatedSelectorDetectionEnabled",
+  "updatedDbVersion",
+] as const satisfies (keyof ExtensionSettings)[];
 
 export const defaultProgramFilterSettings: ProgramFilterSettings = {
   minRating: 0,

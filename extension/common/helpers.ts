@@ -1,7 +1,7 @@
 // this module is for more complex helper fns
 
-import { browser, languages, SettingsKey } from "./constants";
-import type { Message } from "./types";
+import { browser, languages } from "./constants";
+import type { ExtensionSettings, Message } from "./types";
 import { pick } from "../../utils";
 import { captureException } from "./errorReporter";
 import * as storage from "./storage";
@@ -67,15 +67,15 @@ export function extractProgramTitle(str: string): string {
   );
 }
 
-export async function getSetting<T>(
-  key: keyof typeof SettingsKey,
-): Promise<T | undefined> {
-  return await storage.get<T>(key);
+export async function getSetting<K extends keyof ExtensionSettings>(
+  key: K,
+): Promise<ExtensionSettings[K] | undefined> {
+  return await storage.get(key);
 }
 
-export async function setSetting<T>(
-  key: keyof typeof SettingsKey,
-  value: T,
+export async function setSetting<K extends keyof ExtensionSettings>(
+  key: K,
+  value: ExtensionSettings[K],
 ): Promise<void> {
-  await storage.set<T>(key, value);
+  await storage.set(key, value);
 }

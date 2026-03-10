@@ -5,7 +5,7 @@ import {
   setSetting,
   omitBy,
   MessageType,
-  SettingsKey,
+  ExtensionSettingsKeys,
   telemetryIntervalSizeInSeconds,
   selectorStatusKeyPrefix,
   sendMessageToAllTabs,
@@ -47,6 +47,7 @@ let omdbApiClient: OmdbApiClient;
         TelemetryStore.upgradeDb(db, oldVersion);
       },
     });
+    await setSetting("updatedDbVersion", DB_VERSION);
     ratingsCache = await initializeRatingsCache(
       db as IDBPDatabase<RatingsCacheSchema>,
     );
@@ -73,7 +74,7 @@ async function initializeRatingsCache(db: IDBPDatabase<RatingsCacheSchema>) {
   const oldCacheData = omitBy(
     allData,
     (_v, k) =>
-      (Object.values(SettingsKey) as string[]).includes(k) ||
+      (ExtensionSettingsKeys as string[]).includes(k) ||
       k.startsWith(selectorStatusKeyPrefix),
   ) as Record<string, CachedIMDBData>;
 
@@ -106,9 +107,9 @@ async function injectUpdatedContentScripts() {
 }
 
 async function showPopupIfNotSeen() {
-  if (await getSetting(SettingsKey.popupSeenAtLeastOnce)) return;
+  if (await getSetting("popupSeenAtLeastOnce")) return;
   browser.action?.openPopup();
-  await setSetting(SettingsKey.popupSeenAtLeastOnce, true);
+  await setSetting("popupSeenAtLeastOnce", true);
 }
 
 function handleMessage(

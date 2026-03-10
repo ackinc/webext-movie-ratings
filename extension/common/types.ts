@@ -93,3 +93,13 @@ export type WebpageStats = {
   nProgramsRatedNA: number;
   nProgramsRatedNF: number;
 };
+
+// WARNING: if updating this type, don't forget to also update
+//   ExtensionSettingsKeys in constants.ts!
+export type ExtensionSettings = {
+  errorReportingOptIn: boolean;
+  programFiltersSettings: ProgramFilterSettings;
+  popupSeenAtLeastOnce: boolean;
+  outdatedSelectorDetectionEnabled: boolean;
+  updatedDbVersion: number;
+};

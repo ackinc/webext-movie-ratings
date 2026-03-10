@@ -14,8 +14,6 @@ import {
   getGeneralizedUrlPath,
   getIMDBLink,
   getSetting,
-  type ProgramFilterSettings,
-  SettingsKey,
   ErrorMessage,
   ensureError,
 } from "../common";
@@ -188,9 +186,8 @@ valid containers:\n\t${programContainers
 
   protected async injectStyles() {
     const filterSettings =
-      ((await getSetting(SettingsKey.programFiltersSettings)) as
-        | ProgramFilterSettings
-        | undefined) ?? defaultProgramFilterSettings;
+      (await getSetting("programFiltersSettings")) ??
+      defaultProgramFilterSettings;
 
     const styleNode = document.createElement("style");
     styleNode.classList.add(CssClasses.styleNode);
@@ -303,8 +300,8 @@ valid containers:\n\t${programContainers
       if (APP_ENV !== "testing") return;
       if (this.#isMarkedForCleanup) return;
 
-      const outdatedSelectorDetectionEnabled = await getSetting<boolean>(
-        SettingsKey.outdatedSelectorDetectionEnabled,
+      const outdatedSelectorDetectionEnabled = await getSetting(
+        "outdatedSelectorDetectionEnabled",
       );
       if (!outdatedSelectorDetectionEnabled) return;
 
