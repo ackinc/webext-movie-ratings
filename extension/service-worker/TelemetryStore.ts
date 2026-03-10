@@ -1,7 +1,8 @@
-import { type DBSchema, type IDBPDatabase } from "idb";
-import { omit, shallowEqual, type WebpageStats } from "../common";
+import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import { ErrorMessage, omit, shallowEqual, type WebpageStats } from "../common";
+import { DB_NAME, DB_VERSION } from "./constants";
 
-interface TelemetryStoreSchema extends DBSchema {
+export interface TelemetryStoreSchema extends DBSchema {
   telemetryStore: {
     key: string;
     value: unknown;
@@ -44,12 +45,17 @@ export default class TelemetryStore {
     }
   }
 
-  static async create(db: IDBPDatabase, intervalSizeInSeconds: number) {
-    const store = new TelemetryStore(
-      db as IDBPDatabase<TelemetryStoreSchema>,
-      intervalSizeInSeconds,
-    );
-    return store;
+  static async create(
+    db: IDBPDatabase<TelemetryStoreSchema> | undefined,
+    intervalSizeInSeconds: number,
+  ) {
+    db ??= await openDB<TelemetryStoreSchema>(DB_NAME, DB_VERSION, {
+      upgrade: () => {
+        throw new Error(ErrorMessage.idbUpgradeCalledUnexpectedly);
+      },
+    });
+
+    return new TelemetryStore(db, intervalSizeInSeconds);
   }
 
   constructor(

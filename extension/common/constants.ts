@@ -65,4 +65,5 @@ export const enum ErrorMessage {
   telemetryStoreNotReady = "The telemetry store is not ready",
   ratingsApiRequestTimedOut = "The ratings API request timed out",
   ratingsApiRequestAlreadyInFlight = "A request for this program's rating is already in-flight",
+  idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",
 }

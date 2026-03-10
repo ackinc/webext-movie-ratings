@@ -23,8 +23,8 @@ import {
   captureException,
   type ExceptionMetadata,
 } from "../common/errorReporter";
-import RatingsCache from "./RatingsCache";
-import TelemetryStore from "./TelemetryStore";
+import RatingsCache, { type RatingsCacheSchema } from "./RatingsCache";
+import TelemetryStore, { type TelemetryStoreSchema } from "./TelemetryStore";
 import OmdbApiClient from "./OmdbApiClient";
 import {
   DB_NAME,
@@ -47,8 +47,12 @@ let omdbApiClient: OmdbApiClient;
         TelemetryStore.upgradeDb(db, oldVersion);
       },
     });
-    ratingsCache = await initializeRatingsCache(db);
-    telemetryStore = await initializeTelemetryStore(db);
+    ratingsCache = await initializeRatingsCache(
+      db as IDBPDatabase<RatingsCacheSchema>,
+    );
+    telemetryStore = await initializeTelemetryStore(
+      db as IDBPDatabase<TelemetryStoreSchema>,
+    );
     omdbApiClient = new OmdbApiClient(fetchWithAddedTelemetry);
     await injectUpdatedContentScripts();
   } catch (e) {
@@ -64,7 +68,7 @@ async function onInstalled() {
   await showPopupIfNotSeen();
 }
 
-async function initializeRatingsCache(db: IDBPDatabase) {
+async function initializeRatingsCache(db: IDBPDatabase<RatingsCacheSchema>) {
   const allData = await storage.getAll();
   const oldCacheData = omitBy(
     allData,
@@ -78,7 +82,9 @@ async function initializeRatingsCache(db: IDBPDatabase) {
   return cache;
 }
 
-async function initializeTelemetryStore(db: IDBPDatabase) {
+async function initializeTelemetryStore(
+  db: IDBPDatabase<TelemetryStoreSchema>,
+) {
   return await TelemetryStore.create(db, telemetryIntervalSizeInSeconds);
 }
 
