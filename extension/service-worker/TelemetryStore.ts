@@ -84,25 +84,14 @@ export default class TelemetryStore {
       const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
       await telemetryStore.put(curValue + 1, key);
     } else if (event.type === "RATINGS_API_RESPONSE_RECEIVED") {
-      {
-        const key = [
-          this.#getIntervalLabel(event.data.startTime),
-          "nRatingsApiCallsSucceeded",
-        ].join(keyPartSeparator);
+      // need to store every observation to calculate count, mean, p50/95/99
+      const key = [
+        this.#getIntervalLabel(event.data.startTime),
+        "ratingsApiResponseTimes",
+      ].join(keyPartSeparator);
 
-        const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
-        await telemetryStore.put(curValue + 1, key);
-      }
-
-      {
-        const key = [
-          this.#getIntervalLabel(event.data.startTime),
-          "sumRatingsApiResponseTimes",
-        ].join(keyPartSeparator);
-
-        const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
-        await telemetryStore.put(curValue + event.data.durationMs, key);
-      }
+      const curValue = ((await telemetryStore.get(key)) as number[]) ?? [];
+      await telemetryStore.put(curValue.concat(event.data.durationMs), key);
     } else if (event.type === "WEBPAGE_RATING_STATS_RECEIVED") {
       const { id, pageUrl, timestamp, stats } = event.data;
       const key = ["webpageRatingStats", pageUrl, id].join(keyPartSeparator);
