@@ -1,6 +1,7 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import { ErrorMessage, omit, shallowEqual, type WebpageStats } from "../common";
 import { DB_NAME, DB_VERSION } from "./constants";
+import { getSetting, waitFor } from "../common";
 
 export interface TelemetryStoreSchema extends DBSchema {
   telemetryStore: {
@@ -49,11 +50,22 @@ export default class TelemetryStore {
     db: IDBPDatabase<TelemetryStoreSchema> | undefined,
     intervalSizeInSeconds: number,
   ) {
-    db ??= await openDB<TelemetryStoreSchema>(DB_NAME, DB_VERSION, {
-      upgrade: () => {
-        throw new Error(ErrorMessage.idbUpgradeCalledUnexpectedly);
-      },
-    });
+    if (!db) {
+      // Db-upgrade code lives inside the service worker initialization logic
+      // We don't want to be opening new idb connections from here until the
+      //   service worker has had time to finish upgrading the DB
+      await waitFor(
+        async () => (await getSetting("updatedDbVersion")) === DB_VERSION,
+        60,
+        1000,
+      );
+
+      db = await openDB<TelemetryStoreSchema>(DB_NAME, DB_VERSION, {
+        upgrade: () => {
+          throw new Error(ErrorMessage.idbUpgradeCalledUnexpectedly);
+        },
+      });
+    }
 
     return new TelemetryStore(db, intervalSizeInSeconds);
   }

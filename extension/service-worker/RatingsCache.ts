@@ -7,6 +7,8 @@ import {
   type ProgramData,
   pick,
   ErrorMessage,
+  getSetting,
+  waitFor,
 } from "../common";
 import { DB_NAME, DB_VERSION } from "./constants";
 
@@ -38,11 +40,21 @@ export default class RatingsCache {
     db: IDBPDatabase<RatingsCacheSchema> | undefined,
     data: Record<string, CachedIMDBData> = {},
   ) {
-    db ??= await openDB<RatingsCacheSchema>(DB_NAME, DB_VERSION, {
-      upgrade: () => {
-        throw new Error(ErrorMessage.idbUpgradeCalledUnexpectedly);
-      },
-    });
+    if (!db) {
+      // See comment in TelemetryStore::create
+      await waitFor(
+        async () => (await getSetting("updatedDbVersion")) === DB_VERSION,
+        60,
+        1000,
+      );
+
+      db = await openDB<RatingsCacheSchema>(DB_NAME, DB_VERSION, {
+        upgrade: () => {
+          throw new Error(ErrorMessage.idbUpgradeCalledUnexpectedly);
+        },
+      });
+    }
+
     return await new RatingsCache(db).seed(data);
   }
 
