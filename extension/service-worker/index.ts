@@ -23,8 +23,10 @@ import {
   captureException,
   type ExceptionMetadata,
 } from "../common/errorReporter";
-import RatingsCache, { type RatingsCacheSchema } from "./RatingsCache";
-import TelemetryStore, { type TelemetryStoreSchema } from "./TelemetryStore";
+import RatingsCache, { type RatingsCacheSchema } from "../common/RatingsCache";
+import TelemetryStore, {
+  type TelemetryStoreSchema,
+} from "../common/TelemetryStore";
 import OmdbApiClient from "./OmdbApiClient";
 import {
   DB_NAME,

@@ -9,8 +9,8 @@ import {
   ErrorMessage,
   getSetting,
   waitFor,
-} from "../common";
-import { DB_NAME, DB_VERSION } from "./constants";
+} from ".";
+import { DB_NAME, DB_VERSION } from "../service-worker/constants";
 
 export interface RatingsCacheSchema extends DBSchema {
   ratingsStore: {
