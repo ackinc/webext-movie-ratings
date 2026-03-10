@@ -35,6 +35,7 @@ export const enum MessageType {
   filterSettingsChange = "sift:filterSettingsChange",
   orphanCheck = "sift:orphanCheck",
   healthCheck = "sift:healthCheck",
+  webpageRatingStats = "sift:webpageRatingStats",
   placeholder = "sift:placeholderForTestingAndDebugging",
 }
 

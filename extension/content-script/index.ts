@@ -28,6 +28,13 @@ import { updateFilteredOutProgramNodeStyles } from "./utils";
 let page: AbstractPage;
 let programFilterSettings: ProgramFilterSettings;
 
+// When tracking webpage-ratings-stats for telemetry:
+// - stats from when a user is scrolling a particular page (pg 1) should be
+//     logged in the same entry
+// - stats from when a user goes to pg 2 should go into a new entry
+// - stats from when a user goes back to pg 1 should also go into a new entry
+let webpageRatingStatsId: string;
+
 // should *only* be set to undefined when we deliberately pause
 //   the loop due to errors
 let loopTimeout: number | undefined;
@@ -36,7 +43,7 @@ let loopAbortController: AbortController;
 (async () => {
   try {
     // so content scripts belonging to prev. ext. version can cleanup
-    window.postMessage({ messageType: MessageType.orphanCheck });
+    window.postMessage({ type: MessageType.orphanCheck });
 
     await initializePage();
     addMessageListeners();
@@ -69,7 +76,12 @@ async function initializePage() {
     throw new Error("Page not recognized");
   }
 
+  webpageRatingStatsId = createId();
   await page.initialize();
+}
+
+function createId(prefix = "sid_") {
+  return `${prefix}${Math.random().toString().split(".").at(-1)}`;
 }
 
 function addMessageListeners() {
@@ -105,6 +117,36 @@ async function loop() {
     await Promise.all(
       programs.map((p) => addRating(p).then(fadeIfFilteredOut)),
     );
+
+    if (FF_TELEMETRY_ENABLED) {
+      const nPrograms = programs.length;
+      let nProgramsWithNoRatingNode = 0;
+      let nProgramsRatedNA = 0;
+      let nProgramsRatedNF = 0;
+
+      const ctor = page.constructor as typeof AbstractPage;
+      programs.forEach(({ node }) => {
+        const rating =
+          ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
+        if (rating === "N/A") nProgramsRatedNA++;
+        if (rating === "N/F") nProgramsRatedNF++;
+        if (!rating) nProgramsWithNoRatingNode++;
+      });
+      await browser.runtime.sendMessage({
+        type: MessageType.webpageRatingStats,
+        data: {
+          id: webpageRatingStatsId,
+          stats: {
+            nPrograms,
+            nProgramsWithNoRatingNode,
+            nProgramsRatedNA,
+            nProgramsRatedNF,
+          },
+          pageUrl: location.href,
+          timestamp: +new Date(),
+        },
+      });
+    }
 
     if (!thisLoopAbortController.signal.aborted) {
       loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
@@ -148,7 +190,7 @@ async function addRating(p: Program): Promise<Program> {
 async function fetchIMDBData(program: Program): Promise<IMDBData> {
   const response: IMDBData | SWErrorResponse =
     await browser.runtime.sendMessage({
-      messageType: MessageType.fetchIMDBRating,
+      type: MessageType.fetchIMDBRating,
       data: {
         program: pick(program, ["title", "type", "year"]),
         pageUrl: location.href,
@@ -183,21 +225,25 @@ function handleMessage(
   _s?: chrome.runtime.MessageSender,
   sendResponse?: (response: unknown) => void,
 ) {
-  const { messageType, data } = m instanceof MessageEvent ? m.data : m;
+  const { type, data } = m instanceof MessageEvent ? m.data : m;
 
-  if (messageType === MessageType.orphanCheck) {
+  if (type === MessageType.orphanCheck) {
     if (!browser.runtime.id) cleanup();
-  } else if (messageType === MessageType.urlChange) {
+  } else if (type === MessageType.urlChange) {
     handleUrlChange();
-  } else if (messageType === MessageType.filterSettingsChange) {
-    handleFilterSettingsChange(data as ProgramFilterSettings);
-  } else if (messageType === MessageType.healthCheck) {
+  } else if (type === MessageType.filterSettingsChange) {
+    handleFilterSettingsChange(data);
+  } else if (type === MessageType.healthCheck) {
     if (sendResponse) sendResponse("ok");
   }
 }
 
 function handleUrlChange() {
-  if (page && loopTimeout === undefined) {
+  if (!page) return;
+
+  webpageRatingStatsId = createId();
+
+  if (loopTimeout === undefined) {
     console.log(`sift: resuming paused loop on page change`);
     loopTimeout = setTimeout(loop, 0);
   }

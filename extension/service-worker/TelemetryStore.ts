@@ -1,4 +1,5 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
+import { omit, shallowEqual, type WebpageStats } from "../common";
 
 interface TelemetryStoreSchema extends DBSchema {
   telemetryStore: {
@@ -7,11 +8,31 @@ interface TelemetryStoreSchema extends DBSchema {
   };
 }
 
+type Event =
+  | {
+      type: "PROGRAM_RATING_REQUEST_RECEIVED";
+      data: { pageUrl: string | undefined };
+    }
+  | {
+      type: "RATINGS_API_REQUEST_MADE";
+      data: { startTime: number };
+    }
+  | {
+      type: "RATINGS_API_RESPONSE_RECEIVED";
+      data: { startTime: number; durationMs: number };
+    }
+  | {
+      type: "WEBPAGE_RATING_STATS_RECEIVED";
+      data: {
+        id: string;
+        stats: WebpageStats;
+        pageUrl: string;
+        timestamp: number;
+      };
+    };
+
 const storeName = "telemetryStore";
-const eventTypesToTelemetryKeyPrefixes = {
-  RATINGS_API_CALL: "nApiCalls",
-  PROGRAM_RATING_REQUEST: "nRatingRequests",
-} as const;
+const keyPartSeparator = "::";
 
 export default class TelemetryStore {
   db: IDBPDatabase<TelemetryStoreSchema>;
@@ -39,55 +60,57 @@ export default class TelemetryStore {
     this.intervalSizeInSeconds = intervalSizeInSeconds;
   }
 
-  async logEvent(
-    eventType: keyof typeof eventTypesToTelemetryKeyPrefixes,
-    data?: unknown,
-  ) {
+  async logEvent(event: Event) {
     const txn = this.db.transaction(storeName, "readwrite");
     const telemetryStore = txn.objectStore(storeName);
 
-    const key = this.#getEventKey(eventType, data);
-
-    const curCount = ((await telemetryStore.get(key)) as number) ?? 0;
-    await telemetryStore.put(curCount + 1, key);
-  }
-
-  #getEventKey(
-    eventType: keyof typeof eventTypesToTelemetryKeyPrefixes,
-    data?: unknown,
-  ): string {
-    if (!(eventType in eventTypesToTelemetryKeyPrefixes)) {
-      throw new Error(`Unrecognized event type: ${eventType}`);
-    }
-
-    if (eventType === "RATINGS_API_CALL") {
-      return `${eventTypesToTelemetryKeyPrefixes[eventType]}::${this.#getCurrentInterval()}`;
-    }
-
-    if (eventType === "PROGRAM_RATING_REQUEST") {
-      const { pageUrl } = data as { pageUrl: string };
-      const keyParts: string[] = [
-        eventTypesToTelemetryKeyPrefixes[eventType],
-        this.#getCurrentInterval().toString(),
-      ];
-      if (pageUrl) {
-        const url = new URL(pageUrl);
-        keyParts.push(url.origin, url.href);
+    if (event.type === "PROGRAM_RATING_REQUEST_RECEIVED") {
+      let key = [this.#getIntervalLabel(), "nRatingRequests"].join(
+        keyPartSeparator,
+      );
+      if (event.data.pageUrl) {
+        const url = new URL(event.data.pageUrl);
+        key = [key, url.href].join(keyPartSeparator);
       }
-      return keyParts.join("::");
-    }
 
-    return "" as never;
+      const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
+      await telemetryStore.put(curValue + 1, key);
+    } else if (event.type === "RATINGS_API_REQUEST_MADE") {
+      const key = [
+        this.#getIntervalLabel(event.data.startTime),
+        "nRatingsApiCalls",
+      ].join(keyPartSeparator);
+
+      const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
+      await telemetryStore.put(curValue + 1, key);
+    } else if (event.type === "RATINGS_API_RESPONSE_RECEIVED") {
+      // need to store every observation to calculate count, mean, p50/95/99
+      const key = [
+        this.#getIntervalLabel(event.data.startTime),
+        "ratingsApiResponseTimes",
+      ].join(keyPartSeparator);
+
+      const curValue = ((await telemetryStore.get(key)) as number[]) ?? [];
+      await telemetryStore.put(curValue.concat(event.data.durationMs), key);
+    } else if (event.type === "WEBPAGE_RATING_STATS_RECEIVED") {
+      const { id, pageUrl, timestamp, stats } = event.data;
+      const key = ["webpageRatingStats", pageUrl, id].join(keyPartSeparator);
+      const curVal = (await telemetryStore.get(key)) as
+        | { stats: WebpageStats; timestamp: number }
+        | undefined;
+      if (curVal && shallowEqual(stats, omit(curVal, ["timestamp"]))) return;
+      await telemetryStore.put({ ...stats, timestamp }, key);
+    }
   }
 
   // Examples:
   // - intervalSize === 01s; 1772722745434 => 1772722746000,
   // - intervalSize === 10s; 1772722745434 => 1772722750000,
-  #getCurrentInterval(): number {
+  #getIntervalLabel(time = +new Date()): string {
     return (
-      Math.ceil(+new Date() / (this.intervalSizeInSeconds * 1000)) *
+      Math.ceil(time / (this.intervalSizeInSeconds * 1000)) *
       this.intervalSizeInSeconds *
       1000
-    );
+    ).toString();
   }
 }

@@ -44,10 +44,40 @@ export type NumberRange = {
   max: number;
 };
 
-export type Message = {
-  messageType: MessageType;
-  data?: unknown;
-};
+export type Message =
+  | {
+      type: MessageType.fetchIMDBRating;
+      data: {
+        program: Omit<Program, "node">;
+        pageUrl: string;
+      };
+    }
+  | {
+      type: MessageType.urlChange;
+    }
+  | {
+      type: MessageType.filterSettingsChange;
+      data: ProgramFilterSettings;
+    }
+  | {
+      type: MessageType.orphanCheck;
+    }
+  | {
+      type: MessageType.healthCheck;
+    }
+  | {
+      type: MessageType.webpageRatingStats;
+      data: {
+        id: string;
+        stats: WebpageStats;
+        pageUrl: string;
+        timestamp: number;
+      };
+    }
+  | {
+      type: MessageType.placeholder;
+      data?: unknown;
+    };
 
 export type IsOptional = boolean;
 
@@ -56,3 +86,10 @@ export type Selector = string;
 export type SelectorStatus = "active" | "probablyOutOfDate";
 export type SelectorStatusForPathname = Record<Selector, SelectorStatus>;
 export type SelectorStatusForSite = Record<UrlPath, SelectorStatusForPathname>;
+
+export type WebpageStats = {
+  nPrograms: number;
+  nProgramsWithNoRatingNode: number;
+  nProgramsRatedNA: number;
+  nProgramsRatedNF: number;
+};

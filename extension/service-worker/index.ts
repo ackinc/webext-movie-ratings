@@ -31,6 +31,7 @@ import {
   DB_VERSION,
   RATING_API_REQUEST_TIMEOUT_MS,
 } from "./constants";
+import { isNetworkError } from "../../utils";
 
 let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
@@ -83,7 +84,7 @@ async function initializeTelemetryStore(db: IDBPDatabase) {
 
 async function injectUpdatedContentScripts() {
   const results = await sendMessageToAllTabs({
-    messageType: MessageType.healthCheck,
+    type: MessageType.healthCheck,
   });
   results.forEach(({ tab, result }) => {
     if (
@@ -110,16 +111,13 @@ function handleMessage(
   sendResponse: (arg: IMDBData | SWErrorResponse) => void,
 ) {
   try {
-    if (request.messageType === MessageType.fetchIMDBRating) {
+    if (request.type === MessageType.fetchIMDBRating) {
       if (!ratingsCache) throw new Error(ErrorMessage.ratingsCacheNotReady);
       if (FF_TELEMETRY_ENABLED && !telemetryStore) {
         throw new Error(ErrorMessage.telemetryStoreNotReady);
       }
 
-      const { pageUrl, program } = request.data as {
-        pageUrl: string;
-        program: Omit<Program, "node">;
-      };
+      const { pageUrl, program } = request.data;
       getIMDBData(program, pageUrl)
         .then((data) => sendResponse(data))
         .catch((e) =>
@@ -127,10 +125,19 @@ function handleMessage(
         );
 
       return true; // keeps channel open until sendReponse is called
-    } else if (request.messageType === MessageType.placeholder) {
+    } else if (request.type === MessageType.webpageRatingStats) {
+      if (FF_TELEMETRY_ENABLED) {
+        telemetryStore
+          .logEvent({
+            type: "WEBPAGE_RATING_STATS_RECEIVED",
+            data: request.data,
+          })
+          .catch(handleError);
+      }
+    } else if (request.type === MessageType.placeholder) {
       // do something here if desired
     } else {
-      throw new Error(`Unknown message type: ${request.messageType}`);
+      throw new Error(`Unknown message type: ${request.type}`);
     }
   } catch (e) {
     handleError(e);
@@ -141,6 +148,8 @@ function handleMessage(
   function handleError(e: unknown, metadata?: ExceptionMetadata) {
     const error = e instanceof Error ? e : new Error(`${e}`);
     sendResponse({ error: error.message });
+
+    if (isNetworkError(e) && !navigator.onLine) return;
 
     const errorsToIgnore: string[] = [
       ErrorMessage.ratingsCacheNotReady,
@@ -160,7 +169,10 @@ function getIMDBData(
   return new Promise((resolve, reject) => {
     if (FF_TELEMETRY_ENABLED) {
       telemetryStore
-        .logEvent("PROGRAM_RATING_REQUEST", { pageUrl })
+        .logEvent({
+          type: "PROGRAM_RATING_REQUEST_RECEIVED",
+          data: { pageUrl },
+        })
         .catch(reject);
     }
 
@@ -184,6 +196,25 @@ function getIMDBData(
 async function fetchWithAddedTelemetry(
   ...args: Parameters<typeof fetch>
 ): ReturnType<typeof fetch> {
-  if (FF_TELEMETRY_ENABLED) await telemetryStore.logEvent("RATINGS_API_CALL");
-  return fetch(...args);
+  const startTime = +new Date();
+
+  if (FF_TELEMETRY_ENABLED) {
+    await telemetryStore.logEvent({
+      type: "RATINGS_API_REQUEST_MADE",
+      data: { startTime },
+    });
+  }
+
+  const response = await fetch(...args);
+  if (FF_TELEMETRY_ENABLED) {
+    await telemetryStore.logEvent({
+      type: "RATINGS_API_RESPONSE_RECEIVED",
+      data: {
+        startTime,
+        durationMs: +new Date() - startTime,
+      },
+    });
+  }
+
+  return response;
 }
