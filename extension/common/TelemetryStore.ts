@@ -57,20 +57,11 @@ export default class TelemetryStore {
       // This was not something to be concerned about when TelemetryStores
       //   could only be created from the SW, because the SW is careful to
       //   only instantiate them *after* DB upgrade is done
-      // But now that we want to be able to access telemetry data from
-      //   other parts of the extension (content-script / popup / other
-      //   extension pages), we need to be very sure that idb conn.s
-      //   from here are only opened *after* DB upgrade in the SW has happened
-      // In chrome/edge, this is basically guaranteed for content-scripts,
-      //   because the browser does not auto-inject updated content-scripts
-      //   into already-opened tabs. The open tabs only get the updated
-      //   content-script when the service-worker injects them, which it is
-      //   careful to do only after db-upgrade has happened
-      // Firefox however, auto-injects updated content scripts into open tabs,
-      //   which means there's a chance that calls to TelemetryStore::create
-      //   from the updated content scripts cause an idb conn. to be opened
-      //   *before* the db-upgrade code in the updated service-worker has had
-      //   a chance to run
+      // But now that we want to be able to access telemetry data from the
+      //   popup and other extension-pages (content-scripts run in a sandbox
+      //   scoped to the host-webpage, so they cannot access the extension's
+      //   IDB anyway), we need to be very sure that idb conn.s from here are
+      //   only opened *after* DB upgrade in the SW has happened
       await waitFor(
         async () => (await getSetting("updatedDbVersion")) === DB_VERSION,
         60,
