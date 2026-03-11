@@ -75,6 +75,10 @@ export type Message =
       };
     }
   | {
+      type: MessageType.error;
+      data: { error: Error; context: ExtensionContext; pageUrl?: string };
+    }
+  | {
       type: MessageType.placeholder;
       data?: unknown;
     };

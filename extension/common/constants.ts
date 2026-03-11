@@ -36,6 +36,7 @@ export const enum MessageType {
   orphanCheck = "sift:orphanCheck",
   healthCheck = "sift:healthCheck",
   webpageRatingStats = "sift:webpageRatingStats",
+  error = "sift:error",
   placeholder = "sift:placeholderForTestingAndDebugging",
 }
 

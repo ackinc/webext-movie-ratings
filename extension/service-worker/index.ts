@@ -143,6 +143,12 @@ function handleMessage(
           })
           .catch(handleError);
       }
+    } else if (request.type === MessageType.error) {
+      if (FF_TELEMETRY_ENABLED) {
+        telemetryStore
+          .logEvent({ type: "ERROR", data: request.data })
+          .catch(handleError);
+      }
     } else if (request.type === MessageType.placeholder) {
       // do something here if desired
     } else {
