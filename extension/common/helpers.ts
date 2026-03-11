@@ -1,10 +1,25 @@
 // this module is for more complex helper fns
 
 import { browser, languages } from "./constants";
-import type { ExtensionSettings, Message } from "./types";
+import type { ExtensionContext, ExtensionSettings, Message } from "./types";
 import { pick } from "../../utils";
 import { captureException } from "./errorReporter";
 import * as storage from "./storage";
+
+export function getExtensionContext(): ExtensionContext {
+  const { location } = globalThis;
+
+  if (location.protocol.startsWith("http")) return "content-script";
+
+  if (location.pathname.includes("popup")) return "popup";
+
+  if (location.pathname.includes("service-worker")) return "service-worker";
+
+  // chrome-extension in chrome & edge; moz-extension in firefox
+  if (location.protocol.endsWith("extension")) return "extension-page";
+
+  throw new Error(`Could not figure out context. Running at ${location.href}`);
+}
 
 export async function sendMessageToAllTabs(message: Message) {
   const tabs = await browser.tabs.query({

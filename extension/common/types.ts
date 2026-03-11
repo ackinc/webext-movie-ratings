@@ -103,3 +103,9 @@ export type ExtensionSettings = {
   outdatedSelectorDetectionEnabled: boolean;
   updatedDbVersion: number;
 };
+
+export type ExtensionContext =
+  | "content-script"
+  | "popup"
+  | "service-worker"
+  | "extension-page";

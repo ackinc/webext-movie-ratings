@@ -1,5 +1,11 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
-import { ErrorMessage, omit, shallowEqual, type WebpageStats } from ".";
+import {
+  ErrorMessage,
+  omit,
+  shallowEqual,
+  type ExtensionContext,
+  type WebpageStats,
+} from ".";
 import { DB_NAME, DB_VERSION } from "../service-worker/constants";
 import { getSetting, waitFor } from ".";
 
@@ -8,6 +14,10 @@ export interface TelemetryStoreSchema extends DBSchema {
     key: string;
     value: unknown;
   };
+}
+
+interface ErrorReceivedByTelemetryStore extends Error {
+  __processed: boolean;
 }
 
 type Event =
@@ -30,6 +40,14 @@ type Event =
         stats: WebpageStats;
         pageUrl: string;
         timestamp: number;
+      };
+    }
+  | {
+      type: "ERROR";
+      data: {
+        error: Error;
+        context: ExtensionContext;
+        pageUrl?: string;
       };
     };
 
@@ -126,6 +144,27 @@ export default class TelemetryStore {
         | undefined;
       if (curVal && shallowEqual(stats, omit(curVal, ["timestamp"]))) return;
       await telemetryStore.put({ ...stats, timestamp }, key);
+    } else if (event.type === "ERROR") {
+      const { error, context, pageUrl } = event.data;
+
+      // The extension's core loop encounters DataExtractionErrors on the
+      //   same pc- or p-nodes again and again; we don't want to treat each
+      //   encounter as a separate error for telemetry purposes
+      // Our strategy is to tack on a new attr. to the error object to help us
+      //   sieve out errors that have been seen before
+      if ((error as ErrorReceivedByTelemetryStore).__processed) {
+        return;
+      }
+
+      const key = ["errors", this.#getIntervalLabel(), context, pageUrl]
+        .filter((x) => x)
+        .join(keyPartSeparator);
+      const curVal: Set<Error> =
+        ((await telemetryStore.get(key)) as Set<Error> | undefined) ??
+        new Set<Error>();
+      await telemetryStore.put(curVal.add(error), key);
+
+      (error as ErrorReceivedByTelemetryStore).__processed = true;
     }
   }
 
