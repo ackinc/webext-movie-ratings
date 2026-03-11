@@ -29,6 +29,7 @@ export class DataExtractionError extends Error {
 
   constructor(error: Error, node: HTMLElement, selector?: Selector) {
     super(`Error extracting data`, { cause: error });
+    this.name = "DataExtractionError";
     this.node = node;
     this.pageUrl = location.href;
     this.selector = selector;
