@@ -109,7 +109,7 @@ export default class TelemetryStore {
     const telemetryStore = txn.objectStore(storeName);
 
     if (event.type === "PROGRAM_RATING_REQUEST_RECEIVED") {
-      let key = [this.#getIntervalLabel(), "nRatingRequests"].join(
+      let key = ["nRatingRequests", this.#getIntervalLabel()].join(
         keyPartSeparator,
       );
       if (event.data.pageUrl) {
@@ -121,8 +121,8 @@ export default class TelemetryStore {
       await telemetryStore.put(curValue + 1, key);
     } else if (event.type === "RATINGS_API_REQUEST_MADE") {
       const key = [
-        this.#getIntervalLabel(event.data.startTime),
         "nRatingsApiCalls",
+        this.#getIntervalLabel(event.data.startTime),
       ].join(keyPartSeparator);
 
       const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
@@ -130,8 +130,8 @@ export default class TelemetryStore {
     } else if (event.type === "RATINGS_API_RESPONSE_RECEIVED") {
       // need to store every observation to calculate count, mean, p50/95/99
       const key = [
-        this.#getIntervalLabel(event.data.startTime),
         "ratingsApiResponseTimes",
+        this.#getIntervalLabel(event.data.startTime),
       ].join(keyPartSeparator);
 
       const curValue = ((await telemetryStore.get(key)) as number[]) ?? [];
