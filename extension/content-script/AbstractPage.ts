@@ -142,7 +142,8 @@ valid containers:\n\t${programContainers
         throw e;
       }
 
-      captureException(DataExtractionError.from(e, node, selector));
+      const err = DataExtractionError.from(e, node, selector);
+      if (!err.__fromCache) captureException(err);
       return null;
     }
   };
@@ -165,7 +166,8 @@ valid containers:\n\t${programContainers
         throw e;
       }
 
-      captureException(DataExtractionError.from(e, node, selector));
+      const err = DataExtractionError.from(e, node, selector);
+      if (!err.__fromCache) captureException(err);
       return null;
     }
   };

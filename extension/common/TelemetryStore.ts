@@ -16,10 +16,6 @@ export interface TelemetryStoreSchema extends DBSchema {
   };
 }
 
-interface ErrorReceivedByTelemetryStore extends Error {
-  __processed: boolean;
-}
-
 type Event =
   | {
       type: "PROGRAM_RATING_REQUEST_RECEIVED";
@@ -45,7 +41,11 @@ type Event =
   | {
       type: "ERROR";
       data: {
-        error: Error;
+        errorDetails: {
+          name: string;
+          message: string;
+          stack: string;
+        };
         context: ExtensionContext;
         pageUrl?: string;
       };
@@ -145,16 +145,7 @@ export default class TelemetryStore {
       if (curVal && shallowEqual(stats, omit(curVal, ["timestamp"]))) return;
       await telemetryStore.put({ ...stats, timestamp }, key);
     } else if (event.type === "ERROR") {
-      const { error, context, pageUrl } = event.data;
-
-      // The extension's core loop encounters DataExtractionErrors on the
-      //   same pc- or p-nodes again and again; we don't want to treat each
-      //   encounter as a separate error for telemetry purposes
-      // Our strategy is to tack on a new attr. to the error object to help us
-      //   sieve out errors that have been seen before
-      if ((error as ErrorReceivedByTelemetryStore).__processed) {
-        return;
-      }
+      const { errorDetails, context, pageUrl } = event.data;
 
       const key = ["errors", this.#getIntervalLabel(), context, pageUrl]
         .filter((x) => x)
@@ -162,9 +153,7 @@ export default class TelemetryStore {
       const curVal: Set<Error> =
         ((await telemetryStore.get(key)) as Set<Error> | undefined) ??
         new Set<Error>();
-      await telemetryStore.put(curVal.add(error), key);
-
-      (error as ErrorReceivedByTelemetryStore).__processed = true;
+      await telemetryStore.put(curVal.add(errorDetails), key);
     }
   }
 

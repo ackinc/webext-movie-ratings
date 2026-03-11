@@ -11,7 +11,13 @@ import {
   Scope,
 } from "@sentry/react";
 import type { Context, ErrorEvent, EventHint } from "@sentry/react";
-import { browser, getSetting, ErrorMessage } from "../common";
+import {
+  browser,
+  getExtensionContext,
+  getSetting,
+  ErrorMessage,
+  MessageType,
+} from "../common";
 import { DataExtractionError } from "./customErrors";
 
 // filter integrations that use the global variable
@@ -74,8 +80,22 @@ export type ExceptionMetadata = {
   context?: Record<string, Context>;
   tags?: Record<string, boolean | number | string>;
 };
-export function captureException(e: unknown, metadata: ExceptionMetadata = {}) {
-  e = e instanceof Error ? e : new Error(`${e}`);
+export function captureException(
+  e_: unknown,
+  metadata: ExceptionMetadata = {},
+) {
+  const e = e_ instanceof Error ? e_ : new Error(`${e_}`);
+
+  if (FF_TELEMETRY_ENABLED) {
+    browser.runtime.sendMessage({
+      type: MessageType.error,
+      data: {
+        errorDetails: { name: e.name, message: e.message, stack: e.stack },
+        context: getExtensionContext(),
+        pageUrl: globalThis.location.href,
+      },
+    });
+  }
 
   const clonedScope = scope.clone();
   if (globalThis.constructor.name === "Window") {

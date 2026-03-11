@@ -76,7 +76,15 @@ export type Message =
     }
   | {
       type: MessageType.error;
-      data: { error: Error; context: ExtensionContext; pageUrl?: string };
+      data: {
+        errorDetails: {
+          name: string;
+          message: string;
+          stack: string;
+        };
+        context: ExtensionContext;
+        pageUrl?: string;
+      };
     }
   | {
       type: MessageType.placeholder;
