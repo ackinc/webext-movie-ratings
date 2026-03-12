@@ -32,10 +32,10 @@ type Event =
   | {
       type: "WEBPAGE_RATING_STATS_RECEIVED";
       data: {
-        id: string;
+        sessionStartTime: number;
         stats: WebpageStats;
         pageUrl: string;
-        timestamp: number;
+        statsCollectionTime: number;
       };
     }
   | {
@@ -137,13 +137,21 @@ export default class TelemetryStore {
       const curValue = ((await telemetryStore.get(key)) as number[]) ?? [];
       await telemetryStore.put(curValue.concat(event.data.durationMs), key);
     } else if (event.type === "WEBPAGE_RATING_STATS_RECEIVED") {
-      const { id, pageUrl, timestamp, stats } = event.data;
-      const key = ["webpageRatingStats", pageUrl, id].join(keyPartSeparator);
+      const { sessionStartTime, pageUrl, statsCollectionTime, stats } =
+        event.data;
+      const key = [
+        "webpageRatingStats",
+        this.#getIntervalLabel(sessionStartTime),
+        pageUrl,
+      ].join(keyPartSeparator);
       const curVal = (await telemetryStore.get(key)) as
-        | { stats: WebpageStats; timestamp: number }
+        | { stats: WebpageStats; lastUpdated: number }
         | undefined;
       if (curVal && shallowEqual(stats, omit(curVal, ["timestamp"]))) return;
-      await telemetryStore.put({ ...stats, timestamp }, key);
+      await telemetryStore.put(
+        { ...stats, lastUpdated: statsCollectionTime },
+        key,
+      );
     } else if (event.type === "ERROR") {
       const { errorDetails, context, pageUrl } = event.data;
 

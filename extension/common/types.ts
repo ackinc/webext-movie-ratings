@@ -68,10 +68,10 @@ export type Message =
   | {
       type: MessageType.webpageRatingStats;
       data: {
-        id: string;
+        sessionStartTime: number;
         stats: WebpageStats;
         pageUrl: string;
-        timestamp: number;
+        statsCollectionTime: number;
       };
     }
   | {

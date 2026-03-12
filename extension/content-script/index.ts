@@ -27,12 +27,17 @@ import { updateFilteredOutProgramNodeStyles } from "./utils";
 let page: AbstractPage;
 let programFilterSettings: ProgramFilterSettings;
 
+// This var is defined a little differently than most would expect, because
+//   its main utility is for webpage-ratings-stats
 // When tracking webpage-ratings-stats for telemetry:
-// - stats from when a user is scrolling a particular page (pg 1) should be
+// - the session starts when the user lands on an OTT website
+// - stats from when a user is scrolling the first page (pg 1) should be
 //     logged in the same entry
 // - stats from when a user goes to pg 2 should go into a new entry
 // - stats from when a user goes back to pg 1 should also go into a new entry
-let webpageRatingStatsId: string;
+// In other words, a session is tied to a visit to a particular OTT webpage;
+//   it ends when the user leaves that webpage
+let sessionStartTime: number;
 
 // should *only* be set to undefined when we deliberately pause
 //   the loop due to errors
@@ -75,12 +80,8 @@ async function initializePage() {
     throw new Error("Page not recognized");
   }
 
-  webpageRatingStatsId = createId();
+  sessionStartTime = +new Date();
   await page.initialize();
-}
-
-function createId(prefix = "sid_") {
-  return `${prefix}${Math.random().toString().split(".").at(-1)}`;
 }
 
 function addMessageListeners() {
@@ -132,7 +133,7 @@ async function loop() {
       await browser.runtime.sendMessage({
         type: MessageType.webpageRatingStats,
         data: {
-          id: webpageRatingStatsId,
+          sessionStartTime,
           stats: {
             nPrograms,
             nProgramsWithNoRatingNode,
@@ -140,7 +141,7 @@ async function loop() {
             nProgramsRatedNF,
           },
           pageUrl: location.href,
-          timestamp: +new Date(),
+          statsCollectionTime: +new Date(),
         },
       });
     }
@@ -238,7 +239,7 @@ function handleMessage(
 function handleUrlChange() {
   if (!page) return;
 
-  webpageRatingStatsId = createId();
+  sessionStartTime = +new Date();
 
   if (loopTimeout === undefined) {
     console.log(`sift: resuming paused loop on page change`);
