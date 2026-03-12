@@ -28,22 +28,34 @@ export function invert<T extends (...args: Parameters<T>) => boolean>(
   return (...args) => !fn(...args);
 }
 
-export function pick(
-  obj: Record<string, unknown>,
-  keys: string[],
-  requireAllKeys: boolean = false,
-): Record<string, unknown> {
-  const retval: Record<string, unknown> = {};
+export function partition<const T extends unknown[]>(
+  elems: T,
+  partFn: (el: T[number]) => boolean,
+): [T[number][], T[number][]] {
+  const pass: T[number][] = [];
+  const fail: T[number][] = [];
+  for (const el in elems) (partFn(el) ? pass : fail).push(el);
+  return [pass, fail];
+}
 
-  for (const k in keys) {
-    if (k in obj) {
-      retval[k] = obj[k];
-    } else if (requireAllKeys) {
-      throw new Error(`Required key ${k} is absent`);
-    }
+export function pick<
+  const T extends Record<string, unknown>,
+  const K extends string[],
+>(
+  obj: T,
+  keys: K,
+  requireAllKeys: boolean = false,
+): Pick<T, keyof T & K[number]> {
+  const [keysInObj, keysNotInObj] = partition(keys, (k) => k in obj);
+
+  if (keysNotInObj.length > 0 && requireAllKeys) {
+    throw new Error(`Required keys are absent: ${keysNotInObj.join(", ")}`);
   }
 
-  return retval;
+  return (keysInObj as (keyof T & K[number])[]).reduce(
+    (acc, k) => Object.assign(acc, { [k]: obj[k] }),
+    {} as Partial<Pick<T, keyof T & K[number]>>,
+  ) as Pick<T, keyof T & K[number]>;
 }
 
 export function pickBy(

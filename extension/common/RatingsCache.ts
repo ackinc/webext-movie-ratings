@@ -65,7 +65,7 @@ export default class RatingsCache {
   async get(program: ProgramData): Promise<IMDBData | undefined> {
     const cached = await this.db.get(storeName, this.#getKey(program));
     if (!cached || this.#checkExpired(cached)) return undefined;
-    return pick(cached, ["imdbID", "imdbRating"]) as IMDBData;
+    return pick(cached, ["imdbID", "imdbRating"]);
   }
 
   async put(programsAndRatings: CacheEntry[]): Promise<void> {

@@ -46,7 +46,7 @@ export default class OmdbApiClient {
         }
         result = { imdbRating: "N/F", imdbID: "" };
       } else {
-        result = pick(respBody, ["imdbID", "imdbRating"]) as IMDBData;
+        result = pick(respBody, ["imdbID", "imdbRating"]);
       }
       return result;
     } finally {
