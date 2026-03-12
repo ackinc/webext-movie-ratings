@@ -32,6 +32,7 @@
     "@types/fs-extra": "^11.0.4",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.9",
+    "@types/yargs": "^17.0.35",
     "chokidar": "^5.0.0",
     "dotenv": "^16.4.5",
     "esbuild": ">=0.25.0",
@@ -47,7 +48,8 @@
     "rate-limit-utils": "github:ackinc/rate-limit-utils",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.55.0"
+    "typescript-eslint": "^8.55.0",
+    "yargs": "^18.0.0"
   },
   "type": "module"
 }

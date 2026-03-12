@@ -3,36 +3,16 @@ import { fileURLToPath } from "node:url";
 import "dotenv/config";
 import { chromium } from "playwright";
 import type { ElementHandle, Route } from "playwright";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
+import {
+  MEDIA_FILE_EXTENSIONS,
+  SEARCH_PHRASE,
+  TRACKING_DOMAINS,
+} from "./constants.ts";
 import { pick } from "../../utils/index.ts";
 
-console.log(`Script called with CLI args: ${process.argv.slice(2)}`);
-
-const MEDIA_FILE_EXTENSIONS = [
-  "jpe",
-  "jpeg",
-  "jpg",
-  "png",
-  "webp",
-  "mp3",
-  "m4s",
-  "mp4",
-  "webm",
-  "avif",
-];
-const TRACKING_DOMAINS = [
-  "*.quora.com",
-  "*.facebook.com",
-  "*.facebook.net",
-  "analytics.google.com",
-  "adservice.google.com",
-  "google-analytics.com",
-  "*.googletagmanager.com",
-  "*.doubleclick.net",
-  "bat.bing.com",
-  "analytics.twitter.com",
-  "*.ads-twitter.com",
-];
-
+const __DIRNAME = path.dirname(fileURLToPath(import.meta.url));
 const ENV = pick(
   process.env,
   [
@@ -43,9 +23,7 @@ const ENV = pick(
   ],
   true,
 ) as Record<string, string>;
-
-const REPORT_ERRORS = process.argv.includes("--sentry-report-errors");
-const SEARCH_PHRASE = "hijack";
+const PATH_TO_EXTENSION = path.join(__DIRNAME, "../../dist");
 const SITE_TO_TESTFN_MAP = {
   amazonprimevideo: testAmazonPrimeVideo,
   appletv: testAppleTV,
@@ -54,21 +32,42 @@ const SITE_TO_TESTFN_MAP = {
   netflix: testNetflix,
   sonyliv: testSonyLiv,
   youtubemovies: testYoutubeMovies,
-};
-const SITES_TO_TEST =
-  process.argv.indexOf("--site=all") >= 0
-    ? (Object.keys(SITE_TO_TESTFN_MAP) as (keyof typeof SITE_TO_TESTFN_MAP)[])
-    : (
-        Object.keys(SITE_TO_TESTFN_MAP) as (keyof typeof SITE_TO_TESTFN_MAP)[]
-      ).filter((site) =>
-        process.argv.some((x) => x.startsWith(`--site=${site}`)),
-      );
+} as const;
+
+// parse CLI args
+
+const argv = yargs(hideBin(process.argv))
+  .option("site", {
+    array: true,
+    choices: ["none", ...Object.keys(SITE_TO_TESTFN_MAP), "all"] as const,
+    default: ["none"],
+    describe: "which sites to browse",
+  })
+  .option("sentry-report-errors", {
+    boolean: true,
+    default: false,
+    description:
+      "whether errors encountered by the extension should be reported to Sentry",
+  })
+  .option("data-dir", {
+    default: path.join(__DIRNAME, `../../tmp/browseOTTs-data-dir`),
+    description: "the directory playwright should use as the data-directory",
+    string: true,
+  })
+  .parseSync();
+
+const REPORT_ERRORS = argv.sentryReportErrors;
+const SITES_TO_TEST = (
+  argv.site.includes("none")
+    ? []
+    : argv.site.includes("all")
+      ? Object.keys(SITE_TO_TESTFN_MAP)
+      : argv.site
+) as (keyof typeof SITE_TO_TESTFN_MAP)[];
+const USER_DATA_DIR = argv.dataDir;
+
 console.log(`Sites that will be tested: ${SITES_TO_TEST.join(", ")}`);
 console.time(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
-
-const __DIRNAME = path.dirname(fileURLToPath(import.meta.url));
-const PATH_TO_EXTENSION = path.join(__DIRNAME, "../../dist");
-const USER_DATA_DIR = path.join(__DIRNAME, `../../tmp/browseOTTs-data-dir`);
 
 // For outdated-selector-recognition to work, we need to persist
 //   selector-statuses across runs of this automation - a selector
