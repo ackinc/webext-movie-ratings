@@ -34,7 +34,7 @@ export function partition<const T extends unknown[]>(
 ): [T[number][], T[number][]] {
   const pass: T[number][] = [];
   const fail: T[number][] = [];
-  for (const el in elems) (partFn(el) ? pass : fail).push(el);
+  for (const el of elems) (partFn(el) ? pass : fail).push(el);
   return [pass, fail];
 }
 
