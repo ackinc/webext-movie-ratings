@@ -1,10 +1,25 @@
 // this module is for more complex helper fns
 
-import { browser, languages, SettingsKey } from "./constants";
-import type { Message } from "./types";
+import { browser, languages } from "./constants";
+import type { ExtensionContext, ExtensionSettings, Message } from "./types";
 import { pick } from "../../utils";
 import { captureException } from "./errorReporter";
 import * as storage from "./storage";
+
+export function getExtensionContext(): ExtensionContext {
+  const { location } = globalThis;
+
+  if (location.protocol.startsWith("http")) return "content-script";
+
+  if (location.pathname.includes("popup")) return "popup";
+
+  if (location.pathname.includes("service-worker")) return "service-worker";
+
+  // chrome-extension in chrome & edge; moz-extension in firefox
+  if (location.protocol.endsWith("extension")) return "extension-page";
+
+  throw new Error(`Could not figure out context. Running at ${location.href}`);
+}
 
 export async function sendMessageToAllTabs(message: Message) {
   const tabs = await browser.tabs.query({
@@ -67,15 +82,15 @@ export function extractProgramTitle(str: string): string {
   );
 }
 
-export async function getSetting<T>(
-  key: keyof typeof SettingsKey,
-): Promise<T | undefined> {
-  return await storage.get<T>(key);
+export async function getSetting<K extends keyof ExtensionSettings>(
+  key: K,
+): Promise<ExtensionSettings[K] | undefined> {
+  return await storage.get(key);
 }
 
-export async function setSetting<T>(
-  key: keyof typeof SettingsKey,
-  value: T,
+export async function setSetting<K extends keyof ExtensionSettings>(
+  key: K,
+  value: ExtensionSettings[K],
 ): Promise<void> {
-  await storage.set<T>(key, value);
+  await storage.set(key, value);
 }

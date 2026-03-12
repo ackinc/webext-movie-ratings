@@ -3,7 +3,6 @@ import {
   getSetting,
   setSetting,
   MessageType,
-  SettingsKey,
   defaultProgramFilterSettings,
   sendMessageToAllTabs,
 } from "../common";
@@ -18,9 +17,7 @@ function ProgramFilters() {
 
   useEffect(() => {
     (async () => {
-      const savedSettings = (await getSetting(
-        SettingsKey.programFiltersSettings,
-      )) as ProgramFilterSettings | undefined;
+      const savedSettings = await getSetting("programFiltersSettings");
       if (savedSettings) {
         // merging instead of replacing in case a new property has been
         //   introduced that hasn't yet been persisted to storage
@@ -102,7 +99,7 @@ function ProgramFilters() {
     setSettings(updatedSettings);
 
     // persist the change in storage
-    await setSetting(SettingsKey.programFiltersSettings, updatedSettings);
+    await setSetting("programFiltersSettings", updatedSettings);
 
     // let relevant tabs know that the filter settings have changed
     // bundling the updated settings into the message saves the content

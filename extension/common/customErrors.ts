@@ -16,7 +16,10 @@ export class DataExtractionError extends Error {
     ].join("::");
 
     const cached = DataExtractionError.Cache.get(key);
-    if (cached) return cached;
+    if (cached) {
+      cached.__fromCache = true;
+      return cached;
+    }
 
     const err = new DataExtractionError(error, node, selector);
     DataExtractionError.Cache.set(key, err);
@@ -27,10 +30,16 @@ export class DataExtractionError extends Error {
   pageUrl: string;
   selector: Selector | undefined;
 
+  // can be used downstream to figure out whether it's the first time
+  //   this error is being encountered
+  __fromCache: boolean;
+
   constructor(error: Error, node: HTMLElement, selector?: Selector) {
     super(`Error extracting data`, { cause: error });
+    this.name = "DataExtractionError";
     this.node = node;
     this.pageUrl = location.href;
     this.selector = selector;
+    this.__fromCache = false;
   }
 }

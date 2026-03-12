@@ -1,4 +1,4 @@
-import { type ProgramFilterSettings } from "./types";
+import { type ExtensionSettings, type ProgramFilterSettings } from "./types";
 
 export const enum CssClasses {
   styleNode = "sift-style",
@@ -36,15 +36,17 @@ export const enum MessageType {
   orphanCheck = "sift:orphanCheck",
   healthCheck = "sift:healthCheck",
   webpageRatingStats = "sift:webpageRatingStats",
+  error = "sift:error",
   placeholder = "sift:placeholderForTestingAndDebugging",
 }
 
-export enum SettingsKey {
-  errorReportingOptIn = "errorReportingOptIn",
-  programFiltersSettings = "programFiltersSettings",
-  popupSeenAtLeastOnce = "popupSeenAtLeastOnce",
-  outdatedSelectorDetectionEnabled = "outdatedSelectorDetectionEnabled",
-}
+export const ExtensionSettingsKeys = [
+  "errorReportingOptIn",
+  "programFiltersSettings",
+  "popupSeenAtLeastOnce",
+  "outdatedSelectorDetectionEnabled",
+  "updatedDbVersion",
+] as const satisfies (keyof ExtensionSettings)[];
 
 export const defaultProgramFilterSettings: ProgramFilterSettings = {
   minRating: 0,
@@ -65,4 +67,5 @@ export const enum ErrorMessage {
   telemetryStoreNotReady = "The telemetry store is not ready",
   ratingsApiRequestTimedOut = "The ratings API request timed out",
   ratingsApiRequestAlreadyInFlight = "A request for this program's rating is already in-flight",
+  idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",
 }

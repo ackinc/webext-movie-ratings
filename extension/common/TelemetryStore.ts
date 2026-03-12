@@ -1,7 +1,15 @@
-import { type DBSchema, type IDBPDatabase } from "idb";
-import { omit, shallowEqual, type WebpageStats } from "../common";
+import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import {
+  ErrorMessage,
+  omit,
+  shallowEqual,
+  type ExtensionContext,
+  type WebpageStats,
+} from ".";
+import { DB_NAME, DB_VERSION } from "../service-worker/constants";
+import { getSetting, waitFor } from ".";
 
-interface TelemetryStoreSchema extends DBSchema {
+export interface TelemetryStoreSchema extends DBSchema {
   telemetryStore: {
     key: string;
     value: unknown;
@@ -29,6 +37,18 @@ type Event =
         pageUrl: string;
         timestamp: number;
       };
+    }
+  | {
+      type: "ERROR";
+      data: {
+        errorDetails: {
+          name: string;
+          message: string;
+          stack: string;
+        };
+        context: ExtensionContext;
+        pageUrl?: string;
+      };
     };
 
 const storeName = "telemetryStore";
@@ -44,12 +64,36 @@ export default class TelemetryStore {
     }
   }
 
-  static async create(db: IDBPDatabase, intervalSizeInSeconds: number) {
-    const store = new TelemetryStore(
-      db as IDBPDatabase<TelemetryStoreSchema>,
-      intervalSizeInSeconds,
-    );
-    return store;
+  static async create(
+    db: IDBPDatabase<TelemetryStoreSchema> | undefined,
+    intervalSizeInSeconds: number,
+  ) {
+    if (!db) {
+      // Db-upgrade code lives inside the service worker initialization logic
+      // We don't want to be opening new idb connections from here until the
+      //   service worker has had time to finish upgrading the DB
+      // This was not something to be concerned about when TelemetryStores
+      //   could only be created from the SW, because the SW is careful to
+      //   only instantiate them *after* DB upgrade is done
+      // But now that we want to be able to access telemetry data from the
+      //   popup and other extension-pages (content-scripts run in a sandbox
+      //   scoped to the host-webpage, so they cannot access the extension's
+      //   IDB anyway), we need to be very sure that idb conn.s from here are
+      //   only opened *after* DB upgrade in the SW has happened
+      await waitFor(
+        async () => (await getSetting("updatedDbVersion")) === DB_VERSION,
+        60,
+        1000,
+      );
+
+      db = await openDB<TelemetryStoreSchema>(DB_NAME, DB_VERSION, {
+        upgrade: () => {
+          throw new Error(ErrorMessage.idbUpgradeCalledUnexpectedly);
+        },
+      });
+    }
+
+    return new TelemetryStore(db, intervalSizeInSeconds);
   }
 
   constructor(
@@ -65,7 +109,7 @@ export default class TelemetryStore {
     const telemetryStore = txn.objectStore(storeName);
 
     if (event.type === "PROGRAM_RATING_REQUEST_RECEIVED") {
-      let key = [this.#getIntervalLabel(), "nRatingRequests"].join(
+      let key = ["nRatingRequests", this.#getIntervalLabel()].join(
         keyPartSeparator,
       );
       if (event.data.pageUrl) {
@@ -77,8 +121,8 @@ export default class TelemetryStore {
       await telemetryStore.put(curValue + 1, key);
     } else if (event.type === "RATINGS_API_REQUEST_MADE") {
       const key = [
-        this.#getIntervalLabel(event.data.startTime),
         "nRatingsApiCalls",
+        this.#getIntervalLabel(event.data.startTime),
       ].join(keyPartSeparator);
 
       const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
@@ -86,8 +130,8 @@ export default class TelemetryStore {
     } else if (event.type === "RATINGS_API_RESPONSE_RECEIVED") {
       // need to store every observation to calculate count, mean, p50/95/99
       const key = [
-        this.#getIntervalLabel(event.data.startTime),
         "ratingsApiResponseTimes",
+        this.#getIntervalLabel(event.data.startTime),
       ].join(keyPartSeparator);
 
       const curValue = ((await telemetryStore.get(key)) as number[]) ?? [];
@@ -100,6 +144,16 @@ export default class TelemetryStore {
         | undefined;
       if (curVal && shallowEqual(stats, omit(curVal, ["timestamp"]))) return;
       await telemetryStore.put({ ...stats, timestamp }, key);
+    } else if (event.type === "ERROR") {
+      const { errorDetails, context, pageUrl } = event.data;
+
+      const key = ["errors", this.#getIntervalLabel(), context, pageUrl]
+        .filter((x) => x)
+        .join(keyPartSeparator);
+      const curVal: Set<Error> =
+        ((await telemetryStore.get(key)) as Set<Error> | undefined) ??
+        new Set<Error>();
+      await telemetryStore.put(curVal.add(errorDetails), key);
     }
   }
 

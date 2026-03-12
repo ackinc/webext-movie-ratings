@@ -75,6 +75,18 @@ export type Message =
       };
     }
   | {
+      type: MessageType.error;
+      data: {
+        errorDetails: {
+          name: string;
+          message: string;
+          stack: string;
+        };
+        context: ExtensionContext;
+        pageUrl?: string;
+      };
+    }
+  | {
       type: MessageType.placeholder;
       data?: unknown;
     };
@@ -93,3 +105,19 @@ export type WebpageStats = {
   nProgramsRatedNA: number;
   nProgramsRatedNF: number;
 };
+
+// WARNING: if updating this type, don't forget to also update
+//   ExtensionSettingsKeys in constants.ts!
+export type ExtensionSettings = {
+  errorReportingOptIn: boolean;
+  programFiltersSettings: ProgramFilterSettings;
+  popupSeenAtLeastOnce: boolean;
+  outdatedSelectorDetectionEnabled: boolean;
+  updatedDbVersion: number;
+};
+
+export type ExtensionContext =
+  | "content-script"
+  | "popup"
+  | "service-worker"
+  | "extension-page";

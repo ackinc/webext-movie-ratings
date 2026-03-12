@@ -5,7 +5,7 @@ import {
   setSetting,
   omitBy,
   MessageType,
-  SettingsKey,
+  ExtensionSettingsKeys,
   telemetryIntervalSizeInSeconds,
   selectorStatusKeyPrefix,
   sendMessageToAllTabs,
@@ -23,8 +23,10 @@ import {
   captureException,
   type ExceptionMetadata,
 } from "../common/errorReporter";
-import RatingsCache from "./RatingsCache";
-import TelemetryStore from "./TelemetryStore";
+import RatingsCache, { type RatingsCacheSchema } from "../common/RatingsCache";
+import TelemetryStore, {
+  type TelemetryStoreSchema,
+} from "../common/TelemetryStore";
 import OmdbApiClient from "./OmdbApiClient";
 import {
   DB_NAME,
@@ -47,8 +49,13 @@ let omdbApiClient: OmdbApiClient;
         TelemetryStore.upgradeDb(db, oldVersion);
       },
     });
-    ratingsCache = await initializeRatingsCache(db);
-    telemetryStore = await initializeTelemetryStore(db);
+    await setSetting("updatedDbVersion", DB_VERSION);
+    ratingsCache = await initializeRatingsCache(
+      db as IDBPDatabase<RatingsCacheSchema>,
+    );
+    telemetryStore = await initializeTelemetryStore(
+      db as IDBPDatabase<TelemetryStoreSchema>,
+    );
     omdbApiClient = new OmdbApiClient(fetchWithAddedTelemetry);
     await injectUpdatedContentScripts();
   } catch (e) {
@@ -64,12 +71,12 @@ async function onInstalled() {
   await showPopupIfNotSeen();
 }
 
-async function initializeRatingsCache(db: IDBPDatabase) {
+async function initializeRatingsCache(db: IDBPDatabase<RatingsCacheSchema>) {
   const allData = await storage.getAll();
   const oldCacheData = omitBy(
     allData,
     (_v, k) =>
-      (Object.values(SettingsKey) as string[]).includes(k) ||
+      (ExtensionSettingsKeys as string[]).includes(k) ||
       k.startsWith(selectorStatusKeyPrefix),
   ) as Record<string, CachedIMDBData>;
 
@@ -78,7 +85,9 @@ async function initializeRatingsCache(db: IDBPDatabase) {
   return cache;
 }
 
-async function initializeTelemetryStore(db: IDBPDatabase) {
+async function initializeTelemetryStore(
+  db: IDBPDatabase<TelemetryStoreSchema>,
+) {
   return await TelemetryStore.create(db, telemetryIntervalSizeInSeconds);
 }
 
@@ -100,9 +109,9 @@ async function injectUpdatedContentScripts() {
 }
 
 async function showPopupIfNotSeen() {
-  if (await getSetting(SettingsKey.popupSeenAtLeastOnce)) return;
+  if (await getSetting("popupSeenAtLeastOnce")) return;
   browser.action?.openPopup();
-  await setSetting(SettingsKey.popupSeenAtLeastOnce, true);
+  await setSetting("popupSeenAtLeastOnce", true);
 }
 
 function handleMessage(
@@ -132,6 +141,12 @@ function handleMessage(
             type: "WEBPAGE_RATING_STATS_RECEIVED",
             data: request.data,
           })
+          .catch(handleError);
+      }
+    } else if (request.type === MessageType.error) {
+      if (FF_TELEMETRY_ENABLED) {
+        telemetryStore
+          .logEvent({ type: "ERROR", data: request.data })
           .catch(handleError);
       }
     } else if (request.type === MessageType.placeholder) {

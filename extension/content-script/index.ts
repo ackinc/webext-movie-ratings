@@ -4,7 +4,6 @@ import {
   pick,
   getSetting,
   MessageType,
-  SettingsKey,
   CssClasses,
 } from "../common";
 import { captureException } from "../common/errorReporter";
@@ -108,9 +107,7 @@ async function loop() {
   try {
     programFilterSettings = {
       ...defaultProgramFilterSettings,
-      ...((await getSetting(SettingsKey.programFiltersSettings)) as
-        | ProgramFilterSettings
-        | undefined),
+      ...(await getSetting("programFiltersSettings")),
     };
 
     const programs = page.findPrograms();
