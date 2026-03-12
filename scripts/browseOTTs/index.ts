@@ -37,13 +37,13 @@ const SITE_TO_TESTFN_MAP = {
 // parse CLI args
 
 const argv = yargs(hideBin(process.argv))
-  .option("site", {
+  .option("sites", {
     array: true,
     choices: ["none", ...Object.keys(SITE_TO_TESTFN_MAP), "all"] as const,
     default: ["none"],
     describe: "which sites to browse",
   })
-  .option("sentry-report-errors", {
+  .option("report-errors", {
     boolean: true,
     default: false,
     description:
@@ -56,13 +56,13 @@ const argv = yargs(hideBin(process.argv))
   })
   .parseSync();
 
-const REPORT_ERRORS = argv.sentryReportErrors;
+const REPORT_ERRORS = argv.reportErrors;
 const SITES_TO_TEST = (
-  argv.site.includes("none")
+  argv.sites.includes("none")
     ? []
-    : argv.site.includes("all")
+    : argv.sites.includes("all")
       ? Object.keys(SITE_TO_TESTFN_MAP)
-      : argv.site
+      : argv.sites
 ) as (keyof typeof SITE_TO_TESTFN_MAP)[];
 const USER_DATA_DIR = argv.dataDir;
 
