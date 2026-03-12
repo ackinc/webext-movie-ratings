@@ -39,7 +39,13 @@ const SITE_TO_TESTFN_MAP = {
 const argv = yargs(hideBin(process.argv))
   .option("sites", {
     array: true,
-    choices: ["none", ...Object.keys(SITE_TO_TESTFN_MAP), "all"] as const,
+    choices: ["NONE", ...Object.keys(SITE_TO_TESTFN_MAP), "ALL"] as const,
+    coerce: (val) =>
+      (val.includes("NONE")
+        ? []
+        : val.includes("ALL")
+          ? Object.keys(SITE_TO_TESTFN_MAP)
+          : val) as (keyof typeof SITE_TO_TESTFN_MAP)[],
     default: ["none"],
     describe: "which sites to browse",
   })
@@ -61,16 +67,8 @@ const argv = yargs(hideBin(process.argv))
   })
   .parseSync();
 
-const SITES_TO_TEST = (
-  argv.sites.includes("none")
-    ? []
-    : argv.sites.includes("all")
-      ? Object.keys(SITE_TO_TESTFN_MAP)
-      : argv.sites
-) as (keyof typeof SITE_TO_TESTFN_MAP)[];
-
-console.log(`Sites that will be tested: ${SITES_TO_TEST.join(", ")}`);
-console.time(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
+console.log(`Sites that will be tested: ${argv.sites.join(", ")}`);
+console.time(`browseOTTs: ${argv.sites.join(", ")}`);
 
 // For outdated-selector-recognition to work, we need to persist
 //   selector-statuses across runs of this automation - a selector
@@ -95,13 +93,13 @@ await setupRequestInterceptors();
 await setSiftErrorReporting(argv.reportErrors);
 
 const results = await Promise.allSettled(
-  SITES_TO_TEST.map((site) => timerHof(SITE_TO_TESTFN_MAP[site])()),
+  argv.sites.map((site) => timerHof(SITE_TO_TESTFN_MAP[site])()),
 );
 const errors: Error[] = results
   .filter((r) => r.status === "rejected")
   .map((r) => r.reason);
 errors.forEach(console.error);
-console.timeEnd(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
+console.timeEnd(`browseOTTs: ${argv.sites.join(", ")}`);
 console.log(`Done with ${errors.length} errors`);
 if (errors.length === 0) await browserContext.close();
 
