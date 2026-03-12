@@ -220,7 +220,9 @@ async function testAmazonPrimeVideo() {
   }
 
   async function browseProgramDetailPage() {
-    await page.getByTestId("tab-content-related").waitFor({ state: "visible" });
+    await page
+      .getByRole("button", { name: "Related" })
+      .waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, undefined);
     await attemptOutdatedSelectorRecognition();
   }
@@ -328,6 +330,9 @@ async function testAppleTV() {
 }
 
 async function testCrunchyroll() {
+  // TODO: they've blocked us; figure out a workaround
+  return;
+
   const labelPrefix = `${testCrunchyroll.name}:`;
 
   const page = await browserContext.newPage();
