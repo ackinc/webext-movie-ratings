@@ -65,6 +65,12 @@ const argv = yargs(hideBin(process.argv))
     default: true,
     description: "whether to mock the ratings API",
   })
+  .option("keep-browser-open", {
+    boolean: true,
+    default: false,
+    description:
+      "whether or not the browser should be kept open when the script is done, even if there weren't errors",
+  })
   .parseSync();
 
 console.log(`Sites that will be tested: ${argv.sites.join(", ")}`);
@@ -101,7 +107,7 @@ const errors: Error[] = results
 errors.forEach(console.error);
 console.timeEnd(`browseOTTs: ${argv.sites.join(", ")}`);
 console.log(`Done with ${errors.length} errors`);
-if (errors.length === 0) await browserContext.close();
+if (errors.length === 0 && !argv.keepBrowserOpen) await browserContext.close();
 
 /////////////
 /* helpers */
