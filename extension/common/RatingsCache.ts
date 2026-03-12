@@ -10,7 +10,7 @@ import {
   getSetting,
   waitFor,
 } from ".";
-import { DB_NAME, DB_VERSION } from "../service-worker/constants";
+import { DB_NAME, DB_VERSION } from "./constants";
 
 export interface RatingsCacheSchema extends DBSchema {
   ratingsStore: {

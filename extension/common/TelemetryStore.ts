@@ -6,7 +6,7 @@ import {
   type ExtensionContext,
   type WebpageStats,
 } from ".";
-import { DB_NAME, DB_VERSION } from "../service-worker/constants";
+import { DB_NAME, DB_VERSION } from "./constants";
 import { getSetting, waitFor } from ".";
 
 export interface TelemetryStoreSchema extends DBSchema {

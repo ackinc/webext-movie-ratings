@@ -1,5 +1,7 @@
 import { openDB, type IDBPDatabase } from "idb";
 import {
+  DB_NAME,
+  DB_VERSION,
   browser,
   getSetting,
   setSetting,
@@ -28,11 +30,7 @@ import TelemetryStore, {
   type TelemetryStoreSchema,
 } from "../common/TelemetryStore";
 import OmdbApiClient from "./OmdbApiClient";
-import {
-  DB_NAME,
-  DB_VERSION,
-  RATING_API_REQUEST_TIMEOUT_MS,
-} from "./constants";
+import { RATING_API_REQUEST_TIMEOUT_MS } from "./constants";
 import { isNetworkError } from "../../utils";
 
 let ratingsCache: RatingsCache;
