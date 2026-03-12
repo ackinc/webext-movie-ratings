@@ -1,4 +1,4 @@
-import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import { type DBSchema, type IDBPDatabase } from "idb";
 import {
   ONE_HOUR_IN_MS,
   ONE_WEEK_IN_MS,
@@ -6,11 +6,7 @@ import {
   type IMDBData,
   type ProgramData,
   pick,
-  ErrorMessage,
-  getSetting,
-  waitFor,
 } from ".";
-import { DB_NAME, DB_VERSION } from "./constants";
 
 export interface RatingsCacheSchema extends DBSchema {
   ratingsStore: {
@@ -37,24 +33,9 @@ export default class RatingsCache {
   }
 
   static async create(
-    db: IDBPDatabase<RatingsCacheSchema> | undefined,
+    db: IDBPDatabase<RatingsCacheSchema>,
     data: Record<string, CachedIMDBData> = {},
   ) {
-    if (!db) {
-      // See comment in TelemetryStore::create
-      await waitFor(
-        async () => (await getSetting("updatedDbVersion")) === DB_VERSION,
-        60,
-        1000,
-      );
-
-      db = await openDB<RatingsCacheSchema>(DB_NAME, DB_VERSION, {
-        upgrade: () => {
-          throw new Error(ErrorMessage.idbUpgradeCalledUnexpectedly);
-        },
-      });
-    }
-
     return await new RatingsCache(db).seed(data);
   }
 

@@ -1,13 +1,10 @@
-import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import { type DBSchema, type IDBPDatabase } from "idb";
 import {
-  ErrorMessage,
   omit,
   shallowEqual,
   type ExtensionContext,
   type WebpageStats,
 } from ".";
-import { DB_NAME, DB_VERSION } from "./constants";
-import { getSetting, waitFor } from ".";
 
 export interface TelemetryStoreSchema extends DBSchema {
   telemetryStore: {
@@ -65,34 +62,9 @@ export default class TelemetryStore {
   }
 
   static async create(
-    db: IDBPDatabase<TelemetryStoreSchema> | undefined,
+    db: IDBPDatabase<TelemetryStoreSchema>,
     intervalSizeInSeconds: number,
   ) {
-    if (!db) {
-      // Db-upgrade code lives inside the service worker initialization logic
-      // We don't want to be opening new idb connections from here until the
-      //   service worker has had time to finish upgrading the DB
-      // This was not something to be concerned about when TelemetryStores
-      //   could only be created from the SW, because the SW is careful to
-      //   only instantiate them *after* DB upgrade is done
-      // But now that we want to be able to access telemetry data from the
-      //   popup and other extension-pages (content-scripts run in a sandbox
-      //   scoped to the host-webpage, so they cannot access the extension's
-      //   IDB anyway), we need to be very sure that idb conn.s from here are
-      //   only opened *after* DB upgrade in the SW has happened
-      await waitFor(
-        async () => (await getSetting("updatedDbVersion")) === DB_VERSION,
-        60,
-        1000,
-      );
-
-      db = await openDB<TelemetryStoreSchema>(DB_NAME, DB_VERSION, {
-        upgrade: () => {
-          throw new Error(ErrorMessage.idbUpgradeCalledUnexpectedly);
-        },
-      });
-    }
-
     return new TelemetryStore(db, intervalSizeInSeconds);
   }
 
