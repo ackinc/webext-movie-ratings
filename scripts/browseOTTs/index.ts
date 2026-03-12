@@ -112,9 +112,9 @@ results.forEach((r, idx) => {
   r.reason.message = `Error browsing ${site}: ${r.reason.message}`;
   console.error(r.reason);
 });
-if (erroredSites.length > 0) {
-  console.log(`There were errors browsing ${erroredSites.join(", ")}`);
-}
+console.log(
+  `Done with ${erroredSites.length} errors: ${erroredSites.join(", ")}`,
+);
 if (erroredSites.length === 0 && !argv.keepBrowserOpen) {
   await browserContext.close();
 }
