@@ -46,7 +46,7 @@ const config: esbuild.BuildOptions = {
       out: "urlchange-dispatcher",
     },
     { in: path.join(srcDir, "service-worker/index.ts"), out: "service-worker" },
-    { in: path.join(srcDir, "popup/main.jsx"), out: "popup/main" },
+    { in: path.join(srcDir, "popup/main.tsx"), out: "popup/main" },
   ],
   bundle: true,
   define: {
