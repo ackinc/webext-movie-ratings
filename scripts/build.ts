@@ -9,14 +9,11 @@ import chokidar from "chokidar";
 import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
 import { pick } from "../utils/index.ts";
 
-const {
-  APP_ENV = "production",
-  OMDB_API_KEY,
-  SENTRY_AUTH_TOKEN,
-} = pick(
+const APP_ENV = process.env["APP_ENV"] ?? "production";
+const { OMDB_API_KEY, SENTRY_AUTH_TOKEN } = pick(
   process.env,
-  { APP_ENV: false, OMDB_API_KEY: true, SENTRY_AUTH_TOKEN: true },
-  false,
+  ["OMDB_API_KEY", "SENTRY_AUTH_TOKEN"],
+  true,
 ) as Record<string, string>;
 
 const watchMode = process.argv.includes("--watch");

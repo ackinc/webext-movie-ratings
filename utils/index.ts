@@ -28,24 +28,19 @@ export function invert<T extends (...args: Parameters<T>) => boolean>(
   return (...args) => !fn(...args);
 }
 
-type IsOptional = boolean;
 export function pick(
   obj: Record<string, unknown>,
-  keys: string[] | Record<string, IsOptional>,
-  defaultRequired: boolean = false,
+  keys: string[],
+  requireAllKeys: boolean = false,
 ): Record<string, unknown> {
-  if (Array.isArray(keys))
-    keys = keys.reduce((acc, k) => ({ ...acc, [k]: defaultRequired }), {});
-
   const retval: Record<string, unknown> = {};
 
   for (const k in keys) {
-    const isRequired = keys[k];
-
-    if (!(k in obj) && isRequired)
+    if (k in obj) {
+      retval[k] = obj[k];
+    } else if (requireAllKeys) {
       throw new Error(`Required key ${k} is absent`);
-
-    retval[k] = obj[k];
+    }
   }
 
   return retval;
