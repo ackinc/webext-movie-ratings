@@ -68,12 +68,7 @@ const config: esbuild.BuildOptions = {
   logLevel: "info",
   outdir: destDir,
   target: "es2020",
-
-  // haven't been able to make sourcemaps work for the devconsole
-  //   debugging experience when also using sentryEsbuildPlugin
-  //   to upload them to Sentry
-  // ^WTF is this comment, you fuck?
-  sourcemap: APP_ENV === "development" ? "inline" : "linked",
+  sourcemap: uploadSrcMapsToSentry ? "linked" : "inline",
   plugins: [
     uploadSrcMapsToSentry
       ? sentryEsbuildPlugin({
