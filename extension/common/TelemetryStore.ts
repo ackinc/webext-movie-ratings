@@ -119,7 +119,7 @@ export default class TelemetryStore {
       const curVal = (await telemetryStore.get(key)) as
         | { stats: WebpageStats; lastUpdated: number }
         | undefined;
-      if (curVal && shallowEqual(stats, omit(curVal, ["timestamp"]))) return;
+      if (curVal && shallowEqual(stats, omit(curVal, ["lastUpdated"]))) return;
       await telemetryStore.put(
         { ...stats, lastUpdated: statsCollectionTime },
         key,
