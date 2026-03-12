@@ -54,9 +54,13 @@ const argv = yargs(hideBin(process.argv))
     description: "the directory playwright should use as the data-directory",
     string: true,
   })
+  .option("mock-ratings-api-responses", {
+    boolean: true,
+    default: true,
+    description: "whether to mock the ratings API",
+  })
   .parseSync();
 
-const REPORT_ERRORS = argv.reportErrors;
 const SITES_TO_TEST = (
   argv.sites.includes("none")
     ? []
@@ -64,7 +68,6 @@ const SITES_TO_TEST = (
       ? Object.keys(SITE_TO_TESTFN_MAP)
       : argv.sites
 ) as (keyof typeof SITE_TO_TESTFN_MAP)[];
-const USER_DATA_DIR = argv.dataDir;
 
 console.log(`Sites that will be tested: ${SITES_TO_TEST.join(", ")}`);
 console.time(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
@@ -74,7 +77,7 @@ console.time(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
 //   is recognized as outdated if it worked in the previous run,
 //   but not in this run
 // This is why we use the same dataDir for every run
-const browserContext = await chromium.launchPersistentContext(USER_DATA_DIR, {
+const browserContext = await chromium.launchPersistentContext(argv.dataDir, {
   headless: false,
   args: [
     `--disable-extensions-except=${PATH_TO_EXTENSION}`,
@@ -89,7 +92,7 @@ const extensionServiceWorker = browserContext
 
 await setupRequestInterceptors();
 
-await setSiftErrorReporting(REPORT_ERRORS);
+await setSiftErrorReporting(argv.reportErrors);
 
 const results = await Promise.allSettled(
   SITES_TO_TEST.map((site) => timerHof(SITE_TO_TESTFN_MAP[site])()),
@@ -129,8 +132,12 @@ async function setupRequestInterceptors() {
     ),
   );
 
-  // mock rating API responses
-  await browserContext.route("**://www.omdbapi.com/**", ratingsApiInterceptor);
+  if (argv.mockRatingsApiResponses) {
+    await browserContext.route(
+      "**://www.omdbapi.com/**",
+      ratingsApiInterceptor,
+    );
+  }
 }
 
 // NOTE: labelPrefix is only used when label is not explicitly specified
