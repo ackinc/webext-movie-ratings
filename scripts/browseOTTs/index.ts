@@ -101,13 +101,24 @@ await setSiftErrorReporting(argv.reportErrors);
 const results = await Promise.allSettled(
   argv.sites.map((site) => timerHof(SITE_TO_TESTFN_MAP[site])()),
 );
-const errors: Error[] = results
-  .filter((r) => r.status === "rejected")
-  .map((r) => r.reason);
-errors.forEach(console.error);
+const erroredSites: string[] = [];
+
+results.forEach((r, idx) => {
+  if (r.status === "fulfilled") return;
+
+  const site = argv.sites[idx]!;
+  erroredSites.push(site);
+
+  r.reason.message = `Error browsing ${site}: ${r.reason.message}`;
+  console.error(r.reason);
+});
+if (erroredSites.length > 0) {
+  console.log(`There were errors browsing ${erroredSites.join(", ")}`);
+}
+if (erroredSites.length === 0 && !argv.keepBrowserOpen) {
+  await browserContext.close();
+}
 console.timeEnd(`browseOTTs: ${argv.sites.join(", ")}`);
-console.log(`Done with ${errors.length} errors`);
-if (errors.length === 0 && !argv.keepBrowserOpen) await browserContext.close();
 
 /////////////
 /* helpers */
