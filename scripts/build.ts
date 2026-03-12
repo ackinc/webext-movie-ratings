@@ -34,7 +34,12 @@ const rootDir = path.resolve(__dirname, "..");
 const srcDir = path.resolve(__dirname, "../extension");
 const destDir = path.resolve(__dirname, "../dist");
 
-const staticFiles = ["popup/index.html"].map((f) => path.join(srcDir, f));
+const staticFiles = [
+  "popup/index.html",
+  APP_ENV === "production" ? null : "dashboard/index.html",
+]
+  .filter((f) => f !== null)
+  .map((f) => path.join(srcDir, f));
 const manifestFiles = [`manifest.json`, `misc/${target}/manifest.json`].map(
   (f) => path.join(rootDir, f),
 );
@@ -47,7 +52,10 @@ const config: esbuild.BuildOptions = {
     },
     { in: path.join(srcDir, "service-worker/index.ts"), out: "service-worker" },
     { in: path.join(srcDir, "popup/main.tsx"), out: "popup/main" },
-  ],
+    APP_ENV === "production"
+      ? null
+      : { in: path.join(srcDir, "dashboard/main.jsx"), out: "dashboard/main" },
+  ].filter((x) => x !== null),
   bundle: true,
   define: {
     APP_ENV: `"${APP_ENV}"`,
