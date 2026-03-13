@@ -152,3 +152,30 @@ export function invertObj(obj: Record<string, string>) {
     {} as Record<string, string>,
   );
 }
+
+export function percentile(sortedNums: number[], pc: number): number {
+  if (sortedNums.length === 0) throw new Error(`sortedNums cannot be empty`);
+  if (pc < 0 || pc > 100) throw new Error(`pc must be in [0, 100]`);
+
+  ensureSorted(sortedNums);
+
+  if (sortedNums.length === 1) return sortedNums[0]!;
+  if (pc === 0) return sortedNums[0]!;
+  if (pc === 100) return sortedNums.at(-1)!;
+
+  const tgtIdx = (sortedNums.length * pc) / 100;
+  if (tgtIdx % 1) return sortedNums[Math.floor(tgtIdx)]!;
+  return (sortedNums[tgtIdx - 1]! + sortedNums[tgtIdx]!) / 2;
+}
+
+export function ensureSorted(nums: number[]) {
+  if (!isSorted(nums)) throw new Error(`nums are not sorted`);
+}
+
+export function isSorted(nums: number[]) {
+  if (nums.length < 2) return true;
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i]! < nums[i - 1]!) return false;
+  }
+  return true;
+}
