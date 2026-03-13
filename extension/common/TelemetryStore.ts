@@ -16,7 +16,7 @@ export interface TelemetryStoreSchema extends DBSchema {
 type Event =
   | {
       type: "PROGRAM_RATING_REQUEST_RECEIVED";
-      data: { pageUrl: string | undefined };
+      data: { pageUrl: string };
     }
   | {
       type: "RATINGS_API_REQUEST_MADE";
@@ -81,13 +81,11 @@ export default class TelemetryStore {
     const telemetryStore = txn.objectStore(storeName);
 
     if (event.type === "PROGRAM_RATING_REQUEST_RECEIVED") {
-      let key = ["nRatingRequests", this.#getIntervalLabel()].join(
-        keyPartSeparator,
-      );
-      if (event.data.pageUrl) {
-        const url = new URL(event.data.pageUrl);
-        key = [key, url.href].join(keyPartSeparator);
-      }
+      const key = [
+        eventTypeToKeyPrefix[event.type],
+        this.#getIntervalLabel(),
+        new URL(event.data.pageUrl).href,
+      ].join(keyPartSeparator);
 
       const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
       await telemetryStore.put(curValue + 1, key);
