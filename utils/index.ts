@@ -145,3 +145,10 @@ export function shallowEqual(
   for (const k of keys) if (objA[k] !== objB[k]) return false;
   return true;
 }
+
+export function invertObj(obj: Record<string, string>) {
+  return Object.entries(obj).reduce(
+    (acc, [k, v]) => Object.assign(acc, { [v]: k }),
+    {} as Record<string, string>,
+  );
+}
