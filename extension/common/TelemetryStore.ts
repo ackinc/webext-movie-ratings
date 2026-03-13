@@ -60,6 +60,12 @@ const eventTypeToKeyPrefix = {
   ERROR: "errors",
 } as const satisfies Record<Event["type"], string>;
 
+type KeyPrefix = (typeof eventTypeToKeyPrefix)[Event["type"]];
+const keyPrefixToEventType = invertObj(eventTypeToKeyPrefix) as Record<
+  KeyPrefix,
+  Event["type"]
+>;
+
 export default class TelemetryStore {
   db: IDBPDatabase<TelemetryStoreSchema>;
   intervalSizeInSeconds: number;
@@ -158,5 +164,53 @@ export default class TelemetryStore {
       this.intervalSizeInSeconds *
       1000
     ).toString();
+  }
+
+  async getRecords(
+    type: Event["type"],
+    from?: Date,
+    to?: Date,
+  ): Promise<
+    { timestamp: number; value: unknown; metadata: Record<string, unknown> }[]
+  > {
+    const keyPrefix = eventTypeToKeyPrefix[type];
+    const keyBounds = [
+      from ? +from : (+new Date()).toString().replace(/\d/g, "0"),
+      to ? +to : (+new Date()).toString().replace(/\d/g, "9"),
+    ].map((x) => `${keyPrefix}${keyPartSeparator}${x}`) as [string, string];
+
+    const records = [];
+    let cursor = await this.db
+      .transaction(storeName, "readonly")
+      .store.openCursor(IDBKeyRange.bound(...keyBounds));
+    while (cursor) {
+      const keyParts = cursor.key.split(keyPartSeparator);
+      records.push({
+        timestamp: +keyParts[1]!,
+        value: cursor.value,
+        metadata: this.#getMetadataFromKey(cursor.key),
+      });
+      cursor = await cursor.continue();
+    }
+    return records;
+  }
+
+  #getMetadataFromKey(key: string): Record<string, unknown> {
+    const keyParts = key.split(keyPartSeparator);
+    const keyPrefix = keyParts[0] as KeyPrefix;
+    const eventType = keyPrefixToEventType[keyPrefix];
+
+    if (
+      eventType === "PROGRAM_RATING_REQUEST_RECEIVED" ||
+      eventType === "WEBPAGE_RATING_STATS_RECEIVED"
+    ) {
+      return { pageUrl: keyParts[2] };
+    }
+
+    if (eventType === "ERROR") {
+      return { context: keyParts[2], pageUrl: keyParts[3] };
+    }
+
+    return {};
   }
 }
