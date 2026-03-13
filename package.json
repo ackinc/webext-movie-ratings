@@ -46,6 +46,7 @@
     "preact": "^10.28.2",
     "prettier": "^3.7.4",
     "rate-limit-utils": "github:ackinc/rate-limit-utils",
+    "recharts": "^3.8.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.55.0",
