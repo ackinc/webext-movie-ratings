@@ -1,5 +1,6 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
 import {
+  invertObj,
   omit,
   shallowEqual,
   type ExtensionContext,
@@ -51,6 +52,14 @@ type Event =
 const storeName = "telemetryStore";
 const keyPartSeparator = "::";
 
+const eventTypeToKeyPrefix = {
+  PROGRAM_RATING_REQUEST_RECEIVED: "nRatingRequests",
+  RATINGS_API_REQUEST_MADE: "nRatingsApiCalls",
+  RATINGS_API_RESPONSE_RECEIVED: "ratingsApiResponseTimes",
+  WEBPAGE_RATING_STATS_RECEIVED: "webpageRatingStats",
+  ERROR: "errors",
+} as const satisfies Record<Event["type"], string>;
+
 export default class TelemetryStore {
   db: IDBPDatabase<TelemetryStoreSchema>;
   intervalSizeInSeconds: number;
@@ -91,7 +100,7 @@ export default class TelemetryStore {
       await telemetryStore.put(curValue + 1, key);
     } else if (event.type === "RATINGS_API_REQUEST_MADE") {
       const key = [
-        "nRatingsApiCalls",
+        eventTypeToKeyPrefix[event.type],
         this.#getIntervalLabel(event.data.startTime),
       ].join(keyPartSeparator);
 
@@ -100,7 +109,7 @@ export default class TelemetryStore {
     } else if (event.type === "RATINGS_API_RESPONSE_RECEIVED") {
       // need to store every observation to calculate count, mean, p50/95/99
       const key = [
-        "ratingsApiResponseTimes",
+        eventTypeToKeyPrefix[event.type],
         this.#getIntervalLabel(event.data.startTime),
       ].join(keyPartSeparator);
 
@@ -110,7 +119,7 @@ export default class TelemetryStore {
       const { sessionStartTime, pageUrl, statsCollectionTime, stats } =
         event.data;
       const key = [
-        "webpageRatingStats",
+        eventTypeToKeyPrefix[event.type],
         this.#getIntervalLabel(sessionStartTime),
         pageUrl,
       ].join(keyPartSeparator);
@@ -125,7 +134,12 @@ export default class TelemetryStore {
     } else if (event.type === "ERROR") {
       const { errorDetails, context, pageUrl } = event.data;
 
-      const key = ["errors", this.#getIntervalLabel(), context, pageUrl]
+      const key = [
+        eventTypeToKeyPrefix[event.type],
+        this.#getIntervalLabel(),
+        context,
+        pageUrl,
+      ]
         .filter((x) => x)
         .join(keyPartSeparator);
       const curVal: Set<Error> =
