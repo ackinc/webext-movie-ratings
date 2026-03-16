@@ -105,6 +105,9 @@ export default function SitePermsControlForm() {
 
         await browser.permissions.remove({ origins: permStrings });
       } else {
+        // TODO: ideas to prevent popup disappearing each time the permission
+        //   warning is displayed?
+
         const granted = await browser.permissions.request({
           origins: permStrings,
         });
