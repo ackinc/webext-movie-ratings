@@ -14,7 +14,7 @@ const root = document.querySelector<HTMLDivElement>("div#root")!;
 render(<App />, root);
 
 function App() {
-  const [curPage, setCurPage] = useState<CurPage>("settings");
+  const [curPage, setCurPage] = useState<CurPage>("filters");
 
   return (
     <div className="app">
