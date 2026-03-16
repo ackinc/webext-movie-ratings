@@ -170,7 +170,7 @@ function handleMessage(
 
 function getIMDBData(
   program: Omit<Program, "node">,
-  pageUrl?: string,
+  pageUrl: string,
 ): Promise<IMDBData> {
   return new Promise((resolve, reject) => {
     if (FF_TELEMETRY_ENABLED) {
