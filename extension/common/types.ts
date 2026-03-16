@@ -63,6 +63,9 @@ export type Message =
       type: MessageType.orphanCheck;
     }
   | {
+      type: MessageType.cleanup;
+    }
+  | {
       type: MessageType.healthCheck;
     }
   | {

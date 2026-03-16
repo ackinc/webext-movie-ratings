@@ -37,6 +37,7 @@ export const enum MessageType {
   urlChange = "sift:urlchange",
   filterSettingsChange = "sift:filterSettingsChange",
   orphanCheck = "sift:orphanCheck",
+  cleanup = "sift:cleanup",
   healthCheck = "sift:healthCheck",
   webpageRatingStats = "sift:webpageRatingStats",
   error = "sift:error",
