@@ -70,7 +70,7 @@ export default function SitePermsControlForm() {
 
   return (
     <form className="site-control-form">
-      <h4>What OTT sites should Sift run on?</h4>
+      <h4>What sites should Sift run on?</h4>
 
       {(Object.keys(supportedSites) as Sitename[]).map((site) => {
         const label = `sitePermFor${supportedSites[site].displayName.replace(/\s/g, "")}`;
