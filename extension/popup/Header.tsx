@@ -13,6 +13,15 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
       <div className="logo-container">
         <img src={"/images/logo128.png"} alt="Sift logo" />
       </div>
+
+      <h3>
+        {curPage === "filters"
+          ? "Filter Programs"
+          : curPage === "settings"
+            ? "Settings"
+            : null}
+      </h3>
+
       {curPage === "settings" ? (
         <CloseButton onClick={() => setCurPage("filters")} />
       ) : curPage === "filters" ? (

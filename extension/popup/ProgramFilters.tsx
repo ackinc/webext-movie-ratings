@@ -31,8 +31,6 @@ function ProgramFilters() {
 
   return (
     <div className="program-filters-container">
-      <h3>Filter programs</h3>
-
       <div className="imdb-rating-filter-setting filter-setting-container">
         <label>
           Include shows rated{" "}

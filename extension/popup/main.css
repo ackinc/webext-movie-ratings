@@ -22,8 +22,9 @@ div#root > .app {
 
 .app .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
+  gap: 8px;
 }
 
 .header .logo-container {
@@ -38,6 +39,10 @@ div#root > .app {
 .logo-container img {
   width: 100%;
   height: 100%;
+}
+
+.header:last-child {
+  margin-left: auto;
 }
 
 .bolded {
