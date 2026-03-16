@@ -1,5 +1,5 @@
 .program-filters-container {
-  padding: 16px;
+  padding: 16px 8px;
   display: flex;
   flex-direction: column;
 }
