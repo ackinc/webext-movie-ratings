@@ -23,16 +23,23 @@ export function getExtensionContext(): ExtensionContext {
   throw new Error(`Could not figure out context. Running at ${location.href}`);
 }
 
-export async function sendMessageToAllTabs(message: Message) {
-  // can't rely on manifest since all host perms are now optional
-  const perms = (await browser.permissions.getAll()).origins ?? [];
-  if (perms.length === 0) {
+// A better name would've been 'sendMessageToAllRelevantTabs'
+export async function sendMessageToAllTabs(
+  message: Message,
+  urlMatchPatterns: string[] = [],
+) {
+  if (urlMatchPatterns.length === 0) {
+    // can't just get host perms from manifest since they are now all optional
+    urlMatchPatterns = (await browser.permissions.getAll()).origins ?? [];
+  }
+
+  if (urlMatchPatterns.length === 0) {
     // calling tabs.query with url set to an empty arr returns all tabs,
     //   which is not what we want
     return [];
   }
 
-  const tabs = await browser.tabs.query({ url: perms });
+  const tabs = await browser.tabs.query({ url: urlMatchPatterns });
   const results = await Promise.allSettled(
     tabs.map((tab) => browser.tabs.sendMessage(tab.id as number, message)),
   );
