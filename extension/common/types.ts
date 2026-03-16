@@ -60,6 +60,8 @@ export type Message =
       data: ProgramFilterSettings;
     }
   | {
+      // send from new content-scripts to old content-scripts to induce
+      //   cleanup so the new content-script can take over the webpage
       type: MessageType.orphanCheck;
     }
   | {
@@ -78,6 +80,8 @@ export type Message =
       };
     }
   | {
+      // send from anywhere in the extension to the service-worker so the
+      //   error can be logged in the telemetry store
       type: MessageType.error;
       data: {
         errorDetails: {
