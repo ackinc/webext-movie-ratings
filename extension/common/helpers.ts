@@ -25,9 +25,15 @@ export function getExtensionContext(): ExtensionContext {
 }
 
 export async function sendMessageToAllTabs(message: Message) {
-  const tabs = await browser.tabs.query({
-    url: browser.runtime.getManifest()["host_permissions"],
-  });
+  // can't rely on manifest since all host perms are now optional
+  const perms = (await browser.permissions.getAll()).origins ?? [];
+  if (perms.length === 0) {
+    // calling tabs.query with url set to an empty arr returns all tabs,
+    //   which is not what we want
+    return [];
+  }
+
+  const tabs = await browser.tabs.query({ url: perms });
   const results = await Promise.allSettled(
     tabs.map((tab) => browser.tabs.sendMessage(tab.id as number, message)),
   );
