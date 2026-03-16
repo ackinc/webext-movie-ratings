@@ -111,11 +111,12 @@ function handleMessage(
   sendResponse: (arg: IMDBData | SWErrorResponse) => void,
 ) {
   try {
+    if (FF_TELEMETRY_ENABLED && !telemetryStore) {
+      throw new Error(ErrorMessage.telemetryStoreNotReady);
+    }
+
     if (request.type === MessageType.fetchIMDBRating) {
       if (!ratingsCache) throw new Error(ErrorMessage.ratingsCacheNotReady);
-      if (FF_TELEMETRY_ENABLED && !telemetryStore) {
-        throw new Error(ErrorMessage.telemetryStoreNotReady);
-      }
 
       const { pageUrl, program } = request.data;
       getIMDBData(program, pageUrl)
