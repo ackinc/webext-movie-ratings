@@ -1,0 +1,9 @@
+import ErrorReportingOptIn from "./ErrorReportingOptIn";
+
+export default function SettingsPage() {
+  return (
+    <div className="settings" style={{ padding: "16px 0" }}>
+      <ErrorReportingOptIn />
+    </div>
+  );
+}
