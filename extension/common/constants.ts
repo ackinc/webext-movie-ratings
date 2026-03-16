@@ -54,7 +54,7 @@ export const ExtensionSettingsKeys = [
 export const defaultProgramFilterSettings: ProgramFilterSettings = {
   minRating: 0,
   maxRating: 10,
-  excludeUnratedPrograms: true,
+  excludeUnratedPrograms: false,
   transparency: 75,
 };
 
