@@ -1,4 +1,4 @@
-import { openDB, type IDBPDatabase } from "idb";
+import { type IDBPDatabase } from "idb";
 import {
   browser,
   getSetting,
@@ -11,6 +11,7 @@ import {
   sendMessageToAllTabs,
   ErrorMessage,
   storage,
+  upgradeIdbAndGetConnection,
 } from "../common";
 import type {
   Program,
@@ -28,11 +29,7 @@ import TelemetryStore, {
   type TelemetryStoreSchema,
 } from "../common/TelemetryStore";
 import OmdbApiClient from "./OmdbApiClient";
-import {
-  DB_NAME,
-  DB_VERSION,
-  RATING_API_REQUEST_TIMEOUT_MS,
-} from "./constants";
+import { RATING_API_REQUEST_TIMEOUT_MS } from "./constants";
 import { isNetworkError } from "../../utils";
 
 let ratingsCache: RatingsCache;
@@ -43,13 +40,7 @@ let omdbApiClient: OmdbApiClient;
     browser.runtime.onInstalled.addListener(onInstalled);
     browser.runtime.onMessage.addListener(handleMessage);
 
-    const db = await openDB(DB_NAME, DB_VERSION, {
-      upgrade: (db, oldVersion) => {
-        RatingsCache.upgradeDb(db, oldVersion);
-        TelemetryStore.upgradeDb(db, oldVersion);
-      },
-    });
-    await setSetting("updatedDbVersion", DB_VERSION);
+    const db = await upgradeIdbAndGetConnection();
     ratingsCache = await initializeRatingsCache(
       db as IDBPDatabase<RatingsCacheSchema>,
     );

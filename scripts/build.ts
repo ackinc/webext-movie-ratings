@@ -9,14 +9,11 @@ import chokidar from "chokidar";
 import { sentryEsbuildPlugin } from "@sentry/esbuild-plugin";
 import { pick } from "../utils/index.ts";
 
-const {
-  APP_ENV = "production",
-  OMDB_API_KEY,
-  SENTRY_AUTH_TOKEN,
-} = pick(
+const APP_ENV = process.env["APP_ENV"] ?? "production";
+const { OMDB_API_KEY, SENTRY_AUTH_TOKEN } = pick(
   process.env,
-  { APP_ENV: false, OMDB_API_KEY: true, SENTRY_AUTH_TOKEN: true },
-  false,
+  ["OMDB_API_KEY", "SENTRY_AUTH_TOKEN"],
+  true,
 ) as Record<string, string>;
 
 const watchMode = process.argv.includes("--watch");
@@ -37,7 +34,12 @@ const rootDir = path.resolve(__dirname, "..");
 const srcDir = path.resolve(__dirname, "../extension");
 const destDir = path.resolve(__dirname, "../dist");
 
-const staticFiles = ["popup/index.html"].map((f) => path.join(srcDir, f));
+const staticFiles = [
+  "popup/index.html",
+  APP_ENV === "production" ? null : "dashboard/index.html",
+]
+  .filter((f) => f !== null)
+  .map((f) => path.join(srcDir, f));
 const manifestFiles = [`manifest.json`, `misc/${target}/manifest.json`].map(
   (f) => path.join(rootDir, f),
 );
@@ -49,8 +51,11 @@ const config: esbuild.BuildOptions = {
       out: "urlchange-dispatcher",
     },
     { in: path.join(srcDir, "service-worker/index.ts"), out: "service-worker" },
-    { in: path.join(srcDir, "popup/main.jsx"), out: "popup/main" },
-  ],
+    { in: path.join(srcDir, "popup/main.tsx"), out: "popup/main" },
+    APP_ENV === "production"
+      ? null
+      : { in: path.join(srcDir, "dashboard/main.jsx"), out: "dashboard/main" },
+  ].filter((x) => x !== null),
   bundle: true,
   define: {
     APP_ENV: `"${APP_ENV}"`,
@@ -63,12 +68,7 @@ const config: esbuild.BuildOptions = {
   logLevel: "info",
   outdir: destDir,
   target: "es2020",
-
-  // haven't been able to make sourcemaps work for the devconsole
-  //   debugging experience when also using sentryEsbuildPlugin
-  //   to upload them to Sentry
-  // ^WTF is this comment, you fuck?
-  sourcemap: APP_ENV === "development" ? "inline" : "linked",
+  sourcemap: uploadSrcMapsToSentry ? "linked" : "inline",
   plugins: [
     uploadSrcMapsToSentry
       ? sentryEsbuildPlugin({

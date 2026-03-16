@@ -1,13 +1,11 @@
-import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import { type DBSchema, type IDBPDatabase } from "idb";
 import {
-  ErrorMessage,
+  invertObj,
   omit,
   shallowEqual,
   type ExtensionContext,
   type WebpageStats,
 } from ".";
-import { DB_NAME, DB_VERSION } from "../service-worker/constants";
-import { getSetting, waitFor } from ".";
 
 export interface TelemetryStoreSchema extends DBSchema {
   telemetryStore: {
@@ -19,7 +17,7 @@ export interface TelemetryStoreSchema extends DBSchema {
 type Event =
   | {
       type: "PROGRAM_RATING_REQUEST_RECEIVED";
-      data: { pageUrl: string | undefined };
+      data: { pageUrl: string };
     }
   | {
       type: "RATINGS_API_REQUEST_MADE";
@@ -32,10 +30,10 @@ type Event =
   | {
       type: "WEBPAGE_RATING_STATS_RECEIVED";
       data: {
-        id: string;
+        sessionStartTime: number;
         stats: WebpageStats;
         pageUrl: string;
-        timestamp: number;
+        statsCollectionTime: number;
       };
     }
   | {
@@ -54,6 +52,20 @@ type Event =
 const storeName = "telemetryStore";
 const keyPartSeparator = "::";
 
+const eventTypeToKeyPrefix = {
+  PROGRAM_RATING_REQUEST_RECEIVED: "nRatingRequests",
+  RATINGS_API_REQUEST_MADE: "nRatingsApiCalls",
+  RATINGS_API_RESPONSE_RECEIVED: "ratingsApiResponseTimes",
+  WEBPAGE_RATING_STATS_RECEIVED: "webpageRatingStats",
+  ERROR: "errors",
+} as const satisfies Record<Event["type"], string>;
+
+type KeyPrefix = (typeof eventTypeToKeyPrefix)[Event["type"]];
+const keyPrefixToEventType = invertObj(eventTypeToKeyPrefix) as Record<
+  KeyPrefix,
+  Event["type"]
+>;
+
 export default class TelemetryStore {
   db: IDBPDatabase<TelemetryStoreSchema>;
   intervalSizeInSeconds: number;
@@ -65,34 +77,9 @@ export default class TelemetryStore {
   }
 
   static async create(
-    db: IDBPDatabase<TelemetryStoreSchema> | undefined,
+    db: IDBPDatabase<TelemetryStoreSchema>,
     intervalSizeInSeconds: number,
   ) {
-    if (!db) {
-      // Db-upgrade code lives inside the service worker initialization logic
-      // We don't want to be opening new idb connections from here until the
-      //   service worker has had time to finish upgrading the DB
-      // This was not something to be concerned about when TelemetryStores
-      //   could only be created from the SW, because the SW is careful to
-      //   only instantiate them *after* DB upgrade is done
-      // But now that we want to be able to access telemetry data from the
-      //   popup and other extension-pages (content-scripts run in a sandbox
-      //   scoped to the host-webpage, so they cannot access the extension's
-      //   IDB anyway), we need to be very sure that idb conn.s from here are
-      //   only opened *after* DB upgrade in the SW has happened
-      await waitFor(
-        async () => (await getSetting("updatedDbVersion")) === DB_VERSION,
-        60,
-        1000,
-      );
-
-      db = await openDB<TelemetryStoreSchema>(DB_NAME, DB_VERSION, {
-        upgrade: () => {
-          throw new Error(ErrorMessage.idbUpgradeCalledUnexpectedly);
-        },
-      });
-    }
-
     return new TelemetryStore(db, intervalSizeInSeconds);
   }
 
@@ -109,19 +96,17 @@ export default class TelemetryStore {
     const telemetryStore = txn.objectStore(storeName);
 
     if (event.type === "PROGRAM_RATING_REQUEST_RECEIVED") {
-      let key = ["nRatingRequests", this.#getIntervalLabel()].join(
-        keyPartSeparator,
-      );
-      if (event.data.pageUrl) {
-        const url = new URL(event.data.pageUrl);
-        key = [key, url.href].join(keyPartSeparator);
-      }
+      const key = [
+        eventTypeToKeyPrefix[event.type],
+        this.#getIntervalLabel(),
+        new URL(event.data.pageUrl).href,
+      ].join(keyPartSeparator);
 
       const curValue = ((await telemetryStore.get(key)) as number) ?? 0;
       await telemetryStore.put(curValue + 1, key);
     } else if (event.type === "RATINGS_API_REQUEST_MADE") {
       const key = [
-        "nRatingsApiCalls",
+        eventTypeToKeyPrefix[event.type],
         this.#getIntervalLabel(event.data.startTime),
       ].join(keyPartSeparator);
 
@@ -130,24 +115,37 @@ export default class TelemetryStore {
     } else if (event.type === "RATINGS_API_RESPONSE_RECEIVED") {
       // need to store every observation to calculate count, mean, p50/95/99
       const key = [
-        "ratingsApiResponseTimes",
+        eventTypeToKeyPrefix[event.type],
         this.#getIntervalLabel(event.data.startTime),
       ].join(keyPartSeparator);
 
       const curValue = ((await telemetryStore.get(key)) as number[]) ?? [];
       await telemetryStore.put(curValue.concat(event.data.durationMs), key);
     } else if (event.type === "WEBPAGE_RATING_STATS_RECEIVED") {
-      const { id, pageUrl, timestamp, stats } = event.data;
-      const key = ["webpageRatingStats", pageUrl, id].join(keyPartSeparator);
+      const { sessionStartTime, pageUrl, statsCollectionTime, stats } =
+        event.data;
+      const key = [
+        eventTypeToKeyPrefix[event.type],
+        this.#getIntervalLabel(sessionStartTime),
+        pageUrl,
+      ].join(keyPartSeparator);
       const curVal = (await telemetryStore.get(key)) as
-        | { stats: WebpageStats; timestamp: number }
+        | { stats: WebpageStats; lastUpdated: number }
         | undefined;
-      if (curVal && shallowEqual(stats, omit(curVal, ["timestamp"]))) return;
-      await telemetryStore.put({ ...stats, timestamp }, key);
+      if (curVal && shallowEqual(stats, omit(curVal, ["lastUpdated"]))) return;
+      await telemetryStore.put(
+        { ...stats, lastUpdated: statsCollectionTime },
+        key,
+      );
     } else if (event.type === "ERROR") {
       const { errorDetails, context, pageUrl } = event.data;
 
-      const key = ["errors", this.#getIntervalLabel(), context, pageUrl]
+      const key = [
+        eventTypeToKeyPrefix[event.type],
+        this.#getIntervalLabel(),
+        context,
+        pageUrl,
+      ]
         .filter((x) => x)
         .join(keyPartSeparator);
       const curVal: Set<Error> =
@@ -166,5 +164,53 @@ export default class TelemetryStore {
       this.intervalSizeInSeconds *
       1000
     ).toString();
+  }
+
+  async getRecords(
+    type: Event["type"],
+    from?: Date,
+    to?: Date,
+  ): Promise<
+    { timestamp: number; value: unknown; metadata: Record<string, unknown> }[]
+  > {
+    const keyPrefix = eventTypeToKeyPrefix[type];
+    const keyBounds = [
+      from ? +from : (+new Date()).toString().replace(/\d/g, "0"),
+      to ? +to : (+new Date()).toString().replace(/\d/g, "9"),
+    ].map((x) => `${keyPrefix}${keyPartSeparator}${x}`) as [string, string];
+
+    const records = [];
+    let cursor = await this.db
+      .transaction(storeName, "readonly")
+      .store.openCursor(IDBKeyRange.bound(...keyBounds));
+    while (cursor) {
+      const keyParts = cursor.key.split(keyPartSeparator);
+      records.push({
+        timestamp: +keyParts[1]!,
+        value: cursor.value,
+        metadata: this.#getMetadataFromKey(cursor.key),
+      });
+      cursor = await cursor.continue();
+    }
+    return records;
+  }
+
+  #getMetadataFromKey(key: string): Record<string, unknown> {
+    const keyParts = key.split(keyPartSeparator);
+    const keyPrefix = keyParts[0] as KeyPrefix;
+    const eventType = keyPrefixToEventType[keyPrefix];
+
+    if (
+      eventType === "PROGRAM_RATING_REQUEST_RECEIVED" ||
+      eventType === "WEBPAGE_RATING_STATS_RECEIVED"
+    ) {
+      return { pageUrl: keyParts[2] };
+    }
+
+    if (eventType === "ERROR") {
+      return { context: keyParts[2], pageUrl: keyParts[3] };
+    }
+
+    return {};
   }
 }

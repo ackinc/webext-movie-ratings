@@ -1,5 +1,8 @@
 import { type ExtensionSettings, type ProgramFilterSettings } from "./types";
 
+export const DB_NAME = "siftDb";
+export const DB_VERSION = 2;
+
 export const enum CssClasses {
   styleNode = "sift-style",
   imdbDataNode = "sift-imdb-data",

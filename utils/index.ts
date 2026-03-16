@@ -28,27 +28,34 @@ export function invert<T extends (...args: Parameters<T>) => boolean>(
   return (...args) => !fn(...args);
 }
 
-type IsOptional = boolean;
-export function pick(
-  obj: Record<string, unknown>,
-  keys: string[] | Record<string, IsOptional>,
-  defaultRequired: boolean = false,
-): Record<string, unknown> {
-  if (Array.isArray(keys))
-    keys = keys.reduce((acc, k) => ({ ...acc, [k]: defaultRequired }), {});
+export function partition<const T extends unknown[]>(
+  elems: T,
+  partFn: (el: T[number]) => boolean,
+): [T[number][], T[number][]] {
+  const pass: T[number][] = [];
+  const fail: T[number][] = [];
+  for (const el of elems) (partFn(el) ? pass : fail).push(el);
+  return [pass, fail];
+}
 
-  const retval: Record<string, unknown> = {};
+export function pick<
+  const T extends Record<string, unknown>,
+  const K extends string[],
+>(
+  obj: T,
+  keys: K,
+  requireAllKeys: boolean = false,
+): Pick<T, keyof T & K[number]> {
+  const [keysInObj, keysNotInObj] = partition(keys, (k) => k in obj);
 
-  for (const k in keys) {
-    const isRequired = keys[k];
-
-    if (!(k in obj) && isRequired)
-      throw new Error(`Required key ${k} is absent`);
-
-    retval[k] = obj[k];
+  if (keysNotInObj.length > 0 && requireAllKeys) {
+    throw new Error(`Required keys are absent: ${keysNotInObj.join(", ")}`);
   }
 
-  return retval;
+  return (keysInObj as (keyof T & K[number])[]).reduce(
+    (acc, k) => Object.assign(acc, { [k]: obj[k] }),
+    {} as Partial<Pick<T, keyof T & K[number]>>,
+  ) as Pick<T, keyof T & K[number]>;
 }
 
 export function pickBy(
@@ -136,5 +143,39 @@ export function shallowEqual(
 ): boolean {
   const keys = new Set(Object.keys(objA).concat(Object.keys(objB)));
   for (const k of keys) if (objA[k] !== objB[k]) return false;
+  return true;
+}
+
+export function invertObj(obj: Record<string, string>) {
+  return Object.entries(obj).reduce(
+    (acc, [k, v]) => Object.assign(acc, { [v]: k }),
+    {} as Record<string, string>,
+  );
+}
+
+export function percentile(sortedNums: number[], pc: number): number {
+  if (sortedNums.length === 0) throw new Error(`sortedNums cannot be empty`);
+  if (pc < 0 || pc > 100) throw new Error(`pc must be in [0, 100]`);
+
+  ensureSorted(sortedNums);
+
+  if (sortedNums.length === 1) return sortedNums[0]!;
+  if (pc === 0) return sortedNums[0]!;
+  if (pc === 100) return sortedNums.at(-1)!;
+
+  const tgtIdx = (sortedNums.length * pc) / 100;
+  if (tgtIdx % 1) return sortedNums[Math.floor(tgtIdx)]!;
+  return (sortedNums[tgtIdx - 1]! + sortedNums[tgtIdx]!) / 2;
+}
+
+export function ensureSorted(nums: number[]) {
+  if (!isSorted(nums)) throw new Error(`nums are not sorted`);
+}
+
+export function isSorted(nums: number[]) {
+  if (nums.length < 2) return true;
+  for (let i = 1; i < nums.length; i++) {
+    if (nums[i]! < nums[i - 1]!) return false;
+  }
   return true;
 }

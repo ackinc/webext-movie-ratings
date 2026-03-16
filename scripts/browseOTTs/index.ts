@@ -3,36 +3,16 @@ import { fileURLToPath } from "node:url";
 import "dotenv/config";
 import { chromium } from "playwright";
 import type { ElementHandle, Route } from "playwright";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
+import {
+  MEDIA_FILE_EXTENSIONS,
+  SEARCH_PHRASE,
+  TRACKING_DOMAINS,
+} from "./constants.ts";
 import { pick } from "../../utils/index.ts";
 
-console.log(`Script called with CLI args: ${process.argv.slice(2)}`);
-
-const MEDIA_FILE_EXTENSIONS = [
-  "jpe",
-  "jpeg",
-  "jpg",
-  "png",
-  "webp",
-  "mp3",
-  "m4s",
-  "mp4",
-  "webm",
-  "avif",
-];
-const TRACKING_DOMAINS = [
-  "*.quora.com",
-  "*.facebook.com",
-  "*.facebook.net",
-  "analytics.google.com",
-  "adservice.google.com",
-  "google-analytics.com",
-  "*.googletagmanager.com",
-  "*.doubleclick.net",
-  "bat.bing.com",
-  "analytics.twitter.com",
-  "*.ads-twitter.com",
-];
-
+const __DIRNAME = path.dirname(fileURLToPath(import.meta.url));
 const ENV = pick(
   process.env,
   [
@@ -43,9 +23,7 @@ const ENV = pick(
   ],
   true,
 ) as Record<string, string>;
-
-const REPORT_ERRORS = process.argv.includes("--sentry-report-errors");
-const SEARCH_PHRASE = "hijack";
+const PATH_TO_EXTENSION = path.join(__DIRNAME, "../../dist");
 const SITE_TO_TESTFN_MAP = {
   amazonprimevideo: testAmazonPrimeVideo,
   appletv: testAppleTV,
@@ -54,28 +32,56 @@ const SITE_TO_TESTFN_MAP = {
   netflix: testNetflix,
   sonyliv: testSonyLiv,
   youtubemovies: testYoutubeMovies,
-};
-const SITES_TO_TEST =
-  process.argv.indexOf("--site=all") >= 0
-    ? (Object.keys(SITE_TO_TESTFN_MAP) as (keyof typeof SITE_TO_TESTFN_MAP)[])
-    : (
-        Object.keys(SITE_TO_TESTFN_MAP) as (keyof typeof SITE_TO_TESTFN_MAP)[]
-      ).filter((site) =>
-        process.argv.some((x) => x.startsWith(`--site=${site}`)),
-      );
-console.log(`Sites that will be tested: ${SITES_TO_TEST.join(", ")}`);
-console.time(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
+} as const;
 
-const __DIRNAME = path.dirname(fileURLToPath(import.meta.url));
-const PATH_TO_EXTENSION = path.join(__DIRNAME, "../../dist");
-const USER_DATA_DIR = path.join(__DIRNAME, `../../tmp/browseOTTs-data-dir`);
+// parse CLI args
+
+const argv = yargs(hideBin(process.argv))
+  .option("sites", {
+    array: true,
+    choices: ["NONE", ...Object.keys(SITE_TO_TESTFN_MAP), "ALL"] as const,
+    coerce: (val) =>
+      (val.includes("NONE")
+        ? []
+        : val.includes("ALL")
+          ? Object.keys(SITE_TO_TESTFN_MAP)
+          : val) as (keyof typeof SITE_TO_TESTFN_MAP)[],
+    default: ["none"],
+    describe: "which sites to browse",
+  })
+  .option("report-errors", {
+    boolean: true,
+    default: false,
+    description:
+      "whether errors encountered by the extension should be reported to Sentry",
+  })
+  .option("data-dir", {
+    default: path.join(__DIRNAME, `../../tmp/browseOTTs-data-dir`),
+    description: "the directory playwright should use as the data-directory",
+    string: true,
+  })
+  .option("mock-ratings-api-responses", {
+    boolean: true,
+    default: true,
+    description: "whether to mock the ratings API",
+  })
+  .option("keep-browser-open", {
+    boolean: true,
+    default: false,
+    description:
+      "whether or not the browser should be kept open when the script is done, even if there weren't errors",
+  })
+  .parseSync();
+
+console.log(`Sites that will be tested: ${argv.sites.join(", ")}`);
+console.time(`browseOTTs: ${argv.sites.join(", ")}`);
 
 // For outdated-selector-recognition to work, we need to persist
 //   selector-statuses across runs of this automation - a selector
 //   is recognized as outdated if it worked in the previous run,
 //   but not in this run
 // This is why we use the same dataDir for every run
-const browserContext = await chromium.launchPersistentContext(USER_DATA_DIR, {
+const browserContext = await chromium.launchPersistentContext(argv.dataDir, {
   headless: false,
   args: [
     `--disable-extensions-except=${PATH_TO_EXTENSION}`,
@@ -90,18 +96,29 @@ const extensionServiceWorker = browserContext
 
 await setupRequestInterceptors();
 
-await setSiftErrorReporting(REPORT_ERRORS);
+await setSiftErrorReporting(argv.reportErrors);
 
 const results = await Promise.allSettled(
-  SITES_TO_TEST.map((site) => timerHof(SITE_TO_TESTFN_MAP[site])()),
+  argv.sites.map((site) => timerHof(SITE_TO_TESTFN_MAP[site])()),
 );
-const errors: Error[] = results
-  .filter((r) => r.status === "rejected")
-  .map((r) => r.reason);
-errors.forEach(console.error);
-console.timeEnd(`browseOTTs: ${SITES_TO_TEST.join(", ")}`);
-console.log(`Done with ${errors.length} errors`);
-if (errors.length === 0) await browserContext.close();
+const erroredSites: string[] = [];
+
+results.forEach((r, idx) => {
+  if (r.status === "fulfilled") return;
+
+  const site = argv.sites[idx]!;
+  erroredSites.push(site);
+
+  r.reason.message = `Error browsing ${site}: ${r.reason.message}`;
+  console.error(r.reason);
+});
+console.log(
+  `Done with ${erroredSites.length} errors: ${erroredSites.join(", ")}`,
+);
+if (erroredSites.length === 0 && !argv.keepBrowserOpen) {
+  await browserContext.close();
+}
+console.timeEnd(`browseOTTs: ${argv.sites.join(", ")}`);
 
 /////////////
 /* helpers */
@@ -130,8 +147,12 @@ async function setupRequestInterceptors() {
     ),
   );
 
-  // mock rating API responses
-  await browserContext.route("**://www.omdbapi.com/**", ratingsApiInterceptor);
+  if (argv.mockRatingsApiResponses) {
+    await browserContext.route(
+      "**://www.omdbapi.com/**",
+      ratingsApiInterceptor,
+    );
+  }
 }
 
 // NOTE: labelPrefix is only used when label is not explicitly specified
@@ -199,7 +220,9 @@ async function testAmazonPrimeVideo() {
   }
 
   async function browseProgramDetailPage() {
-    await page.getByTestId("tab-content-related").waitFor({ state: "visible" });
+    await page
+      .getByRole("button", { name: "Related" })
+      .waitFor({ state: "visible" });
     await page.evaluate(scrollToBottom, undefined);
     await attemptOutdatedSelectorRecognition();
   }
@@ -307,6 +330,9 @@ async function testAppleTV() {
 }
 
 async function testCrunchyroll() {
+  // TODO: they've blocked us; figure out a workaround
+  return;
+
   const labelPrefix = `${testCrunchyroll.name}:`;
 
   const page = await browserContext.newPage();

@@ -1,7 +1,10 @@
 // this module is for more complex helper fns
 
-import { browser, languages } from "./constants";
+import { openDB } from "idb";
+import { browser, languages, DB_NAME, DB_VERSION } from "./constants";
 import type { ExtensionContext, ExtensionSettings, Message } from "./types";
+import TelemetryStore from "./TelemetryStore";
+import RatingsCache from "./RatingsCache";
 import { pick } from "../../utils";
 import { captureException } from "./errorReporter";
 import * as storage from "./storage";
@@ -93,4 +96,15 @@ export async function setSetting<K extends keyof ExtensionSettings>(
   value: ExtensionSettings[K],
 ): Promise<void> {
   await storage.set(key, value);
+}
+
+export async function upgradeIdbAndGetConnection() {
+  const db = await openDB(DB_NAME, DB_VERSION, {
+    upgrade: (db, oldVersion) => {
+      RatingsCache.upgradeDb(db, oldVersion);
+      TelemetryStore.upgradeDb(db, oldVersion);
+    },
+  });
+  await setSetting("updatedDbVersion", DB_VERSION);
+  return db;
 }
