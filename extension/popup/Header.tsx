@@ -1,6 +1,7 @@
 import { type CurPage } from "./common";
 import CloseButton from "./CloseButton";
 import SettingsIcon from "../../images/settings.svg";
+import "./Header.css";
 
 interface HeaderProps {
   curPage: CurPage;
