@@ -5,7 +5,6 @@ import { browser, languages, DB_NAME, DB_VERSION } from "./constants";
 import type { ExtensionContext, ExtensionSettings, Message } from "./types";
 import TelemetryStore from "./TelemetryStore";
 import RatingsCache from "./RatingsCache";
-import { pick } from "../../utils";
 import { captureException } from "./errorReporter";
 import * as storage from "./storage";
 
@@ -45,10 +44,7 @@ export async function sendMessageToAllTabs(message: Message) {
     if (reason.message.includes("Receiving end does not exist")) return;
     reason.message = `Failed to send message to tab. ${reason.message}`;
     captureException(reason, {
-      context: {
-        tab: pick(tab as unknown as Record<string, unknown>, ["id", "url"]),
-        message,
-      },
+      context: { tab: { id: tab.id, url: tab.url }, message },
     });
   });
   return results.map((result, idx) => ({ tab: tabs[idx]!, result }));
