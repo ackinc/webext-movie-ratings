@@ -10,35 +10,7 @@
     "128": "images/logo128.png"
   },
   "author": "anirudh.nimmagadda@gmail.com",
-  "content_scripts": [
-    {
-      "js": ["content-script.js"],
-      "matches": [
-        "https://www.amazon.com/*",
-        "https://www.primevideo.com/*",
-        "https://tv.apple.com/*",
-        "https://www.crunchyroll.com/*",
-        "https://www.hotstar.com/*",
-        "https://www.netflix.com/*",
-        "https://www.sonyliv.com/*",
-        "https://www.youtube.com/*"
-      ]
-    },
-    {
-      "js": ["urlchange-dispatcher.js"],
-      "matches": [
-        "https://www.amazon.com/*",
-        "https://www.primevideo.com/*",
-        "https://tv.apple.com/*",
-        "https://www.crunchyroll.com/*",
-        "https://www.hotstar.com/*",
-        "https://www.netflix.com/*",
-        "https://www.sonyliv.com/*",
-        "https://www.youtube.com/*"
-      ],
-      "world": "MAIN"
-    }
-  ],
+  "content_scripts": [],
   "background": {
     "service_worker": "service-worker.js",
     "type": "module"

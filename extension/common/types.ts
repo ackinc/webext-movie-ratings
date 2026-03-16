@@ -65,7 +65,13 @@ export type Message =
       type: MessageType.orphanCheck;
     }
   | {
+      // sent from popup to service-worker when user revokes a
+      //   previously-granted optional host permission
+      // sent again, with data-arg stripped, from service-worker
+      //   to content-script to induce cleanup in tabs where
+      //   we no longer have the user's permission
       type: MessageType.cleanup;
+      data?: { origins: string[] };
     }
   | {
       type: MessageType.healthCheck;

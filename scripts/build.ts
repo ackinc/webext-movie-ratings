@@ -60,6 +60,8 @@ const config: esbuild.BuildOptions = {
   define: {
     APP_ENV: `"${APP_ENV}"`,
     OMDB_API_KEY: `"${OMDB_API_KEY}"`,
+    ISOLATED_CONTENT_SCRIPT_PATH: `"./content-script.js"`,
+    MAIN_CONTENT_SCRIPT_PATH: `"./urlchange-dispatcher.js"`,
     FF_TELEMETRY_ENABLED: `${["development", "testing"].includes(APP_ENV)}`,
   },
   loader: {
