@@ -1,5 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
-import { browser } from "../common";
+import { browser, MessageType } from "../common";
+import { captureException } from "../common/errorReporter";
 import "./SitePermsControlForm.css";
 
 const supportedSites = {
@@ -90,18 +91,36 @@ export default function SitePermsControlForm() {
     </form>
   );
 
-  async function toggleSitePerms(siteName: Sitename) {
-    const isEnabled = sitePerms[siteName];
+  async function toggleSitePerms(site: Sitename) {
+    const isEnabled = sitePerms[site];
+    const permStrings = supportedSites[site].permStrings as unknown as string[];
 
-    if (isEnabled) {
-      // TODO: make service worker remove content script from open tabs
-      // TODO: remove optional perms for this site
-    } else {
-      // TODO: ask for permission
-      // TODO: if not granted, return early
-      // TODO: if granted, inject content script into open tabs
+    try {
+      if (isEnabled) {
+        // disable the permission
+        await browser.runtime.sendMessage({
+          type: MessageType.cleanup,
+          data: { origins: permStrings },
+        });
+
+        await browser.permissions.remove({ origins: permStrings });
+      } else {
+        const granted = await browser.permissions.request({
+          origins: permStrings,
+        });
+        if (!granted) return;
+
+        // nothing else to do here; the permissions.onAdded listener in the
+        //   service worker will take care of injecting the content script
+        //   into the appropriate already-open tabs
+      }
+
+      setSitePerms({ ...sitePerms, [site]: !isEnabled });
+    } catch (e) {
+      captureException(e);
+
+      // TODO: can we do better?
+      alert("There was an error toggling the permission.");
     }
-
-    setSitePerms({ ...sitePerms, [siteName]: !isEnabled });
   }
 }
