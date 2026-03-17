@@ -1,5 +1,5 @@
-import { useEffect, useState } from "preact/hooks";
-import { browser, MessageType } from "../common";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import { browser, ensureError, ErrorMessage, MessageType } from "../common";
 import { captureException } from "../common/errorReporter";
 import "./SitePermsControlForm.css";
 
@@ -49,6 +49,8 @@ const permStringToSitename = Object.entries(supportedSites).reduce(
   {},
 ) as Record<PermString, Sitename>;
 
+const msDelayBeforeRequestingPerms = 2000;
+
 export default function SitePermsControlForm() {
   const [sitePerms, setSitePerms] = useState(
     Object.keys(supportedSites).reduce(
@@ -56,7 +58,37 @@ export default function SitePermsControlForm() {
       {} as Record<Sitename, IsEnabled>,
     ),
   );
+  const pendingPermsRef = useRef<Set<PermString>>(new Set());
+  const timeoutRef = useRef<number | null>(null);
+  const requestPendingPerms = useCallback(async () => {
+    const pendingPerms = Array.from(pendingPermsRef.current);
+    if (pendingPerms.length === 0) return;
 
+    try {
+      const granted = await browser.permissions.request({
+        origins: pendingPerms,
+      });
+      if (!granted) throw new Error(ErrorMessage.hostPermissionNotGranted);
+    } catch (e) {
+      ensureError(e);
+
+      // reverse optimistic update to sitePerms
+      setSitePerms((sp) => ({
+        ...sp,
+        ...pendingPerms
+          .map((ps) => permStringToSitename[ps])
+          .reduce((acc, s) => Object.assign(acc, { [s]: false }), {}),
+      }));
+
+      if (e.message !== ErrorMessage.hostPermissionNotGranted) {
+        handlePermissionError(e);
+      }
+    } finally {
+      pendingPermsRef.current.clear();
+    }
+  }, []);
+
+  // load persisted perms
   useEffect(() => {
     (async () => {
       const allOrigins = (await browser.permissions.getAll()).origins ?? [];
@@ -93,10 +125,27 @@ export default function SitePermsControlForm() {
 
   async function toggleSitePerms(site: Sitename) {
     const isEnabled = sitePerms[site];
-    const permStrings = supportedSites[site].permStrings as unknown as string[];
+
+    // being careful not to mutate the supportedSites obj
+    const permStrings = supportedSites[
+      site
+    ].permStrings.concat() as PermString[];
 
     try {
       if (isEnabled) {
+        // Due to optimistic update when granting perms (see a little
+        //   further down this function body), we may be in a situation
+        //   where the user is trying to revoke a perm that has not yet
+        //   actually been granted
+        // If we detect that we're in this edge-timeline, all we should
+        //   do is remove the perm from pendingPerms
+        for (let i = permStrings.length - 1; i >= 0; i--) {
+          if (pendingPermsRef.current.has(permStrings[i]!)) {
+            pendingPermsRef.current.delete(permStrings[i]!);
+            permStrings.splice(i, 1);
+          }
+        }
+
         // disable the permission
         await browser.runtime.sendMessage({
           type: MessageType.cleanup,
@@ -105,25 +154,31 @@ export default function SitePermsControlForm() {
 
         await browser.permissions.remove({ origins: permStrings });
       } else {
-        // TODO: ideas to prevent popup disappearing each time the permission
-        //   warning is displayed?
-
-        const granted = await browser.permissions.request({
-          origins: permStrings,
-        });
-        if (!granted) return;
-
-        // nothing else to do here; the permissions.onAdded listener in the
-        //   service worker will take care of injecting the content script
-        //   into the appropriate already-open tabs
+        // Queue the permission for later requesting
+        // We do this instead of requesting the perm immediately because
+        //   requesting triggers the perm warning which force-closes the
+        //   extension popup
+        // So the UX for a user that wants to enable multiple sites
+        //   in quick succession would be absolute horrible
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        permStrings.forEach((ps) => pendingPermsRef.current.add(ps));
+        timeoutRef.current = setTimeout(
+          requestPendingPerms,
+          msDelayBeforeRequestingPerms,
+        );
       }
 
+      // optimistic update
       setSitePerms({ ...sitePerms, [site]: !isEnabled });
     } catch (e) {
-      captureException(e);
-
-      // TODO: can we do better?
-      alert("There was an error toggling the permission.");
+      handlePermissionError(e as Error);
     }
+  }
+
+  function handlePermissionError(e: Error) {
+    captureException(e);
+
+    // TODO: can we do better?
+    alert("There was an error toggling the permission.");
   }
 }

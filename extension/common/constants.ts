@@ -72,4 +72,5 @@ export const enum ErrorMessage {
   ratingsApiRequestTimedOut = "The ratings API request timed out",
   ratingsApiRequestAlreadyInFlight = "A request for this program's rating is already in-flight",
   idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",
+  hostPermissionNotGranted = "A requested host permission was not granted",
 }
