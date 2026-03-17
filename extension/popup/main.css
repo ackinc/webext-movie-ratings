@@ -24,36 +24,6 @@ div#root > .app {
   font-weight: bold;
 }
 
-.noUi-connect {
-  background-color: var(--main-bg-color);
-}
-
-.noUi-handle {
-  cursor: grab;
-}
-
-.imdb-rating-filter-slider .noUi-handle {
-  width: 18px !important;
-  right: -9px !important;
-}
-
-.imdb-rating-filter-slider .noUi-handle::before {
-  left: 6px;
-}
-
-.imdb-rating-filter-slider .noUi-handle::after {
-  left: 9px;
-}
-
-.fopn-transparency-slider .noUi-pips {
-  padding: 0;
-  height: auto;
-}
-
-.fopn-transparency-slider .noUi-marker {
-  height: 12px;
-}
-
 input[type="checkbox"] {
   width: 16px;
   height: 16px;
