@@ -29,6 +29,12 @@ div#root > .app {
 input[type="checkbox"] {
   width: 16px;
   height: 16px;
+  cursor: pointer;
+}
+
+.form-control label {
+  cursor: pointer;
+  user-select: none;
 }
 
 .btn {

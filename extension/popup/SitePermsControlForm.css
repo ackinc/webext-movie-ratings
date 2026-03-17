@@ -4,17 +4,8 @@ form.site-control-form {
   gap: 8px;
 }
 
-form.site-control-form div.form-control {
+form.site-control-form .form-control {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-div.form-control input {
-  cursor: pointer;
-}
-
-div.form-control label {
-  cursor: pointer;
-  user-select: none;
 }
