@@ -14,8 +14,8 @@ function ErrorReportingOptIn() {
   }, []);
 
   return (
-    <div className="error-reporting-container">
-      <div className="error-reporting-control">
+    <form className="error-reporting-form">
+      <div className="form-control">
         <input
           type="checkbox"
           id="optInToErrorReporting"
@@ -49,7 +49,7 @@ function ErrorReportingOptIn() {
           </p>
         </div>
       ) : null}
-    </div>
+    </form>
   );
 
   async function toggleErrorReportingOptIn() {

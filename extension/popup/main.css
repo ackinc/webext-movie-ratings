@@ -17,6 +17,8 @@ div#root > .app {
   position: relative;
   width: 320px;
   padding: 16px 16px 32px 16px;
+
+  color: var(--main-text-color);
   font-size: var(--secondary-font-size);
 }
 
