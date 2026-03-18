@@ -126,8 +126,9 @@ export default function SitePermsControlForm() {
 
       {(Object.keys(supportedSites) as Sitename[]).map((site) => {
         const label = `sitePermFor${supportedSites[site].displayName.replace(/\s/g, "")}`;
+        const isPending = supportedSites[site].permStrings.some(ps => pendingPerms.includes(ps));
         return (
-          <div key={site} className="form-control">
+          <div key={site} className={`form-control ${isPending ? 'pending' : ''}`}>
             <input
               type="checkbox"
               id={label}

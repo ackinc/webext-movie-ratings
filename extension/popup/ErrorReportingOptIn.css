@@ -6,12 +6,6 @@ form.error-reporting-form {
   gap: 0.5rem;
 }
 
-form.error-reporting-form .form-control {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 form.error-reporting-form .form-control button.toggle-info-btn {
   margin-left: auto;
   width: 20px;

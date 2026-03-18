@@ -1,11 +1,12 @@
+form.site-control-form h4 {
+  margin-bottom: 8px;
+}
+
 form.site-control-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
-form.site-control-form .form-control {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+form.site-control-form .form-control.pending label {
+  font-weight: bold;
 }
