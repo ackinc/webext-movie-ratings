@@ -6,16 +6,21 @@ form.error-reporting-form {
   gap: 0.5rem;
 }
 
+form.error-reporting-form .form-control:has(input[type="checkbox"]) label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 form.error-reporting-form .form-control button.toggle-info-btn {
-  margin-left: auto;
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--main-text-color);
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--main-text-color);
   border-radius: 50%;
   background-color: transparent;
   cursor: pointer;
-  font-size: var(--secondary-font-size);
-  font-weight: bold;
+  font-size: 12px;
+  font-weight: normal;
 }
 
 form.error-reporting-form .form-control button.toggle-info-btn:hover {
@@ -25,7 +30,7 @@ form.error-reporting-form .form-control button.toggle-info-btn:hover {
 
 .error-reporting-details {
   border: 1px solid #00000045;
-  border-radius: 24px;
+  border-radius: 8px;
   padding: 16px 24px;
 
   display: flex;

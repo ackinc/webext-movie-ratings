@@ -23,13 +23,19 @@ function ErrorReportingOptIn() {
           checked={optedInToErrorReporting}
           onChange={toggleErrorReportingOptIn}
         />
-        <label for="optInToErrorReporting">Opt-in to error reporting</label>
-        <button
-          className="toggle-info-btn"
-          onClick={() => setShowDetails((x) => !x)}
-        >
-          ?
-        </button>
+        <label for="optInToErrorReporting">
+          Opt-in to error reporting{" "}
+          <button
+            className="toggle-info-btn"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowDetails((x) => !x);
+            }}
+          >
+            ?
+          </button>
+        </label>
       </div>
 
       {showDetails ? (
