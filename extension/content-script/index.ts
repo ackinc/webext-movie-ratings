@@ -223,7 +223,8 @@ function handleMessage(
   _s?: chrome.runtime.MessageSender,
   sendResponse?: (response: unknown) => void,
 ) {
-  const { type, data } = m instanceof MessageEvent ? m.data : m;
+  const msg = m instanceof MessageEvent ? (m.data as Message) : m;
+  const { type } = msg;
 
   if (type === MessageType.cleanup) {
     cleanup();
@@ -232,7 +233,7 @@ function handleMessage(
   } else if (type === MessageType.urlChange) {
     handleUrlChange();
   } else if (type === MessageType.filterSettingsChange) {
-    handleFilterSettingsChange(data);
+    handleFilterSettingsChange(msg.data);
   } else if (type === MessageType.healthCheck) {
     if (sendResponse) sendResponse("ok");
   }
