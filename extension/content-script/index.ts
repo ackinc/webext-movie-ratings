@@ -235,6 +235,8 @@ function handleMessage(
   if (type === MessageType.cleanup) {
     cleanup();
   } else if (type === MessageType.orphanCheck) {
+    // TODO: check that the browser.runtime.id check works for
+    //   orphaned content scripts on Firefox
     if (!browser.runtime.id) {
       // if the trigger was that a new content script was injected, the outdated
       //   urlchange-dispatcher will be informed of the need to cleanup by the
