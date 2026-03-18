@@ -115,7 +115,10 @@ async function injectUpdatedContentScripts(tabUrlMatchPatterns: string[] = []) {
 }
 
 async function removeContentScripts(urlMatchPatterns: string[] = []) {
-  // TODO: this doesn't remove urlchange-dispatcher; it should
+  // removal of the MAIN world content script will have to be handled
+  //   via a window.postMessage from the ISOLATED world content script
+  // there's no way for the service worker to communicate directly with
+  //   the MAIN world content script
   await sendMessageToAllTabs({ type: MessageType.cleanup }, urlMatchPatterns);
 }
 
