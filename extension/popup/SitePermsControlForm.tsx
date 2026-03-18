@@ -53,6 +53,8 @@ const permStringToSitename = Object.entries(supportedSites).reduce(
 const msDelayBeforeRequestingPerms = 2000;
 
 export default function SitePermsControlForm() {
+  const [error, setError] = useState<Error | null>(null);
+
   const [sitePerms, setSitePerms] = useState(
     Object.keys(supportedSites).reduce(
       (acc, site) => Object.assign(acc, { [site]: false }),
@@ -124,6 +126,7 @@ export default function SitePermsControlForm() {
   return (
     <form className="site-control-form">
       <h4>What sites should Sift run on?</h4>
+      {error ? <p className="error">Sorry, something went wrong ...</p> : null}
 
       {(Object.keys(supportedSites) as Sitename[]).map((site) => {
         const label = `sitePermFor${supportedSites[site].displayName.replace(/\s/g, "")}`;
@@ -195,8 +198,6 @@ export default function SitePermsControlForm() {
 
   function handlePermissionError(e: Error) {
     captureException(e);
-
-    // TODO: can we do better?
-    alert("There was an error toggling the permission.");
+    setError(e);
   }
 }
