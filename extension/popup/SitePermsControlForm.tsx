@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { browser, ensureError, ErrorMessage, MessageType } from "../common";
 import { captureException } from "../common/errorReporter";
 import "./SitePermsControlForm.css";
@@ -58,35 +58,18 @@ export default function SitePermsControlForm() {
       {} as Record<Sitename, IsEnabled>,
     ),
   );
-  const pendingPermsRef = useRef<Set<PermString>>(new Set());
+
+  // When a user enables Sift on a particular site, we want to queue
+  //   the relevant optional host permissions to be requested after
+  //   a short timeout
+  // We do this instead of requesting the perm immediately because
+  //   when a host perm is requested, it triggers the browser's
+  //   "additional permission" warning which force-closes the extension
+  //   popup
+  // So the UX for a user that wants to enable multiple sites
+  //   in quick succession would be absolute horrible
+  const [pendingPerms, setPendingPerms] = useState<PermString[]>([]);
   const timeoutRef = useRef<number | null>(null);
-  const requestPendingPerms = useCallback(async () => {
-    const pendingPerms = Array.from(pendingPermsRef.current);
-    if (pendingPerms.length === 0) return;
-
-    try {
-      const granted = await browser.permissions.request({
-        origins: pendingPerms,
-      });
-      if (!granted) throw new Error(ErrorMessage.hostPermissionNotGranted);
-    } catch (e) {
-      ensureError(e);
-
-      // reverse optimistic update to sitePerms
-      setSitePerms((sp) => ({
-        ...sp,
-        ...pendingPerms
-          .map((ps) => permStringToSitename[ps])
-          .reduce((acc, s) => Object.assign(acc, { [s]: false }), {}),
-      }));
-
-      if (e.message !== ErrorMessage.hostPermissionNotGranted) {
-        handlePermissionError(e);
-      }
-    } finally {
-      pendingPermsRef.current.clear();
-    }
-  }, []);
 
   // load persisted perms
   useEffect(() => {
@@ -100,6 +83,42 @@ export default function SitePermsControlForm() {
       setSitePerms((old) => ({ ...old, ...persistedPerms }));
     })();
   }, []);
+
+  // request perms for just-enabled sites after a delay to ensure the user
+  //   has stopped interacting with the form
+  useEffect(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (pendingPerms.length === 0) return;
+    timeoutRef.current = setTimeout(
+      requestPendingPerms,
+      msDelayBeforeRequestingPerms,
+    );
+
+    async function requestPendingPerms() {
+      try {
+        const granted = await browser.permissions.request({
+          origins: pendingPerms,
+        });
+        if (!granted) throw new Error(ErrorMessage.hostPermissionNotGranted);
+      } catch (e) {
+        ensureError(e);
+
+        // reverse optimistic update to sitePerms
+        setSitePerms((sp) => ({
+          ...sp,
+          ...pendingPerms
+            .map((ps) => permStringToSitename[ps])
+            .reduce((acc, s) => Object.assign(acc, { [s]: false }), {}),
+        }));
+
+        if (e.message !== ErrorMessage.hostPermissionNotGranted) {
+          handlePermissionError(e);
+        }
+      } finally {
+        setPendingPerms([]);
+      }
+    }
+  }, [pendingPerms]);
 
   return (
     <form className="site-control-form">
@@ -127,9 +146,7 @@ export default function SitePermsControlForm() {
     const isEnabled = sitePerms[site];
 
     // being careful not to mutate the supportedSites obj
-    const permStrings = supportedSites[
-      site
-    ].permStrings.concat() as PermString[];
+    let permStrings = supportedSites[site].permStrings.concat() as PermString[];
 
     try {
       if (isEnabled) {
@@ -139,33 +156,24 @@ export default function SitePermsControlForm() {
         //   actually been granted
         // If we detect that we're in this edge-timeline, all we should
         //   do is remove the perm from pendingPerms
-        for (let i = permStrings.length - 1; i >= 0; i--) {
-          if (pendingPermsRef.current.has(permStrings[i]!)) {
-            pendingPermsRef.current.delete(permStrings[i]!);
-            permStrings.splice(i, 1);
-          }
+        if (permStrings.some((ps) => pendingPerms.includes(ps))) {
+          setPendingPerms((pps) =>
+            pps.filter((pp) => !permStrings.includes(pp)),
+          );
+          permStrings = permStrings.filter((ps) => !pendingPerms.includes(ps));
         }
 
-        // disable the permission
+        // remove sift from any already-open webpages associated with the
+        //   perms we're about to remove
         await browser.runtime.sendMessage({
           type: MessageType.cleanup,
           data: { origins: permStrings },
         });
 
+        // disable the permission
         await browser.permissions.remove({ origins: permStrings });
       } else {
-        // Queue the permission for later requesting
-        // We do this instead of requesting the perm immediately because
-        //   requesting triggers the perm warning which force-closes the
-        //   extension popup
-        // So the UX for a user that wants to enable multiple sites
-        //   in quick succession would be absolute horrible
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        permStrings.forEach((ps) => pendingPermsRef.current.add(ps));
-        timeoutRef.current = setTimeout(
-          requestPendingPerms,
-          msDelayBeforeRequestingPerms,
-        );
+        setPendingPerms((pps) => pps.concat(permStrings));
       }
 
       // optimistic update
