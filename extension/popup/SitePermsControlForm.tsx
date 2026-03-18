@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { browser, ensureError, ErrorMessage, MessageType } from "../common";
+import {
+  browser,
+  delayMs,
+  ensureError,
+  ErrorMessage,
+  MessageType,
+} from "../common";
 import { captureException } from "../common/errorReporter";
 import loadingIndicator from "../../images/loading.svg";
 import "./SitePermsControlForm.css";
@@ -50,7 +56,7 @@ const permStringToSitename = Object.entries(supportedSites).reduce(
   {},
 ) as Record<PermString, Sitename>;
 
-const msDelayBeforeRequestingPerms = 2000;
+const msDelayBeforeRequestingOrRenouncingPerms = 2000;
 
 export default function SitePermsControlForm() {
   const [error, setError] = useState<Error | null>(null);
@@ -94,7 +100,7 @@ export default function SitePermsControlForm() {
     if (pendingPerms.length === 0) return;
     timeoutRef.current = setTimeout(
       requestPendingPerms,
-      msDelayBeforeRequestingPerms,
+      msDelayBeforeRequestingOrRenouncingPerms,
     );
 
     async function requestPendingPerms() {
@@ -183,7 +189,10 @@ export default function SitePermsControlForm() {
           data: { origins: permStrings },
         });
 
-        // disable the permission
+        // give some time for the extension to pass around the messages
+        //   needed for content-script cleanup to occur
+        await delayMs(msDelayBeforeRequestingOrRenouncingPerms);
+
         await browser.permissions.remove({ origins: permStrings });
       } else {
         setPendingPerms((pps) => pps.concat(permStrings));
