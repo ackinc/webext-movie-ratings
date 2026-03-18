@@ -49,6 +49,13 @@ let omdbApiClient: OmdbApiClient;
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
     omdbApiClient = new OmdbApiClient(fetchWithAddedTelemetry);
+
+    // Running this on every service-worker startup instead of
+    //   inside an onInstalled event listener (which is called for both
+    //   installs and extension updates) because we want the content
+    //   scripts to be injected where appropriate when a user
+    //   disables, then re-enables the extension, and that is not a
+    //   situation the onInstalled event listener runs for
     await injectUpdatedContentScripts();
   } catch (e) {
     captureException(e);
