@@ -6,10 +6,10 @@ function patchHistoryPushStateAndReplaceState() {
   const { pushState, replaceState } = history;
   history.pushState = function (...args) {
     pushState.apply(history, args);
-    window.postMessage({ type: MessageType.urlChange });
+    window.postMessage({ type: MessageType.urlChange } satisfies Message);
   };
   history.replaceState = function (...args) {
     replaceState.apply(history, args);
-    window.postMessage({ type: MessageType.urlChange });
+    window.postMessage({ type: MessageType.urlChange } satisfies Message);
   };
 }

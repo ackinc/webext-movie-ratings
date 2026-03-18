@@ -1,7 +1,7 @@
 import {
   browser,
   defaultProgramFilterSettings,
-  pick,
+  omit,
   getSetting,
   MessageType,
   CssClasses,
@@ -143,7 +143,7 @@ async function loop() {
           pageUrl: location.href,
           statsCollectionTime: +new Date(),
         },
-      });
+      } satisfies Message);
     }
 
     if (!thisLoopAbortController.signal.aborted) {
@@ -190,10 +190,10 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
     await browser.runtime.sendMessage({
       type: MessageType.fetchIMDBRating,
       data: {
-        program: pick(program, ["title", "type", "year"]),
+        program: omit(program, ["node"]) as Omit<Program, "node">,
         pageUrl: location.href,
       },
-    });
+    } satisfies Message);
   if ("error" in response) throw new Error(response.error);
   return response;
 }
@@ -268,6 +268,10 @@ function haltLoop() {
 }
 
 function cleanup() {
+  window.postMessage({
+    type: MessageType.removeUrlChangeDispatcher,
+  } satisfies Message);
+
   haltLoop();
   removeMessageListeners();
   page.cleanup();

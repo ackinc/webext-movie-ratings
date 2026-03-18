@@ -17,6 +17,7 @@ import {
   getSetting,
   ErrorMessage,
   MessageType,
+  type Message,
 } from "../common";
 import { DataExtractionError } from "./customErrors";
 
@@ -94,7 +95,7 @@ export function captureException(
         context: getExtensionContext(),
         pageUrl: globalThis.location.href,
       },
-    });
+    } satisfies Message);
   }
 
   const clonedScope = scope.clone();

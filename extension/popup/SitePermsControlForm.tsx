@@ -5,6 +5,7 @@ import {
   ensureError,
   ErrorMessage,
   MessageType,
+  type Message,
 } from "../common";
 import { captureException } from "../common/errorReporter";
 import loadingIndicator from "../../images/loading.svg";
@@ -187,7 +188,7 @@ export default function SitePermsControlForm() {
         await browser.runtime.sendMessage({
           type: MessageType.cleanup,
           data: { origins: permStrings },
-        });
+        } satisfies Message);
 
         // give some time for the extension to pass around the messages
         //   needed for content-script cleanup to occur
