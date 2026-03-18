@@ -17,6 +17,8 @@ div#root > .app {
   position: relative;
   width: 320px;
   padding: 16px 16px 32px 16px;
+
+  color: var(--main-text-color);
   font-size: var(--secondary-font-size);
 }
 
@@ -24,39 +26,34 @@ div#root > .app {
   font-weight: bold;
 }
 
-.noUi-connect {
-  background-color: var(--main-bg-color);
-}
-
-.noUi-handle {
-  cursor: grab;
-}
-
-.imdb-rating-filter-slider .noUi-handle {
-  width: 18px !important;
-  right: -9px !important;
-}
-
-.imdb-rating-filter-slider .noUi-handle::before {
-  left: 6px;
-}
-
-.imdb-rating-filter-slider .noUi-handle::after {
-  left: 9px;
-}
-
-.fopn-transparency-slider .noUi-pips {
-  padding: 0;
-  height: auto;
-}
-
-.fopn-transparency-slider .noUi-marker {
-  height: 12px;
-}
-
 input[type="checkbox"] {
   width: 16px;
   height: 16px;
+  cursor: pointer;
+}
+
+.form-control label {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* will usually have only the checkbox itself and a label as children */
+.form-control:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+}
+
+.form-control:has(input[type="checkbox"]) label {
+  flex-grow: 1;
+  padding: 4px 8px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-control:has(input[type="checkbox"]) label:hover {
+  font-weight: bold;
 }
 
 .btn {

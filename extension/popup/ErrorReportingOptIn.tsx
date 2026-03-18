@@ -14,8 +14,8 @@ function ErrorReportingOptIn() {
   }, []);
 
   return (
-    <div className="error-reporting-container">
-      <div className="error-reporting-control">
+    <form className="error-reporting-form">
+      <div className="form-control">
         <input
           type="checkbox"
           id="optInToErrorReporting"
@@ -23,13 +23,19 @@ function ErrorReportingOptIn() {
           checked={optedInToErrorReporting}
           onChange={toggleErrorReportingOptIn}
         />
-        <label for="optInToErrorReporting">Opt-in to error reporting</label>
-        <button
-          className="toggle-info-btn"
-          onClick={() => setShowDetails((x) => !x)}
-        >
-          ?
-        </button>
+        <label for="optInToErrorReporting">
+          Opt-in to error reporting{" "}
+          <button
+            className="toggle-info-btn"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowDetails((x) => !x);
+            }}
+          >
+            ?
+          </button>
+        </label>
       </div>
 
       {showDetails ? (
@@ -49,7 +55,7 @@ function ErrorReportingOptIn() {
           </p>
         </div>
       ) : null}
-    </div>
+    </form>
   );
 
   async function toggleErrorReportingOptIn() {

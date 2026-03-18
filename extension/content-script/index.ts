@@ -225,7 +225,9 @@ function handleMessage(
 ) {
   const { type, data } = m instanceof MessageEvent ? m.data : m;
 
-  if (type === MessageType.orphanCheck) {
+  if (type === MessageType.cleanup) {
+    cleanup();
+  } else if (type === MessageType.orphanCheck) {
     if (!browser.runtime.id) cleanup();
   } else if (type === MessageType.urlChange) {
     handleUrlChange();

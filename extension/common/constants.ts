@@ -37,6 +37,7 @@ export const enum MessageType {
   urlChange = "sift:urlchange",
   filterSettingsChange = "sift:filterSettingsChange",
   orphanCheck = "sift:orphanCheck",
+  cleanup = "sift:cleanup",
   healthCheck = "sift:healthCheck",
   webpageRatingStats = "sift:webpageRatingStats",
   error = "sift:error",
@@ -54,7 +55,7 @@ export const ExtensionSettingsKeys = [
 export const defaultProgramFilterSettings: ProgramFilterSettings = {
   minRating: 0,
   maxRating: 10,
-  excludeUnratedPrograms: true,
+  excludeUnratedPrograms: false,
   transparency: 75,
 };
 
@@ -71,4 +72,5 @@ export const enum ErrorMessage {
   ratingsApiRequestTimedOut = "The ratings API request timed out",
   ratingsApiRequestAlreadyInFlight = "A request for this program's rating is already in-flight",
   idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",
+  hostPermissionNotGranted = "A requested host permission was not granted",
 }

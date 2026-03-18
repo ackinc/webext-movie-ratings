@@ -18,7 +18,6 @@ import type {
   IMDBData,
   Message,
   CachedIMDBData,
-  SWErrorResponse,
 } from "../common/types";
 import {
   captureException,
@@ -39,6 +38,8 @@ let omdbApiClient: OmdbApiClient;
   try {
     browser.runtime.onInstalled.addListener(onInstalled);
     browser.runtime.onMessage.addListener(handleMessage);
+    browser.permissions.onAdded.addListener(handlePermissionsAdded);
+    browser.tabs.onUpdated.addListener(handleTabUpdated);
 
     const db = await upgradeIdbAndGetConnection();
     ratingsCache = await initializeRatingsCache(
@@ -82,21 +83,49 @@ async function initializeTelemetryStore(
   return await TelemetryStore.create(db, telemetryIntervalSizeInSeconds);
 }
 
-async function injectUpdatedContentScripts() {
-  const results = await sendMessageToAllTabs({
-    type: MessageType.healthCheck,
-  });
+async function injectUpdatedContentScripts(tabUrlMatchPatterns: string[] = []) {
+  const results = await sendMessageToAllTabs(
+    { type: MessageType.healthCheck },
+    tabUrlMatchPatterns,
+  );
   results.forEach(({ tab, result }) => {
     if (
       result.status === "rejected" &&
       result.reason.message.includes("Receiving end does not exist")
     ) {
       browser.scripting.executeScript({
-        files: browser.runtime.getManifest()["content_scripts"]![0]!["js"]!,
+        files: [ISOLATED_CONTENT_SCRIPT_PATH],
         target: { tabId: tab.id! },
+        world: "ISOLATED",
+      });
+      browser.scripting.executeScript({
+        files: [MAIN_CONTENT_SCRIPT_PATH],
+        target: { tabId: tab.id! },
+        world: "MAIN",
       });
     }
   });
+}
+
+async function removeContentScripts(urlMatchPatterns: string[] = []) {
+  // TODO: this doesn't remove urlchange-dispatcher; it should
+  await sendMessageToAllTabs({ type: MessageType.cleanup }, urlMatchPatterns);
+}
+
+async function handlePermissionsAdded({
+  origins,
+}: chrome.permissions.Permissions): Promise<void> {
+  if (origins && origins.length > 0) await injectUpdatedContentScripts(origins);
+}
+
+async function handleTabUpdated(
+  _tabId: number,
+  changeInfo: { status?: string },
+  tab: chrome.tabs.Tab,
+): Promise<void> {
+  if (changeInfo.status === "complete" && tab.url) {
+    await injectUpdatedContentScripts([tab.url]);
+  }
 }
 
 async function showPopupIfNotSeen() {
@@ -108,14 +137,15 @@ async function showPopupIfNotSeen() {
 function handleMessage(
   request: Message,
   _sender: chrome.runtime.MessageSender,
-  sendResponse: (arg: IMDBData | SWErrorResponse) => void,
+  sendResponse: (arg: unknown) => void,
 ) {
   try {
+    if (FF_TELEMETRY_ENABLED && !telemetryStore) {
+      throw new Error(ErrorMessage.telemetryStoreNotReady);
+    }
+
     if (request.type === MessageType.fetchIMDBRating) {
       if (!ratingsCache) throw new Error(ErrorMessage.ratingsCacheNotReady);
-      if (FF_TELEMETRY_ENABLED && !telemetryStore) {
-        throw new Error(ErrorMessage.telemetryStoreNotReady);
-      }
 
       const { pageUrl, program } = request.data;
       getIMDBData(program, pageUrl)
@@ -142,6 +172,11 @@ function handleMessage(
       }
     } else if (request.type === MessageType.placeholder) {
       // do something here if desired
+    } else if (request.type === MessageType.cleanup) {
+      removeContentScripts(request.data!.origins)
+        .then(sendResponse)
+        .catch(handleError);
+      return true; // keep channel open until sendReponse is called
     } else {
       throw new Error(`Unknown message type: ${request.type}`);
     }
@@ -170,7 +205,7 @@ function handleMessage(
 
 function getIMDBData(
   program: Omit<Program, "node">,
-  pageUrl?: string,
+  pageUrl: string,
 ): Promise<IMDBData> {
   return new Promise((resolve, reject) => {
     if (FF_TELEMETRY_ENABLED) {

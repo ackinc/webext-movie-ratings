@@ -1,7 +1,4 @@
-.error-reporting-container {
-  border-radius: 18px;
-  padding: 8px 16px;
-  background-color: var(--main-bg-color);
+form.error-reporting-form {
   color: var(--main-text-color);
   font-size: var(--secondary-font-size);
   display: flex;
@@ -9,29 +6,27 @@
   gap: 0.5rem;
 }
 
-.error-reporting-control {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.error-reporting-control button.toggle-info-btn {
-  margin-left: auto;
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--main-text-color);
+form.error-reporting-form .form-control button.toggle-info-btn {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--main-text-color);
   border-radius: 50%;
   background-color: transparent;
   cursor: pointer;
-  font-size: var(--secondary-font-size);
-  font-weight: bold;
+  font-size: 12px;
+  font-weight: normal;
 }
 
-.error-reporting-control button.toggle-info-btn:hover {
+form.error-reporting-form .form-control button.toggle-info-btn:hover {
   background-color: var(--highlighted-bg-color);
+  border: 0;
 }
 
 .error-reporting-details {
+  border: 1px solid #00000045;
+  border-radius: 8px;
+  padding: 16px 24px;
+
   display: flex;
   flex-direction: column;
   gap: 8px;

@@ -10,35 +10,7 @@
     "128": "images/logo128.png"
   },
   "author": "anirudh.nimmagadda@gmail.com",
-  "content_scripts": [
-    {
-      "js": ["content-script.js"],
-      "matches": [
-        "https://www.hotstar.com/*",
-        "https://www.sonyliv.com/*",
-        "https://www.netflix.com/*",
-        "https://www.primevideo.com/*",
-        "https://www.amazon.com/gp/video/*",
-        "https://tv.apple.com/*",
-        "https://www.crunchyroll.com/*",
-        "https://www.youtube.com/*"
-      ]
-    },
-    {
-      "js": ["urlchange-dispatcher.js"],
-      "matches": [
-        "https://www.hotstar.com/*",
-        "https://www.sonyliv.com/*",
-        "https://www.netflix.com/*",
-        "https://www.primevideo.com/*",
-        "https://www.amazon.com/gp/video/*",
-        "https://tv.apple.com/*",
-        "https://www.crunchyroll.com/*",
-        "https://www.youtube.com/*"
-      ],
-      "world": "MAIN"
-    }
-  ],
+  "content_scripts": [],
   "background": {
     "service_worker": "service-worker.js",
     "type": "module"
@@ -48,14 +20,14 @@
     "default_icon": "images/logo32.png"
   },
   "permissions": ["scripting", "storage"],
-  "host_permissions": [
-    "https://www.hotstar.com/*",
-    "https://www.sonyliv.com/*",
-    "https://www.netflix.com/*",
+  "optional_host_permissions": [
+    "https://www.amazon.com/*",
     "https://www.primevideo.com/*",
-    "https://www.amazon.com/gp/video/*",
     "https://tv.apple.com/*",
     "https://www.crunchyroll.com/*",
+    "https://www.hotstar.com/*",
+    "https://www.netflix.com/*",
+    "https://www.sonyliv.com/*",
     "https://www.youtube.com/*"
   ]
 }

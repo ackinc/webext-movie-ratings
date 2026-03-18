@@ -60,7 +60,18 @@ export type Message =
       data: ProgramFilterSettings;
     }
   | {
+      // send from new content-scripts to old content-scripts to induce
+      //   cleanup so the new content-script can take over the webpage
       type: MessageType.orphanCheck;
+    }
+  | {
+      // sent from popup to service-worker when user revokes a
+      //   previously-granted optional host permission
+      // sent again, with data-arg stripped, from service-worker
+      //   to content-script to induce cleanup in tabs where
+      //   we no longer have the user's permission
+      type: MessageType.cleanup;
+      data?: { origins: string[] };
     }
   | {
       type: MessageType.healthCheck;
@@ -75,6 +86,8 @@ export type Message =
       };
     }
   | {
+      // send from anywhere in the extension to the service-worker so the
+      //   error can be logged in the telemetry store
       type: MessageType.error;
       data: {
         errorDetails: {

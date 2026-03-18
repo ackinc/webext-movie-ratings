@@ -52,7 +52,6 @@ Using the browseOTTs script, we can identify any decrease in quality pre-emptive
 Add a dashboard (APP_ENV must be `development` or `testing`) at `chrome-extension://${extensionId}/dashboard` that reads the telemetry data and answers the following qns:
 
 - How many errors of each type (data-extraction, outdated-selector-detection, ... other) occurred during the run?
-  - TODO: add error telemetry
 - What % of programs were we unable to show ratings for (horiz. bar chart, each bar === 1 webpage, worst % longest bar)?
 - What are the specific titles for which the ratings API provider had no ratings?
   - maybe hovering over a specific bar can trigger a popup that will list the titles from the webpage?

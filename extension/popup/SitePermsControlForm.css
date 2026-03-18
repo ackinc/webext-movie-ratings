@@ -1,0 +1,19 @@
+form.site-control-form {
+  display: flex;
+  flex-direction: column;
+}
+
+form.site-control-form h4 {
+  margin-bottom: 8px;
+}
+
+form.site-control-form p.error {
+  margin-bottom: 8px;
+
+  color: red;
+  font-size: var(--secondary-font-size);
+}
+
+form.site-control-form .form-control label img {
+  height: 14px;
+}

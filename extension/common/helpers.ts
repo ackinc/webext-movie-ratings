@@ -5,7 +5,6 @@ import { browser, languages, DB_NAME, DB_VERSION } from "./constants";
 import type { ExtensionContext, ExtensionSettings, Message } from "./types";
 import TelemetryStore from "./TelemetryStore";
 import RatingsCache from "./RatingsCache";
-import { pick } from "../../utils";
 import { captureException } from "./errorReporter";
 import * as storage from "./storage";
 
@@ -24,10 +23,23 @@ export function getExtensionContext(): ExtensionContext {
   throw new Error(`Could not figure out context. Running at ${location.href}`);
 }
 
-export async function sendMessageToAllTabs(message: Message) {
-  const tabs = await browser.tabs.query({
-    url: browser.runtime.getManifest()["host_permissions"],
-  });
+// A better name would've been 'sendMessageToAllRelevantTabs'
+export async function sendMessageToAllTabs(
+  message: Message,
+  urlMatchPatterns: string[] = [],
+) {
+  if (urlMatchPatterns.length === 0) {
+    // can't just get host perms from manifest since they are now all optional
+    urlMatchPatterns = (await browser.permissions.getAll()).origins ?? [];
+  }
+
+  if (urlMatchPatterns.length === 0) {
+    // calling tabs.query with url set to an empty arr returns all tabs,
+    //   which is not what we want
+    return [];
+  }
+
+  const tabs = await browser.tabs.query({ url: urlMatchPatterns });
   const results = await Promise.allSettled(
     tabs.map((tab) => browser.tabs.sendMessage(tab.id as number, message)),
   );
@@ -39,10 +51,7 @@ export async function sendMessageToAllTabs(message: Message) {
     if (reason.message.includes("Receiving end does not exist")) return;
     reason.message = `Failed to send message to tab. ${reason.message}`;
     captureException(reason, {
-      context: {
-        tab: pick(tab as unknown as Record<string, unknown>, ["id", "url"]),
-        message,
-      },
+      context: { tab: { id: tab.id, url: tab.url }, message },
     });
   });
   return results.map((result, idx) => ({ tab: tabs[idx]!, result }));
