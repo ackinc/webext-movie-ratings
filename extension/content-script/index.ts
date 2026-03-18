@@ -235,7 +235,12 @@ function handleMessage(
   if (type === MessageType.cleanup) {
     cleanup();
   } else if (type === MessageType.orphanCheck) {
-    if (!browser.runtime.id) cleanup();
+    if (!browser.runtime.id) {
+      // if the trigger was that a new content script was injected, the outdated
+      //   urlchange-dispatcher will be informed of the need to cleanup by the
+      //   newly injected urlchange-dispatcher, not by this content-script
+      cleanup(msg.data.trigger === "content-script-runtime-disappeared");
+    }
   } else if (type === MessageType.urlChange) {
     handleUrlChange();
   } else if (type === MessageType.filterSettingsChange) {
@@ -273,10 +278,12 @@ function haltLoop() {
   clearTimeout(loopTimeout);
 }
 
-function cleanup() {
-  window.postMessage({
-    type: MessageType.removeUrlChangeDispatcher,
-  } satisfies Message);
+function cleanup(shouldInformPairedUrlChangeDispatcher = true) {
+  if (shouldInformPairedUrlChangeDispatcher) {
+    window.postMessage({
+      type: MessageType.removeUrlChangeDispatcher,
+    } satisfies Message);
+  }
 
   haltLoop();
   removeMessageListeners();
