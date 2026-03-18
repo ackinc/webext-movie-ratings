@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { browser, ensureError, ErrorMessage, MessageType } from "../common";
 import { captureException } from "../common/errorReporter";
+import loadingIndicator from "../../images/loading.svg";
 import "./SitePermsControlForm.css";
 
 const supportedSites = {
@@ -126,9 +127,14 @@ export default function SitePermsControlForm() {
 
       {(Object.keys(supportedSites) as Sitename[]).map((site) => {
         const label = `sitePermFor${supportedSites[site].displayName.replace(/\s/g, "")}`;
-        const isPending = supportedSites[site].permStrings.some(ps => pendingPerms.includes(ps));
+        const isPending = supportedSites[site].permStrings.some((ps) =>
+          pendingPerms.includes(ps),
+        );
         return (
-          <div key={site} className={`form-control ${isPending ? 'pending' : ''}`}>
+          <div
+            key={site}
+            className={`form-control ${isPending ? "pending" : ""}`}
+          >
             <input
               type="checkbox"
               id={label}
@@ -136,7 +142,10 @@ export default function SitePermsControlForm() {
               checked={sitePerms[site]}
               onChange={() => toggleSitePerms(site)}
             />
-            <label for={label}>{supportedSites[site].displayName}</label>
+            <label for={label}>
+              {supportedSites[site].displayName}
+              {isPending ? <img src={loadingIndicator} /> : null}
+            </label>
           </div>
         );
       })}

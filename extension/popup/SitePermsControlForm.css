@@ -7,6 +7,6 @@ form.site-control-form {
   flex-direction: column;
 }
 
-form.site-control-form .form-control.pending label {
-  font-weight: bold;
+form.site-control-form .form-control label img {
+  height: 14px;
 }

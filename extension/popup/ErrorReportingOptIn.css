@@ -6,12 +6,6 @@ form.error-reporting-form {
   gap: 0.5rem;
 }
 
-form.error-reporting-form .form-control:has(input[type="checkbox"]) label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 form.error-reporting-form .form-control button.toggle-info-btn {
   width: 16px;
   height: 16px;
