@@ -47,7 +47,10 @@ let loopAbortController: AbortController;
 (async () => {
   try {
     // so content scripts belonging to prev. ext. version can cleanup
-    window.postMessage({ type: MessageType.orphanCheck });
+    window.postMessage({
+      type: MessageType.orphanCheck,
+      data: { trigger: "new-content-script-injection" },
+    } satisfies Message);
 
     await initializePage();
     addMessageListeners();
@@ -156,7 +159,10 @@ async function loop() {
       e instanceof Error &&
       e.message.startsWith("Extension context invalidated")
     ) {
-      cleanup();
+      window.postMessage({
+        type: MessageType.orphanCheck,
+        data: { trigger: "content-script-runtime-disappeared" },
+      } satisfies Message);
       return;
     }
 

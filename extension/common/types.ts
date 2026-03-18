@@ -66,9 +66,19 @@ export type Message =
       data: ProgramFilterSettings;
     }
   | {
-      // send from new content-scripts to old content-scripts to induce
-      //   cleanup so the new content-script can take over the webpage
+      // sent from new content-scripts to old content-scripts just after
+      //   extension update to induce cleanup of old content script
+      // also sent from a running content script to itself when it is
+      //   detecting during normal operation that the runtime may have
+      //   disappeared (for ex, because the user disabled/uninstalled
+      //   the extension)
+      // the data.source field is meant to disambiguate these 2 cases
       type: MessageType.orphanCheck;
+      data: {
+        trigger:
+          | "new-content-script-injection"
+          | "content-script-runtime-disappeared";
+      };
     }
   | {
       // sent from popup to service-worker when user revokes a
