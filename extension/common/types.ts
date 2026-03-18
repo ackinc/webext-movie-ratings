@@ -81,6 +81,14 @@ export type Message =
       };
     }
   | {
+      // sent from an isolated content script that is cleaning up; the
+      //   intended recipient is its paired main content script
+      //   (urlchange-dispatcher), but due to how window.postMessage works,
+      //   the message will be received by all content scripts and the host
+      //   webpage itself
+      type: MessageType.removeUrlChangeDispatcher;
+    }
+  | {
       // sent from popup to service-worker when user revokes a
       //   previously-granted optional host permission
       // sent again, with data-arg stripped, from service-worker
