@@ -44,6 +44,12 @@ export type NumberRange = {
   max: number;
 };
 
+export interface ErrorDetails {
+  name: string;
+  message: string;
+  stack: string | undefined;
+}
+
 export type Message =
   | {
       type: MessageType.fetchIMDBRating;
@@ -90,11 +96,7 @@ export type Message =
       //   error can be logged in the telemetry store
       type: MessageType.error;
       data: {
-        errorDetails: {
-          name: string;
-          message: string;
-          stack: string;
-        };
+        errorDetails: ErrorDetails;
         context: ExtensionContext;
         pageUrl?: string;
       };
