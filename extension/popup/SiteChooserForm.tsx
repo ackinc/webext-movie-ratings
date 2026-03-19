@@ -9,7 +9,7 @@ import {
   type SWMessageResponse,
 } from "../common";
 import { captureException } from "../common/errorReporter";
-import loadingIndicator from "../../images/loading.svg";
+import SiteChooserFormControl from "./SiteChooserFormControl";
 import "./SiteChooserForm.css";
 type PermString = (typeof supportedSites)[Sitename]["permStrings"][number];
 type IsEnabled = boolean;
@@ -100,32 +100,20 @@ export default function SiteChooserForm() {
   }, [pendingPerms]);
 
   return (
-    <form className="site-control-form">
+    <form className="site-chooser-form">
       <h4>What sites should Sift run on?</h4>
       {error ? <p className="error">Sorry, something went wrong ...</p> : null}
 
       {(Object.keys(supportedSites) as Sitename[]).map((site) => {
-        const label = `sitePermFor${supportedSites[site].displayName.replace(/\s/g, "")}`;
-        const isPending = supportedSites[site].permStrings.some((ps) =>
-          pendingPerms.includes(ps),
-        );
+        const { permStrings: pss } = supportedSites[site];
         return (
-          <div
+          <SiteChooserFormControl
             key={site}
-            className={`form-control ${isPending ? "pending" : ""}`}
-          >
-            <input
-              type="checkbox"
-              id={label}
-              name={label}
-              checked={sitePerms[site]}
-              onChange={() => toggleSitePerms(site)}
-            />
-            <label for={label}>
-              {supportedSites[site].displayName}
-              {isPending ? <img src={loadingIndicator} /> : null}
-            </label>
-          </div>
+            site={site}
+            enabled={sitePerms[site]}
+            loading={pss.some((ps) => pendingPerms.includes(ps))}
+            onToggle={toggleSitePerms}
+          />
         );
       })}
     </form>
