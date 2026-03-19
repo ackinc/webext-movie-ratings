@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import {
   browser,
-  delayMs,
   ensureError,
   ErrorMessage,
   MessageType,
@@ -183,18 +182,22 @@ export default function SitePermsControlForm() {
           permStrings = permStrings.filter((ps) => !pendingPerms.includes(ps));
         }
 
-        // remove sift from any already-open webpages associated with the
-        //   perms we're about to remove
-        await browser.runtime.sendMessage({
-          type: MessageType.hostPermissionsRevoked,
-          data: { origins: permStrings },
-        } satisfies Message);
-
-        // give some time for the extension to pass around the messages
-        //   needed for content-script cleanup to occur
-        await delayMs(msDelayBeforeRequestingOrRenouncingPerms);
-
-        await browser.permissions.remove({ origins: permStrings });
+        if (permStrings.length > 0) {
+          // The service worker will take care of removing sift from any
+          //   already-open webpages associated with the perms we're about
+          //   to remove
+          // The code to revoke the permission could have been called from
+          //   here as well, but since we want a bit of a delay between the
+          //   user disabling Sift for a site, and the permission-revoke API
+          //   call (so content-scripts have time to receive and react to the
+          //   clean up order), there was a risk that the user would close the
+          //   popup before the delay ended, which would cause the permission
+          //   to not actually be revoked
+          await browser.runtime.sendMessage({
+            type: MessageType.hostPermissionsRevoked,
+            data: { origins: permStrings },
+          } satisfies Message);
+        }
       } else {
         setPendingPerms((pps) => pps.concat(permStrings));
       }

@@ -3,6 +3,7 @@ import {
   browser,
   getSetting,
   setSetting,
+  delayMs,
   omitBy,
   MessageType,
   ExtensionSettingsKeys,
@@ -183,7 +184,11 @@ function handleMessage(
     } else if (request.type === MessageType.placeholder) {
       // do something here if desired
     } else if (request.type === MessageType.hostPermissionsRevoked) {
-      removeContentScripts(request.data.origins)
+      const { origins } = request.data;
+      removeContentScripts(origins)
+        // give time for content-scripts to clean up
+        .then(() => delayMs(500))
+        .then(() => browser.permissions.remove({ origins }))
         .then(sendResponse)
         .catch(handleError);
       return true; // keep channel open until sendReponse is called
