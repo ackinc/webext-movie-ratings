@@ -5,6 +5,7 @@ import {
   ErrorMessage,
   MessageType,
   type Message,
+  type SWMessageResponse,
 } from "../common";
 import { captureException } from "../common/errorReporter";
 import loadingIndicator from "../../images/loading.svg";
@@ -170,45 +171,43 @@ export default function SitePermsControlForm() {
     // being careful not to mutate the supportedSites obj
     let permStrings = supportedSites[site].permStrings.concat() as PermString[];
 
-    try {
-      if (isEnabled) {
-        // Due to optimistic update (see above) when granting perms, we
-        //   may be in a situation where the user is trying to revoke a
-        //   perm that has not yet actually been granted
-        // If we detect that we're in this edge-timeline, all we should
-        //   do is remove the perm from pendingPerms
-        if (permStrings.some((ps) => pendingPerms.includes(ps))) {
-          setPendingPerms((pps) =>
-            pps.filter((pp) => !permStrings.includes(pp)),
-          );
-          permStrings = permStrings.filter((ps) => !pendingPerms.includes(ps));
-        }
+    if (!isEnabled) {
+      setPendingPerms((pps) => pps.concat(permStrings));
+      return;
+    }
 
-        if (permStrings.length > 0) {
-          // The service worker will take care of removing sift from any
-          //   already-open webpages associated with the perms we're about
-          //   to remove
-          // The code to revoke the permission could have been called from
-          //   here as well, but since we want a bit of a delay between the
-          //   user disabling Sift for a site, and the permission-revoke API
-          //   call (so content-scripts have time to receive and react to the
-          //   clean up order), there was a risk that the user would close the
-          //   popup before the delay ended, which would cause the permission
-          //   to not actually be revoked
-          const response = await browser.runtime.sendMessage({
-            type: MessageType.hostPermissionsRevoked,
-            data: { origins: permStrings },
-          } satisfies Message);
-          if ("error" in response) throw new Error(response.error);
-        }
-      } else {
-        setPendingPerms((pps) => pps.concat(permStrings));
+    // Due to optimistic update (see above) when granting perms, we
+    //   may be in a situation where the user is trying to revoke a
+    //   perm that has not yet actually been granted
+    // If we detect that we're in this edge-timeline, all we should
+    //   do is remove the perm from pendingPerms
+    if (permStrings.some((ps) => pendingPerms.includes(ps))) {
+      setPendingPerms((pps) => pps.filter((pp) => !permStrings.includes(pp)));
+      permStrings = permStrings.filter((ps) => !pendingPerms.includes(ps));
+    }
+
+    if (permStrings.length > 0) {
+      // The service worker will take care of removing sift from any
+      //   already-open webpages associated with the perms we're about
+      //   to remove
+      // The code to revoke the permission could have been called from
+      //   here as well, but since we want a bit of a delay between the
+      //   user disabling Sift for a site, and the permission-revoke API
+      //   call (so content-scripts have time to receive and react to the
+      //   clean up order), there was a risk that the user would close the
+      //   popup before the delay ended and the permission revoked
+      const response = await browser.runtime.sendMessage<
+        Message,
+        SWMessageResponse<unknown>
+      >({
+        type: MessageType.hostPermissionsRevoked,
+        data: { origins: permStrings },
+      } satisfies Message);
+      if ("error" in response) {
+        // reverse the optimistic update
+        setSitePerms({ ...sitePerms, [site]: isEnabled });
+        return;
       }
-    } catch (e) {
-      // reverse the optimistic update
-      setSitePerms({ ...sitePerms, [site]: isEnabled });
-
-      handlePermissionError(e as Error);
     }
   }
 

@@ -19,6 +19,7 @@ import type {
   IMDBData,
   Message,
   CachedIMDBData,
+  SWMessageResponse,
 } from "../common/types";
 import {
   captureException,
@@ -148,7 +149,7 @@ async function showPopupIfNotSeen() {
 function handleMessage(
   request: Message,
   _sender: chrome.runtime.MessageSender,
-  sendResponse: (arg: unknown) => void,
+  sendResponse: (arg: SWMessageResponse<unknown>) => void,
 ) {
   try {
     if (FF_TELEMETRY_ENABLED && !telemetryStore) {
@@ -160,7 +161,7 @@ function handleMessage(
 
       const { pageUrl, program } = request.data;
       getIMDBData(program, pageUrl)
-        .then((data) => sendResponse(data))
+        .then((data) => sendResponse({ data }))
         .catch((e) =>
           handleError(e, { context: { program, location: { href: pageUrl } } }),
         );
@@ -189,7 +190,7 @@ function handleMessage(
         // give time for content-scripts to clean up
         .then(() => delayMs(200))
         .then(() => browser.permissions.remove({ origins }))
-        .then(() => sendResponse({ success: true }))
+        .then(() => sendResponse({ data: null }))
         .catch(handleError);
       return true; // keep channel open until sendReponse is called
     } else {

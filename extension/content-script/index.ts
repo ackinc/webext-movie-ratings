@@ -12,7 +12,7 @@ import type {
   IMDBData,
   Message,
   Program,
-  SWErrorResponse,
+  SWMessageResponse,
   ProgramFilterSettings,
   WebpageStats,
 } from "../common/types";
@@ -175,16 +175,18 @@ async function addRating(p: Program): Promise<Program> {
 }
 
 async function fetchIMDBData(program: Program): Promise<IMDBData> {
-  const response: IMDBData | SWErrorResponse =
-    await browser.runtime.sendMessage({
-      type: MessageType.fetchIMDBRating,
-      data: {
-        program: omit(program, ["node"]) as Omit<Program, "node">,
-        pageUrl: location.href,
-      },
-    } satisfies Message);
+  const response = await browser.runtime.sendMessage<
+    Message,
+    SWMessageResponse<IMDBData>
+  >({
+    type: MessageType.fetchIMDBRating,
+    data: {
+      program: omit(program, ["node"]) as Omit<Program, "node">,
+      pageUrl: location.href,
+    },
+  } satisfies Message);
   if ("error" in response) throw new Error(response.error);
-  return response;
+  return response.data;
 }
 
 function fadeIfFilteredOut(p: Program): Program {

@@ -28,9 +28,7 @@ export type CachedIMDBData = IMDBData & {
   expiry: number;
 };
 
-export type SWErrorResponse = {
-  error: string;
-};
+export type SWMessageResponse<T> = { data: T } | { error: string };
 
 export type ProgramFilterSettings = {
   minRating: number;
