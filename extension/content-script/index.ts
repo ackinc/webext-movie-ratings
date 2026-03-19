@@ -144,7 +144,7 @@ async function loop() {
     ) {
       window.postMessage({
         type: MessageType.orphanCheck,
-        data: { trigger: "content-script-runtime-disappeared" },
+        data: { trigger: "extension-runtime-disappeared" },
       } satisfies Message);
       return;
     }
@@ -224,7 +224,7 @@ function handleMessage(
       // if the trigger was that new content scripts were injected, the
       //   outdated MWCS will be informed of the need to cleanup by
       //   the new MWCS, not by this ISOCS
-      cleanup(msg.data.trigger === "content-script-runtime-disappeared");
+      cleanup(msg.data.trigger === "extension-runtime-disappeared");
     }
   } else if (type === MessageType.urlChange) {
     handleUrlChange();

@@ -82,7 +82,7 @@ export type Message =
       data: {
         trigger:
           | "new-content-script-injection"
-          | "content-script-runtime-disappeared";
+          | "extension-runtime-disappeared";
       };
     }
   | {
