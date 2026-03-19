@@ -44,6 +44,7 @@ export const enum MessageType {
   webpageRatingStats = "sift:webpageRatingStats",
   error = "sift:error",
   placeholder = "sift:placeholderForTestingAndDebugging",
+  hostPermissionsRevoked = "sift:hostPermissionsRevoked",
 }
 
 export const ExtensionSettingsKeys = [

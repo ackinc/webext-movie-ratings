@@ -186,7 +186,7 @@ export default function SitePermsControlForm() {
         // remove sift from any already-open webpages associated with the
         //   perms we're about to remove
         await browser.runtime.sendMessage({
-          type: MessageType.cleanup,
+          type: MessageType.hostPermissionsRevoked,
           data: { origins: permStrings },
         } satisfies Message);
 

@@ -105,11 +105,12 @@ export type Message =
   | {
       // Sent from popup to service-worker when user revokes a
       //   previously-granted optional host permission
-      // Sent again, without 'data' this time, from service-worker
-      //   to ISOLATED world content-script to induce cleanup in tabs
-      //   opened to the host for which permission has been revoked
+      type: MessageType.hostPermissionsRevoked;
+      data: { origins: string[] };
+    }
+  | {
+      // Sent from service-worker to ISOLATED world content-script
       type: MessageType.cleanup;
-      data?: { origins: string[] };
     }
   | {
       type: MessageType.healthCheck;

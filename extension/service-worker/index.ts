@@ -182,8 +182,8 @@ function handleMessage(
       }
     } else if (request.type === MessageType.placeholder) {
       // do something here if desired
-    } else if (request.type === MessageType.cleanup) {
-      removeContentScripts(request.data!.origins)
+    } else if (request.type === MessageType.hostPermissionsRevoked) {
+      removeContentScripts(request.data.origins)
         .then(sendResponse)
         .catch(handleError);
       return true; // keep channel open until sendReponse is called
