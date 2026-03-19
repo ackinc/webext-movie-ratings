@@ -238,9 +238,9 @@ function handleMessage(
     // TODO: check that the browser.runtime.id check works for
     //   orphaned content scripts on Firefox
     if (!browser.runtime.id) {
-      // if the trigger was that a new content script was injected, the outdated
-      //   urlchange-dispatcher will be informed of the need to cleanup by the
-      //   newly injected urlchange-dispatcher, not by this content-script
+      // if the trigger was that new content scripts were injected, the
+      //   outdated MWCS will be informed of the need to cleanup by
+      //   the new MWCS, not by this ISOCS
       cleanup(msg.data.trigger === "content-script-runtime-disappeared");
     }
   } else if (type === MessageType.urlChange) {
