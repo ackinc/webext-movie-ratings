@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "preact/hooks";
+import { supportedSites, type Sitename } from "./common";
 import {
   browser,
   ensureError,
@@ -9,39 +10,7 @@ import {
 } from "../common";
 import { captureException } from "../common/errorReporter";
 import loadingIndicator from "../../images/loading.svg";
-import "./SitePermsControlForm.css";
-
-const supportedSites = {
-  amazonprimevideo: {
-    displayName: "Amazon Prime Video",
-    permStrings: ["https://www.primevideo.com/*", "https://www.amazon.com/*"],
-  },
-  appletv: {
-    displayName: "AppleTV",
-    permStrings: ["https://tv.apple.com/*"],
-  },
-  crunchyroll: {
-    displayName: "Crunchyroll",
-    permStrings: ["https://www.crunchyroll.com/*"],
-  },
-  hotstar: {
-    displayName: "Hotstar",
-    permStrings: ["https://www.hotstar.com/*"],
-  },
-  netflix: {
-    displayName: "Netflix",
-    permStrings: ["https://www.netflix.com/*"],
-  },
-  sonyliv: {
-    displayName: "SonyLIV",
-    permStrings: ["https://www.sonyliv.com/*"],
-  },
-  youtubemovies: {
-    displayName: "Youtube Movies",
-    permStrings: ["https://www.youtube.com/*"],
-  },
-} as const;
-type Sitename = keyof typeof supportedSites;
+import "./SiteChooserForm.css";
 type PermString = (typeof supportedSites)[Sitename]["permStrings"][number];
 type IsEnabled = boolean;
 
@@ -59,7 +28,7 @@ const permStringToSitename = Object.entries(supportedSites).reduce(
 
 const msDelayBeforeRequestingOrRenouncingPerms = 2000;
 
-export default function SitePermsControlForm() {
+export default function SiteChooserForm() {
   const [error, setError] = useState<Error | null>(null);
 
   const [sitePerms, setSitePerms] = useState(

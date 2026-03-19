@@ -1,12 +1,12 @@
 import ErrorReportingOptIn from "./ErrorReportingOptIn";
-import SitePermsControlForm from "./SitePermsControlForm";
+import SiteChooserForm from "./SiteChooserForm";
 import Separator from "./Separator";
 import "./SettingsPage.css";
 
 export default function SettingsPage() {
   return (
     <div className="settings">
-      <SitePermsControlForm />
+      <SiteChooserForm />
       <Separator />
       <ErrorReportingOptIn />
     </div>
