@@ -3,7 +3,7 @@
   flex-direction: column;
 }
 
-.program-filters-container > div:not(:last-child) {
+.program-filters-container > div {
   margin-bottom: 16px;
 }
 

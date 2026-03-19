@@ -20,10 +20,14 @@ function App() {
     <div className="app">
       <Header curPage={curPage} setCurPage={setCurPage} />
 
-      {curPage === "filters" ? <ProgramFilters /> : null}
-      {curPage === "settings" ? <SettingsPage /> : null}
+      <main>
+        {curPage === "filters" ? <ProgramFilters /> : null}
+        {curPage === "settings" ? <SettingsPage /> : null}
+      </main>
 
-      <FeedbackCollection />
+      {curPage !== "onboarding" ? (
+        <FeedbackCollection curPage={curPage} />
+      ) : null}
     </div>
   );
 }
