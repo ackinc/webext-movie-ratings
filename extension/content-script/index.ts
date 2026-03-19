@@ -14,6 +14,7 @@ import type {
   Program,
   SWErrorResponse,
   ProgramFilterSettings,
+  WebpageStats,
 } from "../common/types";
 import HotstarPage from "./Hotstar/Page";
 import SonyLivPage from "./SonyLiv/Page";
@@ -120,29 +121,11 @@ async function loop() {
     );
 
     if (FF_TELEMETRY_ENABLED) {
-      const nPrograms = programs.length;
-      let nProgramsWithNoRatingNode = 0;
-      let nProgramsRatedNA = 0;
-      let nProgramsRatedNF = 0;
-
-      const ctor = page.constructor as typeof AbstractPage;
-      programs.forEach(({ node }) => {
-        const rating =
-          ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
-        if (rating === "N/A") nProgramsRatedNA++;
-        if (rating === "N/F") nProgramsRatedNF++;
-        if (!rating) nProgramsWithNoRatingNode++;
-      });
       await browser.runtime.sendMessage({
         type: MessageType.webpageRatingStats,
         data: {
           sessionStartTime,
-          stats: {
-            nPrograms,
-            nProgramsWithNoRatingNode,
-            nProgramsRatedNA,
-            nProgramsRatedNF,
-          },
+          stats: collectWebpageRatingStats(programs),
           pageUrl: location.href,
           statsCollectionTime: +new Date(),
         },
@@ -289,4 +272,25 @@ function cleanup(broadcast = true) {
   removeMessageListeners();
   page.cleanup();
   console.log("sift: orphaned content script cleanup complete");
+}
+
+function collectWebpageRatingStats(programs: Program[]): WebpageStats {
+  const nPrograms = programs.length;
+  let nProgramsWithNoRatingNode = 0;
+  let nProgramsRatedNA = 0;
+  let nProgramsRatedNF = 0;
+
+  const ctor = page.constructor as typeof AbstractPage;
+  programs.forEach(({ node }) => {
+    const rating = ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
+    if (rating === "N/A") nProgramsRatedNA++;
+    if (rating === "N/F") nProgramsRatedNF++;
+    if (!rating) nProgramsWithNoRatingNode++;
+  });
+  return {
+    nPrograms,
+    nProgramsRatedNA,
+    nProgramsRatedNF,
+    nProgramsWithNoRatingNode,
+  };
 }
