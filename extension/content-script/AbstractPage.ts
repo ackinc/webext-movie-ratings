@@ -35,7 +35,6 @@ export default class AbstractPage {
   //   a new-content-script with a fix for those very same data extraction
   //   errors
   #foundPrograms: Program[] = [];
-  #isMarkedForCleanup: boolean = false;
 
   constructor() {
     this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
@@ -50,10 +49,6 @@ export default class AbstractPage {
   }
 
   cleanup() {
-    if (this.#isMarkedForCleanup) return;
-
-    this.#isMarkedForCleanup = true;
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
     styleNode?.parentElement?.removeChild(styleNode);
 
@@ -300,7 +295,6 @@ valid containers:\n\t${programContainers
   #updateSelectorStatuses = limitConcurrency(
     async (selectors: string[], results: HTMLElement[][]) => {
       if (APP_ENV !== "testing") return;
-      if (this.#isMarkedForCleanup) return;
 
       const outdatedSelectorDetectionEnabled = await getSetting(
         "outdatedSelectorDetectionEnabled",

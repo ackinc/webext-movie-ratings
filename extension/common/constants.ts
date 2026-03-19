@@ -38,10 +38,13 @@ export const enum MessageType {
   filterSettingsChange = "sift:filterSettingsChange",
   orphanCheck = "sift:orphanCheck",
   cleanup = "sift:cleanup",
+  removeUrlChangeDispatcher = "sift:removeUrlChangeDispatcher",
+  outdatedUrlChangeDispatcherCleanup = "sift:outdatedUrlChangeDispatcherCleanup",
   healthCheck = "sift:healthCheck",
   webpageRatingStats = "sift:webpageRatingStats",
   error = "sift:error",
   placeholder = "sift:placeholderForTestingAndDebugging",
+  hostPermissionsRevoked = "sift:hostPermissionsRevoked",
 }
 
 export const ExtensionSettingsKeys = [

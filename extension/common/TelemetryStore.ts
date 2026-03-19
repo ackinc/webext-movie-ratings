@@ -3,6 +3,7 @@ import {
   invertObj,
   omit,
   shallowEqual,
+  type ErrorDetails,
   type ExtensionContext,
   type WebpageStats,
 } from ".";
@@ -39,11 +40,7 @@ type Event =
   | {
       type: "ERROR";
       data: {
-        errorDetails: {
-          name: string;
-          message: string;
-          stack: string;
-        };
+        errorDetails: ErrorDetails;
         context: ExtensionContext;
         pageUrl?: string;
       };
@@ -148,9 +145,9 @@ export default class TelemetryStore {
       ]
         .filter((x) => x)
         .join(keyPartSeparator);
-      const curVal: Set<Error> =
-        ((await telemetryStore.get(key)) as Set<Error> | undefined) ??
-        new Set<Error>();
+      const curVal =
+        ((await telemetryStore.get(key)) as Set<ErrorDetails> | undefined) ??
+        new Set<ErrorDetails>();
       await telemetryStore.put(curVal.add(errorDetails), key);
     }
   }

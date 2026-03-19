@@ -28,9 +28,7 @@ export type CachedIMDBData = IMDBData & {
   expiry: number;
 };
 
-export type SWErrorResponse = {
-  error: string;
-};
+export type SWMessageResponse<T> = { data: T } | { error: string };
 
 export type ProgramFilterSettings = {
   minRating: number;
@@ -44,6 +42,12 @@ export type NumberRange = {
   max: number;
 };
 
+export interface ErrorDetails {
+  name: string;
+  message: string;
+  stack: string | undefined;
+}
+
 export type Message =
   | {
       type: MessageType.fetchIMDBRating;
@@ -53,25 +57,54 @@ export type Message =
       };
     }
   | {
+      // Sent via window.postMessage from MAIN world content script to
+      //   paired ISOLATED world content script in same tab
       type: MessageType.urlChange;
     }
   | {
+      // Sent from popup to ISOLATED world content scripts in all relevant
+      //   tabs
       type: MessageType.filterSettingsChange;
       data: ProgramFilterSettings;
     }
   | {
-      // send from new content-scripts to old content-scripts to induce
-      //   cleanup so the new content-script can take over the webpage
+      // Sent from new ISO content-script to old ISO content-script
+      //   just after extension update to induce cleanup of old ISO content
+      //   script
+      // Also sent from a running ISO content script to itself when it
+      //   detects during normal operation that the runtime may have
+      //   disappeared (for ex, because the user disabled/uninstalled
+      //   the extension)
+      // the data.source field is meant to disambiguate these 2 cases
       type: MessageType.orphanCheck;
+      data: {
+        trigger:
+          | "new-content-script-injection"
+          | "extension-runtime-disappeared";
+      };
     }
   | {
-      // sent from popup to service-worker when user revokes a
+      // Broadcast with window.postMessage from a newly-injected MAIN world
+      //   content script (urlchange-dispatcher) to get outdated MAIN world
+      //   content scripts to cleanup (if they exist)
+      // Since the message will be received by both the outdated and
+      //   the new MAIN world content scripts ("mwcs"), and we only want the
+      //   outdated ones to cleanup, the new mwcs needs a way to know if it can
+      //   ignore the message; the sourceId helps with this
+      type: MessageType.outdatedUrlChangeDispatcherCleanup;
+      data: { sourceId: number };
+    }
+  | {
+      // Sent from popup to service-worker when user revokes a
       //   previously-granted optional host permission
-      // sent again, with data-arg stripped, from service-worker
-      //   to content-script to induce cleanup in tabs where
-      //   we no longer have the user's permission
+      type: MessageType.hostPermissionsRevoked;
+      data: { origins: string[] };
+    }
+  | {
+      // Sent from service-worker to ISOLATED world content-script
+      // Re-broadcast (via window.postMessage) by the ISO content-script
+      //   so the MAIN world content script also gets the message
       type: MessageType.cleanup;
-      data?: { origins: string[] };
     }
   | {
       type: MessageType.healthCheck;
@@ -90,11 +123,7 @@ export type Message =
       //   error can be logged in the telemetry store
       type: MessageType.error;
       data: {
-        errorDetails: {
-          name: string;
-          message: string;
-          stack: string;
-        };
+        errorDetails: ErrorDetails;
         context: ExtensionContext;
         pageUrl?: string;
       };

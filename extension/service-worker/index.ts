@@ -3,6 +3,7 @@ import {
   browser,
   getSetting,
   setSetting,
+  delayMs,
   omitBy,
   MessageType,
   ExtensionSettingsKeys,
@@ -18,6 +19,7 @@ import type {
   IMDBData,
   Message,
   CachedIMDBData,
+  SWMessageResponse,
 } from "../common/types";
 import {
   captureException,
@@ -49,6 +51,13 @@ let omdbApiClient: OmdbApiClient;
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
     omdbApiClient = new OmdbApiClient(fetchWithAddedTelemetry);
+
+    // Running this on every service-worker startup instead of
+    //   inside an onInstalled event listener (which is called for both
+    //   installs and extension updates) because we want the content
+    //   scripts to be injected where appropriate when a user
+    //   disables, then re-enables the extension, and that is not a
+    //   situation the onInstalled event listener runs for
     await injectUpdatedContentScripts();
   } catch (e) {
     captureException(e);
@@ -108,7 +117,10 @@ async function injectUpdatedContentScripts(tabUrlMatchPatterns: string[] = []) {
 }
 
 async function removeContentScripts(urlMatchPatterns: string[] = []) {
-  // TODO: this doesn't remove urlchange-dispatcher; it should
+  // removal of the MAIN world content script will have to be handled
+  //   via a window.postMessage from the ISOLATED world content script
+  // there's no way for the service worker to communicate directly with
+  //   the MAIN world content script
   await sendMessageToAllTabs({ type: MessageType.cleanup }, urlMatchPatterns);
 }
 
@@ -137,7 +149,7 @@ async function showPopupIfNotSeen() {
 function handleMessage(
   request: Message,
   _sender: chrome.runtime.MessageSender,
-  sendResponse: (arg: unknown) => void,
+  sendResponse: (arg: SWMessageResponse<unknown>) => void,
 ) {
   try {
     if (FF_TELEMETRY_ENABLED && !telemetryStore) {
@@ -149,7 +161,7 @@ function handleMessage(
 
       const { pageUrl, program } = request.data;
       getIMDBData(program, pageUrl)
-        .then((data) => sendResponse(data))
+        .then((data) => sendResponse({ data }))
         .catch((e) =>
           handleError(e, { context: { program, location: { href: pageUrl } } }),
         );
@@ -172,9 +184,13 @@ function handleMessage(
       }
     } else if (request.type === MessageType.placeholder) {
       // do something here if desired
-    } else if (request.type === MessageType.cleanup) {
-      removeContentScripts(request.data!.origins)
-        .then(sendResponse)
+    } else if (request.type === MessageType.hostPermissionsRevoked) {
+      const { origins } = request.data;
+      removeContentScripts(origins)
+        // give time for content-scripts to clean up
+        .then(() => delayMs(200))
+        .then(() => browser.permissions.remove({ origins }))
+        .then(() => sendResponse({ data: null }))
         .catch(handleError);
       return true; // keep channel open until sendReponse is called
     } else {

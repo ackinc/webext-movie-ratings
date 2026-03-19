@@ -1,7 +1,7 @@
 import {
   browser,
   defaultProgramFilterSettings,
-  pick,
+  omit,
   getSetting,
   MessageType,
   CssClasses,
@@ -12,8 +12,9 @@ import type {
   IMDBData,
   Message,
   Program,
-  SWErrorResponse,
+  SWMessageResponse,
   ProgramFilterSettings,
+  WebpageStats,
 } from "../common/types";
 import HotstarPage from "./Hotstar/Page";
 import SonyLivPage from "./SonyLiv/Page";
@@ -47,7 +48,10 @@ let loopAbortController: AbortController;
 (async () => {
   try {
     // so content scripts belonging to prev. ext. version can cleanup
-    window.postMessage({ type: MessageType.orphanCheck });
+    window.postMessage({
+      type: MessageType.orphanCheck,
+      data: { trigger: "new-content-script-injection" },
+    } satisfies Message);
 
     await initializePage();
     addMessageListeners();
@@ -117,33 +121,15 @@ async function loop() {
     );
 
     if (FF_TELEMETRY_ENABLED) {
-      const nPrograms = programs.length;
-      let nProgramsWithNoRatingNode = 0;
-      let nProgramsRatedNA = 0;
-      let nProgramsRatedNF = 0;
-
-      const ctor = page.constructor as typeof AbstractPage;
-      programs.forEach(({ node }) => {
-        const rating =
-          ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
-        if (rating === "N/A") nProgramsRatedNA++;
-        if (rating === "N/F") nProgramsRatedNF++;
-        if (!rating) nProgramsWithNoRatingNode++;
-      });
       await browser.runtime.sendMessage({
         type: MessageType.webpageRatingStats,
         data: {
           sessionStartTime,
-          stats: {
-            nPrograms,
-            nProgramsWithNoRatingNode,
-            nProgramsRatedNA,
-            nProgramsRatedNF,
-          },
+          stats: collectWebpageRatingStats(programs),
           pageUrl: location.href,
           statsCollectionTime: +new Date(),
         },
-      });
+      } satisfies Message);
     }
 
     if (!thisLoopAbortController.signal.aborted) {
@@ -156,7 +142,10 @@ async function loop() {
       e instanceof Error &&
       e.message.startsWith("Extension context invalidated")
     ) {
-      cleanup();
+      window.postMessage({
+        type: MessageType.orphanCheck,
+        data: { trigger: "extension-runtime-disappeared" },
+      } satisfies Message);
       return;
     }
 
@@ -186,16 +175,18 @@ async function addRating(p: Program): Promise<Program> {
 }
 
 async function fetchIMDBData(program: Program): Promise<IMDBData> {
-  const response: IMDBData | SWErrorResponse =
-    await browser.runtime.sendMessage({
-      type: MessageType.fetchIMDBRating,
-      data: {
-        program: pick(program, ["title", "type", "year"]),
-        pageUrl: location.href,
-      },
-    });
+  const response = await browser.runtime.sendMessage<
+    Message,
+    SWMessageResponse<IMDBData>
+  >({
+    type: MessageType.fetchIMDBRating,
+    data: {
+      program: omit(program, ["node"]) as Omit<Program, "node">,
+      pageUrl: location.href,
+    },
+  } satisfies Message);
   if ("error" in response) throw new Error(response.error);
-  return response;
+  return response.data;
 }
 
 function fadeIfFilteredOut(p: Program): Program {
@@ -223,16 +214,24 @@ function handleMessage(
   _s?: chrome.runtime.MessageSender,
   sendResponse?: (response: unknown) => void,
 ) {
-  const { type, data } = m instanceof MessageEvent ? m.data : m;
+  const msg = m instanceof MessageEvent ? (m.data as Message) : m;
+  const { type } = msg;
 
   if (type === MessageType.cleanup) {
     cleanup();
   } else if (type === MessageType.orphanCheck) {
-    if (!browser.runtime.id) cleanup();
+    // TODO: check that the browser.runtime.id check works for
+    //   orphaned content scripts on Firefox
+    if (!browser.runtime.id) {
+      // if the trigger was that new content scripts were injected, the
+      //   outdated MWCS will be informed of the need to cleanup by
+      //   the new MWCS, not by this ISOCS
+      cleanup(msg.data.trigger === "extension-runtime-disappeared");
+    }
   } else if (type === MessageType.urlChange) {
     handleUrlChange();
   } else if (type === MessageType.filterSettingsChange) {
-    handleFilterSettingsChange(data);
+    handleFilterSettingsChange(msg.data);
   } else if (type === MessageType.healthCheck) {
     if (sendResponse) sendResponse("ok");
   }
@@ -266,9 +265,34 @@ function haltLoop() {
   clearTimeout(loopTimeout);
 }
 
-function cleanup() {
+function cleanup(broadcast = true) {
+  if (broadcast) {
+    window.postMessage({ type: MessageType.cleanup } satisfies Message);
+  }
+
   haltLoop();
   removeMessageListeners();
   page.cleanup();
   console.log("sift: orphaned content script cleanup complete");
+}
+
+function collectWebpageRatingStats(programs: Program[]): WebpageStats {
+  const nPrograms = programs.length;
+  let nProgramsWithNoRatingNode = 0;
+  let nProgramsRatedNA = 0;
+  let nProgramsRatedNF = 0;
+
+  const ctor = page.constructor as typeof AbstractPage;
+  programs.forEach(({ node }) => {
+    const rating = ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
+    if (rating === "N/A") nProgramsRatedNA++;
+    if (rating === "N/F") nProgramsRatedNF++;
+    if (!rating) nProgramsWithNoRatingNode++;
+  });
+  return {
+    nPrograms,
+    nProgramsRatedNA,
+    nProgramsRatedNF,
+    nProgramsWithNoRatingNode,
+  };
 }
