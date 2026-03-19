@@ -280,11 +280,9 @@ function haltLoop() {
   clearTimeout(loopTimeout);
 }
 
-function cleanup(shouldInformPairedUrlChangeDispatcher = true) {
-  if (shouldInformPairedUrlChangeDispatcher) {
-    window.postMessage({
-      type: MessageType.removeUrlChangeDispatcher,
-    } satisfies Message);
+function cleanup(broadcast = true) {
+  if (broadcast) {
+    window.postMessage({ type: MessageType.cleanup } satisfies Message);
   }
 
   haltLoop();

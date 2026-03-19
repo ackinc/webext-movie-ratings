@@ -86,12 +86,6 @@ export type Message =
       };
     }
   | {
-      // Broadcast with window.postMessage from an ISOLATED content script
-      //   that is cleaning up; the intended recipient is its paired MAIN
-      //   world content script
-      type: MessageType.removeUrlChangeDispatcher;
-    }
-  | {
       // Broadcast with window.postMessage from a newly-injected MAIN world
       //   content script (urlchange-dispatcher) to get outdated MAIN world
       //   content scripts to cleanup (if they exist)
@@ -110,6 +104,8 @@ export type Message =
     }
   | {
       // Sent from service-worker to ISOLATED world content-script
+      // Re-broadcast (via window.postMessage) by the ISO content-script
+      //   so the MAIN world content script also gets the message
       type: MessageType.cleanup;
     }
   | {

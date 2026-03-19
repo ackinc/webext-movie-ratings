@@ -33,7 +33,7 @@ import { waitFor } from "../../utils";
     const msg = ev.data as Message;
     const { type } = msg;
 
-    if (type === MessageType.removeUrlChangeDispatcher) {
+    if (type === MessageType.cleanup) {
       cleanup();
     } else if (type === MessageType.outdatedUrlChangeDispatcherCleanup) {
       // if this message originated from this very script, it should be ignored
