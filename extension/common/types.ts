@@ -59,17 +59,22 @@ export type Message =
       };
     }
   | {
+      // Sent via window.postMessage from MAIN world content script to
+      //   paired ISOLATED world content script in same tab
       type: MessageType.urlChange;
     }
   | {
+      // Sent from popup to ISOLATED world content scripts in all relevant
+      //   tabs
       type: MessageType.filterSettingsChange;
       data: ProgramFilterSettings;
     }
   | {
-      // sent from new content-scripts to old content-scripts just after
-      //   extension update to induce cleanup of old content script
-      // also sent from a running content script to itself when it is
-      //   detecting during normal operation that the runtime may have
+      // Sent from new ISO content-script to old ISO content-script
+      //   just after extension update to induce cleanup of old ISO content
+      //   script
+      // Also sent from a running ISO content script to itself when it
+      //   detects during normal operation that the runtime may have
       //   disappeared (for ex, because the user disabled/uninstalled
       //   the extension)
       // the data.source field is meant to disambiguate these 2 cases
@@ -81,19 +86,28 @@ export type Message =
       };
     }
   | {
-      // sent from an isolated content script that is cleaning up; the
-      //   intended recipient is its paired main content script
-      //   (urlchange-dispatcher), but due to how window.postMessage works,
-      //   the message will be received by all content scripts and the host
-      //   webpage itself
+      // Broadcast with window.postMessage from an ISOLATED content script
+      //   that is cleaning up; the intended recipient is its paired MAIN
+      //   world content script
       type: MessageType.removeUrlChangeDispatcher;
     }
   | {
-      // sent from popup to service-worker when user revokes a
+      // Broadcast with window.postMessage from a newly-injected MAIN world
+      //   content script (urlchange-dispatcher) to get outdated MAIN world
+      //   content scripts to cleanup (if they exist)
+      // Since the message will be received by both the outdated and
+      //   the new MAIN world content scripts ("mwcs"), and we only want the
+      //   outdated ones to cleanup, the new mwcs needs a way to know if it can
+      //   ignore the message; the sourceId helps with this
+      type: MessageType.outdatedUrlChangeDispatcherCleanup;
+      data: { sourceId: number };
+    }
+  | {
+      // Sent from popup to service-worker when user revokes a
       //   previously-granted optional host permission
-      // sent again, with data-arg stripped, from service-worker
-      //   to content-script to induce cleanup in tabs where
-      //   we no longer have the user's permission
+      // Sent again, without 'data' this time, from service-worker
+      //   to ISOLATED world content-script to induce cleanup in tabs
+      //   opened to the host for which permission has been revoked
       type: MessageType.cleanup;
       data?: { origins: string[] };
     }
