@@ -164,15 +164,17 @@ export default function SitePermsControlForm() {
   async function toggleSitePerms(site: Sitename) {
     const isEnabled = sitePerms[site];
 
+    // optimistic update
+    setSitePerms({ ...sitePerms, [site]: !isEnabled });
+
     // being careful not to mutate the supportedSites obj
     let permStrings = supportedSites[site].permStrings.concat() as PermString[];
 
     try {
       if (isEnabled) {
-        // Due to optimistic update when granting perms (see a little
-        //   further down this function body), we may be in a situation
-        //   where the user is trying to revoke a perm that has not yet
-        //   actually been granted
+        // Due to optimistic update (see above) when granting perms, we
+        //   may be in a situation where the user is trying to revoke a
+        //   perm that has not yet actually been granted
         // If we detect that we're in this edge-timeline, all we should
         //   do is remove the perm from pendingPerms
         if (permStrings.some((ps) => pendingPerms.includes(ps))) {
@@ -193,18 +195,19 @@ export default function SitePermsControlForm() {
           //   clean up order), there was a risk that the user would close the
           //   popup before the delay ended, which would cause the permission
           //   to not actually be revoked
-          await browser.runtime.sendMessage({
+          const response = await browser.runtime.sendMessage({
             type: MessageType.hostPermissionsRevoked,
             data: { origins: permStrings },
           } satisfies Message);
+          if ("error" in response) throw new Error(response.error);
         }
       } else {
         setPendingPerms((pps) => pps.concat(permStrings));
       }
-
-      // optimistic update
-      setSitePerms({ ...sitePerms, [site]: !isEnabled });
     } catch (e) {
+      // reverse the optimistic update
+      setSitePerms({ ...sitePerms, [site]: isEnabled });
+
       handlePermissionError(e as Error);
     }
   }

@@ -187,9 +187,9 @@ function handleMessage(
       const { origins } = request.data;
       removeContentScripts(origins)
         // give time for content-scripts to clean up
-        .then(() => delayMs(500))
+        .then(() => delayMs(200))
         .then(() => browser.permissions.remove({ origins }))
-        .then(sendResponse)
+        .then(() => sendResponse({ success: true }))
         .catch(handleError);
       return true; // keep channel open until sendReponse is called
     } else {
