@@ -40,12 +40,13 @@ input[type="checkbox"] {
 /* will usually have only the checkbox itself and a label as children */
 .form-control:has(input[type="checkbox"]) {
   display: flex;
+  flex-direction: row;
   align-items: center;
 }
 
 .form-control:has(input[type="checkbox"]) label {
   flex-grow: 1;
-  padding: 4px 8px;
+  padding: 6px 8px;
 
   display: flex;
   align-items: center;

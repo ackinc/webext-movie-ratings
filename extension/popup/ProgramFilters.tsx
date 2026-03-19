@@ -47,10 +47,7 @@ function ProgramFilters() {
         />
       </div>
 
-      <div
-        className="unrated-show-setting filter-setting-container"
-        style={{ flexDirection: "row", alignItems: "center" }}
-      >
+      <div className="unrated-show-setting form-control">
         <input
           id="exclude-unrated-programs"
           name="exclude-unrated-programs"
