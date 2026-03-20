@@ -32,3 +32,17 @@ export const supportedSites = {
 } as const;
 
 export type Sitename = keyof typeof supportedSites;
+export type PermString =
+  (typeof supportedSites)[Sitename]["permStrings"][number];
+
+export const permStringToSitename = Object.entries(supportedSites).reduce(
+  (acc, [sitename, { permStrings }]) =>
+    Object.assign(
+      acc,
+      permStrings.reduce(
+        (acc2, ps) => Object.assign(acc2, { [ps]: sitename }),
+        {},
+      ),
+    ),
+  {},
+) as Record<PermString, Sitename>;

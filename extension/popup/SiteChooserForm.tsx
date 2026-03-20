@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "preact/hooks";
-import { supportedSites, type Sitename } from "./common";
+import {
+  permStringToSitename,
+  supportedSites,
+  type PermString,
+  type Sitename,
+} from "./common";
 import {
   browser,
   ensureError,
@@ -11,21 +16,8 @@ import {
 import { captureException } from "../common/errorReporter";
 import SiteChooserFormControl from "./SiteChooserFormControl";
 import "./SiteChooserForm.css";
-type PermString = (typeof supportedSites)[Sitename]["permStrings"][number];
+
 type IsEnabled = boolean;
-
-const permStringToSitename = Object.entries(supportedSites).reduce(
-  (acc, [sitename, { permStrings }]) =>
-    Object.assign(
-      acc,
-      permStrings.reduce(
-        (acc2, ps) => Object.assign(acc2, { [ps]: sitename }),
-        {},
-      ),
-    ),
-  {},
-) as Record<PermString, Sitename>;
-
 const msDelayBeforeRequestingOrRenouncingPerms = 2000;
 
 export default function SiteChooserForm() {
