@@ -18,7 +18,7 @@ export default function WelcomePage({
       <p>This extension can add ratings to a number of OTT websites.</p>
 
       <div>
-        <h4 style={{ marginBottom: "8px" }}>
+        <h4 style={{ marginBottom: "4px" }}>
           Choose the ones you want to see ratings on below:
         </h4>
         {(Object.keys(supportedSites) as Sitename[]).map((site) => (
