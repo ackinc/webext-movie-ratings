@@ -5,6 +5,7 @@ import { render, h, Fragment } from "preact";
 import { useState } from "preact/hooks";
 import { type CurPage } from "./common";
 import Header from "./Header";
+import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
 import SettingsPage from "./SettingsPage";
 import FeedbackCollection from "./FeedbackCollection";
@@ -14,13 +15,14 @@ const root = document.querySelector<HTMLDivElement>("div#root")!;
 render(<App />, root);
 
 function App() {
-  const [curPage, setCurPage] = useState<CurPage>("filters");
+  const [curPage, setCurPage] = useState<CurPage>("onboarding");
 
   return (
     <div className="app">
       <Header curPage={curPage} setCurPage={setCurPage} />
 
       <main>
+        {curPage === "onboarding" ? <OnboardingFlow /> : null}
         {curPage === "filters" ? <ProgramFilters /> : null}
         {curPage === "settings" ? <SettingsPage /> : null}
       </main>

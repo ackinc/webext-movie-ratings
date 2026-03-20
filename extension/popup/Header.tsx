@@ -16,11 +16,13 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
       </div>
 
       <h3>
-        {curPage === "filters"
-          ? "Filter Programs"
-          : curPage === "settings"
-            ? "Settings"
-            : null}
+        {curPage === "onboarding"
+          ? "Welcome!"
+          : curPage === "filters"
+            ? "Filter Programs"
+            : curPage === "settings"
+              ? "Settings"
+              : null}
       </h3>
 
       {curPage === "settings" ? (
