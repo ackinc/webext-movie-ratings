@@ -7,7 +7,6 @@ import {
   omitBy,
   MessageType,
   ExtensionSettingsKeys,
-  telemetryIntervalSizeInSeconds,
   selectorStatusKeyPrefix,
   sendMessageToAllTabs,
   ErrorMessage,
@@ -47,7 +46,7 @@ let omdbApiClient: OmdbApiClient;
     ratingsCache = await initializeRatingsCache(
       db as IDBPDatabase<RatingsCacheSchema>,
     );
-    telemetryStore = await initializeTelemetryStore(
+    telemetryStore = await TelemetryStore.create(
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
     omdbApiClient = new OmdbApiClient(fetchWithAddedTelemetry);
@@ -84,12 +83,6 @@ async function initializeRatingsCache(db: IDBPDatabase<RatingsCacheSchema>) {
   const cache: RatingsCache = await RatingsCache.create(db, oldCacheData);
   await storage.remove(Object.keys(oldCacheData));
   return cache;
-}
-
-async function initializeTelemetryStore(
-  db: IDBPDatabase<TelemetryStoreSchema>,
-) {
-  return await TelemetryStore.create(db, telemetryIntervalSizeInSeconds);
 }
 
 async function injectUpdatedContentScripts(tabUrlMatchPatterns: string[] = []) {
