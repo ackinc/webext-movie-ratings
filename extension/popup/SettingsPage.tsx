@@ -8,7 +8,7 @@ export default function SettingsPage() {
     <div className="settings">
       <SiteChooserForm />
       <Separator />
-      <ErrorReportingOptIn />
+      <ErrorReportingOptIn allowShowDetails />
     </div>
   );
 }
