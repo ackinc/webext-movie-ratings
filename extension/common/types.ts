@@ -154,6 +154,7 @@ export type ExtensionSettings = {
   popupSeenAtLeastOnce: boolean;
   outdatedSelectorDetectionEnabled: boolean;
   updatedDbVersion: number;
+  onboardingFinished: boolean;
 };
 
 export type ExtensionContext =
