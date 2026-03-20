@@ -1,4 +1,4 @@
-import { type ExtensionSettings, type ProgramFilterSettings } from "./types";
+import { type ProgramFilterSettings } from "./types";
 
 export const DB_NAME = "siftDb";
 export const DB_VERSION = 2;
@@ -46,14 +46,6 @@ export const enum MessageType {
   placeholder = "sift:placeholderForTestingAndDebugging",
   hostPermissionsRevoked = "sift:hostPermissionsRevoked",
 }
-
-export const ExtensionSettingsKeys = [
-  "errorReportingOptIn",
-  "programFiltersSettings",
-  "popupSeenAtLeastOnce",
-  "outdatedSelectorDetectionEnabled",
-  "updatedDbVersion",
-] as const satisfies (keyof ExtensionSettings)[];
 
 export const defaultProgramFilterSettings: ProgramFilterSettings = {
   minRating: 0,

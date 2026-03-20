@@ -148,8 +148,6 @@ export type WebpageStats = {
   nProgramsRatedNF: number;
 };
 
-// WARNING: if updating this type, don't forget to also update
-//   ExtensionSettingsKeys in constants.ts!
 export type ExtensionSettings = {
   errorReportingOptIn: boolean;
   programFiltersSettings: ProgramFilterSettings;

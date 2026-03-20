@@ -4,20 +4,15 @@ import {
   getSetting,
   setSetting,
   delayMs,
-  omitBy,
   MessageType,
-  ExtensionSettingsKeys,
-  selectorStatusKeyPrefix,
   sendMessageToAllTabs,
   ErrorMessage,
-  storage,
   upgradeIdbAndGetConnection,
 } from "../common";
 import type {
   Program,
   IMDBData,
   Message,
-  CachedIMDBData,
   SWMessageResponse,
 } from "../common/types";
 import {
@@ -43,7 +38,7 @@ let omdbApiClient: OmdbApiClient;
     browser.tabs.onUpdated.addListener(handleTabUpdated);
 
     const db = await upgradeIdbAndGetConnection();
-    ratingsCache = await initializeRatingsCache(
+    ratingsCache = await RatingsCache.create(
       db as IDBPDatabase<RatingsCacheSchema>,
     );
     telemetryStore = await TelemetryStore.create(
@@ -69,20 +64,6 @@ let omdbApiClient: OmdbApiClient;
 
 async function onInstalled() {
   await showPopupIfNotSeen();
-}
-
-async function initializeRatingsCache(db: IDBPDatabase<RatingsCacheSchema>) {
-  const allData = await storage.getAll();
-  const oldCacheData = omitBy(
-    allData,
-    (_v, k) =>
-      (ExtensionSettingsKeys as string[]).includes(k) ||
-      k.startsWith(selectorStatusKeyPrefix),
-  ) as Record<string, CachedIMDBData>;
-
-  const cache: RatingsCache = await RatingsCache.create(db, oldCacheData);
-  await storage.remove(Object.keys(oldCacheData));
-  return cache;
 }
 
 async function injectUpdatedContentScripts(tabUrlMatchPatterns: string[] = []) {
