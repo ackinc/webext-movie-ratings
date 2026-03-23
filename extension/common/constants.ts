@@ -8,6 +8,11 @@ export const enum CssClasses {
   imdbDataNode = "sift-imdb-data",
   filteredOutProgramNode = "sift-filtered-out-program",
 }
+export const enum CssColors {
+  mainBgColor = "#f5c618",
+  highlightedBgColor = "#e2b615",
+  mainTextColor = "#454545",
+}
 
 export const ONE_HOUR_IN_MS = 1000 * 60 * 60;
 
