@@ -29,9 +29,9 @@ export default function OnboardingFlowFinishedPage({
 
   useEffect(() => {
     (async () => {
-      // This check is unnecessary in production, but is useful to force the component
-      //   into one of the ephemeral states during development for debugging / UI fixes,
-      //   so I'm leaving it in
+      // This check is unnecessary in production, but is useful to force
+      //   the component into one of the ephemeral states during development
+      //   for debugging / UI fixes, so I'm leaving it in
       if (state.status !== "checking") return;
 
       const permsNeeded = new Set(
