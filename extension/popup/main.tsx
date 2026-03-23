@@ -2,9 +2,8 @@
 //   though they are unused
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { render, h, Fragment } from "preact";
-import { useState, useEffect } from "preact/hooks";
+import { useState } from "preact/hooks";
 import { type CurPage } from "./common";
-import { getSetting } from "../common";
 import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
@@ -17,13 +16,6 @@ render(<App />, root);
 
 function App() {
   const [curPage, setCurPage] = useState<CurPage>("onboarding");
-
-  useEffect(() => {
-    (async () => {
-      const onboardingStatus = await getSetting("onboardingStatus");
-      if (onboardingStatus === "finished") setCurPage("filters");
-    })();
-  }, []);
 
   return (
     <div className="app">

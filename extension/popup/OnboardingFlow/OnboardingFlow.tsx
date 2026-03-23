@@ -28,6 +28,8 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
       const onboardingStatus = await getSetting("onboardingStatus");
       if (onboardingStatus === "askedUserForPermissions") {
         setCurPage("finished");
+      } else if (onboardingStatus === "finished") {
+        onFinish();
       }
     })();
   }, []);
