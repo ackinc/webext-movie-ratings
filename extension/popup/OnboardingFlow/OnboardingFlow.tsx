@@ -21,6 +21,7 @@ interface OnboardingFlowProps {
 export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
   const [curPage, setCurPage] = useState<OnboardingFlowPage>("welcome");
   const [selectedSites, setSelectedSites] = useState<Sitename[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -30,6 +31,10 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    setError(null);
+  }, [selectedSites]);
 
   return (
     <div className="onboarding-flow">
@@ -57,12 +62,18 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
       >
         {curPage === "finished" ? "Finish" : "Next"}
       </Button>
+
+      {error ? <p className="error">{error}</p> : null}
     </div>
   );
 
   async function gotoNext() {
     if (curPage === "welcome") {
-      setCurPage("pitchErrorReporting");
+      if (selectedSites.length === 0) {
+        setError("Please select at least one site.");
+      } else {
+        setCurPage("pitchErrorReporting");
+      }
     } else if (curPage === "pitchErrorReporting") {
       setCurPage("checkPermissions");
     } else if (curPage === "checkPermissions") {
