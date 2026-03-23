@@ -1,20 +1,16 @@
-.page.flow-finished-page {
+.page.flow-finished-page > div:first-child {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 8px;
 }
 
-.page.flow-finished-page > img:first-child {
+.page.flow-finished-page > div:first-child > img:first-child {
   width: 120px;
   height: 120px;
-  margin-bottom: 8px;
 }
 
-.page.flow-finished-page p {
-  margin-bottom: 16px;
-}
-
-.page.flow-finished-page p.success {
+.page.flow-finished-page > div:first-child > p {
   font-size: 24px;
   font-weight: bold;
 }
