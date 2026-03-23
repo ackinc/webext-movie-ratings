@@ -30,7 +30,9 @@ function App() {
       <Header curPage={curPage} setCurPage={setCurPage} />
 
       <main>
-        {curPage === "onboarding" ? <OnboardingFlow /> : null}
+        {curPage === "onboarding" ? (
+          <OnboardingFlow onFinish={() => setCurPage("filters")} />
+        ) : null}
         {curPage === "filters" ? <ProgramFilters /> : null}
         {curPage === "settings" ? <SettingsPage /> : null}
       </main>

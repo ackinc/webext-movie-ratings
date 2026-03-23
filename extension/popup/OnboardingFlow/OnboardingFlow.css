@@ -23,3 +23,8 @@
 .onboarding-flow button.next-button:hover {
   background-color: var(--highlighted-bg-color);
 }
+
+.onboarding-flow button.next-button:disabled {
+  background-color: gray;
+  cursor: not-allowed;
+}

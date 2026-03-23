@@ -5,12 +5,13 @@ import OnboardingFlowFinishedPage from "./OnboardingFlowFinishedPage";
 import type { Sitename } from "../common";
 import "./OnboardingFlow.css";
 
-type OnboardingFlowPage =
-  | "welcome"
-  | "pitchErrorReporting"
-  | "onboardingFinished";
+type OnboardingFlowPage = "welcome" | "pitchErrorReporting" | "finished";
 
-export default function OnboardingFlow() {
+interface OnboardingFlowProps {
+  onFinish: () => void;
+}
+
+export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
   const [curPage, setCurPage] = useState<OnboardingFlowPage>("welcome");
   const [selectedSites, setSelectedSites] = useState<Sitename[]>([]);
 
@@ -25,15 +26,20 @@ export default function OnboardingFlow() {
       {curPage === "pitchErrorReporting" ? (
         <PitchErrorReportingOptInPage />
       ) : null}
-      {curPage === "onboardingFinished" ? (
-        <OnboardingFlowFinishedPage sitesToEnable={selectedSites} />
+      {curPage === "finished" ? (
+        <OnboardingFlowFinishedPage
+          sitesToEnable={selectedSites}
+          onFinish={onFinish}
+        />
       ) : null}
 
-      {curPage !== "onboardingFinished" ? (
-        <button className="next-button" onClick={handleNextButtonClick}>
-          Next
-        </button>
-      ) : null}
+      <button
+        className="next-button"
+        disabled={curPage === "finished"}
+        onClick={handleNextButtonClick}
+      >
+        {curPage === "finished" ? "Please wait ..." : "Next"}
+      </button>
     </div>
   );
 
@@ -41,7 +47,7 @@ export default function OnboardingFlow() {
     if (curPage === "welcome") {
       setCurPage("pitchErrorReporting");
     } else if (curPage === "pitchErrorReporting") {
-      setCurPage("onboardingFinished");
+      setCurPage("finished");
     }
   }
 }
