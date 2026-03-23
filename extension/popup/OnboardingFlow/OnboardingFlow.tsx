@@ -46,12 +46,7 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
 
   async function handleNextButtonClick() {
     if (curPage === "welcome") {
-      const alreadyOptedInToErrorReporting = await getSetting(
-        "errorReportingOptIn",
-      );
-      setCurPage(
-        alreadyOptedInToErrorReporting ? "finished" : "pitchErrorReporting",
-      );
+      setCurPage("pitchErrorReporting");
     } else if (curPage === "pitchErrorReporting") {
       setCurPage("finished");
     }

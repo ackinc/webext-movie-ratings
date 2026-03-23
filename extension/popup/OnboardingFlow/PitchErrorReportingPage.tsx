@@ -1,7 +1,23 @@
+import { useEffect } from "preact/hooks";
+import { getSetting } from "../../common";
 import ErrorReportingOptIn from "../ErrorReportingOptIn";
 import "./PitchErrorReportingPage.css";
 
-export default function PitchErrorReportingOptInPage() {
+interface PageProps {
+  onFinish: () => void;
+}
+
+export default function PitchErrorReportingOptInPage({ onFinish }: PageProps) {
+  // if the user is already opted-in, there's nothing to do here
+  useEffect(() => {
+    (async () => {
+      const alreadyOptedInToErrorReporting = await getSetting(
+        "errorReportingOptIn",
+      );
+      if (alreadyOptedInToErrorReporting) onFinish();
+    })();
+  }, []);
+
   return (
     <div className="page pitch-error-reporting-page">
       <p>
