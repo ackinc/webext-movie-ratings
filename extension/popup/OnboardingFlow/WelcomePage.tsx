@@ -1,11 +1,5 @@
-import {
-  useEffect,
-  useState,
-  type Dispatch,
-  type StateUpdater,
-} from "preact/hooks";
+import { type Dispatch, type StateUpdater } from "preact/hooks";
 import { supportedSites, type Sitename } from "../common";
-import { getSetting } from "../../common";
 import SiteChooserFormControl from "../SiteChooserFormControl";
 import SettingsIcon from "../../../images/settings.svg";
 
@@ -18,24 +12,11 @@ export default function WelcomePage({
   selectedSites,
   setSelectedSites,
 }: WelcomePageProps) {
-  const [isExistingUser, setIsExistingUser] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      const popupSeen = await getSetting("popupSeenAtLeastOnce");
-      if (typeof popupSeen === "boolean") setIsExistingUser(true);
-    })();
-  }, []);
-
   return (
     <div className="page welcome-page">
       <p>Thank you for choosing Sift!</p>
 
-      {isExistingUser ? (
-        <p>You can now select exactly which OTT websites Sift operates on.</p>
-      ) : (
-        <p>This extension can add ratings to a number of OTT websites.</p>
-      )}
+      <p>You can now select exactly which OTT websites Sift operates on.</p>
 
       <div>
         <h4 style={{ marginBottom: "4px" }}>

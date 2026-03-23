@@ -116,7 +116,7 @@ async function handleTabUpdated(
 
 async function showPopupIfNotSeen() {
   if (await getSetting("popupSeenAtLeastOnce")) return;
-  browser.action?.openPopup();
+  browser.action.openPopup();
   await setSetting("popupSeenAtLeastOnce", true);
 }
 
