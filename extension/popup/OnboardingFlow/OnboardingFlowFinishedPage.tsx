@@ -1,6 +1,5 @@
 import { useEffect } from "preact/hooks";
 import { removeBadge, setSetting } from "../../common";
-import "./OnboardingFlowFinishedPage.css";
 import onboardingSuccessImg from "../../../images/whiteCheckInGreenCircle.svg";
 
 export default function OnboardingFlowFinishedPage() {
@@ -16,9 +15,9 @@ export default function OnboardingFlowFinishedPage() {
 
   return (
     <div className="page flow-finished-page">
-      <div>
+      <div className="hero">
         <img src={onboardingSuccessImg} alt="All set" />
-        <p>You're all set!</p>
+        <h1>You're all set!</h1>
       </div>
 
       <p>

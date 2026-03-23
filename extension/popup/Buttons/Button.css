@@ -16,3 +16,8 @@
   background-color: gray;
   cursor: not-allowed;
 }
+
+.btn:disabled:hover {
+  background-color: gray;
+  cursor: not-allowed;
+}
