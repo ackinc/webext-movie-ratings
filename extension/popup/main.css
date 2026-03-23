@@ -61,16 +61,3 @@ input[type="checkbox"] {
 .form-control:has(input[type="checkbox"]) label:hover {
   font-weight: bold;
 }
-
-.btn {
-  width: 24px;
-  height: 24px;
-  background-color: transparent;
-  border: 0;
-  cursor: pointer;
-}
-
-.btn img {
-  width: 100%;
-  height: 100%;
-}

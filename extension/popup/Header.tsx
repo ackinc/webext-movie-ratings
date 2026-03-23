@@ -1,6 +1,6 @@
 import { type CurPage } from "./common";
-import CloseButton from "./CloseButton";
-import SettingsIcon from "../../images/settings.svg";
+import CloseIconButton from "./Buttons/CloseIconButton";
+import SettingsIconButton from "./Buttons/SettingsIconButton";
 import "./Header.css";
 
 interface HeaderProps {
@@ -26,11 +26,9 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
       </h3>
 
       {curPage === "settings" ? (
-        <CloseButton onClick={() => setCurPage("filters")} />
+        <CloseIconButton onClick={() => setCurPage("filters")} />
       ) : curPage === "filters" ? (
-        <button className="btn" onClick={() => setCurPage("settings")}>
-          <img src={SettingsIcon} />
-        </button>
+        <SettingsIconButton onClick={() => setCurPage("settings")} />
       ) : null}
     </div>
   );

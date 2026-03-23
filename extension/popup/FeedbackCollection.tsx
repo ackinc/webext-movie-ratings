@@ -1,6 +1,6 @@
 import { useState } from "preact/hooks";
 import { type CurPage } from "./common";
-import CopyToClipboardButton from "./CopyToClipboardButton";
+import CopyToClipboardButton from "./Buttons/CopyToClipboardButton";
 import "./FeedbackCollection.css";
 
 const email = "anirudh.nimmagadda@gmail.com";

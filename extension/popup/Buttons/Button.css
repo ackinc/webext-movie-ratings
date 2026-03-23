@@ -1,0 +1,18 @@
+.btn {
+  cursor: pointer;
+  padding: 8px 16px;
+}
+
+.btn.btn-primary {
+  background-color: var(--main-bg-color);
+  color: var(--main-text-color);
+}
+
+.btn.btn-primary:hover {
+  background-color: var(--highlighted-bg-color);
+}
+
+.btn:disabled {
+  background-color: gray;
+  cursor: not-allowed;
+}
