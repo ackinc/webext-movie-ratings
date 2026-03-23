@@ -3,6 +3,7 @@ import WelcomePage from "./WelcomePage";
 import PitchErrorReportingOptInPage from "./PitchErrorReportingPage";
 import OnboardingFlowFinishedPage from "./OnboardingFlowFinishedPage";
 import type { Sitename } from "../common";
+import { getSetting } from "../../common";
 import "./OnboardingFlow.css";
 
 type OnboardingFlowPage = "welcome" | "pitchErrorReporting" | "finished";
@@ -43,9 +44,14 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
     </div>
   );
 
-  function handleNextButtonClick() {
+  async function handleNextButtonClick() {
     if (curPage === "welcome") {
-      setCurPage("pitchErrorReporting");
+      const alreadyOptedInToErrorReporting = await getSetting(
+        "errorReportingOptIn",
+      );
+      setCurPage(
+        alreadyOptedInToErrorReporting ? "finished" : "pitchErrorReporting",
+      );
     } else if (curPage === "pitchErrorReporting") {
       setCurPage("finished");
     }
