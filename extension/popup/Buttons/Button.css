@@ -13,11 +13,11 @@
 }
 
 .btn:disabled {
-  background-color: gray;
+  background-color: lightgray;
   cursor: not-allowed;
 }
 
 .btn:disabled:hover {
-  background-color: gray;
+  background-color: lightgray;
   cursor: not-allowed;
 }
