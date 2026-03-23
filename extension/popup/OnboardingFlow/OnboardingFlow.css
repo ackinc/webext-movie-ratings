@@ -37,3 +37,10 @@
   color: red;
   text-align: center;
 }
+
+.onboarding-flow img.inline-icon {
+  position: relative;
+  top: 2px;
+  height: 14px;
+  margin-right: 2px;
+}

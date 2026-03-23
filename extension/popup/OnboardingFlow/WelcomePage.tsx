@@ -33,14 +33,8 @@ export default function WelcomePage({
 
       <p style={{ display: "flex", alignItems: "center", flexWrap: "wrap" }}>
         <span>You can change your choices later from </span>
-        <span
-          style={{ display: "inline-flex", alignItems: "center", gap: "2px" }}
-        >
-          <img
-            src={SettingsIcon}
-            alt="Settings icon"
-            style={{ height: "16px" }}
-          />
+        <span>
+          <img src={SettingsIcon} className="inline-icon" />
           <b>Settings</b>
         </span>
       </p>
