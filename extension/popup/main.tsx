@@ -16,12 +16,12 @@ const root = document.querySelector<HTMLDivElement>("div#root")!;
 render(<App />, root);
 
 function App() {
-  const [curPage, setCurPage] = useState<CurPage>("filters");
+  const [curPage, setCurPage] = useState<CurPage>("onboarding");
 
   useEffect(() => {
     (async () => {
       const onboardingFinished = await getSetting("onboardingFinished");
-      if (!onboardingFinished) setCurPage("onboarding");
+      if (onboardingFinished) setCurPage("filters");
     })();
   }, []);
 
