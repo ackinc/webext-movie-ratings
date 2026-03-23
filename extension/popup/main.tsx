@@ -20,8 +20,8 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      const onboardingFinished = await getSetting("onboardingFinished");
-      if (onboardingFinished) setCurPage("filters");
+      const onboardingStatus = await getSetting("onboardingStatus");
+      if (onboardingStatus === "finished") setCurPage("filters");
     })();
   }, []);
 

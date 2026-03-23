@@ -51,7 +51,7 @@ input[type="checkbox"] {
 
 .form-control:has(input[type="checkbox"]) label {
   flex-grow: 1;
-  padding: 6px 8px;
+  padding: 4px 8px;
 
   display: flex;
   align-items: center;

@@ -8,7 +8,7 @@ export default function OnboardingFlowFinishedPage() {
       // Once the user reaches this page, we want to make sure they're not made
       //   to go through onboarding again, even if they don't click the onboarding
       //   flow's 'finish' button explicitly
-      await setSetting("onboardingFinished", true);
+      await setSetting("onboardingStatus", "finished");
       await removeBadge();
     })();
   }, []);
