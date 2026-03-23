@@ -9,7 +9,6 @@ import {
 } from "../../common";
 import Button from "../Buttons/Button";
 import permsNeededImg from "../../../images/whiteExclamationInOrangeCircle.svg";
-import PuzzlePieceImg from "../../../images/puzzlePiece.svg";
 
 interface PageProps {
   sitesToEnable: Sitename[];
@@ -81,27 +80,6 @@ export default function OnboardingFlowFinishedPage({
           Grant permissions
         </Button>
       </div>
-
-      <p>
-        On clicking the button, your browser will close this popup and display a
-        permissions dialog.
-      </p>
-
-      <p>
-        To continue after granting permissions in the dialog, you will need to
-        reopen this popup by clicking on the Sift icon in the{" "}
-        <img
-          src={PuzzlePieceImg}
-          style={{
-            position: "relative",
-            top: "2px",
-            marginRight: "2px",
-            width: "14px",
-            height: "14px",
-          }}
-        />
-        <b>extensions menu</b>.
-      </p>
     </div>
   );
 

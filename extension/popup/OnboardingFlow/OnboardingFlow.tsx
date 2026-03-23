@@ -56,14 +56,11 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
         <OnboardingFlowFinishedPage />
       )}
 
-      <Button
-        className="btn-next"
-        disabled={curPage === "checkPermissions"}
-        onClick={gotoNext}
-        variant="primary"
-      >
-        {curPage === "finished" ? "Finish" : "Next"}
-      </Button>
+      {curPage !== "checkPermissions" ? (
+        <Button className="btn-next" onClick={gotoNext} variant="primary">
+          {curPage === "finished" ? "Finish" : "Next"}
+        </Button>
+      ) : null}
 
       {error ? <p className="error">{error}</p> : null}
     </div>

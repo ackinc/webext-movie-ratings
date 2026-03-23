@@ -101,7 +101,12 @@ async function removeContentScripts(urlMatchPatterns: string[] = []) {
 async function handlePermissionsAdded({
   origins,
 }: chrome.permissions.Permissions): Promise<void> {
-  if (origins && origins.length > 0) await injectUpdatedContentScripts(origins);
+  if (origins && origins.length > 0) {
+    await injectUpdatedContentScripts(origins);
+  }
+  if ((await getSetting("onboardingStatus")) === "askedUserForPermissions") {
+    browser.action.openPopup();
+  }
 }
 
 async function handleTabUpdated(
