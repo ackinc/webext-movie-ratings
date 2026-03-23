@@ -7,6 +7,7 @@ import {
 import { supportedSites, type Sitename } from "../common";
 import { getSetting } from "../../common";
 import SiteChooserFormControl from "../SiteChooserFormControl";
+import SettingsIcon from "../../../images/settings.svg";
 
 interface WelcomePageProps {
   selectedSites: Sitename[];
@@ -49,8 +50,18 @@ export default function WelcomePage({
         ))}
       </div>
 
-      <p>
-        You can change your choices later from <b>Settings</b>
+      <p style={{ display: "flex", alignItems: "center", flexWrap: "wrap" }}>
+        <span>You can change your choices later from </span>
+        <span
+          style={{ display: "inline-flex", alignItems: "center", gap: "2px" }}
+        >
+          <img
+            src={SettingsIcon}
+            alt="Settings icon"
+            style={{ height: "16px" }}
+          />
+          <b>Settings</b>
+        </span>
       </p>
     </div>
   );
