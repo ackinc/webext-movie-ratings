@@ -7,6 +7,10 @@
   margin-bottom: 16px;
 }
 
+.program-filters-container > div.unrated-show-setting {
+  margin-top: 8px;
+}
+
 .filter-setting-container {
   display: flex;
   flex-direction: column;

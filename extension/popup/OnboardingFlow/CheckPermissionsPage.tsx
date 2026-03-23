@@ -66,23 +66,18 @@ export default function OnboardingFlowFinishedPage({
     })();
   }, []);
 
+  if (state.status === "checking") return null;
   return (
     <div className="page check-permissions-page">
       <div className="hero">
         <img src={permsNeededImg} alt="Permissions needed" />
-
-        <h1>Permissions needed</h1>
 
         <p>
           Click the button below to grant Sift the permissions needed to operate
           on the sites you selected earlier.
         </p>
 
-        <Button
-          disabled={state.status === "checking"}
-          variant="primary"
-          onClick={handleGrantPermissionsButtonClick}
-        >
+        <Button variant="primary" onClick={handleGrantPermissionsButtonClick}>
           Grant permissions
         </Button>
       </div>
@@ -93,8 +88,8 @@ export default function OnboardingFlowFinishedPage({
       </p>
 
       <p>
-        After granting permissions in the dialog, you will need to reopen this
-        popup by clicking on the Sift icon in the{" "}
+        To continue after granting permissions in the dialog, you will need to
+        reopen this popup by clicking on the Sift icon in the{" "}
         <img
           src={PuzzlePieceImg}
           style={{
@@ -105,7 +100,7 @@ export default function OnboardingFlowFinishedPage({
             height: "14px",
           }}
         />
-        <b>extensions menu</b> to continue.
+        <b>extensions menu</b>.
       </p>
     </div>
   );

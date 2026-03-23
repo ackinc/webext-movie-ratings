@@ -37,11 +37,6 @@ export default function PitchErrorReportingOptInPage({ onFinish }: PageProps) {
         }}
       />
 
-      <p>
-        Errors can happen for various reasons, including when an OTT website
-        updates their design.
-      </p>
-
       <p className="data-collection-details">
         Alongside the actual error details, the following information will be
         collected to help reproduce the error:
@@ -50,11 +45,6 @@ export default function PitchErrorReportingOptInPage({ onFinish }: PageProps) {
           <li>Width and height of the browser</li>
           <li>URL of webpage where the error occurred</li>
         </ul>
-      </p>
-
-      <p>
-        Opting-in helps the developer detect and fix issues faster, so please
-        consider it.
       </p>
     </div>
   );
