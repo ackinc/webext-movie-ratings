@@ -169,7 +169,7 @@ function handleMessage(
       const origins = sites.flatMap((site) => supportedSites[site].permStrings);
       removeContentScripts(origins)
         // give time for content-scripts to clean up
-        .then(() => delayMs(200))
+        .then(() => delayMs(500))
         .then(() => browser.permissions.remove({ origins }))
         .then(() => sendResponse({ data: null }))
         .catch(handleError);
