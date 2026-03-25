@@ -2,7 +2,7 @@
 //   though they are unused
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { render, h, Fragment } from "preact";
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { type CurPage } from "./common";
 import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
@@ -15,7 +15,14 @@ const root = document.querySelector<HTMLDivElement>("div#root")!;
 render(<App />, root);
 
 function App() {
-  const [curPage, setCurPage] = useState<CurPage>("onboarding");
+  const [curPage, setCurPage] = useState<CurPage>(
+    (localStorage.getItem("curPage") as CurPage) ?? "onboarding",
+  );
+
+  // save the page the user is currently on
+  useEffect(() => {
+    localStorage.setItem("curPage", curPage);
+  }, [curPage]);
 
   return (
     <div className="app">
