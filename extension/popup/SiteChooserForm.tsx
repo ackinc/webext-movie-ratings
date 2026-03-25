@@ -132,7 +132,6 @@ export default function SiteChooserForm() {
   return (
     <form className="site-chooser-form">
       <h4>What sites should Sift run on?</h4>
-      {error ? <p className="error">Sorry, something went wrong ...</p> : null}
 
       {(Object.keys(supportedSites) as Sitename[]).map((site) => (
         <SiteChooserFormControl
@@ -144,10 +143,21 @@ export default function SiteChooserForm() {
           onToggle={toggleSite}
         />
       ))}
+
+      {error ? (
+        <p className="error">
+          {APP_ENV === "production"
+            ? "Sorry, something went wrong ..."
+            : error.message}
+        </p>
+      ) : null}
     </form>
   );
 
   async function toggleSite(site: Sitename) {
+    // clearing error on user action
+    setError(null);
+
     const curStatus = siteStatuses[site];
     if (["toDisable"].includes(curStatus)) {
       throw new Error(
