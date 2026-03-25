@@ -121,6 +121,7 @@ export default function SiteChooserForm() {
     let permStrings = supportedSites[site].permStrings.concat() as PermString[];
 
     if (!isEnabled) {
+      // User wants to enable site
       setPendingPerms((pps) => pps.concat(permStrings));
       return;
     }
