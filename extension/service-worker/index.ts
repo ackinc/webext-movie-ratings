@@ -6,6 +6,7 @@ import {
   delayMs,
   MessageType,
   sendMessageToAllTabs,
+  supportedSites,
   ErrorMessage,
   upgradeIdbAndGetConnection,
 } from "../common";
@@ -163,8 +164,9 @@ function handleMessage(
       }
     } else if (request.type === MessageType.placeholder) {
       // do something here if desired
-    } else if (request.type === MessageType.hostPermissionsRevoked) {
-      const { origins } = request.data;
+    } else if (request.type === MessageType.sitesDisabled) {
+      const { sites } = request.data;
+      const origins = sites.flatMap((site) => supportedSites[site].permStrings);
       removeContentScripts(origins)
         // give time for content-scripts to clean up
         .then(() => delayMs(200))

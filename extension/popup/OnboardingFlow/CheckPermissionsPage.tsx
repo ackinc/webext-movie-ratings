@@ -32,6 +32,17 @@ export default function OnboardingFlowFinishedPage({
       //   for debugging / UI fixes, so I'm leaving it in
       if (state.status !== "checking") return;
 
+      // renounce perms for any sites where the user doesn't wants Sift
+      const sitesToDisable = (Object.keys(supportedSites) as Sitename[]).filter(
+        (site) => !sitesToEnable.includes(site),
+      );
+      if (sitesToDisable.length > 0) {
+        await browser.runtime.sendMessage({
+          type: MessageType.sitesDisabled,
+          data: { sites: sitesToDisable },
+        } satisfies Message);
+      }
+
       const permsNeeded = new Set(
         sitesToEnable.flatMap((site) => supportedSites[site].permStrings),
       );
@@ -41,17 +52,6 @@ export default function OnboardingFlowFinishedPage({
           | PermString[]
           | undefined,
       );
-
-      // Renounce unneeded perms
-      const permsToRevoke = Array.from(permsAlreadyGranted).filter(
-        (p) => !permsNeeded.has(p),
-      );
-      if (permsToRevoke.length > 0) {
-        await browser.runtime.sendMessage({
-          type: MessageType.hostPermissionsRevoked,
-          data: { origins: permsToRevoke },
-        } satisfies Message);
-      }
 
       const permsToRequest = Array.from(permsNeeded).filter(
         (p) => !permsAlreadyGranted.has(p),

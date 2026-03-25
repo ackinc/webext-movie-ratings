@@ -1,4 +1,4 @@
-import { type ProgramFilterSettings } from "./types";
+import type { PermString, ProgramFilterSettings, Sitename } from "./types";
 
 export const DB_NAME = "siftDb";
 export const DB_VERSION = 2;
@@ -49,7 +49,7 @@ export const enum MessageType {
   webpageRatingStats = "sift:webpageRatingStats",
   error = "sift:error",
   placeholder = "sift:placeholderForTestingAndDebugging",
-  hostPermissionsRevoked = "sift:hostPermissionsRevoked",
+  sitesDisabled = "sift:sitesDisabled",
 }
 
 export const defaultProgramFilterSettings: ProgramFilterSettings = {
@@ -74,3 +74,46 @@ export const enum ErrorMessage {
   idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",
   hostPermissionNotGranted = "A requested host permission was not granted",
 }
+
+export const supportedSites = {
+  amazonprimevideo: {
+    displayName: "Amazon Prime Video",
+    permStrings: ["https://www.primevideo.com/*", "https://www.amazon.com/*"],
+  },
+  appletv: {
+    displayName: "AppleTV",
+    permStrings: ["https://tv.apple.com/*"],
+  },
+  crunchyroll: {
+    displayName: "Crunchyroll",
+    permStrings: ["https://www.crunchyroll.com/*"],
+  },
+  hotstar: {
+    displayName: "Hotstar",
+    permStrings: ["https://www.hotstar.com/*"],
+  },
+  netflix: {
+    displayName: "Netflix",
+    permStrings: ["https://www.netflix.com/*"],
+  },
+  sonyliv: {
+    displayName: "SonyLIV",
+    permStrings: ["https://www.sonyliv.com/*"],
+  },
+  youtubemovies: {
+    displayName: "Youtube Movies",
+    permStrings: ["https://www.youtube.com/*"],
+  },
+} as const;
+
+export const permStringToSitename = Object.entries(supportedSites).reduce(
+  (acc, [sitename, { permStrings }]) =>
+    Object.assign(
+      acc,
+      permStrings.reduce(
+        (acc2, ps) => Object.assign(acc2, { [ps]: sitename }),
+        {},
+      ),
+    ),
+  {},
+) as Record<PermString, Sitename>;

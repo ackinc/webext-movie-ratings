@@ -125,6 +125,8 @@ export default function SiteChooserForm() {
       return;
     }
 
+    // User wants to disable site
+
     // Due to optimistic update (see above) when granting perms, we
     //   may be in a situation where the user is trying to revoke a
     //   perm that has not yet actually been granted
@@ -149,8 +151,8 @@ export default function SiteChooserForm() {
         Message,
         SWMessageResponse<unknown>
       >({
-        type: MessageType.hostPermissionsRevoked,
-        data: { origins: permStrings },
+        type: MessageType.sitesDisabled,
+        data: { sites: [site] },
       } satisfies Message);
       if ("error" in response) {
         // reverse the optimistic update
