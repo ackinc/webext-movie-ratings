@@ -12,9 +12,8 @@ import FeedbackCollection from "./FeedbackCollection";
 import "./main.css";
 
 const root = document.querySelector<HTMLDivElement>("div#root")!;
+const defaultPage = "settings";
 render(<App />, root);
-
-const defaultPage = 'onboarding';
 
 function App() {
   const [curPage, setCurPage] = useState<CurPage>(
