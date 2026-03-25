@@ -75,6 +75,7 @@ export const enum ErrorMessage {
   idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",
   hostPermissionNotGranted = "A requested host permission was not granted",
   noAsyncPermissionRequestInFirefox = "permission.request must be called synchronously inside a user-gesture handler in Firefox",
+  unexpectedTargetBrowser = "This code is running in the wrong browser!",
 }
 
 export const supportedSites = {

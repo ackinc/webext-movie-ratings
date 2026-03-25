@@ -73,30 +73,22 @@ export default function SiteChooserForm() {
       try {
         let granted = false;
 
-        if (["chrome", "edge"].includes(TARGET_BROWSER)) {
-          // Request perms through the SW, which is able to re-open the
-          //   popup after the user interacts with the permissions-grant
-          //   dialog and therefore give the best UX
-          const response = await browser.runtime.sendMessage<
-            Message,
-            SWMessageResponse<{ granted: boolean }>
-          >({
-            type: MessageType.sitesEnabled,
-            data: { sites: sitesToEnable },
-          });
-          if ("error" in response) throw new SWError(response.error);
-          else ({ granted } = response.data);
-        } else /* TARGET_BROWSER === "firefox" */ {
-          // Firefox won't let us request perms via the SW, so we'll request
-          //   them from here and settle for the inferior UX of not being able
-          //   to auto-reopen the popup after the user is done with the
-          //   permissions-grant dialog
-          granted = await browser.permissions.request({
-            origins: sitesToEnable.flatMap(
-              (s) => supportedSites[s].permStrings,
-            ),
-          });
+        if (TARGET_BROWSER === "firefox") {
+          throw new Error(ErrorMessage.unexpectedTargetBrowser);
         }
+
+        // Request perms through the SW, which is able to re-open the
+        //   popup after the user interacts with the permissions-grant
+        //   dialog and therefore give the best UX
+        const response = await browser.runtime.sendMessage<
+          Message,
+          SWMessageResponse<{ granted: boolean }>
+        >({
+          type: MessageType.sitesEnabled,
+          data: { sites: sitesToEnable },
+        });
+        if ("error" in response) throw new SWError(response.error);
+        else ({ granted } = response.data);
 
         if (!granted) {
           throw new Error(ErrorMessage.hostPermissionNotGranted);
@@ -173,7 +165,20 @@ export default function SiteChooserForm() {
     if (curStatus === "disabled") {
       /* User wants to enable site */
       // We've already updated state
-      // Logic elsewhere will take care of requesting permissions
+
+      if (TARGET_BROWSER === "firefox") {
+        // In firefox, permissions.request must be called directly in the
+        //   user-gesture handler
+        const origins = supportedSites[site].permStrings.concat() as string[];
+        const granted = await browser.permissions.request({ origins });
+        if (!granted) {
+          // reverse the optimistic update
+          setSiteStatuses({ ...siteStatuses, [site]: curStatus });
+        }
+      } else {
+        // In chrome/edge, logic elsewhere will take care of requesting permissions
+      }
+
       return;
     }
 

@@ -11,7 +11,7 @@ export function getSiteStatusOnUserToggle(curStatus: SiteStatus): SiteStatus {
     case "toEnable":
       return "disabled";
     case "disabled":
-      return "toEnable";
+      return TARGET_BROWSER === "firefox" ? "enabled" : "toEnable";
     case "toDisable":
       return "enabled";
     default:
