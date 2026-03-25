@@ -23,7 +23,7 @@ const msDelayBeforeRequestingOrRenouncingPerms = 2000;
 export default function SiteChooserForm() {
   const [error, setError] = useState<Error | null>(null);
 
-  const [sitePerms, setSitePerms] = useState(
+  const [enabledSites, setEnabledSites] = useState(
     Object.keys(supportedSites).reduce(
       (acc, site) => Object.assign(acc, { [site]: false }),
       {} as Record<Sitename, IsEnabled>,
@@ -38,20 +38,20 @@ export default function SiteChooserForm() {
   //   "additional permission" warning which force-closes the extension
   //   popup
   // So the UX for a user that wants to enable multiple sites
-  //   in quick succession would be absolute horrible
+  //   in quick succession would be absolutely horrible
   const [pendingPerms, setPendingPerms] = useState<PermString[]>([]);
   const timeoutRef = useRef<number | null>(null);
 
-  // load persisted perms
+  // update sitePerms state based on perms that have already been granted
   useEffect(() => {
     (async () => {
-      const allOrigins = (await browser.permissions.getAll()).origins ?? [];
-      const persistedPerms = allOrigins.reduce(
-        (acc, o) =>
-          Object.assign(acc, { [permStringToSitename[o as PermString]]: true }),
+      const previouslyGrantedHostPerms =
+        ((await browser.permissions.getAll()).origins as PermString[]) ?? [];
+      const previouslyEnabledSites = previouslyGrantedHostPerms.reduce(
+        (acc, o) => Object.assign(acc, { [permStringToSitename[o]]: true }),
         {},
       );
-      setSitePerms((old) => ({ ...old, ...persistedPerms }));
+      setEnabledSites((old) => ({ ...old, ...previouslyEnabledSites }));
     })();
   }, []);
 
@@ -75,7 +75,7 @@ export default function SiteChooserForm() {
         ensureError(e);
 
         // reverse optimistic update to sitePerms
-        setSitePerms((sp) => ({
+        setEnabledSites((sp) => ({
           ...sp,
           ...pendingPerms
             .map((ps) => permStringToSitename[ps])
@@ -102,7 +102,7 @@ export default function SiteChooserForm() {
           <SiteChooserFormControl
             key={site}
             site={site}
-            enabled={sitePerms[site]}
+            enabled={enabledSites[site]}
             loading={pss.some((ps) => pendingPerms.includes(ps))}
             onToggle={toggleSitePerms}
           />
@@ -112,10 +112,10 @@ export default function SiteChooserForm() {
   );
 
   async function toggleSitePerms(site: Sitename) {
-    const isEnabled = sitePerms[site];
+    const isEnabled = enabledSites[site];
 
     // optimistic update
-    setSitePerms({ ...sitePerms, [site]: !isEnabled });
+    setEnabledSites({ ...enabledSites, [site]: !isEnabled });
 
     // being careful not to mutate the supportedSites obj
     let permStrings = supportedSites[site].permStrings.concat() as PermString[];
@@ -157,7 +157,7 @@ export default function SiteChooserForm() {
       } satisfies Message);
       if ("error" in response) {
         // reverse the optimistic update
-        setSitePerms({ ...sitePerms, [site]: isEnabled });
+        setEnabledSites({ ...enabledSites, [site]: isEnabled });
         return;
       }
     }
