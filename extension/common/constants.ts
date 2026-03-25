@@ -74,6 +74,7 @@ export const enum ErrorMessage {
   ratingsApiRequestAlreadyInFlight = "A request for this program's rating is already in-flight",
   idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",
   hostPermissionNotGranted = "A requested host permission was not granted",
+  noAsyncPermissionRequestInFirefox = "permission.request must be called synchronously inside a user-gesture handler in Firefox",
 }
 
 export const supportedSites = {

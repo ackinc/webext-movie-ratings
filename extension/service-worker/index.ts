@@ -178,6 +178,10 @@ function handleMessage(
       const { sites } = request.data;
       const origins = sites.flatMap((site) => supportedSites[site].permStrings);
 
+      if (TARGET_BROWSER === "firefox") {
+        throw new Error(ErrorMessage.noAsyncPermissionRequestInFirefox);
+      }
+
       // WARNING: will error in firefox, which only allows permissions.request
       //   calls inside a direct user-gesture handler (FF can't track that
       //   the message was sent inside user-gesture handler, and that therefore
@@ -189,13 +193,18 @@ function handleMessage(
           sendResponse({ data: { granted } });
           // The popup would have been open when this message was sent - it
           //   would have been sent in response to a user-action in the popup
-          // However, the browser's permission-grant dialog would have then
-          //   auto-closed the popup
+          // However, the browser's permission-grant dialog, if the browser
+          //   brought it up, would have then auto-closed the popup
           // We'll trigger the reopening of the popup here so the user can
           //   continue whatever they were doing
           // The popup itself will take care of placing the user on whatever
           //   page they were last on
-          browser.action.openPopup();
+          // Edge-case: if the permission-grant dialog did not appear (chrome
+          //   doesn't bring it up if we are requesting a perm that was granted
+          //   earlier, then revoked), then the popup is already open at this
+          //   point, and this call will throw an error; we don't care to
+          //   capture it
+          browser.action.openPopup().catch(() => {});
         })
         .catch(handleError);
       return true; // keep channel open until sendReponse is called
