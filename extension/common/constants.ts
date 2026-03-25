@@ -49,6 +49,7 @@ export const enum MessageType {
   webpageRatingStats = "sift:webpageRatingStats",
   error = "sift:error",
   placeholder = "sift:placeholderForTestingAndDebugging",
+  sitesEnabled = "sift:sitesEnabled",
   sitesDisabled = "sift:sitesDisabled",
 }
 

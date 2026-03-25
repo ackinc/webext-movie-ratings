@@ -174,6 +174,31 @@ function handleMessage(
         .then(() => sendResponse({ data: null }))
         .catch(handleError);
       return true; // keep channel open until sendReponse is called
+    } else if (request.type === MessageType.sitesEnabled) {
+      const { sites } = request.data;
+      const origins = sites.flatMap((site) => supportedSites[site].permStrings);
+
+      // WARNING: will error in firefox, which only allows permissions.request
+      //   calls inside a direct user-gesture handler (FF can't track that
+      //   the message was sent inside user-gesture handler, and that therefore
+      //   the message handling-logic is effectively responding to the
+      //   user-gesture)
+      browser.permissions
+        .request({ origins })
+        .then((granted) => {
+          sendResponse({ data: { granted } });
+          // The popup would have been open when this message was sent - it
+          //   would have been sent in response to a user-action in the popup
+          // However, the browser's permission-grant dialog would have then
+          //   auto-closed the popup
+          // We'll trigger the reopening of the popup here so the user can
+          //   continue whatever they were doing
+          // The popup itself will take care of placing the user on whatever
+          //   page they were last on
+          browser.action.openPopup();
+        })
+        .catch(handleError);
+      return true; // keep channel open until sendReponse is called
     } else {
       throw new Error(`Unknown message type: ${request.type}`);
     }

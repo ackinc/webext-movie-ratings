@@ -100,6 +100,11 @@ export type Message =
       data: { sites: Sitename[] };
     }
   | {
+      // Sent from popup to service-worker
+      type: MessageType.sitesEnabled;
+      data: { sites: Sitename[] };
+    }
+  | {
       // Sent from service-worker to ISOLATED world content-script
       // Re-broadcast (via window.postMessage) by the ISO content-script
       //   so the MAIN world content script also gets the message
