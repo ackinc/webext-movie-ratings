@@ -14,11 +14,9 @@ import "./main.css";
 const root = document.querySelector<HTMLDivElement>("div#root")!;
 render(<App />, root);
 
-const defaultPage = 'onboarding';
-
 function App() {
   const [curPage, setCurPage] = useState<CurPage>(
-    (localStorage.getItem("curPage") as CurPage) ?? defaultPage,
+    (localStorage.getItem("curPage") as CurPage | null) ?? "settings",
   );
 
   // save the page the user is currently on
