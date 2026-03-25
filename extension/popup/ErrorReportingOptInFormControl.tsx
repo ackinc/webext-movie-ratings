@@ -1,10 +1,10 @@
 interface ErrorReportingOptInFormControlProps {
-  enabled: boolean;
+  checked: boolean;
   onToggle: () => void;
 }
 
 export default function ErrorReportingOptInFormControl({
-  enabled,
+  checked,
   onToggle,
 }: ErrorReportingOptInFormControlProps) {
   return (
@@ -13,7 +13,7 @@ export default function ErrorReportingOptInFormControl({
         type="checkbox"
         id="optInToErrorReporting"
         name="optIn"
-        checked={enabled}
+        checked={checked}
         onChange={onToggle}
       />
       <label for="optInToErrorReporting">Opt-in to error reporting</label>

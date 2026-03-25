@@ -6,6 +6,7 @@ import {
   MessageType,
   CssClasses,
 } from "../common";
+import { SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import type AbstractPage from "./AbstractPage";
 import type {
@@ -185,7 +186,7 @@ async function fetchIMDBData(program: Program): Promise<IMDBData> {
       pageUrl: location.href,
     },
   } satisfies Message);
-  if ("error" in response) throw new Error(response.error);
+  if ("error" in response) throw new SWError(response.error);
   return response.data;
 }
 

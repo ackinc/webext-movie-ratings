@@ -20,11 +20,11 @@ const watchMode = process.argv.includes("--watch");
 const uploadSrcMapsToSentry = process.argv.includes("--sentry-upload-srcmaps");
 
 const ALLOWED_TARGETS = ["edge", "firefox", "chrome"];
-const target =
+const TARGET_BROWSER =
   process.argv.find((arg) => arg.startsWith("--target="))?.split("=")[1] ??
   "chrome";
-if (!ALLOWED_TARGETS.includes(target)) {
-  throw new Error(`Invalid target: ${target}`);
+if (!ALLOWED_TARGETS.includes(TARGET_BROWSER)) {
+  throw new Error(`Invalid target: ${TARGET_BROWSER}`);
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -40,9 +40,10 @@ const staticFiles = [
 ]
   .filter((f) => f !== null)
   .map((f) => path.join(srcDir, f));
-const manifestFiles = [`manifest.json`, `misc/${target}/manifest.json`].map(
-  (f) => path.join(rootDir, f),
-);
+const manifestFiles = [
+  `manifest.json`,
+  `misc/${TARGET_BROWSER}/manifest.json`,
+].map((f) => path.join(rootDir, f));
 const config: esbuild.BuildOptions = {
   entryPoints: [
     { in: path.join(srcDir, "content-script/index.ts"), out: "content-script" },
@@ -63,6 +64,7 @@ const config: esbuild.BuildOptions = {
     ISOLATED_CONTENT_SCRIPT_PATH: `"./content-script.js"`,
     MAIN_CONTENT_SCRIPT_PATH: `"./urlchange-dispatcher.js"`,
     FF_TELEMETRY_ENABLED: `${["development", "testing"].includes(APP_ENV)}`,
+    TARGET_BROWSER: `"${TARGET_BROWSER}"`,
   },
   loader: {
     ".svg": "dataurl",

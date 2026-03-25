@@ -35,7 +35,7 @@ function ErrorReportingOptIn({
         }}
       >
         <ErrorReportingOptInFormControl
-          enabled={optedInToErrorReporting}
+          checked={optedInToErrorReporting}
           onToggle={toggleErrorReportingOptIn}
         />
         {allowShowDetails ? (

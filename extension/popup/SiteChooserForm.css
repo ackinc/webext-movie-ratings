@@ -8,8 +8,6 @@ form.site-chooser-form h4 {
 }
 
 form.site-chooser-form p.error {
-  margin-bottom: 8px;
-
   color: red;
   font-size: var(--secondary-font-size);
 }

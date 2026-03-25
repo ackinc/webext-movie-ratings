@@ -1,48 +1,20 @@
 export type CurPage = "onboarding" | "filters" | "settings";
 
-export const supportedSites = {
-  amazonprimevideo: {
-    displayName: "Amazon Prime Video",
-    permStrings: ["https://www.primevideo.com/*", "https://www.amazon.com/*"],
-  },
-  appletv: {
-    displayName: "AppleTV",
-    permStrings: ["https://tv.apple.com/*"],
-  },
-  crunchyroll: {
-    displayName: "Crunchyroll",
-    permStrings: ["https://www.crunchyroll.com/*"],
-  },
-  hotstar: {
-    displayName: "Hotstar",
-    permStrings: ["https://www.hotstar.com/*"],
-  },
-  netflix: {
-    displayName: "Netflix",
-    permStrings: ["https://www.netflix.com/*"],
-  },
-  sonyliv: {
-    displayName: "SonyLIV",
-    permStrings: ["https://www.sonyliv.com/*"],
-  },
-  youtubemovies: {
-    displayName: "Youtube Movies",
-    permStrings: ["https://www.youtube.com/*"],
-  },
-} as const;
+export type { PermString, Sitename } from "../common/types";
+export { supportedSites, permStringToSitename } from "../common/constants";
 
-export type Sitename = keyof typeof supportedSites;
-export type PermString =
-  (typeof supportedSites)[Sitename]["permStrings"][number];
-
-export const permStringToSitename = Object.entries(supportedSites).reduce(
-  (acc, [sitename, { permStrings }]) =>
-    Object.assign(
-      acc,
-      permStrings.reduce(
-        (acc2, ps) => Object.assign(acc2, { [ps]: sitename }),
-        {},
-      ),
-    ),
-  {},
-) as Record<PermString, Sitename>;
+export type SiteStatus = "enabled" | "toEnable" | "disabled" | "toDisable";
+export function getSiteStatusOnUserToggle(curStatus: SiteStatus): SiteStatus {
+  switch (curStatus) {
+    case "enabled":
+      return "toDisable";
+    case "toEnable":
+      return "disabled";
+    case "disabled":
+      return TARGET_BROWSER === "firefox" ? "enabled" : "toEnable";
+    case "toDisable":
+      return "enabled";
+    default:
+      throw new Error(`Unexpected site status: ${curStatus}`);
+  }
+}
