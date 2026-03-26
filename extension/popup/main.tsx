@@ -4,7 +4,7 @@
 import { render, h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { type PopupPage } from "./common";
-import { setSetting } from "../common";
+import { getSetting, setSetting } from "../common";
 import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
@@ -22,11 +22,17 @@ function App() {
 
   useEffect(() => {
     setSetting("popupSeenAtLeastOnce", true);
+    (async () => {
+      if ((await getSetting("onboardingStatus")) !== "finished") {
+        setCurPage("onboarding");
+      }
+    })();
   }, []);
 
-  // save the page the user is currently on
+  // Save the page the user is currently on so it can be restored
+  //   the next time they open the popup
   useEffect(() => {
-    localStorage.setItem("curPage", curPage);
+    localStorage.setItem("lastSeenPage", curPage);
   }, [curPage]);
 
   return (
