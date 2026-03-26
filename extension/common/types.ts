@@ -158,7 +158,12 @@ export type ExtensionSettings = {
   popupSeenAtLeastOnce: boolean;
   outdatedSelectorDetectionEnabled: boolean;
   updatedDbVersion: number;
-  onboardingStatus: "started" | "askedUserForPermissions" | "finished";
+  onboardingStatus:
+    | "started"
+    | "askedUserForPermissions"
+    | "displayedPermissionStatus"
+    | "pitchedErrorReporting"
+    | "finished";
 };
 
 export type ExtensionContext =

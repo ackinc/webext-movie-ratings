@@ -1,18 +1,18 @@
 import { useEffect, useState } from "preact/hooks";
 import WelcomePage from "./WelcomePage";
 import PitchErrorReportingOptInPage from "./PitchErrorReportingPage";
-import CheckPermissionsPage from "./CheckPermissionsPage";
-import OnboardingFlowFinishedPage from "./OnboardingFlowFinishedPage";
+import CheckAndRequestPermissionsPage from "./CheckAndRequestPermissionsPage";
+import CheckAndDisplayPermissionStatusPage from "./CheckAndDisplayPermissionStatusPage";
 import type { Sitename } from "../common";
-import { getSetting } from "../../common";
+import { getSetting, setSetting } from "../../common";
 import Button from "../Buttons/Button";
 import "./OnboardingFlow.css";
 
 type OnboardingFlowPage =
   | "welcome"
-  | "pitchErrorReporting"
-  | "checkPermissions"
-  | "finished";
+  | "checkAndRequestPermissions"
+  | "checkAndDisplayPermissionStatus"
+  | "pitchErrorReporting";
 
 interface OnboardingFlowProps {
   onFinish: () => void;
@@ -21,13 +21,23 @@ interface OnboardingFlowProps {
 export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
   const [curPage, setCurPage] = useState<OnboardingFlowPage>("welcome");
   const [selectedSites, setSelectedSites] = useState<Sitename[]>([]);
+  const [errorReportingOptedIn, setErrorReportingOptedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
+      const errorReportingOptedIn =
+        (await getSetting("errorReportingOptIn")) ?? false;
+      setErrorReportingOptedIn(errorReportingOptedIn);
+
       const onboardingStatus = await getSetting("onboardingStatus");
       if (onboardingStatus === "askedUserForPermissions") {
-        setCurPage("finished");
+        setCurPage("checkAndDisplayPermissionStatus");
+      } else if (onboardingStatus === "displayedPermissionStatus") {
+        setCurPage("checkAndDisplayPermissionStatus");
+      } else if (onboardingStatus === "pitchedErrorReporting") {
+        if (errorReportingOptedIn) onFinish();
+        else setCurPage("pitchErrorReporting");
       } else if (onboardingStatus === "finished") {
         onFinish();
       }
@@ -45,20 +55,24 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
           selectedSites={selectedSites}
           setSelectedSites={setSelectedSites}
         />
-      ) : curPage === "pitchErrorReporting" ? (
-        <PitchErrorReportingOptInPage onFinish={gotoNext} />
-      ) : curPage === "checkPermissions" ? (
-        <CheckPermissionsPage
+      ) : curPage === "checkAndRequestPermissions" ? (
+        <CheckAndRequestPermissionsPage
           sitesToEnable={selectedSites}
           onFinish={gotoNext}
         />
+      ) : curPage === "checkAndDisplayPermissionStatus" ? (
+        <CheckAndDisplayPermissionStatusPage />
       ) : (
-        <OnboardingFlowFinishedPage />
+        <PitchErrorReportingOptInPage />
       )}
 
-      {curPage !== "checkPermissions" ? (
+      {curPage !== "checkAndRequestPermissions" ? (
         <Button className="btn-next" onClick={gotoNext} variant="primary">
-          {curPage === "finished" ? "Finish" : "Next"}
+          {curPage === "pitchErrorReporting" ||
+          (errorReportingOptedIn &&
+            curPage === "checkAndDisplayPermissionStatus")
+            ? "Finish"
+            : "Next"}
         </Button>
       ) : null}
 
@@ -71,14 +85,27 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
       if (selectedSites.length === 0) {
         setError("Please select at least one site.");
       } else {
+        setCurPage("checkAndRequestPermissions");
+      }
+      return;
+    }
+
+    if (curPage === "checkAndRequestPermissions") {
+      setCurPage("checkAndDisplayPermissionStatus");
+      return;
+    }
+
+    if (curPage === "checkAndDisplayPermissionStatus") {
+      if (errorReportingOptedIn) {
+        await setSetting("onboardingStatus", "finished");
+        onFinish();
+      } else {
         setCurPage("pitchErrorReporting");
       }
-    } else if (curPage === "pitchErrorReporting") {
-      setCurPage("checkPermissions");
-    } else if (curPage === "checkPermissions") {
-      setCurPage("finished");
-    } else {
-      onFinish();
+      return;
     }
+
+    await setSetting("onboardingStatus", "finished");
+    onFinish();
   }
 }

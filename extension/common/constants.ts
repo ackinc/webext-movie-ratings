@@ -12,6 +12,9 @@ export const enum CssColors {
   mainBgColor = "#f5c618",
   highlightedBgColor = "#e2b615",
   mainTextColor = "#454545",
+  successBg = "#43a047",
+  warningBg = "orange",
+  failureBg = "red",
 }
 
 export const ONE_HOUR_IN_MS = 1000 * 60 * 60;

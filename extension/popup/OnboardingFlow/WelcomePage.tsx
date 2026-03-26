@@ -25,7 +25,7 @@ export default function WelcomePage({
         {(Object.keys(supportedSites) as Sitename[]).map((site) => (
           <SiteChooserFormControl
             site={site}
-            enabled={selectedSites.includes(site)}
+            checked={selectedSites.includes(site)}
             onToggle={handleToggle}
           />
         ))}
