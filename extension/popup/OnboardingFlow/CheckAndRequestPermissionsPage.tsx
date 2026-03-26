@@ -1,8 +1,14 @@
 import { useEffect, useState } from "preact/hooks";
 import { type PermString, supportedSites, type Sitename } from "../common";
-import { browser, MessageType, setSetting, type Message } from "../../common";
+import {
+  browser,
+  CssColors,
+  MessageType,
+  setSetting,
+  type Message,
+} from "../../common";
 import Button from "../Buttons/Button";
-import permsNeededImg from "../../../images/whiteExclamationInOrangeCircle.svg";
+import ExclmarkOnCircle from "../Icons/ExclmarkOnCircle";
 import LoadingIndicator from "../../../images/loading.svg";
 
 interface PageProps {
@@ -67,11 +73,11 @@ export default function CheckAndRequestPermissionsPage({
       </div>
 
       <div className={`hero ${state.status === "checking" ? "invisible" : ""}`}>
-        <img src={permsNeededImg} alt="Permissions needed" />
+        <ExclmarkOnCircle style={{ fill: CssColors.mainBgColor }} />
 
         <p>
-          Sift needs additional permissions to operate on the sites you selected
-          earlier.
+          Sift needs additional permissions to operate on the sites you
+          selected.
         </p>
 
         <Button variant="primary" onClick={handleGrantPermissionsButtonClick}>
