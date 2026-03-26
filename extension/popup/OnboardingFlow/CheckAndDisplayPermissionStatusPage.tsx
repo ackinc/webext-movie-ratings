@@ -4,7 +4,7 @@ import CheckmarkOnCircle from "../Icons/CheckmarkOnCircle";
 import SettingsIcon from "../../../images/settings.svg";
 import LoadingIndicator from "../../../images/loading.svg";
 
-export default function CheckAndDisplayPermissionStatus() {
+export default function CheckAndDisplayPermissionStatusPage() {
   const [state, setState] = useState<{
     status: "checking" | "permsDenied" | "permsGranted";
   }>({ status: "checking" });

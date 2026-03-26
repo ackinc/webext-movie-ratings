@@ -2,7 +2,7 @@ import { useEffect, useState } from "preact/hooks";
 import WelcomePage from "./WelcomePage";
 import PitchErrorReportingOptInPage from "./PitchErrorReportingPage";
 import CheckAndRequestPermissionsPage from "./CheckAndRequestPermissionsPage";
-import CheckAndDisplayPermissionStatus from "./CheckAndDisplayPermissionStatus";
+import CheckAndDisplayPermissionStatusPage from "./CheckAndDisplayPermissionStatusPage";
 import type { Sitename } from "../common";
 import { getSetting, setSetting } from "../../common";
 import Button from "../Buttons/Button";
@@ -61,7 +61,7 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
           onFinish={gotoNext}
         />
       ) : curPage === "checkAndDisplayPermissionStatus" ? (
-        <CheckAndDisplayPermissionStatus />
+        <CheckAndDisplayPermissionStatusPage />
       ) : (
         <PitchErrorReportingOptInPage />
       )}
