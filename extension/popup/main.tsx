@@ -4,7 +4,7 @@
 import { render, h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { type PopupPage } from "./common";
-import { getSetting, setSetting } from "../common";
+import { addBadge, removeBadge, getSetting, setSetting } from "../common";
 import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
@@ -24,6 +24,7 @@ function App() {
     setSetting("popupSeenAtLeastOnce", true);
     (async () => {
       if ((await getSetting("onboardingStatus")) !== "finished") {
+        addBadge("!");
         setCurPage("onboarding");
       }
     })();
@@ -41,7 +42,12 @@ function App() {
 
       <main>
         {curPage === "onboarding" ? (
-          <OnboardingFlow onFinish={() => setCurPage("filters")} />
+          <OnboardingFlow
+            onFinish={() => {
+              removeBadge();
+              setCurPage("filters");
+            }}
+          />
         ) : null}
         {curPage === "filters" ? <ProgramFilters /> : null}
         {curPage === "settings" ? <SettingsPage /> : null}
