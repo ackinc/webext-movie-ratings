@@ -17,7 +17,7 @@ render(<App />, root);
 
 function App() {
   const [curPage, setCurPage] = useState<CurPage>(
-    (localStorage.getItem("curPage") as CurPage | null) ?? "settings",
+    (localStorage.getItem("curPage") as CurPage | null) ?? "onboarding",
   );
 
   useEffect(() => {

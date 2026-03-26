@@ -4,10 +4,18 @@
 }
 
 .onboarding-flow .page {
+  position: relative;
+
   margin-bottom: 16px;
 }
 
+.onboarding-flow .page .loading-overlay {
+  flex-direction: column;
+}
+
 .onboarding-flow .page div.hero {
+  margin: 16px 0;
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -15,8 +23,7 @@
 }
 
 .onboarding-flow .page div.hero > img:first-child {
-  width: 120px;
-  height: 120px;
+  width: 48px;
 }
 
 .onboarding-flow .page div.hero > h1 {
@@ -24,7 +31,7 @@
   font-weight: bold;
 }
 
-.onboarding-flow .page > *:not(:last-child) {
+.onboarding-flow .page > *:not(:last-child):not(.overlay) {
   margin-bottom: 16px;
 }
 

@@ -27,8 +27,30 @@
   padding: 0 8px;
 }
 
+.hidden {
+  display: none !important;
+}
+
+.invisible {
+  visibility: hidden !important;
+}
+
 .bolded {
-  font-weight: bold;
+  font-weight: bold !important;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+.flex-center-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 input[type="checkbox"] {
