@@ -4,6 +4,7 @@
 import { render, h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { type CurPage } from "./common";
+import { setSetting } from "../common";
 import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
@@ -18,6 +19,10 @@ function App() {
   const [curPage, setCurPage] = useState<CurPage>(
     (localStorage.getItem("curPage") as CurPage | null) ?? "settings",
   );
+
+  useEffect(() => {
+    setSetting("popupSeenAtLeastOnce", true);
+  }, []);
 
   // save the page the user is currently on
   useEffect(() => {

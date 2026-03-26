@@ -2,7 +2,6 @@ import { type IDBPDatabase } from "idb";
 import {
   browser,
   getSetting,
-  setSetting,
   delayMs,
   MessageType,
   sendMessageToAllTabs,
@@ -64,7 +63,16 @@ let omdbApiClient: OmdbApiClient;
 //////////////////////////////
 
 async function onInstalled() {
-  await showPopupIfNotSeen();
+  // firefox won't let us open the popup outside of a user-gesture
+  if (TARGET_BROWSER !== "firefox") {
+    const [popupSeen, onboardingStatus] = await Promise.all([
+      getSetting("popupSeenAtLeastOnce"),
+      getSetting("onboardingStatus"),
+    ]);
+    if (!popupSeen || onboardingStatus !== "finished") {
+      browser.action.openPopup();
+    }
+  }
 }
 
 async function injectUpdatedContentScripts(tabUrlMatchPatterns: string[] = []) {
@@ -105,9 +113,6 @@ async function handlePermissionsAdded({
   if (origins && origins.length > 0) {
     await injectUpdatedContentScripts(origins);
   }
-  if ((await getSetting("onboardingStatus")) === "askedUserForPermissions") {
-    browser.action.openPopup();
-  }
 }
 
 async function handleTabUpdated(
@@ -118,12 +123,6 @@ async function handleTabUpdated(
   if (changeInfo.status === "complete" && tab.url) {
     await injectUpdatedContentScripts([tab.url]);
   }
-}
-
-async function showPopupIfNotSeen() {
-  if (await getSetting("popupSeenAtLeastOnce")) return;
-  browser.action.openPopup();
-  await setSetting("popupSeenAtLeastOnce", true);
 }
 
 function handleMessage(
