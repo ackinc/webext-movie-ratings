@@ -23,8 +23,10 @@ export default function WelcomePage({
         </h4>
         {(Object.keys(supportedSites) as Sitename[]).map((site) => (
           <SiteChooserFormControl
+            key={site}
             site={site}
             checked={selectedSites.includes(site)}
+            helperText={supportedSites[site].helperText}
             onToggle={() => toggleSite(site)}
           />
         ))}

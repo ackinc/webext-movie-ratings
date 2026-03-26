@@ -6,6 +6,7 @@ interface SiteChooserFormControlProps {
   checked: boolean;
   loading?: boolean;
   disabled?: boolean;
+  helperText?: string;
   onToggle: (site: Sitename) => void;
 }
 
@@ -14,6 +15,7 @@ export default function SiteChooserFormControl({
   checked,
   loading = false,
   disabled = false,
+  helperText,
   onToggle,
 }: SiteChooserFormControlProps) {
   const label = `sitePermFor${supportedSites[site].displayName.replace(/\s/g, "")}`;
@@ -33,6 +35,8 @@ export default function SiteChooserFormControl({
         {supportedSites[site].displayName}
         {loading ? <img src={loadingIndicator} /> : null}
       </label>
+
+      {helperText && checked ? <p>{helperText}</p> : null}
     </div>
   );
 }

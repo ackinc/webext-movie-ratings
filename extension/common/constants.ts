@@ -85,6 +85,8 @@ export const supportedSites = {
   amazonprimevideo: {
     displayName: "Amazon Prime Video",
     permStrings: ["https://www.primevideo.com/*", "https://www.amazon.com/*"],
+    helperText:
+      "Amazon Prime Video is available at both primevideo.com and at amazon.com/primevideo. Permissions will be requested for both sites.",
   },
   appletv: {
     displayName: "AppleTV",
