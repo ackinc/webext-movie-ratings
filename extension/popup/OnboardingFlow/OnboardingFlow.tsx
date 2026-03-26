@@ -21,17 +21,23 @@ interface OnboardingFlowProps {
 export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
   const [curPage, setCurPage] = useState<OnboardingFlowPage>("welcome");
   const [selectedSites, setSelectedSites] = useState<Sitename[]>([]);
+  const [errorReportingOptedIn, setErrorReportingOptedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
+      const errorReportingOptedIn =
+        (await getSetting("errorReportingOptIn")) ?? false;
+      setErrorReportingOptedIn(errorReportingOptedIn);
+
       const onboardingStatus = await getSetting("onboardingStatus");
       if (onboardingStatus === "askedUserForPermissions") {
         setCurPage("checkAndDisplayPermissionStatus");
       } else if (onboardingStatus === "displayedPermissionStatus") {
         setCurPage("checkAndDisplayPermissionStatus");
       } else if (onboardingStatus === "pitchedErrorReporting") {
-        setCurPage("pitchErrorReporting");
+        if (errorReportingOptedIn) onFinish();
+        else setCurPage("pitchErrorReporting");
       } else if (onboardingStatus === "finished") {
         onFinish();
       }
@@ -57,12 +63,16 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
       ) : curPage === "checkAndDisplayPermissionStatus" ? (
         <CheckAndDisplayPermissionStatus />
       ) : (
-        <PitchErrorReportingOptInPage onFinish={gotoNext} />
+        <PitchErrorReportingOptInPage />
       )}
 
       {curPage !== "checkAndRequestPermissions" ? (
         <Button className="btn-next" onClick={gotoNext} variant="primary">
-          {curPage === "pitchErrorReporting" ? "Finish" : "Next"}
+          {curPage === "pitchErrorReporting" ||
+          (errorReportingOptedIn &&
+            curPage === "checkAndDisplayPermissionStatus")
+            ? "Finish"
+            : "Next"}
         </Button>
       ) : null}
 
@@ -77,13 +87,25 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
       } else {
         setCurPage("checkAndRequestPermissions");
       }
-    } else if (curPage === "checkAndRequestPermissions") {
-      setCurPage("checkAndDisplayPermissionStatus");
-    } else if (curPage === "checkAndDisplayPermissionStatus") {
-      setCurPage("pitchErrorReporting");
-    } else {
-      await setSetting("onboardingStatus", "finished");
-      onFinish();
+      return;
     }
+
+    if (curPage === "checkAndRequestPermissions") {
+      setCurPage("checkAndDisplayPermissionStatus");
+      return;
+    }
+
+    if (curPage === "checkAndDisplayPermissionStatus") {
+      if (errorReportingOptedIn) {
+        await setSetting("onboardingStatus", "finished");
+        onFinish();
+      } else {
+        setCurPage("pitchErrorReporting");
+      }
+      return;
+    }
+
+    await setSetting("onboardingStatus", "finished");
+    onFinish();
   }
 }
