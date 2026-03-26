@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
-import { browser, setSetting } from "../../common";
+import { browser, CssColors, setSetting } from "../../common";
+import CheckmarkOnCircle from "../Icons/CheckmarkOnCircle";
 import SettingsIcon from "../../../images/settings.svg";
-import onboardingSuccessImg from "../../../images/whiteCheckInGreenCircle.svg";
 import LoadingIndicator from "../../../images/loading.svg";
 
 export default function CheckAndDisplayPermissionStatus() {
@@ -38,13 +38,12 @@ export default function CheckAndDisplayPermissionStatus() {
       </div>
 
       <div className={`hero ${state.status === "checking" ? "invisible" : ""}`}>
-        {/* TODO: make the background color orange or something if permsDenied */}
-        <img
-          src={onboardingSuccessImg}
-          style={{
-            transform:
-              state.status === "permsDenied" ? "rotateX(180deg)" : "none",
-          }}
+        <CheckmarkOnCircle
+          style={
+            state.status === "permsDenied"
+              ? { fill: CssColors.failureBg, transform: "rotateX(180deg)" }
+              : { fill: CssColors.successBg }
+          }
         />
         {state.status === "permsDenied" ? (
           <h1>Uh oh ...</h1>

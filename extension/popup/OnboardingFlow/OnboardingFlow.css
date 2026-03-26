@@ -22,7 +22,7 @@
   gap: 8px;
 }
 
-.onboarding-flow .page div.hero > img:first-child {
+.onboarding-flow .page div.hero > svg:first-child {
   width: 48px;
 }
 
