@@ -1,4 +1,10 @@
 declare const APP_ENV: "development" | "testing" | "production";
+
+// there's no reliable way to detect what browser we're running on
+//   at runtime (UserAgent sniffing is unreliable), so we use a
+//   compile-time const to do this
+declare const TARGET_BROWSER: "chrome" | "firefox" | "edge";
+
 declare const OMDB_API_KEY: string;
 declare const ISOLATED_CONTENT_SCRIPT_PATH: string;
 declare const MAIN_CONTENT_SCRIPT_PATH: string;

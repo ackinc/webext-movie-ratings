@@ -3,6 +3,7 @@ import {
   invertObj,
   omit,
   shallowEqual,
+  telemetryIntervalSizeInSeconds,
   type ErrorDetails,
   type ExtensionContext,
   type WebpageStats,
@@ -75,7 +76,7 @@ export default class TelemetryStore {
 
   static async create(
     db: IDBPDatabase<TelemetryStoreSchema>,
-    intervalSizeInSeconds: number,
+    intervalSizeInSeconds: number = telemetryIntervalSizeInSeconds,
   ) {
     return new TelemetryStore(db, intervalSizeInSeconds);
   }

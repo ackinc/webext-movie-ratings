@@ -1,11 +1,11 @@
-import { type CurPage } from "./common";
-import CloseButton from "./CloseButton";
-import SettingsIcon from "../../images/settings.svg";
+import { type PopupPage } from "./common";
+import CloseIconButton from "./Buttons/CloseIconButton";
+import SettingsIconButton from "./Buttons/SettingsIconButton";
 import "./Header.css";
 
 interface HeaderProps {
-  curPage: CurPage;
-  setCurPage: (x: CurPage) => void;
+  curPage: PopupPage;
+  setCurPage: (x: PopupPage) => void;
 }
 
 export default function Header({ curPage, setCurPage }: HeaderProps) {
@@ -16,19 +16,19 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
       </div>
 
       <h3>
-        {curPage === "filters"
-          ? "Filter Programs"
-          : curPage === "settings"
-            ? "Settings"
-            : null}
+        {curPage === "onboarding"
+          ? "Welcome!"
+          : curPage === "filters"
+            ? "Filter Programs"
+            : curPage === "settings"
+              ? "Settings"
+              : null}
       </h3>
 
       {curPage === "settings" ? (
-        <CloseButton onClick={() => setCurPage("filters")} />
+        <CloseIconButton onClick={() => setCurPage("filters")} />
       ) : curPage === "filters" ? (
-        <button className="btn" onClick={() => setCurPage("settings")}>
-          <img src={SettingsIcon} />
-        </button>
+        <SettingsIconButton onClick={() => setCurPage("settings")} />
       ) : null}
     </div>
   );

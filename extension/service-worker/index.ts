@@ -2,23 +2,17 @@ import { type IDBPDatabase } from "idb";
 import {
   browser,
   getSetting,
-  setSetting,
   delayMs,
-  omitBy,
   MessageType,
-  ExtensionSettingsKeys,
-  telemetryIntervalSizeInSeconds,
-  selectorStatusKeyPrefix,
   sendMessageToAllTabs,
+  supportedSites,
   ErrorMessage,
-  storage,
   upgradeIdbAndGetConnection,
 } from "../common";
 import type {
   Program,
   IMDBData,
   Message,
-  CachedIMDBData,
   SWMessageResponse,
 } from "../common/types";
 import {
@@ -44,10 +38,10 @@ let omdbApiClient: OmdbApiClient;
     browser.tabs.onUpdated.addListener(handleTabUpdated);
 
     const db = await upgradeIdbAndGetConnection();
-    ratingsCache = await initializeRatingsCache(
+    ratingsCache = await RatingsCache.create(
       db as IDBPDatabase<RatingsCacheSchema>,
     );
-    telemetryStore = await initializeTelemetryStore(
+    telemetryStore = await TelemetryStore.create(
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
     omdbApiClient = new OmdbApiClient(fetchWithAddedTelemetry);
@@ -69,27 +63,16 @@ let omdbApiClient: OmdbApiClient;
 //////////////////////////////
 
 async function onInstalled() {
-  await showPopupIfNotSeen();
-}
-
-async function initializeRatingsCache(db: IDBPDatabase<RatingsCacheSchema>) {
-  const allData = await storage.getAll();
-  const oldCacheData = omitBy(
-    allData,
-    (_v, k) =>
-      (ExtensionSettingsKeys as string[]).includes(k) ||
-      k.startsWith(selectorStatusKeyPrefix),
-  ) as Record<string, CachedIMDBData>;
-
-  const cache: RatingsCache = await RatingsCache.create(db, oldCacheData);
-  await storage.remove(Object.keys(oldCacheData));
-  return cache;
-}
-
-async function initializeTelemetryStore(
-  db: IDBPDatabase<TelemetryStoreSchema>,
-) {
-  return await TelemetryStore.create(db, telemetryIntervalSizeInSeconds);
+  // firefox won't let us open the popup outside of a user-gesture
+  if (TARGET_BROWSER !== "firefox") {
+    const [popupSeen, onboardingStatus] = await Promise.all([
+      getSetting("popupSeenAtLeastOnce"),
+      getSetting("onboardingStatus"),
+    ]);
+    if (!popupSeen || onboardingStatus !== "finished") {
+      browser.action.openPopup();
+    }
+  }
 }
 
 async function injectUpdatedContentScripts(tabUrlMatchPatterns: string[] = []) {
@@ -127,7 +110,9 @@ async function removeContentScripts(urlMatchPatterns: string[] = []) {
 async function handlePermissionsAdded({
   origins,
 }: chrome.permissions.Permissions): Promise<void> {
-  if (origins && origins.length > 0) await injectUpdatedContentScripts(origins);
+  if (origins && origins.length > 0) {
+    await injectUpdatedContentScripts(origins);
+  }
 }
 
 async function handleTabUpdated(
@@ -138,12 +123,6 @@ async function handleTabUpdated(
   if (changeInfo.status === "complete" && tab.url) {
     await injectUpdatedContentScripts([tab.url]);
   }
-}
-
-async function showPopupIfNotSeen() {
-  if (await getSetting("popupSeenAtLeastOnce")) return;
-  browser.action?.openPopup();
-  await setSetting("popupSeenAtLeastOnce", true);
 }
 
 function handleMessage(
@@ -184,13 +163,48 @@ function handleMessage(
       }
     } else if (request.type === MessageType.placeholder) {
       // do something here if desired
-    } else if (request.type === MessageType.hostPermissionsRevoked) {
-      const { origins } = request.data;
+    } else if (request.type === MessageType.sitesDisabled) {
+      const { sites } = request.data;
+      const origins = sites.flatMap((site) => supportedSites[site].permStrings);
       removeContentScripts(origins)
         // give time for content-scripts to clean up
-        .then(() => delayMs(200))
+        .then(() => delayMs(500))
         .then(() => browser.permissions.remove({ origins }))
         .then(() => sendResponse({ data: null }))
+        .catch(handleError);
+      return true; // keep channel open until sendReponse is called
+    } else if (request.type === MessageType.sitesEnabled) {
+      const { sites } = request.data;
+      const origins = sites.flatMap((site) => supportedSites[site].permStrings);
+
+      if (TARGET_BROWSER === "firefox") {
+        throw new Error(ErrorMessage.noAsyncPermissionRequestInFirefox);
+      }
+
+      // WARNING: will error in firefox, which only allows permissions.request
+      //   calls inside a direct user-gesture handler (FF can't track that
+      //   the message was sent inside user-gesture handler, and that therefore
+      //   the message handling-logic is effectively responding to the
+      //   user-gesture)
+      browser.permissions
+        .request({ origins })
+        .then((granted) => {
+          sendResponse({ data: { granted } });
+          // The popup would have been open when this message was sent - it
+          //   would have been sent in response to a user-action in the popup
+          // However, the browser's permission-grant dialog, if the browser
+          //   brought it up, would have then auto-closed the popup
+          // We'll trigger the reopening of the popup here so the user can
+          //   continue whatever they were doing
+          // The popup itself will take care of placing the user on whatever
+          //   page they were last on
+          // Edge-case: if the permission-grant dialog did not appear (chrome
+          //   doesn't bring it up if we are requesting a perm that was granted
+          //   earlier, then revoked), then the popup is already open at this
+          //   point, and this call will throw an error; we don't care to
+          //   capture it
+          browser.action.openPopup().catch(() => {});
+        })
         .catch(handleError);
       return true; // keep channel open until sendReponse is called
     } else {

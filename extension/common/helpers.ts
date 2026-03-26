@@ -1,7 +1,13 @@
 // this module is for more complex helper fns
 
 import { openDB } from "idb";
-import { browser, languages, DB_NAME, DB_VERSION } from "./constants";
+import {
+  browser,
+  CssColors,
+  languages,
+  DB_NAME,
+  DB_VERSION,
+} from "./constants";
 import type { ExtensionContext, ExtensionSettings, Message } from "./types";
 import TelemetryStore from "./TelemetryStore";
 import RatingsCache from "./RatingsCache";
@@ -116,4 +122,16 @@ export async function upgradeIdbAndGetConnection() {
   });
   await setSetting("updatedDbVersion", DB_VERSION);
   return db;
+}
+
+export async function addBadge(text: string) {
+  await Promise.all([
+    browser.action.setBadgeBackgroundColor({ color: CssColors.mainBgColor }),
+    browser.action.setBadgeTextColor({ color: CssColors.mainTextColor }),
+    browser.action.setBadgeText({ text }),
+  ]);
+}
+
+export async function removeBadge() {
+  await addBadge("");
 }

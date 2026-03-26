@@ -1,4 +1,4 @@
-import { MessageType } from "./constants";
+import { MessageType, supportedSites } from "./constants";
 
 export type ProgramContainerData = {
   title: string;
@@ -95,10 +95,14 @@ export type Message =
       data: { sourceId: number };
     }
   | {
-      // Sent from popup to service-worker when user revokes a
-      //   previously-granted optional host permission
-      type: MessageType.hostPermissionsRevoked;
-      data: { origins: string[] };
+      // Sent from popup to service-worker
+      type: MessageType.sitesDisabled;
+      data: { sites: Sitename[] };
+    }
+  | {
+      // Sent from popup to service-worker
+      type: MessageType.sitesEnabled;
+      data: { sites: Sitename[] };
     }
   | {
       // Sent from service-worker to ISOLATED world content-script
@@ -148,14 +152,18 @@ export type WebpageStats = {
   nProgramsRatedNF: number;
 };
 
-// WARNING: if updating this type, don't forget to also update
-//   ExtensionSettingsKeys in constants.ts!
 export type ExtensionSettings = {
   errorReportingOptIn: boolean;
   programFiltersSettings: ProgramFilterSettings;
   popupSeenAtLeastOnce: boolean;
   outdatedSelectorDetectionEnabled: boolean;
   updatedDbVersion: number;
+  onboardingStatus:
+    | "started"
+    | "askedUserForPermissions"
+    | "displayedPermissionStatus"
+    | "pitchedErrorReporting"
+    | "finished";
 };
 
 export type ExtensionContext =
@@ -163,3 +171,7 @@ export type ExtensionContext =
   | "popup"
   | "service-worker"
   | "extension-page";
+
+export type Sitename = keyof typeof supportedSites;
+export type PermString =
+  (typeof supportedSites)[Sitename]["permStrings"][number];

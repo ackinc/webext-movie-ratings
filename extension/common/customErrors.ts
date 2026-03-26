@@ -43,3 +43,12 @@ export class DataExtractionError extends Error {
     this.__fromCache = false;
   }
 }
+
+// to identify errors that occurred on the SW-side in non-SW code (for
+//   example, in code that deals with the response to a message sent
+//   to the SW), so we don't call captureException on them a second time
+export class SWError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}

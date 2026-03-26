@@ -1,0 +1,17 @@
+form.site-chooser-form {
+  display: flex;
+  flex-direction: column;
+}
+
+form.site-chooser-form h4 {
+  margin-bottom: 8px;
+}
+
+form.site-chooser-form p.error {
+  color: red;
+  font-size: var(--secondary-font-size);
+}
+
+form.site-chooser-form .form-control label img {
+  height: 14px;
+}

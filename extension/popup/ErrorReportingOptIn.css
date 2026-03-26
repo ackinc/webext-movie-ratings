@@ -6,7 +6,7 @@ form.error-reporting-form {
   gap: 0.5rem;
 }
 
-form.error-reporting-form .form-control button.toggle-info-btn {
+form.error-reporting-form button.toggle-info-btn {
   width: 16px;
   height: 16px;
   border: 1px solid var(--main-text-color);
@@ -17,7 +17,7 @@ form.error-reporting-form .form-control button.toggle-info-btn {
   font-weight: normal;
 }
 
-form.error-reporting-form .form-control button.toggle-info-btn:hover {
+form.error-reporting-form button.toggle-info-btn:hover {
   background-color: var(--highlighted-bg-color);
   border: 0;
 }

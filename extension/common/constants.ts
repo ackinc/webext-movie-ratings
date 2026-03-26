@@ -1,4 +1,4 @@
-import { type ExtensionSettings, type ProgramFilterSettings } from "./types";
+import type { PermString, ProgramFilterSettings, Sitename } from "./types";
 
 export const DB_NAME = "siftDb";
 export const DB_VERSION = 2;
@@ -7,6 +7,14 @@ export const enum CssClasses {
   styleNode = "sift-style",
   imdbDataNode = "sift-imdb-data",
   filteredOutProgramNode = "sift-filtered-out-program",
+}
+export const enum CssColors {
+  mainBgColor = "#f5c618",
+  highlightedBgColor = "#e2b615",
+  mainTextColor = "#454545",
+  successBg = "#43a047",
+  warningBg = "orange",
+  failureBg = "red",
 }
 
 export const ONE_HOUR_IN_MS = 1000 * 60 * 60;
@@ -44,16 +52,9 @@ export const enum MessageType {
   webpageRatingStats = "sift:webpageRatingStats",
   error = "sift:error",
   placeholder = "sift:placeholderForTestingAndDebugging",
-  hostPermissionsRevoked = "sift:hostPermissionsRevoked",
+  sitesEnabled = "sift:sitesEnabled",
+  sitesDisabled = "sift:sitesDisabled",
 }
-
-export const ExtensionSettingsKeys = [
-  "errorReportingOptIn",
-  "programFiltersSettings",
-  "popupSeenAtLeastOnce",
-  "outdatedSelectorDetectionEnabled",
-  "updatedDbVersion",
-] as const satisfies (keyof ExtensionSettings)[];
 
 export const defaultProgramFilterSettings: ProgramFilterSettings = {
   minRating: 0,
@@ -76,4 +77,49 @@ export const enum ErrorMessage {
   ratingsApiRequestAlreadyInFlight = "A request for this program's rating is already in-flight",
   idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",
   hostPermissionNotGranted = "A requested host permission was not granted",
+  noAsyncPermissionRequestInFirefox = "permission.request must be called synchronously inside a user-gesture handler in Firefox",
+  unexpectedTargetBrowser = "This code is running in the wrong browser!",
 }
+
+export const supportedSites = {
+  amazonprimevideo: {
+    displayName: "Amazon Prime Video",
+    permStrings: ["https://www.primevideo.com/*", "https://www.amazon.com/*"],
+  },
+  appletv: {
+    displayName: "AppleTV",
+    permStrings: ["https://tv.apple.com/*"],
+  },
+  crunchyroll: {
+    displayName: "Crunchyroll",
+    permStrings: ["https://www.crunchyroll.com/*"],
+  },
+  hotstar: {
+    displayName: "Hotstar",
+    permStrings: ["https://www.hotstar.com/*"],
+  },
+  netflix: {
+    displayName: "Netflix",
+    permStrings: ["https://www.netflix.com/*"],
+  },
+  sonyliv: {
+    displayName: "SonyLIV",
+    permStrings: ["https://www.sonyliv.com/*"],
+  },
+  youtubemovies: {
+    displayName: "Youtube Movies",
+    permStrings: ["https://www.youtube.com/*"],
+  },
+} as const;
+
+export const permStringToSitename = Object.entries(supportedSites).reduce(
+  (acc, [sitename, { permStrings }]) =>
+    Object.assign(
+      acc,
+      permStrings.reduce(
+        (acc2, ps) => Object.assign(acc2, { [ps]: sitename }),
+        {},
+      ),
+    ),
+  {},
+) as Record<PermString, Sitename>;

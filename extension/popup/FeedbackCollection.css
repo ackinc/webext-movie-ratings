@@ -1,10 +1,14 @@
 .feedback-collection {
-  position: absolute;
-  bottom: 8px;
-  right: 16px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .feedback-collection .btn-toggle-expand {
+  position: relative;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+
   background-color: transparent;
   border: 0;
   cursor: pointer;
@@ -16,7 +20,7 @@
   color: rgb(11, 87, 208);
 }
 
-.feedback-collection.expanded {
+.feedback-collection .instructions-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -30,13 +34,7 @@
   align-items: center;
 }
 
-.feedback-collection.expanded .btn-toggle-expand {
-  position: absolute;
-  bottom: 8px;
-  right: 16px;
-}
-
-.feedback-collection.expanded .instructions {
+.feedback-collection .instructions {
   width: calc(100% - 32px);
   padding: 16px;
   text-align: center;
@@ -51,7 +49,7 @@
   gap: 16px;
 }
 
-.feedback-collection.expanded .instructions span.email {
+.feedback-collection .instructions span.email {
   color: #7f712a;
   font-weight: bold;
   display: inline-flex;
