@@ -3,8 +3,13 @@ import WelcomePage from "./WelcomePage";
 import PitchErrorReportingOptInPage from "./PitchErrorReportingPage";
 import CheckAndRequestPermissionsPage from "./CheckAndRequestPermissionsPage";
 import CheckAndDisplayPermissionStatusPage from "./CheckAndDisplayPermissionStatusPage";
-import type { Sitename } from "../common";
-import { getSetting, setSetting } from "../../common";
+import type { PermString, Sitename } from "../common";
+import {
+  browser,
+  getSetting,
+  permStringToSitename,
+  setSetting,
+} from "../../common";
 import Button from "../Buttons/Button";
 import "./OnboardingFlow.css";
 
@@ -24,12 +29,9 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
   const [errorReportingOptedIn, setErrorReportingOptedIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // put the user on the right page within onboarding
   useEffect(() => {
     (async () => {
-      const errorReportingOptedIn =
-        (await getSetting("errorReportingOptIn")) ?? false;
-      setErrorReportingOptedIn(errorReportingOptedIn);
-
       const onboardingStatus = await getSetting("onboardingStatus");
       if (onboardingStatus === "askedUserForPermissions") {
         setCurPage("checkAndDisplayPermissionStatus");
@@ -41,6 +43,21 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
       } else if (onboardingStatus === "finished") {
         onFinish();
       }
+    })();
+  }, []);
+
+  // update state based on the user's previous activity (if existing user)
+  useEffect(() => {
+    (async () => {
+      const existingPerms = (await browser.permissions.getAll()).origins ?? [];
+      const alreadyEnabledSites = (existingPerms as PermString[]).map(
+        (p) => permStringToSitename[p],
+      );
+      const errorReportingOptedIn =
+        (await getSetting("errorReportingOptIn")) ?? false;
+
+      setSelectedSites(alreadyEnabledSites);
+      setErrorReportingOptedIn(errorReportingOptedIn);
     })();
   }, []);
 
