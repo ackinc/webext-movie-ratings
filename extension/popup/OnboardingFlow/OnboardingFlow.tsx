@@ -51,10 +51,7 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
   return (
     <div className="onboarding-flow">
       {curPage === "welcome" ? (
-        <WelcomePage
-          selectedSites={selectedSites}
-          setSelectedSites={setSelectedSites}
-        />
+        <WelcomePage selectedSites={selectedSites} toggleSite={toggleSite} />
       ) : curPage === "checkAndRequestPermissions" ? (
         <CheckAndRequestPermissionsPage
           sitesToEnable={selectedSites}
@@ -107,5 +104,11 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
 
     await setSetting("onboardingStatus", "finished");
     onFinish();
+  }
+
+  function toggleSite(site: Sitename) {
+    setSelectedSites((ss) =>
+      ss.includes(site) ? ss.filter((s) => s !== site) : ss.concat(site),
+    );
   }
 }

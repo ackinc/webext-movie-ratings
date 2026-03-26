@@ -1,16 +1,15 @@
-import { type Dispatch, type StateUpdater } from "preact/hooks";
 import { supportedSites, type Sitename } from "../common";
 import SiteChooserFormControl from "../SiteChooserFormControl";
 import SettingsIcon from "../../../images/settings.svg";
 
 interface WelcomePageProps {
   selectedSites: Sitename[];
-  setSelectedSites: Dispatch<StateUpdater<Sitename[]>>;
+  toggleSite: (site: Sitename) => void;
 }
 
 export default function WelcomePage({
   selectedSites,
-  setSelectedSites,
+  toggleSite,
 }: WelcomePageProps) {
   return (
     <div className="page welcome-page">
@@ -26,7 +25,7 @@ export default function WelcomePage({
           <SiteChooserFormControl
             site={site}
             checked={selectedSites.includes(site)}
-            onToggle={handleToggle}
+            onToggle={() => toggleSite(site)}
           />
         ))}
       </div>
@@ -40,10 +39,4 @@ export default function WelcomePage({
       </p>
     </div>
   );
-
-  function handleToggle(site: Sitename) {
-    setSelectedSites((ss) =>
-      ss.includes(site) ? ss.filter((s) => s !== site) : ss.concat(site),
-    );
-  }
 }
