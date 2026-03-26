@@ -11,21 +11,13 @@ if [[ -z "$TARGET" ]]; then
 fi
 
 if [[ "$TARGET" = "EAS" || "$TARGET" = "ALL" ]]; then
-    if [[ $TARGET = "EAS" ]]; then
-        pnpm run build --target=edge --sentry-upload-srcmaps
-    else
-        pnpm run build --target=edge
-    fi
+    pnpm run build --target=edge --sentry-upload-srcmaps
     pnpm run zip:dist
     node scripts/publishToEAS.ts
 fi
 
 if [[ "$TARGET" = "MAS" || "$TARGET" = "ALL" ]]; then
-    if [[ $TARGET = "MAS" ]]; then
-        pnpm run build --target=firefox --sentry-upload-srcmaps
-    else
-        pnpm run build --target=firefox
-    fi
+    pnpm run build --target=firefox --sentry-upload-srcmaps
     pnpm run zip:dist
     pnpm run zip:src
     node scripts/publishToMAS.ts
