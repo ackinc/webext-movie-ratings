@@ -31,6 +31,13 @@ function ProgramFilters() {
 
   return (
     <div className="program-filters-container">
+      <div className="info">
+        <p>
+          Use these controls to hide low-rated programs while browsing your
+          favorite OTT websites
+        </p>
+      </div>
+
       <div className="imdb-rating-filter-setting filter-setting-container">
         <label>
           Include shows rated{" "}
