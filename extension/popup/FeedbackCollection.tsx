@@ -1,12 +1,12 @@
 import { useState } from "preact/hooks";
-import { type CurPage } from "./common";
+import { type PopupPage } from "./common";
 import CopyToClipboardButton from "./Buttons/CopyToClipboardButton";
 import "./FeedbackCollection.css";
 
 const email = "anirudh.nimmagadda@gmail.com";
 
 interface FeedbackCollectionProps {
-  curPage: CurPage;
+  curPage: PopupPage;
 }
 
 export default function FeedbackCollection({

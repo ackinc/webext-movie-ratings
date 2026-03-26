@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { render, h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
-import { type CurPage } from "./common";
+import { type PopupPage } from "./common";
 import { setSetting } from "../common";
 import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
@@ -16,8 +16,8 @@ const root = document.querySelector<HTMLDivElement>("div#root")!;
 render(<App />, root);
 
 function App() {
-  const [curPage, setCurPage] = useState<CurPage>(
-    (localStorage.getItem("curPage") as CurPage | null) ?? "onboarding",
+  const [curPage, setCurPage] = useState<PopupPage>(
+    (localStorage.getItem("lastSeenPage") as PopupPage | null) ?? "filters",
   );
 
   useEffect(() => {

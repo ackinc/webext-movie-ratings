@@ -1,11 +1,11 @@
-import { type CurPage } from "./common";
+import { type PopupPage } from "./common";
 import CloseIconButton from "./Buttons/CloseIconButton";
 import SettingsIconButton from "./Buttons/SettingsIconButton";
 import "./Header.css";
 
 interface HeaderProps {
-  curPage: CurPage;
-  setCurPage: (x: CurPage) => void;
+  curPage: PopupPage;
+  setCurPage: (x: PopupPage) => void;
 }
 
 export default function Header({ curPage, setCurPage }: HeaderProps) {
