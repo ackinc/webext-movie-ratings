@@ -41,10 +41,22 @@ let programFilterSettings: ProgramFilterSettings;
 //   it ends when the user leaves that webpage
 let sessionStartTime: number;
 
-// should *only* be set to undefined when we deliberately pause
-//   the loop due to errors
-let loopTimeout: number | undefined;
-let loopAbortController: AbortController;
+interface LoopState {
+  timeout: ReturnType<typeof setTimeout> | undefined;
+  abortController: AbortController | undefined;
+  haltReason:
+    | "filterSettingsChanged"
+    | "urlChanged"
+    | "pageHidden"
+    | "error"
+    | "cleanup"
+    | undefined;
+}
+const loopState: LoopState = {
+  timeout: undefined,
+  abortController: undefined,
+  haltReason: undefined,
+};
 
 (async () => {
   try {
@@ -55,8 +67,8 @@ let loopAbortController: AbortController;
     } satisfies Message);
 
     await initializePage();
-    addMessageListeners();
-    loopTimeout = setTimeout(loop, 0);
+    addListeners();
+    startLoop();
   } catch (e) {
     captureException(e);
   }
@@ -89,12 +101,13 @@ async function initializePage() {
   await page.initialize();
 }
 
-function addMessageListeners() {
+function addListeners() {
   window.addEventListener("message", handleMessage);
   browser.runtime.onMessage.addListener(handleMessage);
+  document.addEventListener("visibilitychange", handlePageVisibilityChange);
 }
 
-function removeMessageListeners() {
+function removeListeners() {
   window.removeEventListener("message", handleMessage);
 
   // when extension is turned off, browser.runtime is sometimes
@@ -102,11 +115,38 @@ function removeMessageListeners() {
   // if we don't preempt the error, it will interfere with subsequent
   //   parts of the cleanup operation
   browser.runtime?.onMessage.removeListener(handleMessage);
+
+  document.removeEventListener("visibilitychange", handlePageVisibilityChange);
 }
 
-async function loop() {
-  const thisLoopAbortController = new AbortController();
-  loopAbortController = thisLoopAbortController;
+function startLoop() {
+  loopState.abortController = new AbortController();
+  loopState.timeout = setTimeout(() => loopFn(loopState.abortController!), 0);
+  loopState.haltReason = undefined;
+}
+
+function stopLoop(reason: LoopState["haltReason"]) {
+  // Prevent running loopFn from scheduling another invocation
+  // WARN: If tab was backgrounded before first invocation of loop,
+  //   loopState.abortController will be undefined; the use of optional-
+  //   chaining below prevents stopLoop from erroring out in this case
+  loopState.abortController?.abort();
+  loopState.abortController = undefined;
+
+  // clear any scheduled loop
+  clearTimeout(loopState.timeout);
+  loopState.timeout = undefined;
+  loopState.haltReason = reason;
+}
+
+async function loopFn(abortController: AbortController) {
+  if (
+    FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE &&
+    document.visibilityState === "hidden"
+  ) {
+    stopLoop("pageHidden");
+    return;
+  }
 
   const msDelayBeforeNextInvocation = 2000;
 
@@ -133,11 +173,14 @@ async function loop() {
       } satisfies Message);
     }
 
-    if (!thisLoopAbortController.signal.aborted) {
-      loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
+    if (!abortController.signal.aborted) {
+      loopState.timeout = setTimeout(
+        () => loopFn(abortController),
+        msDelayBeforeNextInvocation,
+      );
     }
   } catch (e) {
-    loopTimeout = undefined;
+    stopLoop("error");
 
     if (
       e instanceof Error &&
@@ -210,6 +253,27 @@ function fadeIfFilteredOut(p: Program): Program {
   return p;
 }
 
+function collectWebpageRatingStats(programs: Program[]): WebpageStats {
+  const nPrograms = programs.length;
+  let nProgramsWithNoRatingNode = 0;
+  let nProgramsRatedNA = 0;
+  let nProgramsRatedNF = 0;
+
+  const ctor = page.constructor as typeof AbstractPage;
+  programs.forEach(({ node }) => {
+    const rating = ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
+    if (rating === "N/A") nProgramsRatedNA++;
+    if (rating === "N/F") nProgramsRatedNF++;
+    if (!rating) nProgramsWithNoRatingNode++;
+  });
+  return {
+    nPrograms,
+    nProgramsRatedNA,
+    nProgramsRatedNF,
+    nProgramsWithNoRatingNode,
+  };
+}
+
 function handleMessage(
   m: MessageEvent | Message,
   _s?: chrome.runtime.MessageSender,
@@ -237,31 +301,15 @@ function handleMessage(
 }
 
 function handleUrlChange() {
-  if (!page) return;
-
+  stopLoop("urlChanged");
   sessionStartTime = +new Date();
-
-  if (loopTimeout === undefined) {
-    console.log(`sift: resuming paused loop on page change`);
-    loopTimeout = setTimeout(loop, 0);
-  }
+  startLoop();
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
-  haltLoop();
-
+  stopLoop("filterSettingsChanged");
   updateFilteredOutProgramNodeStyles(updatedSettings);
-
-  // restart loop
-  loopTimeout = setTimeout(loop, 0);
-}
-
-function haltLoop() {
-  // prevent running loop invocation from scheduling another invocation
-  loopAbortController.abort();
-
-  // clear any scheduled loop
-  clearTimeout(loopTimeout);
+  startLoop();
 }
 
 function cleanup(broadcast = true) {
@@ -269,29 +317,23 @@ function cleanup(broadcast = true) {
     window.postMessage({ type: MessageType.cleanup } satisfies Message);
   }
 
-  haltLoop();
-  removeMessageListeners();
+  stopLoop("cleanup");
+  removeListeners();
   page.cleanup();
   console.log("sift: orphaned content script cleanup complete");
 }
 
-function collectWebpageRatingStats(programs: Program[]): WebpageStats {
-  const nPrograms = programs.length;
-  let nProgramsWithNoRatingNode = 0;
-  let nProgramsRatedNA = 0;
-  let nProgramsRatedNF = 0;
-
-  const ctor = page.constructor as typeof AbstractPage;
-  programs.forEach(({ node }) => {
-    const rating = ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
-    if (rating === "N/A") nProgramsRatedNA++;
-    if (rating === "N/F") nProgramsRatedNF++;
-    if (!rating) nProgramsWithNoRatingNode++;
-  });
-  return {
-    nPrograms,
-    nProgramsRatedNA,
-    nProgramsRatedNF,
-    nProgramsWithNoRatingNode,
-  };
+function handlePageVisibilityChange() {
+  if (FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE) {
+    if (document.visibilityState === "hidden") {
+      stopLoop("pageHidden");
+    } else {
+      if (
+        loopState.timeout === undefined &&
+        loopState.haltReason === "pageHidden"
+      ) {
+        startLoop();
+      }
+    }
+  }
 }
