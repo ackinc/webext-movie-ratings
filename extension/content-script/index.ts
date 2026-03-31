@@ -41,8 +41,6 @@ let programFilterSettings: ProgramFilterSettings;
 //   it ends when the user leaves that webpage
 let sessionStartTime: number;
 
-// should *only* be set to undefined when we deliberately pause
-//   the loop due to errors or page becoming hidden
 let loopTimeout: number | undefined;
 let loopAbortController: AbortController;
 
@@ -56,7 +54,7 @@ let loopAbortController: AbortController;
 
     await initializePage();
     addListeners();
-    loopTimeout = setTimeout(loop, 0);
+    startLoop();
   } catch (e) {
     captureException(e);
   }
@@ -107,6 +105,19 @@ function removeListeners() {
   document.removeEventListener("visibilitychange", handlePageVisibilityChange);
 }
 
+function startLoop() {
+  loopTimeout = setTimeout(loop, 0);
+}
+
+function stopLoop() {
+  // prevent running loop invocation from scheduling another invocation
+  loopAbortController.abort();
+
+  // clear any scheduled loop
+  clearTimeout(loopTimeout);
+  loopTimeout = undefined;
+}
+
 async function loop() {
   const thisLoopAbortController = new AbortController();
   loopAbortController = thisLoopAbortController;
@@ -115,8 +126,7 @@ async function loop() {
     FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE &&
     document.visibilityState === "hidden"
   ) {
-    loopTimeout = undefined;
-    haltLoop();
+    stopLoop();
     return;
   }
 
@@ -149,7 +159,7 @@ async function loop() {
       loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
     }
   } catch (e) {
-    loopTimeout = undefined;
+    stopLoop();
 
     if (
       e instanceof Error &&
@@ -222,6 +232,27 @@ function fadeIfFilteredOut(p: Program): Program {
   return p;
 }
 
+function collectWebpageRatingStats(programs: Program[]): WebpageStats {
+  const nPrograms = programs.length;
+  let nProgramsWithNoRatingNode = 0;
+  let nProgramsRatedNA = 0;
+  let nProgramsRatedNF = 0;
+
+  const ctor = page.constructor as typeof AbstractPage;
+  programs.forEach(({ node }) => {
+    const rating = ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
+    if (rating === "N/A") nProgramsRatedNA++;
+    if (rating === "N/F") nProgramsRatedNF++;
+    if (!rating) nProgramsWithNoRatingNode++;
+  });
+  return {
+    nPrograms,
+    nProgramsRatedNA,
+    nProgramsRatedNF,
+    nProgramsWithNoRatingNode,
+  };
+}
+
 function handleMessage(
   m: MessageEvent | Message,
   _s?: chrome.runtime.MessageSender,
@@ -250,41 +281,17 @@ function handleMessage(
 
 function handleUrlChange() {
   sessionStartTime = +new Date();
-  restartLoop();
-}
 
-function handlePageVisibilityChange() {
-  if (FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE) {
-    if (document.visibilityState === "hidden") {
-      loopTimeout = undefined;
-      haltLoop();
-    } else {
-      restartLoop();
-    }
-  }
+  // only need to start loop if it is not already running (for ex: it may
+  //   have been halted earlier due to errors on the previous page the user
+  //   was on)
+  if (loopTimeout === undefined) startLoop();
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
-  haltLoop();
-
+  stopLoop();
   updateFilteredOutProgramNodeStyles(updatedSettings);
-
-  // restart loop
-  loopTimeout = setTimeout(loop, 0);
-}
-
-function haltLoop() {
-  // prevent running loop invocation from scheduling another invocation
-  loopAbortController.abort();
-
-  // clear any scheduled loop
-  clearTimeout(loopTimeout);
-}
-
-function restartLoop() {
-  if (loopTimeout === undefined) {
-    loopTimeout = setTimeout(loop, 0);
-  }
+  startLoop();
 }
 
 function cleanup(broadcast = true) {
@@ -292,29 +299,18 @@ function cleanup(broadcast = true) {
     window.postMessage({ type: MessageType.cleanup } satisfies Message);
   }
 
-  haltLoop();
+  stopLoop();
   removeListeners();
   page.cleanup();
   console.log("sift: orphaned content script cleanup complete");
 }
 
-function collectWebpageRatingStats(programs: Program[]): WebpageStats {
-  const nPrograms = programs.length;
-  let nProgramsWithNoRatingNode = 0;
-  let nProgramsRatedNA = 0;
-  let nProgramsRatedNF = 0;
-
-  const ctor = page.constructor as typeof AbstractPage;
-  programs.forEach(({ node }) => {
-    const rating = ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
-    if (rating === "N/A") nProgramsRatedNA++;
-    if (rating === "N/F") nProgramsRatedNF++;
-    if (!rating) nProgramsWithNoRatingNode++;
-  });
-  return {
-    nPrograms,
-    nProgramsRatedNA,
-    nProgramsRatedNF,
-    nProgramsWithNoRatingNode,
-  };
+function handlePageVisibilityChange() {
+  if (FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE) {
+    if (document.visibilityState === "hidden") {
+      stopLoop();
+    } else {
+      startLoop();
+    }
+  }
 }
