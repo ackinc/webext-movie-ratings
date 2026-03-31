@@ -42,7 +42,7 @@ let programFilterSettings: ProgramFilterSettings;
 let sessionStartTime: number;
 
 // should *only* be set to undefined when we deliberately pause
-//   the loop due to errors
+//   the loop due to errors or page becoming hidden
 let loopTimeout: number | undefined;
 let loopAbortController: AbortController;
 
@@ -92,6 +92,7 @@ async function initializePage() {
 function addListeners() {
   window.addEventListener("message", handleMessage);
   browser.runtime.onMessage.addListener(handleMessage);
+  document.addEventListener("visibilitychange", handlePageVisibilityChange);
 }
 
 function removeListeners() {
@@ -102,11 +103,22 @@ function removeListeners() {
   // if we don't preempt the error, it will interfere with subsequent
   //   parts of the cleanup operation
   browser.runtime?.onMessage.removeListener(handleMessage);
+
+  document.removeEventListener("visibilitychange", handlePageVisibilityChange);
 }
 
 async function loop() {
   const thisLoopAbortController = new AbortController();
   loopAbortController = thisLoopAbortController;
+
+  if (
+    FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE &&
+    document.visibilityState === "hidden"
+  ) {
+    loopTimeout = undefined;
+    haltLoop();
+    return;
+  }
 
   const msDelayBeforeNextInvocation = 2000;
 
@@ -237,13 +249,18 @@ function handleMessage(
 }
 
 function handleUrlChange() {
-  if (!page) return;
-
   sessionStartTime = +new Date();
+  restartLoop();
+}
 
-  if (loopTimeout === undefined) {
-    console.log(`sift: resuming paused loop on page change`);
-    loopTimeout = setTimeout(loop, 0);
+function handlePageVisibilityChange() {
+  if (FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE) {
+    if (document.visibilityState === "hidden") {
+      loopTimeout = undefined;
+      haltLoop();
+    } else {
+      restartLoop();
+    }
   }
 }
 
@@ -262,6 +279,12 @@ function haltLoop() {
 
   // clear any scheduled loop
   clearTimeout(loopTimeout);
+}
+
+function restartLoop() {
+  if (loopTimeout === undefined) {
+    loopTimeout = setTimeout(loop, 0);
+  }
 }
 
 function cleanup(broadcast = true) {
