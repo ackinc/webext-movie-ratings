@@ -41,8 +41,22 @@ let programFilterSettings: ProgramFilterSettings;
 //   it ends when the user leaves that webpage
 let sessionStartTime: number;
 
-let loopTimeout: number | undefined;
-let loopAbortController: AbortController;
+interface LoopState {
+  timeout: ReturnType<typeof setTimeout> | undefined;
+  abortController: AbortController | undefined;
+  haltReason:
+    | "filterSettingsChanged"
+    | "urlChanged"
+    | "pageHidden"
+    | "error"
+    | "cleanup"
+    | undefined;
+}
+const loopState: LoopState = {
+  timeout: undefined,
+  abortController: undefined,
+  haltReason: undefined,
+};
 
 (async () => {
   try {
@@ -106,29 +120,39 @@ function removeListeners() {
 }
 
 function startLoop() {
-  loopTimeout = setTimeout(loop, 0);
+  loopState.timeout = setTimeout(loopFn, 0);
+  loopState.haltReason = undefined;
 }
 
-function stopLoop() {
-  // prevent running loop invocation from scheduling another invocation
-  loopAbortController.abort();
+function stopLoop(reason: LoopState["haltReason"]) {
+  // Prevent running loopFn from scheduling another invocation
+  // WARN: If tab was backgrounded before first invocation of loop,
+  //   loopState.abortController will be undefined; the use of optional-
+  //   chaining below prevents stopLoop from erroring out in this case
+  loopState.abortController?.abort();
+  loopState.abortController = undefined;
 
   // clear any scheduled loop
-  clearTimeout(loopTimeout);
-  loopTimeout = undefined;
+  clearTimeout(loopState.timeout);
+  loopState.timeout = undefined;
+  loopState.haltReason = reason;
 }
 
-async function loop() {
-  const thisLoopAbortController = new AbortController();
-  loopAbortController = thisLoopAbortController;
-
+async function loopFn() {
   if (
     FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE &&
     document.visibilityState === "hidden"
   ) {
-    stopLoop();
+    stopLoop("pageHidden");
     return;
   }
+
+  // The currently executing loopFn has to hold on to it's abortController
+  //   in the instance stopLoop is called from elsewhere before it reaches
+  //   the point where it has to decide whether/not to schedule its next
+  //   invocation
+  const thisLoopAbortController = new AbortController();
+  loopState.abortController = thisLoopAbortController;
 
   const msDelayBeforeNextInvocation = 2000;
 
@@ -156,10 +180,10 @@ async function loop() {
     }
 
     if (!thisLoopAbortController.signal.aborted) {
-      loopTimeout = setTimeout(loop, msDelayBeforeNextInvocation);
+      loopState.timeout = setTimeout(loopFn, msDelayBeforeNextInvocation);
     }
   } catch (e) {
-    stopLoop();
+    stopLoop("error");
 
     if (
       e instanceof Error &&
@@ -280,16 +304,13 @@ function handleMessage(
 }
 
 function handleUrlChange() {
+  stopLoop("urlChanged");
   sessionStartTime = +new Date();
-
-  // only need to start loop if it is not already running (for ex: it may
-  //   have been halted earlier due to errors on the previous page the user
-  //   was on)
-  if (loopTimeout === undefined) startLoop();
+  startLoop();
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
-  stopLoop();
+  stopLoop("filterSettingsChanged");
   updateFilteredOutProgramNodeStyles(updatedSettings);
   startLoop();
 }
@@ -299,7 +320,7 @@ function cleanup(broadcast = true) {
     window.postMessage({ type: MessageType.cleanup } satisfies Message);
   }
 
-  stopLoop();
+  stopLoop("cleanup");
   removeListeners();
   page.cleanup();
   console.log("sift: orphaned content script cleanup complete");
@@ -308,9 +329,14 @@ function cleanup(broadcast = true) {
 function handlePageVisibilityChange() {
   if (FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE) {
     if (document.visibilityState === "hidden") {
-      stopLoop();
+      stopLoop("pageHidden");
     } else {
-      startLoop();
+      if (
+        loopState.timeout === undefined &&
+        loopState.haltReason === "pageHidden"
+      ) {
+        startLoop();
+      }
     }
   }
 }
