@@ -1,5 +1,15 @@
 # Changelog
 
+## v8.0.1
+
+- Extension content script now pauses activity when tab is backgrounded
+
+## v8.0.0
+
+- All host permissions now optional
+- Added a settings page where users can choose which OTT sites Sift operates on
+- Added onboarding flow
+
 ## v7.0.6
 
 - Slow ratings-API-responses for one/more programs no longer hold up the extension from showing cached ratings wherever available
