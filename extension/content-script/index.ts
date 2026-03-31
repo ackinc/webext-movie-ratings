@@ -120,7 +120,8 @@ function removeListeners() {
 }
 
 function startLoop() {
-  loopState.timeout = setTimeout(loopFn, 0);
+  loopState.abortController = new AbortController();
+  loopState.timeout = setTimeout(() => loopFn(loopState.abortController!), 0);
   loopState.haltReason = undefined;
 }
 
@@ -138,7 +139,7 @@ function stopLoop(reason: LoopState["haltReason"]) {
   loopState.haltReason = reason;
 }
 
-async function loopFn() {
+async function loopFn(abortController: AbortController) {
   if (
     FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE &&
     document.visibilityState === "hidden"
@@ -146,13 +147,6 @@ async function loopFn() {
     stopLoop("pageHidden");
     return;
   }
-
-  // The currently executing loopFn has to hold on to it's abortController
-  //   in the instance stopLoop is called from elsewhere before it reaches
-  //   the point where it has to decide whether/not to schedule its next
-  //   invocation
-  const thisLoopAbortController = new AbortController();
-  loopState.abortController = thisLoopAbortController;
 
   const msDelayBeforeNextInvocation = 2000;
 
@@ -179,8 +173,11 @@ async function loopFn() {
       } satisfies Message);
     }
 
-    if (!thisLoopAbortController.signal.aborted) {
-      loopState.timeout = setTimeout(loopFn, msDelayBeforeNextInvocation);
+    if (!abortController.signal.aborted) {
+      loopState.timeout = setTimeout(
+        () => loopFn(abortController),
+        msDelayBeforeNextInvocation,
+      );
     }
   } catch (e) {
     stopLoop("error");
