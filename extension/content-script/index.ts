@@ -55,7 +55,7 @@ let loopAbortController: AbortController;
     } satisfies Message);
 
     await initializePage();
-    addMessageListeners();
+    addListeners();
     loopTimeout = setTimeout(loop, 0);
   } catch (e) {
     captureException(e);
@@ -89,12 +89,12 @@ async function initializePage() {
   await page.initialize();
 }
 
-function addMessageListeners() {
+function addListeners() {
   window.addEventListener("message", handleMessage);
   browser.runtime.onMessage.addListener(handleMessage);
 }
 
-function removeMessageListeners() {
+function removeListeners() {
   window.removeEventListener("message", handleMessage);
 
   // when extension is turned off, browser.runtime is sometimes
@@ -270,7 +270,7 @@ function cleanup(broadcast = true) {
   }
 
   haltLoop();
-  removeMessageListeners();
+  removeListeners();
   page.cleanup();
   console.log("sift: orphaned content script cleanup complete");
 }
