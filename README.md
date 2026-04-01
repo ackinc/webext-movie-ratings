@@ -1,6 +1,6 @@
 # ![Sift logo](images/logoCircularMinimal32.png) Sift
 
-## What does this extension do? [10s Demo][demo-video-link]
+## What does this extension do? [20s Demo][demo-video-link]
 
 - adds the IMDB rating of a movie / tv show next to it's tile on the page
 - clicking on the rating opens the movie's IMDB page in a new tab
@@ -40,5 +40,5 @@
 [firefox-link]: https://addons.mozilla.org/en-US/firefox/addon/imdb-ratings-for-various-ott/
 [omdbapi-link]: https://omdbapi.com
 [omdbapi-patreon-link]: https://www.patreon.com/join/omdb
-[demo-video-link]: https://youtu.be/NXBS0n9awSw?si=L8c6MUpSu6qVoDbj
+[demo-video-link]: https://youtu.be/0nacMtjRhk4
 [github-link]: https://github.com/ackinc/webext-movie-ratings

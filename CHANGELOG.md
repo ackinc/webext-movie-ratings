@@ -1,6 +1,6 @@
 # Changelog
 
-## v8.0.1
+## v8.1.0
 
 - Extension content script now pauses activity when tab is backgrounded
 

@@ -1,6 +1,6 @@
 # PRIVACY POLICY
 
-### What informaton does this extension collect?
+### What information does this extension collect?
 
 - As a user is browsing movies / shows on an OTT platform's website, this extension scrapes the web page to identify the movies / shows being shown to the user
 
