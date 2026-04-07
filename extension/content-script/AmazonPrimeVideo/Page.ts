@@ -127,7 +127,11 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
         'div[data-testid="grid-container"]',
       ].some((sel) => node.matches(sel))
     ) {
-      return ["article[data-card-title]"];
+      // NOTE: adding the :not clause to the selector below fixes
+      //   https://github.com/ackinc/webext-movie-ratings/issues/2
+      return [
+        'article[data-card-title]:not([class*="hoverTransitionPreconditions"])',
+      ];
     }
 
     if (
