@@ -155,7 +155,6 @@ export type WebpageStats = {
 export type ExtensionSettings = {
   errorReportingOptIn: boolean;
   programFiltersSettings: ProgramFilterSettings;
-  popupSeenAtLeastOnce: boolean;
   outdatedSelectorDetectionEnabled: boolean;
   updatedDbVersion: number;
   onboardingStatus:
