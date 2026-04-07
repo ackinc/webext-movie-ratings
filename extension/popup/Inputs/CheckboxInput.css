@@ -17,3 +17,9 @@
 .form-control.input-checkbox label:hover {
   font-weight: bold;
 }
+
+.form-control input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
