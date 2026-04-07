@@ -7,14 +7,11 @@ interface ErrorReportingOptInProps {
   allowShowDetails?: boolean;
   style?: Record<string, string>;
 }
-const defaultProps = {
-  allowShowDetails: true,
-};
 
 function ErrorReportingOptIn({
   allowShowDetails,
   style,
-}: ErrorReportingOptInProps = defaultProps) {
+}: ErrorReportingOptInProps) {
   const [showDetails, setShowDetails] = useState(false);
   const [optedInToErrorReporting, setOptedInToErrorReporting] = useState(false);
 
