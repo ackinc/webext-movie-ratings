@@ -12,6 +12,6 @@ form.site-chooser-form p.error {
   font-size: var(--secondary-font-size);
 }
 
-form.site-chooser-form .form-control label img {
+form.site-chooser-form img.loading-indicator {
   height: 14px;
 }
