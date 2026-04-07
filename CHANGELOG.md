@@ -1,5 +1,10 @@
 # Changelog
 
+## v8.1.1
+
+- Now asking permission for primevideo.com and amazon.com(/gp/video) separately
+- Fixed annoying PrimeVideo bug where Sift fades a filtered-out program while the user is hovering on its tile
+
 ## v8.1.0
 
 - Extension content script now pauses activity when tab is backgrounded
