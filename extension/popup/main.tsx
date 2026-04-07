@@ -4,7 +4,7 @@
 import { render, h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { type PopupPage } from "./common";
-import { addBadge, removeBadge, getSetting, setSetting } from "../common";
+import { removeBadge, getSetting } from "../common";
 import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
@@ -21,10 +21,8 @@ function App() {
   );
 
   useEffect(() => {
-    setSetting("popupSeenAtLeastOnce", true);
     (async () => {
       if ((await getSetting("onboardingStatus")) !== "finished") {
-        addBadge("!");
         setCurPage("onboarding");
       }
     })();

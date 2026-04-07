@@ -8,6 +8,7 @@ import {
   supportedSites,
   ErrorMessage,
   upgradeIdbAndGetConnection,
+  addBadge,
 } from "../common";
 import type {
   Program,
@@ -63,13 +64,13 @@ let omdbApiClient: OmdbApiClient;
 //////////////////////////////
 
 async function onInstalled() {
-  // firefox won't let us open the popup outside of a user-gesture
-  if (TARGET_BROWSER !== "firefox") {
-    const [popupSeen, onboardingStatus] = await Promise.all([
-      getSetting("popupSeenAtLeastOnce"),
-      getSetting("onboardingStatus"),
-    ]);
-    if (!popupSeen || onboardingStatus !== "finished") {
+  const onboardingStatus = await getSetting("onboardingStatus");
+
+  if (onboardingStatus !== "finished") {
+    addBadge("!");
+
+    // firefox won't let us open the popup outside of a user-gesture
+    if (TARGET_BROWSER !== "firefox") {
       browser.action.openPopup();
     }
   }
