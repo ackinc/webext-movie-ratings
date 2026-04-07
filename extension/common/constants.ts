@@ -82,10 +82,6 @@ export const enum ErrorMessage {
 }
 
 export const supportedSites = {
-  amazonprimevideo: {
-    displayName: "Amazon Prime Video",
-    permStrings: ["https://www.primevideo.com/*", "https://www.amazon.com/*"],
-  },
   appletv: {
     displayName: "AppleTV",
     permStrings: ["https://tv.apple.com/*"],
@@ -101,6 +97,14 @@ export const supportedSites = {
   netflix: {
     displayName: "Netflix",
     permStrings: ["https://www.netflix.com/*"],
+  },
+  primevideo: {
+    displayName: "Prime Video (primevideo.com)",
+    permStrings: ["https://www.primevideo.com/*"],
+  },
+  primevideoalt: {
+    displayName: "Prime Video (amazon.com/gp/video)",
+    permStrings: ["https://www.amazon.com/*"],
   },
   sonyliv: {
     displayName: "SonyLIV",
