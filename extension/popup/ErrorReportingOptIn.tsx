@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { getSetting, setSetting } from "../common";
 import "./ErrorReportingOptIn.css";
-import ErrorReportingOptInFormControl from "./ErrorReportingOptInFormControl";
+import CheckboxInput from "./Inputs/CheckboxInput";
 
 interface ErrorReportingOptInProps {
   allowShowDetails?: boolean;
@@ -34,10 +34,13 @@ function ErrorReportingOptIn({
           alignItems: "center",
         }}
       >
-        <ErrorReportingOptInFormControl
+        <CheckboxInput
+          name="errorReportingOptIn"
+          label="Opt-in to error reporting"
           checked={optedInToErrorReporting}
-          onToggle={toggleErrorReportingOptIn}
+          onChange={toggleErrorReportingOptIn}
         />
+
         {allowShowDetails ? (
           <button
             className="toggle-info-btn"
