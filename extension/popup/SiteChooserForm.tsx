@@ -18,6 +18,7 @@ import {
 import { SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import SiteChooserFormControl from "./SiteChooserFormControl";
+import loadingIndicator from "../../images/loading.svg";
 import "./SiteChooserForm.css";
 
 // We want to wait for the user to stop interacting with the form before
@@ -125,16 +126,26 @@ export default function SiteChooserForm() {
     <form className="site-chooser-form">
       <h4>What sites should Sift run on?</h4>
 
-      {(Object.keys(supportedSites) as Sitename[]).map((site) => (
-        <SiteChooserFormControl
-          key={site}
-          site={site}
-          checked={["enabled", "toEnable"].includes(siteStatuses[site])}
-          loading={["toEnable", "toDisable"].includes(siteStatuses[site])}
-          disabled={["toDisable"].includes(siteStatuses[site])}
-          onToggle={toggleSite}
-        />
-      ))}
+      {(Object.keys(supportedSites) as Sitename[]).map((site) => {
+        const loading = ["toEnable", "toDisable"].includes(siteStatuses[site]);
+        return (
+          <div
+            key={site}
+            style={{ display: "flex", alignItems: "center", gap: "8px" }}
+          >
+            <SiteChooserFormControl
+              site={site}
+              checked={["enabled", "toEnable"].includes(siteStatuses[site])}
+              loading={loading}
+              disabled={["toDisable"].includes(siteStatuses[site])}
+              onToggle={toggleSite}
+            />
+            {loading ? (
+              <img className="loading-indicator" src={loadingIndicator} />
+            ) : null}
+          </div>
+        );
+      })}
 
       {error ? (
         <p className="error">
