@@ -25,11 +25,11 @@ const ENV = pick(
 ) as Record<string, string>;
 const PATH_TO_EXTENSION = path.join(__DIRNAME, "../../dist");
 const SITE_TO_TESTFN_MAP = {
-  amazonprimevideo: testAmazonPrimeVideo,
   appletv: testAppleTV,
   crunchyroll: testCrunchyroll,
   hotstar: testHotstar,
   netflix: testNetflix,
+  primevideo: testPrimeVideo,
   sonyliv: testSonyLiv,
   youtubemovies: testYoutubeMovies,
 } as const;
@@ -183,8 +183,8 @@ async function setSiftErrorReporting(optIn: boolean = true) {
   await page.locator("input#optInToErrorReporting").setChecked(optIn);
 }
 
-async function testAmazonPrimeVideo() {
-  const labelPrefix = `${testAmazonPrimeVideo.name}:`;
+async function testPrimeVideo() {
+  const labelPrefix = `${testPrimeVideo.name}:`;
 
   const page = await browserContext.newPage();
   await page.goto(`https://primevideo.com`);
