@@ -8,6 +8,7 @@ import {
 } from "../common";
 import type { ProgramFilterSettings } from "../common";
 import Slider from "./Slider";
+import CheckboxInput from "./Inputs/CheckboxInput";
 
 import "./ProgramFilters.css";
 
@@ -54,20 +55,17 @@ function ProgramFilters() {
         />
       </div>
 
-      <div className="unrated-show-setting form-control">
-        <input
-          id="exclude-unrated-programs"
-          name="exclude-unrated-programs"
-          type="checkbox"
-          checked={settings.excludeUnratedPrograms}
-          onChange={(e) => {
-            updateSettings({
-              excludeUnratedPrograms: (e.target as HTMLInputElement).checked,
-            });
-          }}
-        />
-        <label for="exclude-unrated-programs">Exclude unrated shows</label>
-      </div>
+      <CheckboxInput
+        className="unrated-show-setting"
+        name="exclude-unrated-programs"
+        label="Exclude unrated shows"
+        checked={settings.excludeUnratedPrograms}
+        onChange={() =>
+          updateSettings({
+            excludeUnratedPrograms: !settings.excludeUnratedPrograms,
+          })
+        }
+      />
 
       <div className="fopn-transparency-setting filter-setting-container">
         {settings.transparency > 100 ? (

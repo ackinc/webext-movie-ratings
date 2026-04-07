@@ -1,3 +1,5 @@
+import CheckboxInput from "./Inputs/CheckboxInput";
+
 interface ErrorReportingOptInFormControlProps {
   checked: boolean;
   onToggle: () => void;
@@ -8,15 +10,11 @@ export default function ErrorReportingOptInFormControl({
   onToggle,
 }: ErrorReportingOptInFormControlProps) {
   return (
-    <div className="form-control">
-      <input
-        type="checkbox"
-        id="optInToErrorReporting"
-        name="optIn"
-        checked={checked}
-        onChange={onToggle}
-      />
-      <label for="optInToErrorReporting">Opt-in to error reporting</label>
-    </div>
+    <CheckboxInput
+      name="errorReportingOptIn"
+      label="Opt-in to error reporting"
+      checked={checked}
+      onChange={onToggle}
+    />
   );
 }
