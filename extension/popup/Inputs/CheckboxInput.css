@@ -1,0 +1,25 @@
+/* will usually have only the checkbox itself and a label as children */
+.form-control.input-checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.form-control.input-checkbox label {
+  flex-grow: 1;
+  padding: 4px 0px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-control.input-checkbox label:hover {
+  font-weight: bold;
+}
+
+.form-control input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
