@@ -1,6 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import TelemetryStore from "../common/TelemetryStore";
 import type { ErrorDetails, WebpageStats } from "../common/types";
+import RatingsApiResponseTimesChart from "./RatingsApiResponseTimes";
 
 interface DashboardProps {
   telemetryStore: TelemetryStore;
@@ -49,6 +50,7 @@ export default function Dashboard({ telemetryStore }: DashboardProps) {
 
   return (
     <div class="dashboard">
+      <RatingsApiResponseTimesChart data={stats.ratingsApiResponseTimes} />
     </div>
   );
 }
