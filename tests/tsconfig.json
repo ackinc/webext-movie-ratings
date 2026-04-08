@@ -1,11 +1,13 @@
 {
-  "include": ["**/*"],
+  "include": ["**/*", "../utils/**/*"],
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "composite": true,
+
     "types": ["node"],
     "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
     "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "noEmit": true
+    "moduleResolution": "nodenext"
   }
 }
