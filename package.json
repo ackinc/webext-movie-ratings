@@ -5,7 +5,7 @@
   "scripts": {
     "test": "tsx tests/*.test.ts",
     "browseOTTs": "./scripts/browseOTTs/main.sh",
-    "build:dev": "APP_ENV=development pnpm run build --watch",
+    "build:dev": "concurrently --names tsc,esbuild 'tsc -b --noEmit --watch' 'APP_ENV=development pnpm run build --watch'",
     "prebuild": "pnpm run clean && cp -r images dist",
     "build": "node scripts/build.ts",
     "bump-version": "node scripts/bumpVersion.ts",
@@ -34,6 +34,7 @@
     "@types/node": "^24.10.9",
     "@types/yargs": "^17.0.35",
     "chokidar": "^5.0.0",
+    "concurrently": "^9.2.1",
     "dotenv": "^16.4.5",
     "esbuild": ">=0.25.0",
     "eslint": "^10.0.0",
