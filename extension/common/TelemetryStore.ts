@@ -164,12 +164,12 @@ export default class TelemetryStore {
     ).toString();
   }
 
-  async getRecords(
+  async getRecords<T>(
     type: Event["type"],
     from?: Date,
     to?: Date,
   ): Promise<
-    { timestamp: number; value: unknown; metadata: Record<string, unknown> }[]
+    { timestamp: number; value: T; metadata: Record<string, string> }[]
   > {
     const keyPrefix = eventTypeToKeyPrefix[type];
     const keyBounds = [
@@ -185,7 +185,7 @@ export default class TelemetryStore {
       const keyParts = cursor.key.split(keyPartSeparator);
       records.push({
         timestamp: +keyParts[1]!,
-        value: cursor.value,
+        value: cursor.value as T,
         metadata: this.#getMetadataFromKey(cursor.key),
       });
       cursor = await cursor.continue();
@@ -193,7 +193,7 @@ export default class TelemetryStore {
     return records;
   }
 
-  #getMetadataFromKey(key: string): Record<string, unknown> {
+  #getMetadataFromKey(key: string): Record<string, string> {
     const keyParts = key.split(keyPartSeparator);
     const keyPrefix = keyParts[0] as KeyPrefix;
     const eventType = keyPrefixToEventType[keyPrefix];
@@ -202,11 +202,11 @@ export default class TelemetryStore {
       eventType === "PROGRAM_RATING_REQUEST_RECEIVED" ||
       eventType === "WEBPAGE_RATING_STATS_RECEIVED"
     ) {
-      return { pageUrl: keyParts[2] };
+      return { pageUrl: keyParts[2]! };
     }
 
     if (eventType === "ERROR") {
-      return { context: keyParts[2], pageUrl: keyParts[3] };
+      return { context: keyParts[2]!, pageUrl: keyParts[3]! };
     }
 
     return {};
