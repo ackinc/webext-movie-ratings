@@ -7,3 +7,4 @@ src.zip
 tmp
 !tmp/.keep
 **/*.log
+**/*.tsbuildinfo

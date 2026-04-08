@@ -1,8 +1,12 @@
 {
-  "include": ["**/*"],
+  "include": ["**/*", "../utils/**/*"],
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "composite": true,
+
     "types": ["chrome"],
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
     "module": "esnext",
     "moduleResolution": "bundler",
     "sourceMap": true,

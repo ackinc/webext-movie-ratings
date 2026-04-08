@@ -1,4 +1,11 @@
 {
+  "files": [],
+  "references": [
+    { "path": "./extension" },
+    { "path": "./scripts" },
+    { "path": "./tests" }
+  ],
+
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     "target": "esnext",
@@ -18,11 +25,17 @@
     "noPropertyAccessFromIndexSignature": true,
 
     // Recommended Options
+
+    // recommended for ts+esbuild setups
+    //   https://esbuild.github.io/content-types/#es-module-interop
+    //   https://esbuild.github.io/content-types/#isolated-modules
     "esModuleInterop": true,
+    "isolatedModules": true,
+
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "verbatimModuleSyntax": true,
-    "isolatedModules": true,
+
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true
