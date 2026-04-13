@@ -1,3 +1,5 @@
+import { addMinutes, endOfMinute } from "date-fns";
+import Chart from "react-apexcharts";
 import { percentile } from "../common";
 
 interface Props {
@@ -38,9 +40,32 @@ export default function RatingsApiResponseTimesChart({ data }: Props) {
       };
     });
 
+  const options = {
+    chart: { id: "api-response-times" },
+    xaxis: { categories: getTimestampsForLastNMinutes(30) },
+  };
+
+  const series = (["p50", "p95", "p99"] as const).map((name) => ({
+    name,
+    data: options.xaxis.categories.map(
+      (ts) => dataToRender.find((d) => d.timestamp === ts)?.[name],
+    ),
+  }));
+
   return (
     <div className="ratings-api-response-times">
-      {JSON.stringify(dataToRender)}
+      <Chart type="line" width="600" options={options} series={series} />
     </div>
   );
+}
+
+function getTimestampsForLastNMinutes(
+  n: number,
+  from = endOfMinute(new Date()),
+): number[] {
+  return new Array(n)
+    .fill(0)
+    .map((_x, idx) => addMinutes(from, -idx))
+    .reverse()
+    .map((x) => +x + 1);
 }
