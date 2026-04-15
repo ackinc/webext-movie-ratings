@@ -5,7 +5,7 @@
   "scripts": {
     "test": "tsx tests/*.test.ts",
     "browseOTTs": "./scripts/browseOTTs/main.sh",
-    "build:dev": "concurrently --names tsc,esbuild 'tsc -b --noEmit --watch' 'APP_ENV=development pnpm run build --watch'",
+    "build:dev": "concurrently --names tsc,esbuild 'tsc -b --noEmit --watch --preserveWatchOutput' 'APP_ENV=development pnpm run build --watch'",
     "prebuild": "pnpm run clean && cp -r images dist",
     "build": "node scripts/build.ts",
     "bump-version": "node scripts/bumpVersion.ts",
