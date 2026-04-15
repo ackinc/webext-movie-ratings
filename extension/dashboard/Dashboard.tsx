@@ -1,5 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import TelemetryStore from "../common/TelemetryStore";
+import type { DashboardData } from "./types";
 import type { ErrorDetails, WebpageStats } from "../common/types";
 import RatingsApiResponseTimesChart from "./RatingsApiResponseTimes";
 
@@ -7,16 +8,8 @@ interface DashboardProps {
   telemetryStore: TelemetryStore;
 }
 
-interface Stats {
-  nProgramRatingRequests: { timestamp: number; value: number }[];
-  nRatingsApiRequests: { timestamp: number; value: number }[];
-  ratingsApiResponseTimes: { timestamp: number; value: number[] }[];
-  webpageRatingStats: { timestamp: number; value: WebpageStats }[];
-  errors: { timestamp: number; value: ErrorDetails[] }[];
-}
-
 export default function Dashboard({ telemetryStore }: DashboardProps) {
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<DashboardData | null>(null);
 
   // pull data out of the telemetry store
   useEffect(() => {
