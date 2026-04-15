@@ -21,13 +21,19 @@ export default function Dashboard({ telemetryStore }: DashboardProps) {
         webpageRatingStats,
         errors,
       ] = await Promise.all([
-        telemetryStore.getRecords<number>("PROGRAM_RATING_REQUEST_RECEIVED"),
-        telemetryStore.getRecords<number>("RATINGS_API_REQUEST_MADE"),
-        telemetryStore.getRecords<number[]>("RATINGS_API_RESPONSE_RECEIVED"),
-        telemetryStore.getRecords<WebpageStats>(
-          "WEBPAGE_RATING_STATS_RECEIVED",
+        telemetryStore.getRecords<
+          number,
+          DashboardData["nProgramRatingRequests"][number]["metadata"]
+        >("PROGRAM_RATING_REQUEST_RECEIVED"),
+        telemetryStore.getRecords<number, unknown>("RATINGS_API_REQUEST_MADE"),
+        telemetryStore.getRecords<number[], unknown>(
+          "RATINGS_API_RESPONSE_RECEIVED",
         ),
-        telemetryStore.getRecords<ErrorDetails[]>("ERROR"),
+        telemetryStore.getRecords<
+          WebpageStats,
+          DashboardData["webpageRatingStats"][number]["metadata"]
+        >("WEBPAGE_RATING_STATS_RECEIVED"),
+        telemetryStore.getRecords<ErrorDetails[], unknown>("ERROR"),
       ]);
       setStats({
         nProgramRatingRequests,
