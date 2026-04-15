@@ -1,7 +1,9 @@
 import { useEffect, useState } from "preact/hooks";
+import { addHours } from "date-fns";
 import TelemetryStore from "../common/TelemetryStore";
-import type { DashboardData } from "./types";
+import type { DashboardData, TimePeriod } from "./types";
 import type { ErrorDetails, WebpageStats } from "../common/types";
+import TimePeriodControls from "./TimePeriodControls";
 import RatingsApiResponseTimesChart from "./RatingsApiResponseTimes";
 import WebPageStatsChart from "./WebPageStats";
 import RatingRequestsAndApiCallsChart from "./RatingRequestsAndApiCalls";
@@ -12,6 +14,10 @@ interface DashboardProps {
 
 export default function Dashboard({ telemetryStore }: DashboardProps) {
   const [stats, setStats] = useState<DashboardData | null>(null);
+  const [period, setPeriod] = useState<TimePeriod>({
+    from: addHours(new Date(), -1),
+    to: new Date(),
+  });
 
   // pull data out of the telemetry store
   useEffect(() => {
@@ -51,15 +57,25 @@ export default function Dashboard({ telemetryStore }: DashboardProps) {
 
   return (
     <div className="dashboard">
-      <RatingRequestsAndApiCallsChart data={stats} style={{ width: "640px" }} />
-      <RatingsApiResponseTimesChart
-        data={stats.ratingsApiResponseTimes}
-        style={{ width: "640px" }}
-      />
-      <WebPageStatsChart
-        data={stats.webpageRatingStats}
-        style={{ width: "640px" }}
-      />
+      <header>
+        <h1>Sift - dashboard</h1>
+        <TimePeriodControls period={period} setPeriod={setPeriod} />
+      </header>
+
+      <div className="charts-container">
+        <RatingRequestsAndApiCallsChart
+          data={stats}
+          style={{ width: "640px" }}
+        />
+        <RatingsApiResponseTimesChart
+          data={stats.ratingsApiResponseTimes}
+          style={{ width: "640px" }}
+        />
+        <WebPageStatsChart
+          data={stats.webpageRatingStats}
+          style={{ width: "640px" }}
+        />
+      </div>
     </div>
   );
 }

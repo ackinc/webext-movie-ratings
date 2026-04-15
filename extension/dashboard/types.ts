@@ -19,3 +19,8 @@ export interface DashboardData {
   }[];
   errors: { timestamp: number; value: ErrorDetails[] }[];
 }
+
+export interface TimePeriod {
+  from: Date;
+  to: Date;
+}

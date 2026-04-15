@@ -1,10 +1,4 @@
-import {
-  addMinutes,
-  startOfToday,
-  endOfMinute,
-  endOfToday,
-  format,
-} from "date-fns";
+import { addMinutes, endOfMinute, format } from "date-fns";
 import { useEffect, useState, useRef } from "preact/hooks";
 import ApexCharts from "apexcharts";
 import {
@@ -26,10 +20,6 @@ export default function RatingRequestsAndApiCallsChart({
   data,
   ...restProps
 }: Props) {
-  const [period, setPeriod] = useState({
-    from: startOfToday(),
-    to: endOfToday(),
-  });
   const [periodSize, setPeriodSize] = useState<TimePeriodSize>("minute");
   const periodSizeInMs =
     periodSize === "minute"

@@ -1,0 +1,15 @@
+.time-period-controls {
+  display: flex;
+  gap: 16px;
+}
+
+.time-period-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.time-period-controls input[type="datetime-local"] {
+  padding: 0px;
+}
