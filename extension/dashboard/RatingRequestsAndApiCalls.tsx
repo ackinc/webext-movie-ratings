@@ -13,16 +13,16 @@ import {
   ONE_DAY_IN_MS,
   ONE_WEEK_IN_MS,
   mergeTimeSeriesData,
-  percentile,
 } from "../common";
+import type { DashboardData } from "./types";
 
-interface Props {
-  data: { timestamp: number; value: number[] }[];
-}
+type Props = {
+  data: Pick<DashboardData, "nProgramRatingRequests" | "nRatingsApiRequests">;
+};
 
 type TimePeriodSize = "minute" | "hour" | "day" | "week";
 
-export default function RatingsApiResponseTimesChart({
+export default function RatingRequestsAndApiCallsChart({
   data,
   ...restProps
 }: Props) {
@@ -43,31 +43,36 @@ export default function RatingsApiResponseTimesChart({
   const chartContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const mergedData = mergeTimeSeriesData(data, periodSizeInMs, (a, b) =>
-      a.concat(b),
-    ).map((obs) => {
-      obs.value = obs.value.sort((a, b) => a - b);
-
-      return {
-        timestamp: obs.timestamp,
-        mean: obs.value.reduce((acc, x) => acc + x) / obs.value.length,
-        p50: percentile(obs.value, 50),
-        p95: percentile(obs.value, 95),
-        p99: percentile(obs.value, 99),
-      };
-    });
+    const nProgramRatingRequests = mergeTimeSeriesData(
+      data.nProgramRatingRequests,
+      periodSizeInMs,
+      (x, y) => x + y,
+    );
+    const nRatingsApiRequests = mergeTimeSeriesData(
+      data.nRatingsApiRequests,
+      periodSizeInMs,
+      (x, y) => x + y,
+    );
 
     const prev30Mins = getTimestampsForLastNMinutes(
       30,
-      mergedData.length > 0
-        ? new Date(mergedData.at(-1)!.timestamp)
-        : undefined,
+      nProgramRatingRequests.length > 0 && nRatingsApiRequests.length > 0
+        ? new Date(
+            Math.max(
+              nProgramRatingRequests.at(-1)!.timestamp,
+              nRatingsApiRequests.at(-1)!.timestamp,
+            ),
+          )
+        : nProgramRatingRequests.length > 0
+          ? new Date(nProgramRatingRequests.at(-1)!.timestamp)
+          : nRatingsApiRequests.length > 0
+            ? new Date(nRatingsApiRequests.at(-1)!.timestamp)
+            : undefined,
     );
-
     const options = {
-      title: { text: "Ratings API Response Times" },
+      title: { text: "# rating requests, # API calls" },
       chart: {
-        id: "ratings-api-response-times",
+        id: "rating-requests-and-api-calls",
         toolbar: { show: false },
         zoom: { enabled: false },
       },
@@ -80,29 +85,35 @@ export default function RatingsApiResponseTimesChart({
         ),
       },
       yaxis: {
-        title: { text: "ms" },
         decimalsInFloat: 0,
       },
+      series: [
+        {
+          name: "nProgramRatingRequests",
+          data: prev30Mins.map(
+            (ts) =>
+              nProgramRatingRequests.find((d) => d.timestamp === ts)?.value ??
+              0,
+          ),
+        },
+        {
+          name: "nRatingsApiRequests",
+          data: prev30Mins.map(
+            (ts) =>
+              nRatingsApiRequests.find((d) => d.timestamp === ts)?.value ?? 0,
+          ),
+        },
+      ],
     };
 
-    const series = (["p50", "p95", "p99"] as const).map((name) => ({
-      name,
-      data: options.xaxis.categories.map(
-        (ts) => mergedData.find((d) => d.timestamp === ts)?.[name] ?? 0,
-      ),
-    }));
-
-    const chart = new ApexCharts(chartContainerRef.current!, {
-      ...options,
-      series,
-    });
+    const chart = new ApexCharts(chartContainerRef.current!, options);
     chart.render();
   }, [data]);
 
   return (
     <div
       ref={chartContainerRef}
-      className="ratings-api-response-times"
+      className="rating-requests-and-api-calls"
       {...restProps}
     />
   );

@@ -3,6 +3,8 @@ import TelemetryStore from "../common/TelemetryStore";
 import type { DashboardData } from "./types";
 import type { ErrorDetails, WebpageStats } from "../common/types";
 import RatingsApiResponseTimesChart from "./RatingsApiResponseTimes";
+import WebPageStatsChart from "./WebPageStats";
+import RatingRequestsAndApiCallsChart from "./RatingRequestsAndApiCalls";
 
 interface DashboardProps {
   telemetryStore: TelemetryStore;
@@ -48,8 +50,16 @@ export default function Dashboard({ telemetryStore }: DashboardProps) {
   if (!stats) return null;
 
   return (
-    <div class="dashboard">
-      <RatingsApiResponseTimesChart data={stats.ratingsApiResponseTimes} />
+    <div className="dashboard">
+      <RatingRequestsAndApiCallsChart data={stats} style={{ width: "640px" }} />
+      <RatingsApiResponseTimesChart
+        data={stats.ratingsApiResponseTimes}
+        style={{ width: "640px" }}
+      />
+      <WebPageStatsChart
+        data={stats.webpageRatingStats}
+        style={{ width: "640px" }}
+      />
     </div>
   );
 }
