@@ -100,7 +100,7 @@ await Promise.all([copyStaticFiles(staticFiles), createManifest()]);
 
 if (!watchMode) {
   const result = await esbuild.build(config);
-  if (result.metafile) {
+  if (config.metafile) {
     fs.writeFileSync("meta.json", JSON.stringify(result.metafile));
   }
   process.exit(0);
