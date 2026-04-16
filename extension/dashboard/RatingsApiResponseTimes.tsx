@@ -1,32 +1,34 @@
+import { format } from "date-fns";
+import { useEffect, useRef } from "preact/hooks";
+import ApexCharts from "apexcharts";
 import { percentile } from "../common";
+import {
+  chooseAppropriateTimeIntervalUnit,
+  getFormatStringForTimeIntervalUnit,
+  mergeTimeSeriesData,
+  splitTimePeriod,
+} from "./common";
+import type { TimePeriod } from "./types";
 
 interface Props {
   data: { timestamp: number; value: number[] }[];
+  period: TimePeriod;
 }
 
-export default function RatingsApiResponseTimesChart({ data }: Props) {
-  const periodInMs = 60 * 1000;
+export default function RatingsApiResponseTimesChart({
+  data,
+  period,
+  ...restProps
+}: Props) {
+  const chartContainerRef = useRef<HTMLDivElement>(null);
 
-  const dataToRender = data
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .reduce(
-      (acc, { timestamp, value }) => {
-        const periodTimestamp = Math.ceil(timestamp / periodInMs) * periodInMs;
-        const last = acc.at(-1);
+  useEffect(() => {
+    const intervalSize = chooseAppropriateTimeIntervalUnit(period);
+    const timeAxis = splitTimePeriod(period, intervalSize);
 
-        if (!last) {
-          acc.push({ timestamp, value });
-        } else if (last.timestamp === periodTimestamp) {
-          last.value.push(...value);
-        } else {
-          acc.push({ timestamp: periodTimestamp, value });
-        }
-
-        return acc;
-      },
-      [] as typeof data,
-    )
-    .map((obs) => {
+    const mergedData = mergeTimeSeriesData(data, intervalSize, (a, b) =>
+      a.concat(b),
+    ).map((obs) => {
       obs.value = obs.value.sort((a, b) => a - b);
 
       return {
@@ -38,9 +40,51 @@ export default function RatingsApiResponseTimesChart({ data }: Props) {
       };
     });
 
+    const options: ApexCharts.ApexOptions = {
+      chart: {
+        id: "ratings-api-response-times",
+        toolbar: { show: false },
+        zoom: { enabled: false },
+      },
+      legend: { show: false },
+      tooltip: { x: { show: false } },
+      xaxis: {
+        tooltip: { enabled: false },
+        type: "category" as const,
+        categories: timeAxis,
+        overwriteCategories: timeAxis.map((date: Date) =>
+          format(date, getFormatStringForTimeIntervalUnit(intervalSize)),
+        ),
+      },
+      yaxis: { title: { text: "ms" }, decimalsInFloat: 0 },
+    };
+
+    const series = (["p50", "p95", "p99"] as const).map((name) => ({
+      name,
+      data: timeAxis.map(
+        (date) => mergedData.find((d) => d.timestamp === +date)?.[name] ?? 0,
+      ),
+    }));
+
+    const chart = new ApexCharts(chartContainerRef.current!, {
+      ...options,
+      series,
+    });
+    chart.render();
+
+    return () => chart.destroy();
+  }, [data, period]);
+
   return (
-    <div className="ratings-api-response-times">
-      {JSON.stringify(dataToRender)}
+    <div className="container" {...restProps}>
+      <div className="chart-header">
+        <h1>Rating requests & API calls</h1>
+      </div>
+      <div
+        ref={chartContainerRef}
+        className="ratings-api-response-times"
+        {...restProps}
+      />
     </div>
   );
 }

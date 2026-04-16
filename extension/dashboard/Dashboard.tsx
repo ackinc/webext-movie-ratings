@@ -1,22 +1,23 @@
 import { useEffect, useState } from "preact/hooks";
+import { addHours } from "date-fns";
 import TelemetryStore from "../common/TelemetryStore";
+import type { DashboardData, TimePeriod } from "./types";
 import type { ErrorDetails, WebpageStats } from "../common/types";
+import TimePeriodControls from "./TimePeriodControls";
 import RatingsApiResponseTimesChart from "./RatingsApiResponseTimes";
+import WebPageStatsChart from "./WebPageStats";
+import RatingRequestsAndApiCallsChart from "./RatingRequestsAndApiCalls";
 
 interface DashboardProps {
   telemetryStore: TelemetryStore;
 }
 
-interface Stats {
-  nProgramRatingRequests: { timestamp: number; value: number }[];
-  nRatingsApiRequests: { timestamp: number; value: number }[];
-  ratingsApiResponseTimes: { timestamp: number; value: number[] }[];
-  webpageRatingStats: { timestamp: number; value: WebpageStats }[];
-  errors: { timestamp: number; value: ErrorDetails[] }[];
-}
-
 export default function Dashboard({ telemetryStore }: DashboardProps) {
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<DashboardData | null>(null);
+  const [period, setPeriod] = useState<TimePeriod>({
+    from: addHours(new Date(), -1),
+    to: new Date(),
+  });
 
   // pull data out of the telemetry store
   useEffect(() => {
@@ -28,29 +29,59 @@ export default function Dashboard({ telemetryStore }: DashboardProps) {
         webpageRatingStats,
         errors,
       ] = await Promise.all([
-        telemetryStore.getRecords<number>("PROGRAM_RATING_REQUEST_RECEIVED"),
-        telemetryStore.getRecords<number>("RATINGS_API_REQUEST_MADE"),
-        telemetryStore.getRecords<number[]>("RATINGS_API_RESPONSE_RECEIVED"),
-        telemetryStore.getRecords<WebpageStats>(
-          "WEBPAGE_RATING_STATS_RECEIVED",
+        telemetryStore.getRecords<
+          number,
+          DashboardData["nProgramRatingRequests"][number]["metadata"]
+        >("PROGRAM_RATING_REQUEST_RECEIVED", period.from, period.to),
+        telemetryStore.getRecords<number, unknown>(
+          "RATINGS_API_REQUEST_MADE",
+          period.from,
+          period.to,
         ),
-        telemetryStore.getRecords<ErrorDetails[]>("ERROR"),
+        telemetryStore.getRecords<number[], unknown>(
+          "RATINGS_API_RESPONSE_RECEIVED",
+          period.from,
+          period.to,
+        ),
+        telemetryStore.getRecords<
+          WebpageStats,
+          DashboardData["webpageRatingStats"][number]["metadata"]
+        >("WEBPAGE_RATING_STATS_RECEIVED", period.from, period.to),
+        telemetryStore.getRecords<ErrorDetails[], unknown>(
+          "ERROR",
+          period.from,
+          period.to,
+        ),
       ]);
-      setStats({
+
+      const pulledStats = {
         nProgramRatingRequests,
         nRatingsApiRequests,
         ratingsApiResponseTimes,
         webpageRatingStats,
         errors,
-      });
+      };
+      setStats(pulledStats);
     })();
-  }, []);
+  }, [period, telemetryStore]);
 
   if (!stats) return null;
 
   return (
-    <div class="dashboard">
-      <RatingsApiResponseTimesChart data={stats.ratingsApiResponseTimes} />
+    <div className="dashboard">
+      <header>
+        <h1>Sift - dashboard</h1>
+        <TimePeriodControls period={period} setPeriod={setPeriod} />
+      </header>
+
+      <div className="charts-container">
+        <RatingRequestsAndApiCallsChart data={stats} period={period} />
+        <RatingsApiResponseTimesChart
+          data={stats.ratingsApiResponseTimes}
+          period={period}
+        />
+        <WebPageStatsChart data={stats.webpageRatingStats} />
+      </div>
     </div>
   );
 }

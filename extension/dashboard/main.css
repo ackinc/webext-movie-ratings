@@ -5,3 +5,42 @@
   box-sizing: border-box;
   font-family: Ubuntu, Arial, sans-serif;
 }
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  margin-bottom: 32px;
+  padding: 16px;
+
+  display: flex;
+  align-items: center;
+  gap: 64px;
+}
+
+.dashboard .charts-container {
+  flex-grow: 1;
+  padding: 0 16px;
+
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 32px;
+}
+
+.dashboard .charts-container .container {
+  width: 800px;
+  height: 450px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-header h1 {
+  font-size: 14px;
+}

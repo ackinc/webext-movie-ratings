@@ -164,13 +164,11 @@ export default class TelemetryStore {
     ).toString();
   }
 
-  async getRecords<T>(
+  async getRecords<T, R>(
     type: Event["type"],
     from?: Date,
     to?: Date,
-  ): Promise<
-    { timestamp: number; value: T; metadata: Record<string, string> }[]
-  > {
+  ): Promise<{ timestamp: number; value: T; metadata: R }[]> {
     const keyPrefix = eventTypeToKeyPrefix[type];
     const keyBounds = [
       from ? +from : (+new Date()).toString().replace(/\d/g, "0"),
@@ -186,27 +184,35 @@ export default class TelemetryStore {
       records.push({
         timestamp: +keyParts[1]!,
         value: cursor.value as T,
-        metadata: this.#getMetadataFromKey(cursor.key),
+        metadata: this.#getMetadata(cursor.key, cursor.value) as R,
       });
       cursor = await cursor.continue();
     }
     return records;
   }
 
-  #getMetadataFromKey(key: string): Record<string, string> {
+  #getMetadata(
+    key: string,
+    val: unknown,
+  ): Record<string, string | number | undefined> {
     const keyParts = key.split(keyPartSeparator);
     const keyPrefix = keyParts[0] as KeyPrefix;
     const eventType = keyPrefixToEventType[keyPrefix];
 
-    if (
-      eventType === "PROGRAM_RATING_REQUEST_RECEIVED" ||
-      eventType === "WEBPAGE_RATING_STATS_RECEIVED"
-    ) {
+    if (eventType === "PROGRAM_RATING_REQUEST_RECEIVED") {
       return { pageUrl: keyParts[2]! };
     }
 
+    if (eventType === "WEBPAGE_RATING_STATS_RECEIVED") {
+      return {
+        pageUrl: keyParts[2]!,
+        sessionStartTime: +keyParts[1]!,
+        statsCollectionTime: (val as { lastUpdated: number })["lastUpdated"],
+      };
+    }
+
     if (eventType === "ERROR") {
-      return { context: keyParts[2]!, pageUrl: keyParts[3]! };
+      return { context: keyParts[2]!, pageUrl: keyParts[3] };
     }
 
     return {};
