@@ -32,16 +32,26 @@ export default function Dashboard({ telemetryStore }: DashboardProps) {
         telemetryStore.getRecords<
           number,
           DashboardData["nProgramRatingRequests"][number]["metadata"]
-        >("PROGRAM_RATING_REQUEST_RECEIVED"),
-        telemetryStore.getRecords<number, unknown>("RATINGS_API_REQUEST_MADE"),
+        >("PROGRAM_RATING_REQUEST_RECEIVED", period.from, period.to),
+        telemetryStore.getRecords<number, unknown>(
+          "RATINGS_API_REQUEST_MADE",
+          period.from,
+          period.to,
+        ),
         telemetryStore.getRecords<number[], unknown>(
           "RATINGS_API_RESPONSE_RECEIVED",
+          period.from,
+          period.to,
         ),
         telemetryStore.getRecords<
           WebpageStats,
           DashboardData["webpageRatingStats"][number]["metadata"]
-        >("WEBPAGE_RATING_STATS_RECEIVED"),
-        telemetryStore.getRecords<ErrorDetails[], unknown>("ERROR"),
+        >("WEBPAGE_RATING_STATS_RECEIVED", period.from, period.to),
+        telemetryStore.getRecords<ErrorDetails[], unknown>(
+          "ERROR",
+          period.from,
+          period.to,
+        ),
       ]);
       setStats({
         nProgramRatingRequests,
@@ -51,7 +61,7 @@ export default function Dashboard({ telemetryStore }: DashboardProps) {
         errors,
       });
     })();
-  }, []);
+  }, [period]);
 
   if (!stats) return null;
 
@@ -63,18 +73,12 @@ export default function Dashboard({ telemetryStore }: DashboardProps) {
       </header>
 
       <div className="charts-container">
-        <RatingRequestsAndApiCallsChart
-          data={stats}
-          style={{ width: "640px" }}
-        />
+        <RatingRequestsAndApiCallsChart data={stats} period={period} />
         <RatingsApiResponseTimesChart
           data={stats.ratingsApiResponseTimes}
-          style={{ width: "640px" }}
+          period={period}
         />
-        <WebPageStatsChart
-          data={stats.webpageRatingStats}
-          style={{ width: "640px" }}
-        />
+        <WebPageStatsChart data={stats.webpageRatingStats} />
       </div>
     </div>
   );

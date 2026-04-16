@@ -24,3 +24,5 @@ export interface TimePeriod {
   from: Date;
   to: Date;
 }
+
+export type TimeIntervalUnit = "minute" | "hour" | "day" | "week";

@@ -1,64 +1,40 @@
-import { addMinutes, endOfMinute, format } from "date-fns";
-import { useEffect, useState, useRef } from "preact/hooks";
+import { format } from "date-fns";
+import { useEffect, useRef } from "preact/hooks";
 import ApexCharts from "apexcharts";
 import {
-  ONE_MINUTE_IN_MS,
-  ONE_HOUR_IN_MS,
-  ONE_DAY_IN_MS,
-  ONE_WEEK_IN_MS,
+  chooseAppropriateTimeIntervalUnit,
+  getFormatStringForTimeIntervalUnit,
+  splitTimePeriod,
   mergeTimeSeriesData,
-} from "../common";
-import type { DashboardData } from "./types";
+} from "./common";
+import type { DashboardData, TimePeriod } from "./types";
 
 type Props = {
   data: Pick<DashboardData, "nProgramRatingRequests" | "nRatingsApiRequests">;
+  period: TimePeriod;
 };
-
-type TimePeriodSize = "minute" | "hour" | "day" | "week";
 
 export default function RatingRequestsAndApiCallsChart({
   data,
-  ...restProps
+  period,
 }: Props) {
-  const [periodSize, setPeriodSize] = useState<TimePeriodSize>("minute");
-  const periodSizeInMs =
-    periodSize === "minute"
-      ? ONE_MINUTE_IN_MS
-      : periodSize === "hour"
-        ? ONE_HOUR_IN_MS
-        : periodSize === "day"
-          ? ONE_DAY_IN_MS
-          : ONE_WEEK_IN_MS;
-
   const chartContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const intervalSize = chooseAppropriateTimeIntervalUnit(period);
+    const timeAxis = splitTimePeriod(period, intervalSize);
+
     const nProgramRatingRequests = mergeTimeSeriesData(
       data.nProgramRatingRequests,
-      periodSizeInMs,
+      intervalSize,
       (x, y) => x + y,
     );
     const nRatingsApiRequests = mergeTimeSeriesData(
       data.nRatingsApiRequests,
-      periodSizeInMs,
+      intervalSize,
       (x, y) => x + y,
     );
 
-    const prev30Mins = getTimestampsForLastNMinutes(
-      30,
-      nProgramRatingRequests.length > 0 && nRatingsApiRequests.length > 0
-        ? new Date(
-            Math.max(
-              nProgramRatingRequests.at(-1)!.timestamp,
-              nRatingsApiRequests.at(-1)!.timestamp,
-            ),
-          )
-        : nProgramRatingRequests.length > 0
-          ? new Date(nProgramRatingRequests.at(-1)!.timestamp)
-          : nRatingsApiRequests.length > 0
-            ? new Date(nRatingsApiRequests.at(-1)!.timestamp)
-            : undefined,
-    );
     const options: ApexCharts.ApexOptions = {
       chart: {
         id: "rating-requests-and-api-calls",
@@ -70,28 +46,27 @@ export default function RatingRequestsAndApiCallsChart({
       xaxis: {
         tooltip: { enabled: false },
         type: "category" as const,
-        categories: prev30Mins,
-        overwriteCategories: prev30Mins.map((ts) =>
-          format(new Date(ts), "HH:mm"),
+        categories: timeAxis,
+        overwriteCategories: timeAxis.map((date: Date) =>
+          format(date, getFormatStringForTimeIntervalUnit(intervalSize)),
         ),
       },
-      yaxis: {
-        decimalsInFloat: 0,
-      },
+      yaxis: { decimalsInFloat: 0 },
       series: [
         {
           name: "nProgramRatingRequests",
-          data: prev30Mins.map(
-            (ts) =>
-              nProgramRatingRequests.find((d) => d.timestamp === ts)?.value ??
-              0,
+          data: timeAxis.map(
+            (date) =>
+              nProgramRatingRequests.find((d) => d.timestamp === +date)
+                ?.value ?? 0,
           ),
         },
         {
           name: "nRatingsApiRequests",
-          data: prev30Mins.map(
-            (ts) =>
-              nRatingsApiRequests.find((d) => d.timestamp === ts)?.value ?? 0,
+          data: timeAxis.map(
+            (date) =>
+              nRatingsApiRequests.find((d) => d.timestamp === +date)?.value ??
+              0,
           ),
         },
       ],
@@ -99,29 +74,16 @@ export default function RatingRequestsAndApiCallsChart({
 
     const chart = new ApexCharts(chartContainerRef.current!, options);
     chart.render();
-  }, [data]);
+
+    return () => chart.destroy();
+  }, [data, period]);
 
   return (
-    <div className="container" {...restProps}>
+    <div className="container">
       <div className="chart-header">
         <h1>Rating requests & API calls</h1>
       </div>
-      <div
-        ref={chartContainerRef}
-        className="rating-requests-and-api-calls"
-        {...restProps}
-      />
+      <div ref={chartContainerRef} className="rating-requests-and-api-calls" />
     </div>
   );
-}
-
-function getTimestampsForLastNMinutes(
-  n: number,
-  from = endOfMinute(new Date()),
-): number[] {
-  return new Array(n)
-    .fill(0)
-    .map((_x, idx) => addMinutes(from, -idx))
-    .reverse()
-    .map((x) => +x);
 }

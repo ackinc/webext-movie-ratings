@@ -179,27 +179,3 @@ export function isSorted(nums: number[]) {
   }
   return true;
 }
-
-export function mergeTimeSeriesData<T>(
-  data: { timestamp: number; value: T }[],
-  periodSizeInMs: number,
-  mergeFn: (prev: T, cur: T) => T,
-): { timestamp: number; value: T }[] {
-  return data
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .reduce(
-      (acc, { timestamp, value }) => {
-        const periodTimestamp =
-          Math.ceil(timestamp / periodSizeInMs) * periodSizeInMs;
-        const last = acc.at(-1);
-        if (last && last.timestamp === periodTimestamp) {
-          last.value = mergeFn(last.value, value);
-        } else {
-          acc.push({ timestamp: periodTimestamp, value });
-        }
-
-        return acc;
-      },
-      [] as { timestamp: number; value: T }[],
-    );
-}

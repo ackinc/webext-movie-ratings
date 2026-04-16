@@ -1,39 +1,32 @@
-import { addMinutes, endOfMinute, format } from "date-fns";
-import { useEffect, useState, useRef } from "preact/hooks";
+import { format } from "date-fns";
+import { useEffect, useRef } from "preact/hooks";
 import ApexCharts from "apexcharts";
+import { percentile } from "../common";
 import {
-  ONE_MINUTE_IN_MS,
-  ONE_HOUR_IN_MS,
-  ONE_DAY_IN_MS,
-  ONE_WEEK_IN_MS,
+  chooseAppropriateTimeIntervalUnit,
+  getFormatStringForTimeIntervalUnit,
   mergeTimeSeriesData,
-  percentile,
-} from "../common";
+  splitTimePeriod,
+} from "./common";
+import type { TimePeriod } from "./types";
 
 interface Props {
   data: { timestamp: number; value: number[] }[];
+  period: TimePeriod;
 }
-
-type TimePeriodSize = "minute" | "hour" | "day" | "week";
 
 export default function RatingsApiResponseTimesChart({
   data,
+  period,
   ...restProps
 }: Props) {
-  const [periodSize, setPeriodSize] = useState<TimePeriodSize>("minute");
-  const periodSizeInMs =
-    periodSize === "minute"
-      ? ONE_MINUTE_IN_MS
-      : periodSize === "hour"
-        ? ONE_HOUR_IN_MS
-        : periodSize === "day"
-          ? ONE_DAY_IN_MS
-          : ONE_WEEK_IN_MS;
-
   const chartContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const mergedData = mergeTimeSeriesData(data, periodSizeInMs, (a, b) =>
+    const intervalSize = chooseAppropriateTimeIntervalUnit(period);
+    const timeAxis = splitTimePeriod(period, intervalSize);
+
+    const mergedData = mergeTimeSeriesData(data, intervalSize, (a, b) =>
       a.concat(b),
     ).map((obs) => {
       obs.value = obs.value.sort((a, b) => a - b);
@@ -47,13 +40,6 @@ export default function RatingsApiResponseTimesChart({
       };
     });
 
-    const prev30Mins = getTimestampsForLastNMinutes(
-      30,
-      mergedData.length > 0
-        ? new Date(mergedData.at(-1)!.timestamp)
-        : undefined,
-    );
-
     const options: ApexCharts.ApexOptions = {
       chart: {
         id: "ratings-api-response-times",
@@ -65,21 +51,18 @@ export default function RatingsApiResponseTimesChart({
       xaxis: {
         tooltip: { enabled: false },
         type: "category" as const,
-        categories: prev30Mins,
-        overwriteCategories: prev30Mins.map((ts) =>
-          format(new Date(ts), "HH:mm"),
+        categories: timeAxis,
+        overwriteCategories: timeAxis.map((date: Date) =>
+          format(date, getFormatStringForTimeIntervalUnit(intervalSize)),
         ),
       },
-      yaxis: {
-        title: { text: "ms" },
-        decimalsInFloat: 0,
-      },
+      yaxis: { title: { text: "ms" }, decimalsInFloat: 0 },
     };
 
     const series = (["p50", "p95", "p99"] as const).map((name) => ({
       name,
-      data: options.xaxis.categories.map(
-        (ts) => mergedData.find((d) => d.timestamp === ts)?.[name] ?? 0,
+      data: timeAxis.map(
+        (date) => mergedData.find((d) => d.timestamp === +date)?.[name] ?? 0,
       ),
     }));
 
@@ -88,7 +71,9 @@ export default function RatingsApiResponseTimesChart({
       series,
     });
     chart.render();
-  }, [data]);
+
+    return () => chart.destroy();
+  }, [data, period]);
 
   return (
     <div className="container" {...restProps}>
@@ -102,15 +87,4 @@ export default function RatingsApiResponseTimesChart({
       />
     </div>
   );
-}
-
-function getTimestampsForLastNMinutes(
-  n: number,
-  from = endOfMinute(new Date()),
-): number[] {
-  return new Array(n)
-    .fill(0)
-    .map((_x, idx) => addMinutes(from, -idx))
-    .reverse()
-    .map((x) => +x);
 }
