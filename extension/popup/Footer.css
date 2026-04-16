@@ -1,0 +1,15 @@
+.footer {
+  padding: 8px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer a.rate-us-cta {
+  color: var(--main-text-color);
+}
+
+.footer a.rate-us-cta:hover {
+  color: rgb(11, 87, 208);
+}

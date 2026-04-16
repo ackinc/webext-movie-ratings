@@ -4,13 +4,11 @@
 }
 
 .feedback-collection .btn-toggle-expand {
-  position: relative;
-  top: 8px;
-  left: 8px;
   z-index: 2;
 
   background-color: transparent;
   border: 0;
+  color: var(--main-text-color);
   cursor: pointer;
   text-decoration: underline;
   white-space: nowrap;
