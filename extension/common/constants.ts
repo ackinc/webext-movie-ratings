@@ -127,3 +127,10 @@ export const permStringToSitename = Object.entries(supportedSites).reduce(
     ),
   {},
 ) as Record<PermString, Sitename>;
+
+export const webStoreLink =
+  TARGET_BROWSER === "edge"
+    ? "https://microsoftedge.microsoft.com/addons/detail/odgepppomekmdiifmjmocpjhopdmgjnl"
+    : TARGET_BROWSER === "firefox"
+      ? "https://addons.mozilla.org/en-US/firefox/addon/imdb-ratings-for-various-ott/"
+      : "https://chromewebstore.google.com/detail/sift-imdb-ratings-on-vari/pfnhkljamlclkackkndllofcfhihacna";

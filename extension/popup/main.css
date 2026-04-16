@@ -16,7 +16,7 @@
 .app {
   position: relative;
   width: 320px;
-  padding: 16px;
+  padding: 0px;
 
   color: var(--main-text-color);
   font-size: var(--secondary-font-size);
@@ -24,7 +24,7 @@
 }
 
 .app main {
-  padding: 0 8px;
+  padding: 0 24px;
 }
 
 .hidden {

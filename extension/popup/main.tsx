@@ -9,7 +9,7 @@ import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
 import SettingsPage from "./SettingsPage";
-import FeedbackCollection from "./FeedbackCollection";
+import Footer from "./Footer";
 import "./main.css";
 
 const root = document.querySelector<HTMLDivElement>("div#root")!;
@@ -51,9 +51,7 @@ function App() {
         {curPage === "settings" ? <SettingsPage /> : null}
       </main>
 
-      {curPage !== "onboarding" ? (
-        <FeedbackCollection curPage={curPage} />
-      ) : null}
+      {curPage !== "onboarding" ? <Footer curPage={curPage} /> : null}
     </div>
   );
 }
