@@ -73,6 +73,7 @@ export const enum ErrorMessage {
   potentiallyOutOfDateSelector = "Potentially out of date selector",
   ratingsCacheNotReady = "The ratings cache is not ready",
   telemetryStoreNotReady = "The telemetry store is not ready",
+  programNotFound = "The ratings API provider did not have data for this program",
   ratingsApiRequestTimedOut = "The ratings API request timed out",
   ratingsApiRequestAlreadyInFlight = "A request for this program's rating is already in-flight",
   idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",

@@ -1,6 +1,5 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
 import {
-  ONE_HOUR_IN_MS,
   ONE_WEEK_IN_MS,
   type CachedIMDBData,
   type IMDBData,
@@ -20,7 +19,7 @@ interface CacheEntry {
 }
 
 const storeName = "ratingsStore";
-const nfRatingCacheTime = ONE_HOUR_IN_MS * 6;
+const nfRatingCacheTime = ONE_WEEK_IN_MS;
 const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
 
 export default class RatingsCache {

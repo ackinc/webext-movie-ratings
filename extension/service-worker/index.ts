@@ -141,7 +141,12 @@ function handleMessage(
 
       const { pageUrl, program } = request.data;
       getIMDBData(program, pageUrl)
-        .then((data) => sendResponse({ data }))
+        .then((data) => {
+          sendResponse({ data });
+          if (data.imdbRating === "N/F") {
+            throw new Error(ErrorMessage.programNotFound);
+          }
+        })
         .catch((e) =>
           handleError(e, { context: { program, location: { href: pageUrl } } }),
         );
