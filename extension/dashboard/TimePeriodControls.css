@@ -4,10 +4,14 @@
 }
 
 .time-period-controls label {
+  border: 1px solid black;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: bold;
+
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 12px;
 }
 
 .time-period-controls input[type="datetime-local"] {

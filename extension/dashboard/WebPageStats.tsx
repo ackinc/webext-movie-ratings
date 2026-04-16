@@ -81,16 +81,8 @@ export default function WebpageStatsChart({ data, ...restProps }: Props) {
 
   return (
     <div className="container" {...restProps}>
-      <div
-        className="chart-header"
-        style={{
-          padding: "0 16px",
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-        }}
-      >
-        <h1 style={{ fontSize: "14px" }}>Explore WebPageStats:</h1>
+      <div className="chart-header">
+        <h1>WebPageStats:</h1>
         <select
           name="webpagestats-metric"
           value={metric}

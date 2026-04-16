@@ -59,15 +59,16 @@ export default function RatingRequestsAndApiCallsChart({
             ? new Date(nRatingsApiRequests.at(-1)!.timestamp)
             : undefined,
     );
-    const options = {
-      title: { text: "# rating requests, # API calls" },
+    const options: ApexCharts.ApexOptions = {
       chart: {
         id: "rating-requests-and-api-calls",
         toolbar: { show: false },
         zoom: { enabled: false },
       },
       legend: { show: false },
+      tooltip: { x: { show: false } },
       xaxis: {
+        tooltip: { enabled: false },
         type: "category" as const,
         categories: prev30Mins,
         overwriteCategories: prev30Mins.map((ts) =>
@@ -101,11 +102,16 @@ export default function RatingRequestsAndApiCallsChart({
   }, [data]);
 
   return (
-    <div
-      ref={chartContainerRef}
-      className="rating-requests-and-api-calls"
-      {...restProps}
-    />
+    <div className="container" {...restProps}>
+      <div className="chart-header">
+        <h1>Rating requests & API calls</h1>
+      </div>
+      <div
+        ref={chartContainerRef}
+        className="rating-requests-and-api-calls"
+        {...restProps}
+      />
+    </div>
   );
 }
 

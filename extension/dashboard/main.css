@@ -7,10 +7,6 @@
 }
 
 .dashboard {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-
   display: flex;
   flex-direction: column;
 }
@@ -24,26 +20,21 @@ header {
   gap: 64px;
 }
 
-header .period-controls {
-  display: flex;
-  gap: 32px;
-}
-
-header label {
-  border: 1px solid black;
-  padding: 4px 8px;
-  font-size: 16px;
-  font-weight: bold;
-
-  display: flex;
-  gap: 16px;
-}
-
 .dashboard .charts-container {
   flex-grow: 1;
+  padding: 0 16px;
 
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  gap: 16px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-header h1 {
+  font-size: 14px;
 }

@@ -54,15 +54,16 @@ export default function RatingsApiResponseTimesChart({
         : undefined,
     );
 
-    const options = {
-      title: { text: "Ratings API Response Times" },
+    const options: ApexCharts.ApexOptions = {
       chart: {
         id: "ratings-api-response-times",
         toolbar: { show: false },
         zoom: { enabled: false },
       },
       legend: { show: false },
+      tooltip: { x: { show: false } },
       xaxis: {
+        tooltip: { enabled: false },
         type: "category" as const,
         categories: prev30Mins,
         overwriteCategories: prev30Mins.map((ts) =>
@@ -90,11 +91,16 @@ export default function RatingsApiResponseTimesChart({
   }, [data]);
 
   return (
-    <div
-      ref={chartContainerRef}
-      className="ratings-api-response-times"
-      {...restProps}
-    />
+    <div className="container" {...restProps}>
+      <div className="chart-header">
+        <h1>Rating requests & API calls</h1>
+      </div>
+      <div
+        ref={chartContainerRef}
+        className="ratings-api-response-times"
+        {...restProps}
+      />
+    </div>
   );
 }
 
