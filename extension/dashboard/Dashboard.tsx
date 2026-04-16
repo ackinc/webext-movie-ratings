@@ -53,15 +53,17 @@ export default function Dashboard({ telemetryStore }: DashboardProps) {
           period.to,
         ),
       ]);
-      setStats({
+
+      const pulledStats = {
         nProgramRatingRequests,
         nRatingsApiRequests,
         ratingsApiResponseTimes,
         webpageRatingStats,
         errors,
-      });
+      };
+      setStats(pulledStats);
     })();
-  }, [period]);
+  }, [period, telemetryStore]);
 
   if (!stats) return null;
 

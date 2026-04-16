@@ -67,7 +67,7 @@ export function splitTimePeriod(
   let cur = from;
   const labels: Date[] = [];
   while (cur <= to) {
-    labels.push(endFn(cur));
+    labels.push(new Date(+endFn(cur) + 1));
     cur = addFn(cur, 1);
   }
 
@@ -87,20 +87,23 @@ export function getTimestampsForLastNMinutes(
 
 export function mergeTimeSeriesData<T>(
   data: { timestamp: number; value: T }[],
-  periodSize: TimeIntervalUnit | number,
+  periodSize: TimeIntervalUnit,
   mergeFn: (prev: T, cur: T) => T,
 ): { timestamp: number; value: T }[] {
-  const periodSizeInMs =
-    typeof periodSize === "number"
-      ? periodSize
-      : getMsInTimeIntervalUnit(periodSize);
-
   return data
     .sort((a, b) => a.timestamp - b.timestamp)
     .reduce(
       (acc, { timestamp, value }) => {
         const periodTimestamp =
-          Math.ceil(timestamp / periodSizeInMs) * periodSizeInMs;
+          +(
+            periodSize === "minute"
+              ? endOfMinute
+              : periodSize === "hour"
+                ? endOfHour
+                : periodSize === "day"
+                  ? endOfDay
+                  : endOfWeek
+          )(new Date(timestamp)) + 1;
         const last = acc.at(-1);
         if (last && last.timestamp === periodTimestamp) {
           last.value = mergeFn(last.value, value);
