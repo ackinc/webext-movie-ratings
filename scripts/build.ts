@@ -74,6 +74,7 @@ const config: esbuild.BuildOptions = {
     ".svg": "dataurl",
   },
   logLevel: "info",
+  // metafile: true, // for debugging
   outdir: destDir,
   target: "es2020",
   sourcemap: uploadSrcMapsToSentry ? "linked" : "inline",
@@ -98,7 +99,10 @@ const config: esbuild.BuildOptions = {
 await Promise.all([copyStaticFiles(staticFiles), createManifest()]);
 
 if (!watchMode) {
-  await esbuild.build(config);
+  const result = await esbuild.build(config);
+  if (result.metafile) {
+    fs.writeFileSync("meta.json", JSON.stringify(result.metafile));
+  }
   process.exit(0);
 }
 

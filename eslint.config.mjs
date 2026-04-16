@@ -2,6 +2,8 @@ import globals from "globals";
 import { defineConfig } from "eslint/config";
 import pluginJs from "@eslint/js";
 import pluginTs from "typescript-eslint";
+import pluginReact from "eslint-plugin-react";
+import pluginReactHooks from "eslint-plugin-react-hooks";
 
 export default defineConfig([
   { ignores: ["dist/*"] },
@@ -14,6 +16,32 @@ export default defineConfig([
         ...globals.webextensions,
         APP_ENV: "readonly",
         OMDB_API_KEY: "readonly",
+      },
+    },
+  },
+  {
+    basePath: "extension/dashboard",
+    files: ["**/*.@(j|t)s?(x)"],
+    ...pluginReact.configs.flat.recommended,
+    ...pluginReactHooks.configs.flat.recommended,
+    languageOptions: {
+      ...pluginReact.configs.flat.recommended.languageOptions,
+      ...pluginReactHooks.configs.flat.recommended.languageOptions,
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
+  {
+    basePath: "extension/popup",
+    files: ["**/*.@(j|t)s?(x)"],
+    ...pluginReact.configs.flat.recommended,
+    ...pluginReactHooks.configs.flat.recommended,
+    languageOptions: {
+      ...pluginReact.configs.flat.recommended.languageOptions,
+      ...pluginReactHooks.configs.flat.recommended.languageOptions,
+      globals: {
+        ...globals.browser,
       },
     },
   },
