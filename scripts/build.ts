@@ -74,7 +74,7 @@ const config: esbuild.BuildOptions = {
     ".svg": "dataurl",
   },
   logLevel: "info",
-  // metafile: true, // for debugging
+  metafile: false, // for debugging
   outdir: destDir,
   target: "es2020",
   sourcemap: uploadSrcMapsToSentry ? "linked" : "inline",
