@@ -83,8 +83,8 @@ importers:
         specifier: ^3.7.4
         version: 3.7.4
       rate-limit-utils:
-        specifier: github:ackinc/rate-limit-utils
-        version: https://codeload.github.com/ackinc/rate-limit-utils/tar.gz/a04800142488f350f6457bbde88415821785f4f6
+        specifier: ^1.0.0
+        version: 1.0.0
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -2522,21 +2522,11 @@ packages:
       }
     engines: { node: ">=6" }
 
-  rate-limit-utils@https://codeload.github.com/ackinc/rate-limit-utils/tar.gz/a04800142488f350f6457bbde88415821785f4f6:
+  rate-limit-utils@1.0.0:
     resolution:
       {
-        tarball: https://codeload.github.com/ackinc/rate-limit-utils/tar.gz/a04800142488f350f6457bbde88415821785f4f6,
+        integrity: sha512-Q/yJUa57bUnTlCLinVL9rq56jY4rf1RuJwgX4XkThDvcqeJA9b0UvEx/IRXuEwHOCuq42GMghKMGRIHfA7SxvA==,
       }
-    version: 1.0.0
-
-  react-apexcharts@2.1.0:
-    resolution:
-      {
-        integrity: sha512-xrmeTKRKHh3cvvLc8SasqFjlOgIqGpyHc81qjnRtcjUM0Fu7qEjgVRWGPokGFjqhwRZVgEym8zmuEyYr5LMYIg==,
-      }
-    peerDependencies:
-      apexcharts: ">=5.10.1"
-      react: ">=16.8.0"
 
   react-is@16.13.1:
     resolution:
@@ -4692,14 +4682,7 @@ snapshots:
 
   punycode@2.3.1: {}
 
-  rate-limit-utils@https://codeload.github.com/ackinc/rate-limit-utils/tar.gz/a04800142488f350f6457bbde88415821785f4f6:
-    {}
-
-  react-apexcharts@2.1.0(apexcharts@5.10.5)(react@19.2.3):
-    dependencies:
-      apexcharts: 5.10.5
-      prop-types: 15.8.1
-      react: 19.2.3
+  rate-limit-utils@1.0.0: {}
 
   react-is@16.13.1: {}
 
