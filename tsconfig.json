@@ -3,7 +3,8 @@
   "references": [
     { "path": "./extension" },
     { "path": "./scripts" },
-    { "path": "./tests" }
+    { "path": "./tests" },
+    { "path": "./api-server" }
   ],
 
   // Visit https://aka.ms/tsconfig to read more about this file

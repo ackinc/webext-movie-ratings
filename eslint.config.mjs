@@ -53,6 +53,13 @@ export default defineConfig([
     },
   },
   {
+    basePath: "api-server",
+    files: ["**/*.ts"],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
+  {
     basePath: "tests",
     files: ["**/*.ts"],
     languageOptions: {
