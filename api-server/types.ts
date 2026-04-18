@@ -1,8 +1,15 @@
 import { type Static } from "typebox";
-import { MatchStatus } from "./constants.ts";
-import { programSchema, programMatchResponseSchema } from "./schemas.ts";
+import {
+  programSchema,
+  programTypeSchema,
+  programMatchResponseSchema,
+  matchStatusSchema,
+} from "./schemas.ts";
 
+export type ProgramType = Static<typeof programTypeSchema>;
 export type Program = Static<typeof programSchema>;
+
+export type MatchStatus = Static<typeof matchStatusSchema>;
 export type ProgramMatchResponse = Static<typeof programMatchResponseSchema>;
 
 export interface ProgramMatchRecord {

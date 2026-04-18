@@ -1,14 +1,15 @@
 import { Type } from "typebox";
-import { MatchStatus, ProgramType } from "./constants.ts";
 
+export const programTypeSchema = Type.Enum(["movie", "series"]);
 export const programSchema = Type.Object({
   title: Type.String(),
-  type: Type.Optional(Type.Enum(Object.values(ProgramType))),
+  type: Type.Optional(programTypeSchema),
   year: Type.Optional(Type.Number()),
   website: Type.String(),
 });
 
+export const matchStatusSchema = Type.Enum(["pending", "matched", "abandoned"]);
 export const programMatchResponseSchema = Type.Object({
-  status: Type.Enum(Object.values(MatchStatus)),
+  status: matchStatusSchema,
   imdbId: Type.Optional(Type.String()),
 });

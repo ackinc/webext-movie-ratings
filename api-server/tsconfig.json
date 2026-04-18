@@ -8,6 +8,8 @@
     "allowImportingTsExtensions": true,
     "emitDeclarationOnly": true,
     "module": "nodenext",
-    "moduleResolution": "nodenext"
+    "moduleResolution": "nodenext",
+
+    "erasableSyntaxOnly": true
   }
 }

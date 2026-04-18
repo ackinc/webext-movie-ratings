@@ -2,7 +2,7 @@ import "dotenv/config";
 import { differenceInDays, parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
 import { type Database } from "better-sqlite3";
-import { abandonedMatchStatusExpiryInDays, MatchStatus } from "./constants.ts";
+import { abandonedMatchStatusExpiryInDays } from "./constants.ts";
 import { programSchema, programMatchResponseSchema } from "./schemas.ts";
 import type {
   Program,
@@ -45,7 +45,7 @@ export function createServer(db: Database) {
           `INSERT INTO titles ("title", "type", "year", "source")
            VALUES (?, ?, ?, ?)`,
         ).run(program.title, program.type, program.year, program.website);
-        reply.code(200).send({ status: MatchStatus.pending });
+        reply.code(200).send({ status: "pending" });
         return;
       }
 
@@ -54,32 +54,30 @@ export function createServer(db: Database) {
       row.createdAt = row.createdAt.replace(" ", "T") + "Z";
       row.updatedAt = row.updatedAt.replace(" ", "T") + "Z";
 
-      if (row.status === MatchStatus.pending) {
-        reply.code(200).send({ status: MatchStatus.pending });
+      if (row.status === "pending") {
+        reply.code(200).send({ status: "pending" });
         return;
       }
 
-      if (row.status === MatchStatus.matched) {
-        reply
-          .code(200)
-          .send({ status: MatchStatus.matched, imdbId: row.imdbId! });
+      if (row.status === "matched") {
+        reply.code(200).send({ status: "matched", imdbId: row.imdbId! });
         return;
       }
 
       if (
-        row.status === MatchStatus.abandoned &&
+        row.status === "abandoned" &&
         differenceInDays(new Date(), parseISO(row.updatedAt)) >
           abandonedMatchStatusExpiryInDays
       ) {
         db.prepare(`UPDATE titles SET status = ? WHERE id = ?`).run(
-          MatchStatus.pending,
+          "pending",
           row.id,
         );
-        reply.code(200).send({ status: MatchStatus.pending });
+        reply.code(200).send({ status: "pending" });
         return;
       }
 
-      reply.code(200).send({ status: MatchStatus.abandoned });
+      reply.code(200).send({ status: "abandoned" });
     },
   );
 
