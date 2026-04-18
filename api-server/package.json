@@ -18,6 +18,8 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.4.2",
     "fastify": "^5.8.5",
+    "node-cron": "^4.2.1",
+    "pino": "^10.3.1",
     "typebox": "^1.1.27"
   },
   "devDependencies": {
