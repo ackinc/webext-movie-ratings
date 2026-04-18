@@ -2,95 +2,86 @@ import "dotenv/config";
 import { differenceInDays, parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
 import Database from "better-sqlite3";
-import { Type, type Static } from "typebox";
+import { abandonedMatchStatusExpiryInDays, MatchStatus } from "./constants.ts";
+import { programSchema, programMatchResponseSchema } from "./schemas.ts";
+import type {
+  Program,
+  ProgramMatchRecord,
+  ProgramMatchResponse,
+} from "./types.ts";
 
 const db = new Database(process.env["DB_PATH"], { fileMustExist: true });
 db.pragma("journal_mode = WAL");
 
 const fastify = Fastify({ logger: true });
 
-const DAYS_AFTER_WHICH_TO_RETRY_MATCHING_ABANDONED_TITLES = 30;
-
+// health check
 fastify.get("/", function (_request, reply) {
-  reply.send({ hello: "world" });
+  reply.send({ status: "ok" });
 });
 
-const titleSchema = Type.Object({
-  title: Type.String(),
-  website: Type.String(),
-});
-type TitleType = Static<typeof titleSchema>;
-interface TitleFromDb {
-  id: number;
-  titleFromSource: string;
-  source: string;
-  status: "pending" | "matched" | "abandoned";
-  matchedImdbId: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-const matchResponseSchema = Type.Object({
-  status: Type.Enum(["pending", "matched", "abandoned"]),
-  imdbId: Type.Optional(Type.String()),
-});
-type MatchResponseType = Static<typeof matchResponseSchema>;
-fastify.get<{ Querystring: TitleType; Reply: { 200: MatchResponseType } }>(
+fastify.get<{ Querystring: Program; Reply: { 200: ProgramMatchResponse } }>(
   "/imdbId",
   {
     schema: {
-      querystring: titleSchema,
+      querystring: programSchema,
       response: {
-        200: matchResponseSchema,
+        200: programMatchResponseSchema,
       },
     },
   } satisfies RouteShorthandOptions,
   function (request, reply) {
-    const { title: titleFromSource, website } = request.query;
+    const program = request.query;
     const row = db
       .prepare(
-        'SELECT * FROM titles WHERE "titleFromSource" = ? AND source = ?',
+        `SELECT * FROM titles
+         WHERE title = $title
+           ${"type" in program ? " AND type = $type " : ""}
+           ${"year" in program ? " AND year = $year " : ""}
+           AND source = $website`,
       )
-      .get(titleFromSource, website) as TitleFromDb | undefined;
+      .get(request.query) as ProgramMatchRecord | undefined;
 
     if (!row) {
       db.prepare(
-        'INSERT INTO titles ("titleFromSource", "source") VALUES (?, ?)',
-      ).run(titleFromSource, website);
-      reply.code(200).send({ status: "pending" });
+        `INSERT INTO titles ("title", "type", "year", "source")
+         VALUES (?, ?, ?, ?)`,
+      ).run(program.title, program.type, program.year, program.website);
+      reply.code(200).send({ status: MatchStatus.pending });
       return;
     }
 
     // makes future parseISO calls treat the string as representing
     //   a UTC date, instead of a date in the current system timezone
-    row["createdAt"] = row["createdAt"].replace(" ", "T") + "Z";
-    row["updatedAt"] = row["updatedAt"].replace(" ", "T") + "Z";
+    row.createdAt = row.createdAt.replace(" ", "T") + "Z";
+    row.updatedAt = row.updatedAt.replace(" ", "T") + "Z";
 
-    if (row["status"] === "pending") {
-      reply.code(200).send({ status: "pending" });
+    if (row.status === MatchStatus.pending) {
+      reply.code(200).send({ status: MatchStatus.pending });
       return;
     }
 
-    if (row["status"] === "matched") {
+    if (row.status === MatchStatus.matched) {
       reply
         .code(200)
-        .send({ status: "matched", imdbId: row["matchedImdbId"]! });
+        .send({ status: MatchStatus.matched, imdbId: row.imdbId! });
       return;
     }
 
     if (
-      row["status"] === "abandoned" &&
-      differenceInDays(new Date(), parseISO(row["updatedAt"])) >
-        DAYS_AFTER_WHICH_TO_RETRY_MATCHING_ABANDONED_TITLES
+      row.status === MatchStatus.abandoned &&
+      differenceInDays(new Date(), parseISO(row.updatedAt)) >
+        abandonedMatchStatusExpiryInDays
     ) {
-      db.prepare("UPDATE titles SET status = ? WHERE id = ?").run(
-        "pending",
-        row["id"],
+      db.prepare(`UPDATE titles SET status = ? WHERE id = ?`).run(
+        MatchStatus.pending,
+        row.id,
       );
-      reply.code(200).send({ status: "pending" });
+      reply.code(200).send({ status: MatchStatus.pending });
       return;
     }
 
-    reply.code(200).send({ status: "abandoned" });
+    reply.code(200).send({ status: MatchStatus.abandoned });
   },
 );
 
