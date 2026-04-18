@@ -19,6 +19,8 @@ export async function refreshImdbDataIfStale(imdbDataDir: string) {
 
   logger.info(`refreshImdbDataIfStale: found missing/stale data.`);
 
+  const startTime = new Date();
+
   await Promise.all(
     dataFileUrls.map((url) =>
       downloadFile(
@@ -34,7 +36,9 @@ export async function refreshImdbDataIfStale(imdbDataDir: string) {
     metaFilePath,
     JSON.stringify({ lastUpdatedAt: new Date().toISOString() }),
   );
-  logger.info(`refreshImdbDataIfStale: refreshed IMDB data.`);
+
+  const durationMs = +new Date() - +startTime;
+  logger.info(`refreshImdbDataIfStale: refreshed data (${durationMs}ms)`);
 
   return true;
 }
