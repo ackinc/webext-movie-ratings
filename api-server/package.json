@@ -2,11 +2,11 @@
   "name": "sift-api-server",
   "version": "1.0.0",
   "description": "",
-  "main": "server.ts",
+  "main": "main.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.ts",
-    "dev": "tsx watch server.ts"
+    "start": "node main.ts",
+    "dev": "tsx watch main.ts"
   },
   "keywords": [],
   "author": "",
