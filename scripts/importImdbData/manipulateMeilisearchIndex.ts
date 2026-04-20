@@ -1,8 +1,34 @@
 import "dotenv/config";
 import { Meilisearch } from "meilisearch";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 
 const { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = process.env;
-const argv = process.argv.slice(2);
+
+const argv = yargs(hideBin(process.argv))
+  .option("info", {
+    boolean: true,
+    default: false,
+  })
+  .option("stats", {
+    boolean: true,
+    default: false,
+  })
+  .option("list", {
+    number: true,
+  })
+  .option("search", {
+    string: true,
+  })
+  .option("clear", {
+    boolean: true,
+    default: false,
+  })
+  .option("delete", {
+    boolean: true,
+    default: false,
+  })
+  .parseSync();
 
 const client = new Meilisearch({
   host: MEILISEARCH_URL!,
@@ -10,31 +36,14 @@ const client = new Meilisearch({
 });
 const index = client.index<Document>("imdb");
 
-if (argv.length === 0 || argv.includes("--stats") || argv.includes("--info")) {
+if (argv.info || argv.stats) {
   console.log(await index.getRawInfo(), await index.getStats());
-  process.exit(0);
-}
-
-if (argv.some((x) => x.startsWith("--list"))) {
-  const limit = +argv.find((arg) => arg.startsWith("--list"))!.split("=")[1]!;
-  console.log(await index.getDocuments({ limit }));
-  process.exit(0);
-}
-
-if (argv.some((arg) => arg.startsWith("--search"))) {
-  const searchTerm = argv
-    .find((arg) => arg.startsWith("--search"))!
-    .split("=")[1];
-  console.log(await index.search(searchTerm));
-  process.exit(0);
-}
-
-if (argv.includes("--clear")) {
+} else if (argv.list) {
+  console.log(await index.getDocuments({ limit: argv.list }));
+} else if (argv.search) {
+  console.log(await index.search(argv.search));
+} else if (argv.clear) {
   await index.deleteAllDocuments();
-  process.exit(0);
-}
-
-if (argv.includes("--delete")) {
+} else if (argv.delete) {
   await index.delete();
-  process.exit(0);
 }
