@@ -14,11 +14,17 @@ const insertIntoImdbTitlesPreparedStmt = db.prepare(`
   VALUES (@id, @title, @type, @year)
   ON CONFLICT (id) DO NOTHING
 `);
+const insertIntoImdbTitlesTxn = db.transaction((records) => {
+  for (const x of records) insertIntoImdbTitlesPreparedStmt.run(x);
+});
 const insertIntoImdbTitleAliasesPreparedStmt = db.prepare(`
   INSERT INTO "imdbTitleAliases" ("imdbId", "titleAlias", region, language)
   VALUES (@imdbId, @titleAlias, @region, @language)
   ON CONFLICT DO NOTHING
 `);
+const insertIntoImdbTitleAliasesTxn = db.transaction((records) => {
+  for (const x of records) insertIntoImdbTitleAliasesPreparedStmt.run(x);
+});
 
 const imdbIds = new Set<string>();
 await processFile(
@@ -27,18 +33,13 @@ await processFile(
     const imdbTitles = batch.map(([, line]) =>
       getImdbTitleFromBasicsFileLine(line),
     );
-    db.transaction(() => {
-      for (const x of imdbTitles) insertIntoImdbTitlesPreparedStmt.run(x);
-    });
+    insertIntoImdbTitlesTxn(imdbTitles);
     imdbTitles.forEach(({ id }) => imdbIds.add(id));
 
     const imdbTitleAliases = batch.map(([, line]) =>
       getImdbTitleAliasFromBasicsFileLine(line),
     );
-    db.transaction(() => {
-      for (const x of imdbTitleAliases)
-        insertIntoImdbTitleAliasesPreparedStmt.run(x);
-    });
+    insertIntoImdbTitleAliasesTxn(imdbTitleAliases);
   },
   isMovieOrSeries,
   { batchSize: BATCH_SIZE },
@@ -49,11 +50,7 @@ await processFile(
     const imdbTitleAliases = batch.map(([, line]) =>
       getImdbTitleAliasFromAkasFileLine(line),
     );
-    db.transaction(() => {
-      for (const x of imdbTitleAliases) {
-        insertIntoImdbTitleAliasesPreparedStmt.run(x);
-      }
-    });
+    insertIntoImdbTitleAliasesTxn(imdbTitleAliases);
   },
   (line: string) => imdbIds.has(line.split("\t")[0]!),
   { batchSize: BATCH_SIZE },
