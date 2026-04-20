@@ -10,15 +10,21 @@ const client = new Meilisearch({
 });
 const index = client.index<Document>("imdb");
 
-if (argv.length === 0 || argv.includes("--stats")) {
-  console.log(await index.getStats());
+if (argv.length === 0 || argv.includes("--stats") || argv.includes("--info")) {
+  console.log(await index.getRawInfo(), await index.getStats());
+  process.exit(0);
+}
+
+if (argv.some((x) => x.startsWith("--list"))) {
+  const limit = +argv.find((arg) => arg.startsWith("--list"))!.split("=")[1]!;
+  console.log(await index.getDocuments({ limit }));
   process.exit(0);
 }
 
 if (argv.some((arg) => arg.startsWith("--search"))) {
   const searchTerm = argv
-    .find((arg) => arg.startsWith("--search"))
-    ?.split("=")[1];
+    .find((arg) => arg.startsWith("--search"))!
+    .split("=")[1];
   console.log(await index.search(searchTerm));
   process.exit(0);
 }
