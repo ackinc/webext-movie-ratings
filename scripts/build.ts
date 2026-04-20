@@ -43,7 +43,7 @@ const staticFiles = [
 const manifestFiles = [
   `manifest.json`,
   `misc/${TARGET_BROWSER}/manifest.json`,
-].map((f) => path.join(rootDir, f));
+].map((f) => path.join(srcDir, f));
 const config: esbuild.BuildOptions = {
   entryPoints: [
     { in: path.join(srcDir, "content-script/index.ts"), out: "content-script" },
