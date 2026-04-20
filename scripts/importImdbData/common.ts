@@ -12,10 +12,12 @@ export async function processFile(
     batchSize = 1,
     logProgressEveryNLines = 1000,
     maxLinesToProcess = Infinity,
+    haltFn = () => false,
   }: {
     batchSize?: number;
     logProgressEveryNLines?: number;
     maxLinesToProcess?: number;
+    haltFn?: (line: string, lineNum: number) => boolean;
   } = {},
 ) {
   const rl = readline.createInterface({
@@ -33,6 +35,7 @@ export async function processFile(
     }
 
     if (++lineNum >= maxLinesToProcess) break;
+    if (haltFn && haltFn(line, lineNum)) break;
 
     if (!filterFn || filterFn(line, lineNum)) {
       batch.push([lineNum, line]);
