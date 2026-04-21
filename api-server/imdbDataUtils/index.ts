@@ -28,7 +28,7 @@ export async function refreshImdbData(imdbDataDir: string) {
 
   // import into search engine
   return new Promise<void>((resolve, reject) => {
-    const importScriptName = "importIntoMeilisearch.ts";
+    const importScriptName = "addToMeilisearch.ts";
     const importScriptPath = path.normalize(
       path.join(__dirname, importScriptName),
     );
