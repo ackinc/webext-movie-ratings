@@ -17,27 +17,13 @@ const index = await prepareIndex(client);
 const canonDocumentsByImdbId = new Map<string, Document>();
 await processFile(
   path.join(IMDB_DATA_DIR!, "title.basics.tsv"),
-  async (batch: Batch) => {
-    const documents = batch.flatMap(([, line]) =>
-      getDocumentsFromBasicsFileLine(line),
-    );
-    await index.addDocuments(documents);
-    documents.forEach((doc, idx) => {
-      // first doc returned by getDocumentsFromBasicsFileLine is canon
-      if (idx % 2 === 0) canonDocumentsByImdbId.set(doc.imdbId, doc);
-    });
-  },
+  processBatchFromBasicsFile,
   isMovieOrSeries,
   { batchSize: BATCH_SIZE },
 );
 await processFile(
   path.join(IMDB_DATA_DIR!, "title.akas.tsv"),
-  async (batch: Batch) => {
-    const documents = batch.flatMap(([, line]) =>
-      getDocumentsFromAkasFileLine(line),
-    );
-    await index.addDocuments(documents);
-  },
+  processBatchFromAkasFile,
   (line: string) => canonDocumentsByImdbId.has(line.split("\t")[0]!),
   { batchSize: BATCH_SIZE },
 );
@@ -105,4 +91,22 @@ function makeDocument(partialDoc: Omit<Document, "id">): Document {
       .toString("base64")
       .replace(/[+/=]/g, "_"),
   };
+}
+
+async function processBatchFromBasicsFile(batch: Batch) {
+  const documents = batch.flatMap(([, line]) =>
+    getDocumentsFromBasicsFileLine(line),
+  );
+  await index.addDocuments(documents);
+  documents.forEach((doc, idx) => {
+    // first doc returned by getDocumentsFromBasicsFileLine is canon
+    if (idx % 2 === 0) canonDocumentsByImdbId.set(doc.imdbId, doc);
+  });
+}
+
+async function processBatchFromAkasFile(batch: Batch) {
+  const documents = batch.flatMap(([, line]) =>
+    getDocumentsFromAkasFileLine(line),
+  );
+  await index.addDocuments(documents);
 }
