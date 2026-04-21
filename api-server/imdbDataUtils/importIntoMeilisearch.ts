@@ -1,0 +1,1 @@
+../../scripts/importImdbData/intoMeilisearch.ts
