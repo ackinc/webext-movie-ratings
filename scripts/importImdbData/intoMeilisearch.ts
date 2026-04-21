@@ -1,12 +1,22 @@
+#!/usr/bin/env node
+
 import "dotenv/config";
 import * as path from "node:path";
 import { Meilisearch, type Index, type IndexObject } from "meilisearch";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 import { type Batch, processFile, isMovieOrSeries } from "./common.ts";
 
 const { IMDB_DATA_DIR, MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = process.env;
 
-// https://www.meilisearch.com/docs/capabilities/indexing/how_to/import_large_datasets#choose-the-right-payload-size
-const BATCH_SIZE = 100000;
+const argv = yargs(hideBin(process.argv))
+  .option("batchSize", {
+    number: true,
+    // https://www.meilisearch.com/docs/capabilities/indexing/how_to/import_large_datasets#choose-the-right-payload-size
+    default: 100000,
+  })
+  .parseSync();
+const { batchSize } = argv;
 
 const client = new Meilisearch({
   host: MEILISEARCH_URL!,
@@ -19,13 +29,13 @@ await processFile(
   path.join(IMDB_DATA_DIR!, "title.basics.tsv"),
   processBatchFromBasicsFile,
   isMovieOrSeries,
-  { batchSize: BATCH_SIZE },
+  { batchSize: batchSize, logProgressEveryNLines: batchSize },
 );
 await processFile(
   path.join(IMDB_DATA_DIR!, "title.akas.tsv"),
   processBatchFromAkasFile,
   (line: string) => canonDocumentsByImdbId.has(line.split("\t")[0]!),
-  { batchSize: BATCH_SIZE },
+  { batchSize: batchSize, logProgressEveryNLines: batchSize },
 );
 
 // helpers
