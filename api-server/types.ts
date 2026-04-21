@@ -15,7 +15,7 @@ export type ProgramMatchResponse = Static<typeof programMatchResponseSchema>;
 export interface ProgramMatchRecord {
   id: number;
   title: string;
-  type: MatchStatus | null;
+  type: ProgramType | null;
   year: number | null;
   source: string;
   status: MatchStatus;
