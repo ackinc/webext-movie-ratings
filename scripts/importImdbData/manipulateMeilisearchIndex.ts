@@ -33,7 +33,12 @@ await yargs(hideBin(process.argv))
       limit: { number: true, default: 10 },
     },
     async (argv) =>
-      console.log(await index.search(argv.query, { limit: argv.limit })),
+      console.log(
+        await index.search(argv.query, {
+          limit: argv.limit,
+          showRankingScore: true,
+        }),
+      ),
   )
   .command(["clear"], "remove all documents from the index", {}, async () => {
     await index.deleteAllDocuments();
