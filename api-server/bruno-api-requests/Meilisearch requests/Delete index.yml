@@ -1,0 +1,15 @@
+info:
+  name: Delete index
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: "{{MEILISEARCH_URL}}/indexes/{{indexName}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
