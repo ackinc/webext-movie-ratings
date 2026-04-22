@@ -16,6 +16,7 @@ export interface RatingsCacheSchema extends DBSchema {
 interface CacheEntry {
   program: ProgramData;
   imdbData: IMDBData;
+  expiry?: Date;
 }
 
 const storeName = "ratingsStore";
@@ -58,10 +59,12 @@ export default class RatingsCache {
           ...data.imdbData,
           key: this.#getKey(data.program),
           expiry:
-            +new Date() +
-            (data.imdbData.imdbRating === "N/F"
-              ? nfRatingCacheTime
-              : imdbRatingCacheTime),
+            "expiry" in data
+              ? +data.expiry
+              : +new Date() +
+                (data.imdbData.imdbRating === "N/F"
+                  ? nfRatingCacheTime
+                  : imdbRatingCacheTime),
         }),
       ),
     );
