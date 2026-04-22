@@ -5,7 +5,7 @@ export const programSchema = Type.Object({
   title: Type.String(),
   type: Type.Optional(programTypeSchema),
   year: Type.Optional(Type.Number()),
-  website: Type.String(),
+  pageUrl: Type.String(),
 });
 
 export const matchStatusSchema = Type.Enum(["pending", "matched", "abandoned"]);

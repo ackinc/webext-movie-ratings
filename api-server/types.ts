@@ -15,13 +15,13 @@ export type ProgramMatchResponse = Static<typeof programMatchResponseSchema>;
 export interface ProgramMatchRecord {
   id: number;
   title: string;
-  type: ProgramType | null;
-  year: number | null;
-  source: string;
+  type: ProgramType | "\\N";
+  year: number;
   status: MatchStatus;
   imdbId: string | null;
   createdAt: string;
   updatedAt: string;
+  meta: string | null;
 }
 
 export interface IndexedImdbTitle {

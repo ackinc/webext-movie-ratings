@@ -1,6 +1,5 @@
 import type { ProgramData } from "../common/types";
 import { pick } from "../../utils";
-import { hostToSitename } from "common";
 
 // TODO: this is a duplicate definition (also defined in api-server); find
 //   a way to dedupe
@@ -11,16 +10,15 @@ type MatchResult =
 
 export async function getMatchedImdbId(
   programData: ProgramData,
-  requestingPageUrl: string,
+  pageUrl: string,
 ) {
   const url = new URL(`${SIFT_API_URL}/imdbId`);
-  url.search = new URLSearchParams(
+  // TODO: add type-checking here (relevant type def is in api-server)
+  url.search = new URLSearchParams({
     // ensure we don't send unnecessary search params
-    {
-      ...pick(programData, ["title", "type", "year"]),
-      website: hostToSitename[new URL(requestingPageUrl).hostname]!,
-    },
-  ).toString();
+    ...pick(programData, ["title", "type", "year"]),
+    pageUrl,
+  }).toString();
 
   const response = await fetch(url);
   if (!response.ok) {

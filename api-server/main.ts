@@ -1,7 +1,7 @@
 import "dotenv/config";
-import Database from "better-sqlite3";
 import cron from "node-cron";
 import { Meilisearch } from "meilisearch";
+import { initDb } from "./db.ts";
 import { createServer } from "./server.ts";
 import { matchTitlesToImdbIds, refreshImdbData } from "./helpers.ts";
 
@@ -13,8 +13,7 @@ const {
   PORT,
 } = process.env;
 
-const db = new Database(DB_PATH!, { fileMustExist: true });
-db.pragma("journal_mode = WAL");
+const db = initDb(DB_PATH!);
 
 const client = new Meilisearch({
   host: MEILISEARCH_URL!,

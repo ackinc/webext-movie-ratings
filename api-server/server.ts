@@ -23,9 +23,7 @@ export function createServer(db: Database) {
     {
       schema: {
         querystring: programSchema,
-        response: {
-          200: programMatchResponseSchema,
-        },
+        response: { 200: programMatchResponseSchema },
       },
     } satisfies RouteShorthandOptions,
     function (request, reply) {
@@ -35,16 +33,20 @@ export function createServer(db: Database) {
           `SELECT * FROM titles
            WHERE title = $title
              ${"type" in program ? " AND type = $type " : ""}
-             ${"year" in program ? " AND year = $year " : ""}
-             AND source = $website`,
+             ${"year" in program ? " AND year = $year " : ""}`,
         )
         .get(request.query) as ProgramMatchRecord | undefined;
 
       if (!row) {
         db.prepare(
-          `INSERT INTO titles ("title", "type", "year", "source")
+          `INSERT INTO titles ("title", "type", "year", "meta")
            VALUES (?, ?, ?, ?)`,
-        ).run(program.title, program.type, program.year, program.website);
+        ).run(
+          program.title,
+          program.type ?? "\\N",
+          program.year ?? 0,
+          JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
+        );
         reply.code(200).send({ status: "pending" });
         return;
       }
