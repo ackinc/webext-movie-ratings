@@ -5,6 +5,8 @@ declare const APP_ENV: "development" | "testing" | "production";
 //   compile-time const to do this
 declare const TARGET_BROWSER: "chrome" | "firefox" | "edge";
 
+declare const SIFT_API_URL: string;
+
 declare const OMDB_API_KEY: string;
 declare const ISOLATED_CONTENT_SCRIPT_PATH: string;
 declare const MAIN_CONTENT_SCRIPT_PATH: string;

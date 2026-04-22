@@ -27,6 +27,9 @@ if (!ALLOWED_TARGETS.includes(TARGET_BROWSER)) {
   throw new Error(`Invalid target: ${TARGET_BROWSER}`);
 }
 
+// TODO
+const SIFT_API_URL = APP_ENV === "development" ? "http://localhost:3000" : null;
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -69,6 +72,8 @@ const config: esbuild.BuildOptions = {
     FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE: `${["production", "development"].includes(APP_ENV)}`,
 
     TARGET_BROWSER: `"${TARGET_BROWSER}"`,
+
+    SIFT_API_URL: `"${SIFT_API_URL}"`,
   },
   loader: {
     ".svg": "dataurl",
