@@ -43,10 +43,16 @@ export default class RatingsCache {
     this.db = db;
   }
 
-  async get(program: ProgramData): Promise<IMDBData | undefined> {
+  async get(
+    program: ProgramData,
+  ): Promise<{ data: IMDBData; isExpired: boolean } | undefined> {
     const cached = await this.db.get(storeName, this.#getKey(program));
-    if (!cached || this.#checkExpired(cached)) return undefined;
-    return pick(cached, ["imdbID", "imdbRating"]);
+    return cached
+      ? {
+          data: pick(cached, ["imdbID", "imdbRating"]),
+          isExpired: this.#checkExpired(cached),
+        }
+      : undefined;
   }
 
   async put(programsAndRatings: CacheEntry[]): Promise<void> {

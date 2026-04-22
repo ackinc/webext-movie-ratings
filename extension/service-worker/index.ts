@@ -257,8 +257,8 @@ function getIMDBData(
         .catch(reject);
     }
 
-    ratingsCache.get(program).then((cached) => {
-      if (cached) return resolve(cached);
+    ratingsCache.get(program).then((result) => {
+      if (result && !result.isExpired) return resolve(result.data);
 
       setTimeout(
         () => reject(new Error(ErrorMessage.ratingsApiRequestTimedOut)),
