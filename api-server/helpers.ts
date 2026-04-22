@@ -1,21 +1,22 @@
 import * as path from "node:path";
-import zlib from "node:zlib";
 import { spawn } from "node:child_process";
-import { fileURLToPath } from "node:url";
-import logger from "../logger.ts";
-import { downloadFile } from "../utils.ts";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataFileUrls = [
-  "https://datasets.imdbws.com/title.basics.tsv.gz",
-  "https://datasets.imdbws.com/title.akas.tsv.gz",
-];
+import zlib from "node:zlib";
+import { mapLimit } from "async";
+import { type Database } from "better-sqlite3";
+import { type Index } from "meilisearch";
+import {
+  imdbDataFileUrls,
+  imdbTitleMatchingMinimumRankingScore,
+} from "./constants.ts";
+import logger from "./logger.ts";
+import { type IndexedImdbTitle, type ProgramMatchRecord } from "./types.ts";
+import { downloadFile } from "./utils.ts";
 
 export async function refreshImdbData(imdbDataDir: string) {
   // download files
   const startTime = new Date();
   await Promise.all(
-    dataFileUrls.map((url) =>
+    imdbDataFileUrls.map((url) =>
       downloadFile(
         url,
         path.join(imdbDataDir, path.basename(url, path.extname(url))),
@@ -30,7 +31,7 @@ export async function refreshImdbData(imdbDataDir: string) {
   return new Promise<void>((resolve, reject) => {
     const importScriptName = "addToMeilisearch.ts";
     const importScriptPath = path.normalize(
-      path.join(__dirname, importScriptName),
+      path.join(__dirname, "imdbDataUtils", importScriptName),
     );
 
     const startTime = new Date();
@@ -61,4 +62,38 @@ export async function refreshImdbData(imdbDataDir: string) {
     cp.stdout.on("data", (data) => cpLogger.info(data));
     cp.stderr.on("data", (data) => cpLogger.error(data));
   });
+}
+
+export async function matchTitlesToImdbIds(db: Database, index: Index) {
+  const records = db
+    .prepare(`SELECT * FROM titles WHERE status = ? LIMIT 1000`)
+    .all("pending") as ProgramMatchRecord[];
+  await mapLimit(records, 10, attemptMatch);
+
+  async function attemptMatch(record: ProgramMatchRecord): Promise<void> {
+    let { hits: searchResults } = await index.search<IndexedImdbTitle>(
+      record.title,
+      {
+        limit: 5,
+        rankingScoreThreshold: imdbTitleMatchingMinimumRankingScore,
+      },
+    );
+    searchResults = searchResults.filter(
+      ({ type, year }) =>
+        (!record.type || record.type === type) &&
+        (!record.year || record.year === year),
+    );
+    const bestMatch = searchResults[0];
+
+    if (bestMatch) {
+      db.prepare(
+        `UPDATE titles SET status = ?, "imdbId" = ?  WHERE id = ?`,
+      ).run("matched", bestMatch.imdbId, record.id);
+    } else {
+      db.prepare(`UPDATE titles SET status = ? WHERE id = ?`).run(
+        "abandoned",
+        record.id,
+      );
+    }
+  }
 }

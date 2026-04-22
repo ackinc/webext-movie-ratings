@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      async:
+        specifier: ^3.2.6
+        version: 3.2.6
       better-sqlite3:
         specifier: ^12.9.0
         version: 12.9.0
@@ -33,6 +36,9 @@ importers:
         specifier: ^1.1.27
         version: 1.1.27
     devDependencies:
+      '@types/async':
+        specifier: ^3.2.25
+        version: 3.2.25
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
@@ -225,6 +231,9 @@ packages:
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
 
+  '@types/async@3.2.25':
+    resolution: {integrity: sha512-O6Th/DI18XjrL9TX8LO9F/g26qAz5vynmQqlXt/qLGrskvzCKXKc5/tATz3G2N6lM8eOf3M8/StB14FncAmocg==}
+
   '@types/better-sqlite3@7.6.13':
     resolution: {integrity: sha512-NMv9ASNARoKksWtsq/SHakpYAYnhBrQgGD8zkLYk/jaK8jUGn08CfEdTRgYhMypUQAfzSP8W6gNLe0q19/t4VA==}
 
@@ -244,6 +253,9 @@ packages:
 
   ajv@8.18.0:
     resolution: {integrity: sha512-PlXPeEWMXMZ7sPYOHqmDyCJzcfNrUr3fGNKtezX14ykXOEIvyK81d+qydx89KY5O71FKMPaQ2vBfBFI5NHR63A==}
+
+  async@3.2.6:
+    resolution: {integrity: sha512-htCUDlxyyCLMgaM3xXg0C0LW2xqfuQ6p05pCEIsXuyQ+a1koYKTuBMzRNwmybfLgvJDMd0r1LTn4+E0Ti6C2AA==}
 
   atomic-sleep@1.0.0:
     resolution: {integrity: sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==}
@@ -651,6 +663,8 @@ snapshots:
 
   '@pinojs/redact@0.4.0': {}
 
+  '@types/async@3.2.25': {}
+
   '@types/better-sqlite3@7.6.13':
     dependencies:
       '@types/node': 25.6.0
@@ -671,6 +685,8 @@ snapshots:
       fast-uri: 3.1.0
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
+
+  async@3.2.6: {}
 
   atomic-sleep@1.0.0: {}
 

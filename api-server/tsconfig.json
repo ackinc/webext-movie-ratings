@@ -4,7 +4,7 @@
   "compilerOptions": {
     "composite": true,
 
-    "types": ["node"],
+    "types": ["node", "async", "better-sqlite3"],
     "allowImportingTsExtensions": true,
     "emitDeclarationOnly": true,
     "module": "nodenext",

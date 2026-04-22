@@ -23,3 +23,11 @@ export interface ProgramMatchRecord {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface IndexedImdbTitle {
+  id: string;
+  imdbId: string;
+  title: string;
+  type: "movie" | "series";
+  year: number | null;
+}
