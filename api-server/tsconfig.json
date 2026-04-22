@@ -1,5 +1,6 @@
 {
   "include": ["**/*"],
+  "exclude": ["tmp/**/*"],
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "composite": true,
