@@ -27,12 +27,12 @@ if (process.env["APP_ENV"] === "production") {
     "0 0 1,16 * *", // twice a month
     () => refreshImdbData(IMDB_DATA_DIR!),
   );
-
-  cron.schedule(
-    "0,15,30,45 * * * *", // every 15 mins
-    () => matchTitlesToImdbIds(db, index),
-  );
 }
+
+cron.schedule(
+  "0,15,30,45 * * * *", // every 15 mins
+  () => matchTitlesToImdbIds(db, index),
+);
 
 const server = createServer(db);
 server.listen({ port: +PORT! }, function (err, _address) {
