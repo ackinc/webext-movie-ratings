@@ -20,14 +20,20 @@ export default class OmdbApiClient {
     this.fetch = limitThroughput(patchedFetch, MAX_REQ_PER_SECOND);
   }
 
-  async fetchIMDBData(program: Omit<Program, "node">): Promise<IMDBData> {
-    const { title, type, year } = program;
-    const searchParams = new URLSearchParams({
-      apiKey: OMDB_API_KEY,
-      t: title,
-    });
-    if (type) searchParams.set("type", type);
-    if (year) searchParams.set("y", year);
+  async fetchIMDBData(
+    imdbIdOrProgram: string | Omit<Program, "node">,
+  ): Promise<IMDBData> {
+    let searchParams: URLSearchParams;
+
+    if (typeof imdbIdOrProgram === "string") {
+      const imdbId = imdbIdOrProgram;
+      searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, i: imdbId });
+    } else {
+      const { title, type, year } = imdbIdOrProgram;
+      searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, t: title });
+      if (type) searchParams.set("type", type);
+      if (year) searchParams.set("y", year);
+    }
 
     const url = `https://www.omdbapi.com/?${searchParams.toString()}`;
     if (this.inFlight.has(url)) {
