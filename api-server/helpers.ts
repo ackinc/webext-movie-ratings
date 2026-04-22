@@ -65,14 +65,14 @@ export async function refreshImdbData(imdbDataDir: string) {
 }
 
 export async function matchTitlesToImdbIds(db: Database, index: Index) {
-  const records = db
+  const dbRecords = db
     .prepare(`SELECT * FROM titles WHERE status = ? LIMIT 1000`)
     .all("pending") as ProgramMatchRecord[];
-  await mapLimit(records, 10, attemptMatch);
+  await mapLimit(dbRecords, 10, attemptMatch);
 
-  async function attemptMatch(record: ProgramMatchRecord): Promise<void> {
+  async function attemptMatch(dbRecord: ProgramMatchRecord): Promise<void> {
     let { hits: searchResults } = await index.search<IndexedImdbTitle>(
-      record.title,
+      dbRecord.title,
       {
         limit: 5,
         rankingScoreThreshold: imdbTitleMatchingMinimumRankingScore,
@@ -80,19 +80,19 @@ export async function matchTitlesToImdbIds(db: Database, index: Index) {
     );
     searchResults = searchResults.filter(
       ({ type, year }) =>
-        (!record.type || record.type === type) &&
-        (!record.year || record.year === year),
+        (type === dbRecord.type || dbRecord.type === "\\N") &&
+        (year === dbRecord.year || dbRecord.year === 0),
     );
     const bestMatch = searchResults[0];
 
     if (bestMatch) {
       db.prepare(
         `UPDATE titles SET status = ?, "imdbId" = ?  WHERE id = ?`,
-      ).run("matched", bestMatch.imdbId, record.id);
+      ).run("matched", bestMatch.imdbId, dbRecord.id);
     } else {
       db.prepare(`UPDATE titles SET status = ? WHERE id = ?`).run(
         "abandoned",
-        record.id,
+        dbRecord.id,
       );
     }
   }
