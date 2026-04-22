@@ -239,6 +239,10 @@ function handleMessage(
   }
 }
 
+// not using async-await here because we don't want to throw
+//   inside the setTimeout if the request to the ratings-api
+//   service takes too long (because errors thrown from inside
+//   setTimeout would not be caught by upstream error handling)
 function getIMDBData(
   program: Omit<Program, "node">,
   pageUrl: string,
