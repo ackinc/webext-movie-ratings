@@ -128,6 +128,18 @@ export const permStringToSitename = Object.entries(supportedSites).reduce(
   {},
 ) as Record<PermString, Sitename>;
 
+export const hostToSitename = Object.entries(supportedSites).reduce(
+  (acc, [sitename, { permStrings }]) =>
+    Object.assign(
+      acc,
+      permStrings.reduce(
+        (acc2, ps) => Object.assign(acc2, { [new URL(ps).hostname]: sitename }),
+        {},
+      ),
+    ),
+  {},
+) as Record<string, Sitename>;
+
 export const webStoreLink =
   TARGET_BROWSER === "edge"
     ? "https://microsoftedge.microsoft.com/addons/detail/odgepppomekmdiifmjmocpjhopdmgjnl"
