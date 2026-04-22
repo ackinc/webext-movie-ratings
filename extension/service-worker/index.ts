@@ -1,4 +1,5 @@
 import { type IDBPDatabase } from "idb";
+import { addMinutes } from "date-fns";
 import {
   browser,
   getSetting,
@@ -12,6 +13,7 @@ import {
 } from "../common";
 import type {
   Program,
+  ProgramData,
   IMDBData,
   Message,
   SWMessageResponse,
@@ -25,6 +27,7 @@ import TelemetryStore, {
   type TelemetryStoreSchema,
 } from "../common/TelemetryStore";
 import OmdbApiClient from "./OmdbApiClient";
+import * as siftApiService from "./SiftApiService";
 import { RATING_API_REQUEST_TIMEOUT_MS } from "./constants";
 import { isNetworkError } from "../../utils";
 
@@ -259,6 +262,7 @@ function getIMDBData(
 
     ratingsCache.get(program).then((result) => {
       if (result && !result.isExpired) return resolve(result.data);
+      const matchedImdbId = result?.data.imdbID;
 
       setTimeout(
         () => reject(new Error(ErrorMessage.ratingsApiRequestTimedOut)),
@@ -266,12 +270,48 @@ function getIMDBData(
       );
 
       omdbApiClient
-        .fetchIMDBData(program)
-        .then((imdbData) => ratingsCache.putOne({ program, imdbData }))
+        .fetchIMDBData(matchedImdbId ?? program)
+        .then((imdbData) => cacheFetchedImdbRating(program, imdbData, pageUrl))
         .then(({ imdbData }) => resolve(imdbData))
         .catch(reject);
     });
   });
+}
+
+async function cacheFetchedImdbRating(
+  program: ProgramData,
+  imdbData: IMDBData,
+  requestingPageUrl: string,
+) {
+  const ratingFound = imdbData.imdbRating !== "N/F";
+  if (ratingFound) return ratingsCache.putOne({ program, imdbData });
+
+  const matchResult = await siftApiService.getMatchedImdbId(
+    program,
+    requestingPageUrl,
+  );
+  if (matchResult.status === "pending") {
+    // cache for long enough that the matching process on the
+    //   server-side will have run before the next time we try
+    //   to fetch this program's rating from the ratings-API
+    return ratingsCache.putOne({
+      program,
+      imdbData,
+      /* TODO: magic number */
+      expiry: addMinutes(new Date(), 20),
+    });
+  } else if (matchResult.status === "matched") {
+    // next time a rating for this program is requested, we'll
+    //   make an api request to the ratings-API provider using
+    //   the matched IMDb ID
+    return ratingsCache.putOne({
+      program,
+      imdbData: { ...imdbData, imdbID: matchResult.imdbId },
+      expiry: addMinutes(new Date(), -1),
+    });
+  } else /* matchResult.status === 'abandoned' */ {
+    return ratingsCache.putOne({ program, imdbData });
+  }
 }
 
 async function fetchWithAddedTelemetry(
