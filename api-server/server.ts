@@ -18,6 +18,13 @@ export function createServer(db: Database) {
     reply.send({ status: "ok" });
   });
 
+  // Q: Why bother involving a db at all, when we could just
+  //      query the search engine directly in the request handler
+  //      and call it a day?
+  // A: Want to leave the possibility of manual matching open, for
+  //      those cases where the search engine doesn't throw up a
+  //      suitable match
+  // TODO: query the search engine in the request handler itself,
   fastify.get<{ Querystring: Program; Reply: { 200: ProgramMatchResponse } }>(
     "/imdbId",
     {
