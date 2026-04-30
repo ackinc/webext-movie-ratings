@@ -1,0 +1,3 @@
+data-dir
+logs/*
+!logs/.keep

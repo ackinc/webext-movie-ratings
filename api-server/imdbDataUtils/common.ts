@@ -1,1 +1,0 @@
-../../scripts/importImdbData/common.ts
