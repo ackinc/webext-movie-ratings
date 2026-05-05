@@ -1,10 +1,5 @@
 node_modules
-dist.zip
-dist/*
-!dist/.keep
 .env
-src.zip
 tmp
-!tmp/.keep
 **/*.log
 **/*.tsbuildinfo
