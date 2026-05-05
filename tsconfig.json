@@ -5,6 +5,7 @@
     { "path": "./packages/extension" },
     { "path": "./packages/api-server" },
     { "path": "./packages/browse-otts" },
+    { "path": "./packages/website" },
     { "path": "./shared/utils" },
     { "path": "./shared/nodeutils" }
   ],
