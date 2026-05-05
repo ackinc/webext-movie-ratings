@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build:dev": "APP_ENV=development pnpm run build --watch",
-    "prebuild": "pnpm run clean && cp -r ../../images dist",
+    "prebuild": "pnpm run clean && mkdir -p dist && cp -r ../../images dist",
     "build": "node scripts/build.ts",
     "bump-version": "node scripts/bumpVersion.ts",
     "zip:dist": "./scripts/zipDist.sh",
