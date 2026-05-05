@@ -1,11 +1,15 @@
 info:
   name: Delete all docs in index
   type: http
-  seq: 7
+  seq: 9
 
 http:
   method: DELETE
-  url: "{{MEILISEARCH_URL}}/indexes/{{indexName}}/documents"
+  url: "{{MEILISEARCH_URL}}/indexes/:indexName/documents"
+  params:
+    - name: indexName
+      value: "{{indexName}}"
+      type: path
   auth: inherit
 
 settings:

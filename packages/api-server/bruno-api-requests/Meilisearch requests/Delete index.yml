@@ -5,7 +5,11 @@ info:
 
 http:
   method: DELETE
-  url: "{{MEILISEARCH_URL}}/indexes/{{indexName}}"
+  url: "{{MEILISEARCH_URL}}/indexes/:indexName"
+  params:
+    - name: indexName
+      value: "{{indexName}}"
+      type: path
   auth: inherit
 
 settings:

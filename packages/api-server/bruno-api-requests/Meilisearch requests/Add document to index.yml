@@ -1,0 +1,32 @@
+info:
+  name: Add document to index
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{MEILISEARCH_URL}}/indexes/:indexName/documents"
+  headers:
+    - name: Content-Type
+      value: application/json
+  params:
+    - name: indexName
+      value: "{{indexName}}"
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "id": "somefakedoc",
+        "imdbId": "somefakedoc",
+        "title": "somefakedoc",
+        "type": "movie",
+        "year": 1962
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

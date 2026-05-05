@@ -5,11 +5,14 @@ info:
 
 http:
   method: GET
-  url: "{{MEILISEARCH_URL}}/indexes/{{indexName}}/documents?limit=5"
+  url: "{{MEILISEARCH_URL}}/indexes/:indexName/documents?limit=5"
   params:
     - name: limit
       value: "5"
       type: query
+    - name: indexName
+      value: "{{indexName}}"
+      type: path
   auth: inherit
 
 settings:

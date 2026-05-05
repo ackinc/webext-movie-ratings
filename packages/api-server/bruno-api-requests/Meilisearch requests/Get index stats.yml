@@ -5,7 +5,11 @@ info:
 
 http:
   method: GET
-  url: "{{MEILISEARCH_URL}}/indexes/{{indexName}}/stats"
+  url: "{{MEILISEARCH_URL}}/indexes/:indexName/stats"
+  params:
+    - name: indexName
+      value: "{{indexName}}"
+      type: path
   auth: inherit
 
 settings:

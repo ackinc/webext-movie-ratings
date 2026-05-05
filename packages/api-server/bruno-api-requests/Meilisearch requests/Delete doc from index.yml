@@ -1,14 +1,17 @@
 info:
-  name: Get index info
+  name: Delete doc from index
   type: http
-  seq: 2
+  seq: 8
 
 http:
-  method: GET
-  url: "{{MEILISEARCH_URL}}/indexes/:indexName"
+  method: DELETE
+  url: "{{MEILISEARCH_URL}}/indexes/:indexName/documents/:docId"
   params:
     - name: indexName
       value: "{{indexName}}"
+      type: path
+    - name: docId
+      value: somefakedoc
       type: path
   auth: inherit
 
