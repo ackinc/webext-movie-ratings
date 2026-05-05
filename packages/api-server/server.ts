@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { differenceInDays, parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
+import cors from "@fastify/cors";
 import { type Database } from "better-sqlite3";
 import { abandonedMatchStatusExpiryInDays } from "./constants.ts";
 import loggerInstance from "./logger.ts";
@@ -11,8 +12,14 @@ import type {
   ProgramMatchResponse,
 } from "./types.ts";
 
+const { APP_ENV } = process.env;
+
 export function createServer(db: Database) {
   const fastify = Fastify({ loggerInstance });
+  fastify.register(cors, {
+    // TODO: correct value for production
+    origin: APP_ENV === "production" ? false : true,
+  });
 
   // health check
   fastify.get("/", function (_request, reply) {
