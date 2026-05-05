@@ -35,7 +35,7 @@ export function createServer(db: Database) {
       },
     } satisfies RouteShorthandOptions,
     function (request, reply) {
-      const program = request.query;
+      const program = { ...request.query };
       const row = db
         .prepare(
           `SELECT * FROM titles
@@ -43,7 +43,7 @@ export function createServer(db: Database) {
              ${"type" in program ? " AND type = $type " : ""}
              ${"year" in program ? " AND year = $year " : ""}`,
         )
-        .get(request.query) as ProgramMatchRecord | undefined;
+        .get(program) as ProgramMatchRecord | undefined;
 
       if (!row) {
         db.prepare(
