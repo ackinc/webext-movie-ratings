@@ -1,9 +1,8 @@
 WS_ROOT=`dirname $(dirname $0)`
-LANDING_PAGE_PACKAGE_PATH="packages/landing-page"
+WEBSITE_PACKAGE_PATH="packages/website"
 
-# if changes were made to the landing page, build the landing page and commit
-#   the build output as well
-if git diff --cached --name-only | grep -q "^$LANDING_PAGE_PACKAGE_PATH/"; then
-  pnpm run --filter "./$LANDING_PAGE_PACKAGE_PATH" build
-  git add "$WS_ROOT/$LANDING_PAGE_PACKAGE_PATH/dist"
+# if changes were made to the website, build it and commit the build output
+if git diff --cached --name-only | grep -q "^$WEBSITE_PACKAGE_PATH/"; then
+  pnpm run --filter "./$WEBSITE_PACKAGE_PATH" build
+  git add "$WS_ROOT/$WEBSITE_PACKAGE_PATH/dist"
 fi
