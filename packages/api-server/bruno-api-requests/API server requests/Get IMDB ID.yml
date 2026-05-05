@@ -5,13 +5,13 @@ info:
 
 http:
   method: GET
-  url: "{{API_URL}}/imdbId?title=Muthu alias Kaattaan&website=hotstar"
+  url: "{{API_URL}}/imdbId?title=Muthu alias Kaattaan&pageUrl=https://www.hotstar.com"
   params:
     - name: title
       value: Muthu alias Kaattaan
       type: query
-    - name: website
-      value: hotstar
+    - name: pageUrl
+      value: https://www.hotstar.com
       type: query
   auth: inherit
 
