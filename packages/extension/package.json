@@ -19,7 +19,6 @@
   "description": "Sift adds IMDB ratings next to programs on various OTT platforms to help you choose what to watch faster.",
   "packageManager": "pnpm@10.33.0",
   "devDependencies": {
-    "@eslint/js": "^9.7.0",
     "@sentry/esbuild-plugin": "^4.6.1",
     "@sentry/react": "^10.32.1",
     "@types/chrome": "^0.1.32",
@@ -33,11 +32,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "esbuild": ">=0.25.0",
-    "eslint": "^10.0.0",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.1",
     "fs-extra": "^11.3.3",
-    "globals": "^15.8.0",
     "idb": "^8.0.3",
     "jsonwebtoken": "^9.0.3",
     "nouislider": "^15.8.1",
@@ -48,7 +43,6 @@
     "siftutils": "workspace:utils@*",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.55.0",
     "yargs": "^18.0.0"
   },
   "type": "module"
