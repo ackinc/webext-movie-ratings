@@ -3,7 +3,6 @@
   "version": "8.1.4",
   "main": "index.js",
   "scripts": {
-    "test": "tsx tests/*.test.ts",
     "build:dev": "APP_ENV=development pnpm run build --watch",
     "prebuild": "pnpm run clean && cp -r ../../images dist",
     "build": "node scripts/build.ts",
@@ -11,7 +10,7 @@
     "zip:dist": "./scripts/zipDist.sh",
     "zip:src": "./scripts/zipSrc.sh",
     "zip:all": "./scripts/zipAll.sh",
-    "clean": "rm -rf dist/* dist.zip src.zip",
+    "clean": "rm -rf dist dist.zip src.zip",
     "publish": "./scripts/publish",
     "publish:all": "./scripts/publish ALL"
   },

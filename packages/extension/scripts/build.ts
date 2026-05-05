@@ -36,7 +36,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const srcDir = path.resolve(__dirname, "..");
-const destDir = path.resolve(__dirname, "../../../dist");
+const destDir = path.resolve(__dirname, "../dist");
 
 const staticFiles = [
   "popup/index.html",
