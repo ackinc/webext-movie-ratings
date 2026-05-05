@@ -132,11 +132,15 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
-  protected override isValidProgramContainer(pContainer: ProgramContainer): boolean {
-    return Boolean(pContainer.title);
+  protected override isValidProgramContainer(
+    pContainer: ProgramContainer,
+  ): boolean {
+    return Boolean(pContainer.title) && !pContainer.title.startsWith("WWE:");
   }
 
-  protected override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+  protected override getProgramNodeSelectors(
+    pContainer: ProgramContainer,
+  ): string[] {
     const { node } = pContainer;
 
     if (node.matches("div.billboard")) {
