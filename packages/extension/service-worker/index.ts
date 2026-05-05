@@ -290,7 +290,7 @@ async function cacheFetchedImdbRating(
     program,
     requestingPageUrl,
   );
-  if (matchResult.status === "pending") {
+  if (["error", "pending"].includes(matchResult.status)) {
     // cache for long enough that the matching process on the
     //   server-side will have run before the next time we try
     //   to fetch this program's rating from the ratings-API

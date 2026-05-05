@@ -4,6 +4,7 @@ import { pick } from "siftutils";
 // TODO: this is a duplicate definition (also defined in api-server); find
 //   a way to dedupe
 type MatchResult =
+  | { status: "error" }
   | { status: "pending" }
   | { status: "abandoned" }
   | { status: "matched"; imdbId: string };
@@ -11,7 +12,7 @@ type MatchResult =
 export async function getMatchedImdbId(
   programData: ProgramData,
   pageUrl: string,
-) {
+): Promise<MatchResult> {
   const url = new URL(`${SIFT_API_URL}/imdbId`);
   // TODO: add type-checking here (relevant type def is in api-server)
   url.search = new URLSearchParams({
@@ -22,7 +23,7 @@ export async function getMatchedImdbId(
 
   const response = await fetch(url);
   if (!response.ok) {
-    /* TODO: do something */
+    return { status: "error" };
   }
 
   return (await response.json()) as MatchResult;
