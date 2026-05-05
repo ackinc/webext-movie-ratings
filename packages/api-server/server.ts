@@ -18,12 +18,9 @@ export function createServer(db: Database) {
     origin:
       APP_ENV === "production"
         ? [
-            // TODO: this the right origin?
-            extensionIds.cws ? `chrome://${extensionIds.cws}` : "",
-            // TODO: this the right origin?
-            extensionIds.eas ? `chrome://${extensionIds.eas}` : "",
-            // TODO: this the right origin?
-            extensionIds.mas ? `chrome://${extensionIds.mas}` : "",
+            extensionIds.cws ? `chrome-extension://${extensionIds.cws}` : "",
+            extensionIds.eas ? `chrome-extension://${extensionIds.eas}` : "",
+            extensionIds.mas ? `moz-extension://${extensionIds.mas}` : "",
           ].filter((x) => x)
         : true,
   });
