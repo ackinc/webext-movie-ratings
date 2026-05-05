@@ -1,16 +1,11 @@
 import * as path from "node:path";
 import { spawn } from "node:child_process";
 import zlib from "node:zlib";
-import { mapLimit } from "async";
-import { type Database } from "better-sqlite3";
-import { type Index } from "meilisearch";
+import type { Database } from "better-sqlite3";
 import { downloadFile } from "siftnodeutils";
-import {
-  imdbDataFileUrls,
-  imdbTitleMatchingMinimumRankingScore,
-} from "./constants.ts";
+import { imdbDataFileUrls } from "./constants.ts";
 import logger from "./logger.ts";
-import { type IndexedImdbTitle, type ProgramMatchRecord } from "./types.ts";
+import type { Program, ProgramMatchRecord } from "./types.ts";
 
 export async function refreshImdbData(imdbDataDir: string) {
   // download files
@@ -64,36 +59,32 @@ export async function refreshImdbData(imdbDataDir: string) {
   });
 }
 
-export async function matchTitlesToImdbIds(db: Database, index: Index) {
-  const dbRecords = db
-    .prepare(`SELECT * FROM titles WHERE status = ? LIMIT 1000`)
-    .all("pending") as ProgramMatchRecord[];
-  await mapLimit(dbRecords, 10, attemptMatch);
-
-  async function attemptMatch(dbRecord: ProgramMatchRecord): Promise<void> {
-    let { hits: searchResults } = await index.search<IndexedImdbTitle>(
-      dbRecord.title,
-      {
-        limit: 5,
-        rankingScoreThreshold: imdbTitleMatchingMinimumRankingScore,
-      },
-    );
-    searchResults = searchResults.filter(
-      ({ type, year }) =>
-        (type === dbRecord.type || dbRecord.type === "\\N") &&
-        (year === dbRecord.year || dbRecord.year === 0),
-    );
-    const bestMatch = searchResults[0];
-
-    if (bestMatch) {
-      db.prepare(
-        `UPDATE titles SET status = ?, "imdbId" = ?  WHERE id = ?`,
-      ).run("matched", bestMatch.imdbId, dbRecord.id);
-    } else {
-      db.prepare(`UPDATE titles SET status = ? WHERE id = ?`).run(
-        "abandoned",
-        dbRecord.id,
-      );
-    }
+export function getProgramMatchRecord(
+  db: Database,
+  idOrProgram: number | bigint | Program,
+): ProgramMatchRecord | undefined {
+  let row: ProgramMatchRecord | undefined;
+  if (typeof idOrProgram === "number" || typeof idOrProgram === "bigint") {
+    row = db.prepare(`SELECT * FROM titles WHERE id = ?`).get(idOrProgram) as
+      | ProgramMatchRecord
+      | undefined;
+  } else {
+    row = db
+      .prepare(
+        `SELECT * FROM titles
+             WHERE title = $title
+               ${"type" in idOrProgram ? " AND type = $type " : ""}
+               ${"year" in idOrProgram ? " AND year = $year " : ""}`,
+      )
+      .get(idOrProgram) as ProgramMatchRecord | undefined;
   }
+
+  if (row) {
+    // makes future parseISO calls treat the string as representing
+    //   a UTC date, instead of a date in the current system timezone
+    row.createdAt = row.createdAt.replace(" ", "T") + "Z";
+    row.updatedAt = row.updatedAt.replace(" ", "T") + "Z";
+  }
+
+  return row;
 }

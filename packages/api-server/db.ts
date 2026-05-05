@@ -1,8 +1,9 @@
 import Database, { type Database as TDatabase } from "better-sqlite3";
 
-export function initDb(dbPath: string): TDatabase {
-  const db = new Database(dbPath);
+const { DB_PATH } = process.env;
 
+export function initDb(): TDatabase {
+  const db: TDatabase = new Database(DB_PATH);
   db.pragma("journal_mode = WAL");
 
   // can't allow type and year be NULLABLE because the UNIQUE

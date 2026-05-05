@@ -1,24 +1,31 @@
 import "dotenv/config";
-import { differenceInDays, parseISO } from "date-fns";
+import type { Database } from "better-sqlite3";
+import { parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
 import cors from "@fastify/cors";
-import { type Database } from "better-sqlite3";
-import { abandonedMatchStatusExpiryInDays } from "./constants.ts";
+import { extensionIds } from "./constants.ts";
+import { getProgramMatchRecord } from "./helpers.ts";
 import loggerInstance from "./logger.ts";
 import { programSchema, programMatchResponseSchema } from "./schemas.ts";
-import type {
-  Program,
-  ProgramMatchRecord,
-  ProgramMatchResponse,
-} from "./types.ts";
+import { querySearchEngine, getIndexLastUpdatedTime } from "./searchEngine.ts";
+import type { Program, ProgramMatchResponse } from "./types.ts";
 
 const { APP_ENV } = process.env;
 
 export function createServer(db: Database) {
   const fastify = Fastify({ loggerInstance });
   fastify.register(cors, {
-    // TODO: correct value for production
-    origin: APP_ENV === "production" ? false : true,
+    origin:
+      APP_ENV === "production"
+        ? [
+            // TODO: this the right origin?
+            extensionIds.cws ? `chrome://${extensionIds.cws}` : "",
+            // TODO: this the right origin?
+            extensionIds.eas ? `chrome://${extensionIds.eas}` : "",
+            // TODO: this the right origin?
+            extensionIds.mas ? `chrome://${extensionIds.mas}` : "",
+          ].filter((x) => x)
+        : true,
   });
 
   // health check
@@ -32,7 +39,6 @@ export function createServer(db: Database) {
   // A: Want to leave the possibility of manual matching open, for
   //      those cases where the search engine doesn't throw up a
   //      suitable match
-  // TODO: query the search engine in the request handler itself,
   fastify.get<{ Querystring: Program; Reply: { 200: ProgramMatchResponse } }>(
     "/imdbId",
     {
@@ -41,35 +47,45 @@ export function createServer(db: Database) {
         response: { 200: programMatchResponseSchema },
       },
     } satisfies RouteShorthandOptions,
-    function (request, reply) {
+    async function (request, reply) {
+      const seIndexLastUpdatedAt = await getIndexLastUpdatedTime();
+
       const program = { ...request.query };
-      const row = db
-        .prepare(
-          `SELECT * FROM titles
-           WHERE title = $title
-             ${"type" in program ? " AND type = $type " : ""}
-             ${"year" in program ? " AND year = $year " : ""}`,
-        )
-        .get(program) as ProgramMatchRecord | undefined;
+      let row = getProgramMatchRecord(db, program);
 
-      if (!row) {
-        db.prepare(
-          `INSERT INTO titles ("title", "type", "year", "meta")
-           VALUES (?, ?, ?, ?)`,
-        ).run(
-          program.title,
-          program.type ?? "\\N",
-          program.year ?? 0,
-          JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
+      if (
+        !row ||
+        (row.status === "abandoned" &&
+          parseISO(row.updatedAt) < seIndexLastUpdatedAt)
+      ) {
+        // We insert the row synchronously when we find it doesn't already
+        //   exist because if another request arrives for the same program
+        //   before we're finished with this request, we do not want it to
+        //   attempt another insert (which would risk lastInsertRowId being
+        //   undefined in the handler of that request)
+        const { changes, lastInsertRowid } = db
+          .prepare(
+            `INSERT INTO titles ("title", "type", "year", "meta")
+           VALUES (?, ?, ?, ?)
+           ON CONFLICT DO NOTHING`,
+          )
+          .run(
+            program.title,
+            program.type ?? "\\N",
+            program.year ?? 0,
+            JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
+          );
+
+        const [bestMatch] = await querySearchEngine(program);
+        db.prepare(`UPDATE titles SET status = ?, imdbId = ? WHERE id = ?`).run(
+          bestMatch ? "matched" : "abandoned",
+          bestMatch ? bestMatch.imdbId : null,
+          // the insert could only have failed if the row already existed
+          changes === 0 ? row!.id : lastInsertRowid,
         );
-        reply.code(200).send({ status: "pending" });
-        return;
-      }
 
-      // makes future parseISO calls treat the string as representing
-      //   a UTC date, instead of a date in the current system timezone
-      row.createdAt = row.createdAt.replace(" ", "T") + "Z";
-      row.updatedAt = row.updatedAt.replace(" ", "T") + "Z";
+        row = getProgramMatchRecord(db, lastInsertRowid)!;
+      }
 
       if (row.status === "pending") {
         reply.code(200).send({ status: "pending" });
@@ -81,19 +97,7 @@ export function createServer(db: Database) {
         return;
       }
 
-      if (
-        row.status === "abandoned" &&
-        differenceInDays(new Date(), parseISO(row.updatedAt)) >
-          abandonedMatchStatusExpiryInDays
-      ) {
-        db.prepare(`UPDATE titles SET status = ? WHERE id = ?`).run(
-          "pending",
-          row.id,
-        );
-        reply.code(200).send({ status: "pending" });
-        return;
-      }
-
+      // row.status === 'abandoned'
       reply.code(200).send({ status: "abandoned" });
     },
   );
