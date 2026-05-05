@@ -216,7 +216,7 @@ importers:
         specifier: ^18.0.0
         version: 18.0.0
 
-  packages/landing-page:
+  packages/website:
     dependencies:
       '@radix-ui/react-slot':
         specifier: 1.2.4
@@ -5170,7 +5170,7 @@ snapshots:
       '@next/env': 16.2.0
       '@swc/helpers': 0.5.15
       baseline-browser-mapping: 2.10.27
-      caniuse-lite: 1.0.30001764
+      caniuse-lite: 1.0.30001791
       postcss: 8.4.31
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
