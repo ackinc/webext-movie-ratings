@@ -33,6 +33,8 @@
 
 ## Misc
 
+- Read the extension's [privacy policy][privacy-policy-link]
+
 - Movie ratings are sourced from Brian Fritz's [OMDB API][omdbapi-link]; if you found this extension useful, consider donating via Brian's [Patreon][omdbapi-patreon-link]
 
 [chrome-link]: https://chromewebstore.google.com/detail/sift-imdb-ratings-on-indi/pfnhkljamlclkackkndllofcfhihacna
@@ -42,3 +44,4 @@
 [omdbapi-patreon-link]: https://www.patreon.com/join/omdb
 [demo-video-link]: https://youtu.be/0nacMtjRhk4
 [github-link]: https://github.com/ackinc/webext-movie-ratings
+[privacy-policy-link]: https://getsift.today/privacy
