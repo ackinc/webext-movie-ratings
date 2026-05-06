@@ -110,7 +110,7 @@ export function createProgramMatchRecord(
 export function updateProgramMatchRecord(
   db: Database,
   rowId: number | bigint,
-  data: Partial<Omit<ProgramMatchRecord, "id" | "createdAt" | "updatedAt">>,
+  data: Partial<Pick<ProgramMatchRecord, "status" | "imdbId" | "meta">>,
 ) {
   const entries = Object.entries(data);
   if (entries.length === 0) return;
