@@ -25,6 +25,7 @@
     "pino": "^10.3.1",
     "siftnodeutils": "workspace:nodeutils@*",
     "sifttypes": "workspace:types@*",
+    "siftutils": "workspace:utils@*",
     "yargs": "^18.0.0"
   },
   "devDependencies": {

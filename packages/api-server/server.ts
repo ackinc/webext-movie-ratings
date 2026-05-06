@@ -7,8 +7,13 @@ import {
   type SiftApiProgramMatching,
   siftApiProgramMatchSchemas,
 } from "sifttypes";
+import { pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
-import { getProgramMatchRecord } from "./helpers.ts";
+import {
+  createProgramMatchRecord,
+  getProgramMatchRecord,
+  updateProgramMatchRecord,
+} from "./helpers.ts";
 import loggerInstance from "./logger.ts";
 import { querySearchEngine, getIndexLastUpdatedTime } from "./searchEngine.ts";
 
@@ -80,25 +85,20 @@ export function createServer(db: Database) {
         //   before we're finished with this request, we do not want it to
         //   attempt another insert (which would risk lastInsertRowId being
         //   undefined in the handler of that request)
-        const { changes, lastInsertRowid } = db
-          .prepare(
-            `INSERT INTO titles ("title", "type", "year", "meta")
-           VALUES (?, ?, ?, ?)
-           ON CONFLICT DO NOTHING`,
-          )
-          .run(
-            program.title,
-            program.type ?? "\\N",
-            program.year ?? 0,
-            JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
-          );
+        const { changes, lastInsertRowid } = createProgramMatchRecord(db, {
+          ...pick(program, ["title", "type", "year"]),
+          meta: JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
+        });
 
         const [bestMatch] = await querySearchEngine(program);
-        db.prepare(`UPDATE titles SET status = ?, imdbId = ? WHERE id = ?`).run(
-          bestMatch ? "matched" : "abandoned",
-          bestMatch ? bestMatch.imdbId : null,
+        updateProgramMatchRecord(
+          db,
           // the insert could only have failed if the row already existed
           changes === 0 ? row!.id : lastInsertRowid,
+          {
+            status: bestMatch ? "matched" : "abandoned",
+            imdbId: bestMatch ? bestMatch.imdbId : null,
+          },
         );
 
         row = getProgramMatchRecord(db, lastInsertRowid)!;

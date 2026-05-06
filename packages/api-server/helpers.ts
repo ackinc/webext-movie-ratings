@@ -89,3 +89,36 @@ export function getProgramMatchRecord(
 
   return row;
 }
+
+export function createProgramMatchRecord(
+  db: Database,
+  data: Partial<
+    Omit<ProgramMatchRecord, "id" | "title" | "createdAt" | "updatedAt">
+  > &
+    Pick<ProgramMatchRecord, "title">,
+) {
+  const entries = Object.entries(data);
+  if (entries.length === 0) throw new Error("data arg cannot be empty object");
+  return db
+    .prepare(
+      `INSERT INTO titles (${entries.map(([col]) => `"${col}"`).join(", ")})
+      VALUES (${new Array(entries.length).fill("?").join(", ")})
+      ON CONFLICT DO NOTHING`,
+    )
+    .run(...entries.map(([, val]) => val));
+}
+
+export function updateProgramMatchRecord(
+  db: Database,
+  rowId: number | bigint,
+  data: Partial<Omit<ProgramMatchRecord, "id" | "createdAt" | "updatedAt">>,
+) {
+  const entries = Object.entries(data);
+  if (entries.length === 0) return;
+  return db
+    .prepare(
+      `UPDATE titles SET ${entries.map(([col]) => `${col} = ?`).join(", ")}
+      WHERE id = ?`,
+    )
+    .run(...entries.map(([, val]) => val), rowId);
+}

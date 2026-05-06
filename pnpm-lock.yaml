@@ -53,6 +53,9 @@ importers:
       sifttypes:
         specifier: workspace:types@*
         version: link:../../shared/types
+      siftutils:
+        specifier: workspace:utils@*
+        version: link:../../shared/utils
       yargs:
         specifier: ^18.0.0
         version: 18.0.0
