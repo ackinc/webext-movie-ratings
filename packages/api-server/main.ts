@@ -34,10 +34,11 @@ server.listen({ port: +env.PORT! }, function (err, _address) {
 });
 
 process.on("SIGINT", cleanup);
+process.on("SIGTERM", cleanup);
 
-function cleanup() {
-  logger.info("Received SIGINT. Exiting ...");
-  server.close();
+async function cleanup(signal: "SIGINT" | "SIGTERM") {
+  logger.info(`Received ${signal}. Exiting ...`);
+  await server.close();
   db.close();
   process.exit(0);
 }
