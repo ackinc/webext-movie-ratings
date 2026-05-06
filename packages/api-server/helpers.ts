@@ -72,10 +72,9 @@ export function getProgramMatchRecord(
   } else {
     row = db
       .prepare(
-        `SELECT * FROM titles
-             WHERE title = $title
-               ${"type" in idOrProgram ? " AND type = $type " : ""}
-               ${"year" in idOrProgram ? " AND year = $year " : ""}`,
+        `SELECT * FROM titles WHERE title = $title
+        ${"type" in idOrProgram ? " AND type = $type " : ""}
+        ${"year" in idOrProgram ? " AND year = $year " : ""}`,
       )
       .get(idOrProgram) as ProgramMatchRecord | undefined;
   }
