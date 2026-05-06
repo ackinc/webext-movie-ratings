@@ -75,6 +75,7 @@ export const enum ErrorMessage {
   programNotFound = "The ratings API provider did not have data for this program",
   ratingsApiRequestTimedOut = "The ratings API request timed out",
   ratingsApiRequestAlreadyInFlight = "A request for this program's rating is already in-flight",
+  ratingsApiRequestFailed = "The ratings API request failed",
   idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",
   hostPermissionNotGranted = "A requested host permission was not granted",
   noAsyncPermissionRequestInFirefox = "permission.request must be called synchronously inside a user-gesture handler in Firefox",

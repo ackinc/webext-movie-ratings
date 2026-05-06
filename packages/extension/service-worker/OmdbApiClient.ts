@@ -43,6 +43,14 @@ export default class OmdbApiClient {
     try {
       this.inFlight.add(url);
       const response = await this.fetch(url);
+
+      if (!response.ok) {
+        throw new Error(
+          ErrorMessage.ratingsApiRequestFailed +
+            ` (status: ${response.status})`,
+        );
+      }
+
       const respBody = (await response.json()) as OmdbApiResponse;
 
       let result: IMDBData;
