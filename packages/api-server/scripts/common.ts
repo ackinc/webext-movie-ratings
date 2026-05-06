@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import readline from "node:readline";
+import type { Logger } from "pino";
 
 export type LineNumber = number;
 export type Line = string;
@@ -10,11 +11,13 @@ export async function processFile(
   filterFn?: (line: string, lineNum: number) => boolean,
   {
     batchSize = 1,
+    logger,
     logProgressEveryNLines = 1000,
     maxLinesToProcess = Infinity,
     haltFn = () => false,
   }: {
     batchSize?: number;
+    logger?: Logger;
     logProgressEveryNLines?: number;
     maxLinesToProcess?: number;
     haltFn?: (line: string, lineNum: number) => boolean;
@@ -49,7 +52,9 @@ export async function processFile(
     if (lineNum % logProgressEveryNLines === 0) {
       const now = new Date();
       const durationMs = +now - +startTime;
-      console.log(`Processed ${lineNum} lines (${durationMs}ms) ...`);
+      (logger ? logger.info : console.log)(
+        `Processed ${lineNum} lines (${durationMs}ms) ...`,
+      );
       startTime = now;
     }
   }

@@ -47,13 +47,13 @@ await processFile(
   path.join(imdbDataDir, "title.basics.tsv"),
   processBatchFromBasicsFile,
   isMovieOrSeries,
-  { batchSize: batchSize, logProgressEveryNLines: batchSize },
+  { batchSize: batchSize, logger, logProgressEveryNLines: batchSize },
 );
 await processFile(
   path.join(imdbDataDir, "title.akas.tsv"),
   processBatchFromAkasFile,
   (line: string) => canonDocumentsByImdbId.has(line.split("\t")[0]!),
-  { batchSize: batchSize, logProgressEveryNLines: batchSize },
+  { batchSize: batchSize, logger, logProgressEveryNLines: batchSize },
 );
 
 const durationMs = +new Date() - +startTime;
