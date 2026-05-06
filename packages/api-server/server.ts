@@ -32,8 +32,6 @@ export function createServer(db: Database) {
         : true,
   });
 
-  // TODO: db as decorator
-
   fastify.setErrorHandler(function (error: Error, _request, reply) {
     const statusCode =
       "statusCode" in error ? (error.statusCode as number) : 500;
