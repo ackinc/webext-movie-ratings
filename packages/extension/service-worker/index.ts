@@ -265,6 +265,7 @@ function getIMDBData(
       );
 
       omdbApiClient
+        // matchedImdbId may be '', so we cannot use ?? operator below
         .fetchIMDBData(matchedImdbId || program)
         .then((imdbData) => cacheFetchedImdbRating(program, imdbData, pageUrl))
         .then(({ imdbData }) => resolve(imdbData))
