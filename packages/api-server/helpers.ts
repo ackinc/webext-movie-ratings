@@ -3,9 +3,10 @@ import { spawn } from "node:child_process";
 import zlib from "node:zlib";
 import type { Database } from "better-sqlite3";
 import { downloadFile } from "siftnodeutils";
+import { type SiftApiProgramMatching } from "sifttypes";
 import { imdbDataFileUrls } from "./constants.ts";
 import logger from "./logger.ts";
-import type { Program, ProgramMatchRecord } from "./types.ts";
+import type { ProgramMatchRecord } from "./types.ts";
 
 export async function refreshImdbData(imdbDataDir: string) {
   // download files
@@ -61,7 +62,7 @@ export async function refreshImdbData(imdbDataDir: string) {
 
 export function getProgramMatchRecord(
   db: Database,
-  idOrProgram: number | bigint | Program,
+  idOrProgram: number | bigint | SiftApiProgramMatching.Request,
 ): ProgramMatchRecord | undefined {
   let row: ProgramMatchRecord | undefined;
   if (typeof idOrProgram === "number" || typeof idOrProgram === "bigint") {

@@ -1,5 +1,6 @@
 import type { ProgramData } from "../common/types";
 import { pick } from "siftutils";
+import type { SiftApiProgramMatching } from "sifttypes";
 
 // TODO: this is a duplicate definition (also defined in api-server); find
 //   a way to dedupe
@@ -14,12 +15,17 @@ export async function getMatchedImdbId(
   pageUrl: string,
 ): Promise<MatchResult> {
   const url = new URL(`${SIFT_API_URL}/imdbId`);
-  // TODO: add type-checking here (relevant type def is in api-server)
-  url.search = new URLSearchParams({
-    // ensure we don't send unnecessary search params
+
+  const searchParams = {
     ...pick(programData, ["title", "type", "year"]),
     pageUrl,
-  }).toString();
+  } satisfies SiftApiProgramMatching.Request;
+  url.search = new URLSearchParams(
+    // bit of harmless type coercion to avoid a type error; the
+    //   URLSearchParams constructor will convert the numeric 'year'
+    //   into a string automatically
+    searchParams as unknown as Record<string, string>,
+  ).toString();
 
   const response = await fetch(url);
   if (!response.ok) {

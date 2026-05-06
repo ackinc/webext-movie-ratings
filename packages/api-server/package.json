@@ -24,7 +24,7 @@
     "node-cron": "^4.2.1",
     "pino": "^10.3.1",
     "siftnodeutils": "workspace:nodeutils@*",
-    "typebox": "^1.1.27",
+    "sifttypes": "workspace:types@*",
     "yargs": "^18.0.0"
   },
   "devDependencies": {

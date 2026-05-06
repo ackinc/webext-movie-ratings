@@ -3,12 +3,14 @@ import type { Database } from "better-sqlite3";
 import { parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
 import cors from "@fastify/cors";
+import {
+  type SiftApiProgramMatching,
+  siftApiProgramMatchSchemas,
+} from "sifttypes";
 import { extensionIds } from "./constants.ts";
 import { getProgramMatchRecord } from "./helpers.ts";
 import loggerInstance from "./logger.ts";
-import { programSchema, programMatchResponseSchema } from "./schemas.ts";
 import { querySearchEngine, getIndexLastUpdatedTime } from "./searchEngine.ts";
-import type { Program, ProgramMatchResponse } from "./types.ts";
 
 const { APP_ENV } = process.env;
 
@@ -36,12 +38,15 @@ export function createServer(db: Database) {
   // A: Want to leave the possibility of manual matching open, for
   //      those cases where the search engine doesn't throw up a
   //      suitable match
-  fastify.get<{ Querystring: Program; Reply: { 200: ProgramMatchResponse } }>(
+  fastify.get<{
+    Querystring: SiftApiProgramMatching.Request;
+    Reply: { 200: SiftApiProgramMatching.Response };
+  }>(
     "/imdbId",
     {
       schema: {
-        querystring: programSchema,
-        response: { 200: programMatchResponseSchema },
+        querystring: siftApiProgramMatchSchemas.request,
+        response: { 200: siftApiProgramMatchSchemas.response },
       },
     } satisfies RouteShorthandOptions,
     async function (request, reply) {

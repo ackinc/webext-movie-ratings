@@ -1,23 +1,11 @@
-import { type Static } from "typebox";
-import {
-  programSchema,
-  programTypeSchema,
-  programMatchResponseSchema,
-  matchStatusSchema,
-} from "./schemas.ts";
-
-export type ProgramType = Static<typeof programTypeSchema>;
-export type Program = Static<typeof programSchema>;
-
-export type MatchStatus = Static<typeof matchStatusSchema>;
-export type ProgramMatchResponse = Static<typeof programMatchResponseSchema>;
+import type { ProgramType, SiftApiProgramMatching } from "sifttypes";
 
 export interface ProgramMatchRecord {
   id: number;
   title: string;
   type: ProgramType | "\\N";
   year: number;
-  status: MatchStatus;
+  status: SiftApiProgramMatching.Status;
   imdbId: string | null;
   createdAt: string;
   updatedAt: string;
@@ -28,6 +16,6 @@ export interface IndexedImdbTitle {
   id: string;
   imdbId: string;
   title: string;
-  type: "movie" | "series";
+  type: ProgramType;
   year: number | null;
 }

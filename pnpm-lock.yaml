@@ -50,9 +50,9 @@ importers:
       siftnodeutils:
         specifier: workspace:nodeutils@*
         version: link:../../shared/nodeutils
-      typebox:
-        specifier: ^1.1.27
-        version: 1.1.34
+      sifttypes:
+        specifier: workspace:types@*
+        version: link:../../shared/types
       yargs:
         specifier: ^18.0.0
         version: 18.0.0
@@ -166,6 +166,9 @@ importers:
       rate-limit-utils:
         specifier: ^1.0.0
         version: 1.0.0
+      sifttypes:
+        specifier: workspace:types@*
+        version: link:../../shared/types
       siftutils:
         specifier: workspace:utils@*
         version: link:../../shared/utils
@@ -245,6 +248,12 @@ importers:
       '@types/node':
         specifier: ^25.6.0
         version: 25.6.0
+
+  shared/types:
+    dependencies:
+      typebox:
+        specifier: ^1.1.34
+        version: 1.1.34
 
   shared/utils:
     devDependencies:

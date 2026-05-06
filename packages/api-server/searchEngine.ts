@@ -1,6 +1,7 @@
 import { parseISO } from "date-fns";
 import { Meilisearch } from "meilisearch";
-import type { IndexedImdbTitle, Program } from "./types.ts";
+import type { SiftApiProgramMatching } from "sifttypes";
+import type { IndexedImdbTitle } from "./types.ts";
 
 const { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = process.env;
 
@@ -14,7 +15,7 @@ const defaultThreshold = 0.9;
 const defaultLimit = 5;
 
 export async function querySearchEngine(
-  program: Omit<Program, "pageUrl">,
+  program: Omit<SiftApiProgramMatching.Request, "pageUrl">,
   rankingScoreThreshold: number = defaultThreshold,
   limit: number = defaultLimit,
 ): Promise<IndexedImdbTitle[]> {
