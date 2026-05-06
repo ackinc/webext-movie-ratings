@@ -27,14 +27,29 @@ export function createServer(db: Database) {
         : true,
   });
 
-  // health check
+  // TODO: db as decorator
+
+  fastify.setErrorHandler(function (error: Error, _request, reply) {
+    const statusCode =
+      "statusCode" in error ? (error.statusCode as number) : 500;
+    if (statusCode < 500) {
+      this.log.info(error);
+    } else {
+      this.log.error(error);
+    }
+    reply
+      .status(statusCode)
+      .send({ error: statusCode < 500 ? error.message : "Server error" });
+  });
+
+  // health check route
   fastify.get("/", function (_request, reply) {
     reply.send({ status: "ok" });
   });
 
-  // Q: Why bother involving a db at all, when we could just
-  //      query the search engine directly in the request handler
-  //      and call it a day?
+  // program-matching route
+  // Q: Why bother involving a db at all, when we are already querying
+  //      the search engine directly in the request handler?
   // A: Want to leave the possibility of manual matching open, for
   //      those cases where the search engine doesn't throw up a
   //      suitable match
