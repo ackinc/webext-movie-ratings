@@ -1,64 +1,6 @@
-import * as path from "node:path";
-import { spawn } from "node:child_process";
-import zlib from "node:zlib";
 import type { Database } from "better-sqlite3";
-import { downloadFile } from "siftnodeutils";
 import { type SiftApiProgramMatching } from "sifttypes";
-import { imdbDataFileUrls } from "./constants.ts";
-import logger from "./logger.ts";
 import type { ProgramMatchRecord } from "./types.ts";
-
-export async function refreshImdbData(imdbDataDir: string) {
-  // download files
-  const startTime = new Date();
-  await Promise.all(
-    imdbDataFileUrls.map((url) =>
-      downloadFile(
-        url,
-        path.join(imdbDataDir, path.basename(url, path.extname(url))),
-        zlib.createGunzip(),
-      ),
-    ),
-  );
-  const durationMs = +new Date() - +startTime;
-  logger.info(`refreshImdbDataIfStale: refreshed data (${durationMs}ms)`);
-
-  // import into search engine
-  return new Promise<void>((resolve, reject) => {
-    const importScriptName = "addImdbDatasetToMeilisearch.ts";
-    const importScriptPath = path.normalize(
-      path.join(__dirname, "scripts", importScriptName),
-    );
-
-    const startTime = new Date();
-    const cp = spawn("node", [importScriptPath], { stdio: "pipe" });
-    const cpLogger = logger.child({ module: path.basename(importScriptPath) });
-    cp.on("close", (code, signal) => {
-      const durationMs = +new Date() - +startTime;
-      if (code === 0) {
-        cpLogger.info({ msg: `exited successfully`, code, signal, durationMs });
-        resolve();
-      } else {
-        cpLogger.warn({
-          msg: `exited unsuccessfully`,
-          code,
-          signal,
-          durationMs,
-        });
-        const err = new Error(
-          `${importScriptName} exited with ${code === null ? "signal" : "code"} ${code ?? signal}`,
-        );
-        reject(err);
-      }
-    });
-    cp.on("error", (err) => {
-      cpLogger.error(err);
-      reject(err);
-    });
-    cp.stdout.on("data", (data) => cpLogger.info(data));
-    cp.stderr.on("data", (data) => cpLogger.error(data));
-  });
-}
 
 export function getProgramMatchRecord(
   db: Database,

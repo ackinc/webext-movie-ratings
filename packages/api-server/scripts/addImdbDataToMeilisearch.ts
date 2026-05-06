@@ -2,14 +2,22 @@
 
 import "dotenv/config";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
+import * as fs from "fs-extra";
 import { Meilisearch, type Index, type IndexObject } from "meilisearch";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { type Batch, processFile, isMovieOrSeries } from "./common.ts";
+import baseLogger from "../logger.ts";
 
-const { IMDB_DATA_DIR, MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = process.env;
+const __filename = path.basename(fileURLToPath(import.meta.url));
+const { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = process.env;
 
 const argv = yargs(hideBin(process.argv))
+  .option("imdbDataDir", {
+    string: true,
+    demandOption: true,
+  })
   .option("batchSize", {
     number: true,
     // https://www.meilisearch.com/docs/capabilities/indexing/how_to/import_large_datasets#choose-the-right-payload-size
@@ -17,6 +25,13 @@ const argv = yargs(hideBin(process.argv))
   })
   .parseSync();
 const { batchSize } = argv;
+const imdbDataDir = path.resolve(argv.imdbDataDir);
+
+await Promise.all(
+  ["title.basics.tsv", "title.akas.tsv"].map((filename) =>
+    fs.promises.access(path.join(imdbDataDir, filename)),
+  ),
+);
 
 const client = new Meilisearch({
   host: MEILISEARCH_URL!,
@@ -24,19 +39,25 @@ const client = new Meilisearch({
 });
 const index = await prepareIndex(client);
 
+const logger = baseLogger.child({ script: __filename });
+const startTime = new Date();
+
 const canonDocumentsByImdbId = new Map<string, Document>();
 await processFile(
-  path.join(IMDB_DATA_DIR!, "title.basics.tsv"),
+  path.join(imdbDataDir, "title.basics.tsv"),
   processBatchFromBasicsFile,
   isMovieOrSeries,
   { batchSize: batchSize, logProgressEveryNLines: batchSize },
 );
 await processFile(
-  path.join(IMDB_DATA_DIR!, "title.akas.tsv"),
+  path.join(imdbDataDir, "title.akas.tsv"),
   processBatchFromAkasFile,
   (line: string) => canonDocumentsByImdbId.has(line.split("\t")[0]!),
   { batchSize: batchSize, logProgressEveryNLines: batchSize },
 );
+
+const durationMs = +new Date() - +startTime;
+logger.info(`Completed in (${durationMs}ms)`);
 
 // helpers
 
