@@ -32,7 +32,7 @@ export default class OmdbApiClient {
       const { title, type, year } = imdbIdOrProgram;
       searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, t: title });
       if (type) searchParams.set("type", type);
-      if (year) searchParams.set("y", year);
+      if (year) searchParams.set("y", String(year));
     }
 
     const url = `https://www.omdbapi.com/?${searchParams.toString()}`;

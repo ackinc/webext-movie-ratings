@@ -39,7 +39,7 @@ export default class ProgramNode extends AbstractProgramNode {
       : null;
     const year =
       type === "movie" && metadataWrapperNode
-        ? metadataWrapperNode.querySelector("div.year")!.textContent
+        ? +metadataWrapperNode.querySelector("div.year")!.textContent
         : null;
 
     return {
@@ -47,7 +47,7 @@ export default class ProgramNode extends AbstractProgramNode {
       ...(type ? { type } : {}),
       // specifying year for series is causing many false negatives
       //   when querying omdbapi
-      ...(year ? { year } : {}),
+      ...(year && Number.isInteger(year) ? { year } : {}),
     };
   }
 

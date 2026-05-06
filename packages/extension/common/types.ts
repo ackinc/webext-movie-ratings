@@ -11,7 +11,7 @@ export type ProgramContainer = {
 export type ProgramData = {
   title: string;
   type?: "movie" | "series";
-  year?: string;
+  year?: number;
 };
 export type Program = {
   selector: Selector;
