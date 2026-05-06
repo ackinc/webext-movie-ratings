@@ -286,23 +286,31 @@ async function cacheFetchedImdbRating(
     program,
     requestingPageUrl,
   );
-  if (["error", "pending"].includes(matchResult.status)) {
+  if ("error" in matchResult) {
+    return ratingsCache.putOne({
+      program,
+      imdbData,
+      // need to cool our heels until the issue on the server-side
+      //   is sorted out
+      expiry: addMinutes(new Date(), 60),
+    });
+  } else if (matchResult.status === "pending") {
     // cache for long enough that the matching process on the
     //   server-side will have run before the next time we try
     //   to fetch this program's rating from the ratings-API
     return ratingsCache.putOne({
       program,
       imdbData,
-      /* TODO: magic number */
-      expiry: addMinutes(new Date(), 20),
+      expiry: addMinutes(new Date(), 1),
     });
   } else if (matchResult.status === "matched") {
     // next time a rating for this program is requested, we'll
-    //   make an api request to the ratings-API provider using
-    //   the matched IMDb ID
+    //   notice the cached rating is expired and make an api request
+    //   to the ratings-API provider using the cached IMDb ID that
+    //   came from the program-matching API
     return ratingsCache.putOne({
       program,
-      imdbData: { ...imdbData, imdbID: matchResult.imdbId },
+      imdbData: { ...imdbData, imdbID: matchResult.imdbId! },
       expiry: addMinutes(new Date(), -1),
     });
   } else /* matchResult.status === 'abandoned' */ {
