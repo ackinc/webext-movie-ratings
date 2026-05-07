@@ -29,8 +29,10 @@ if (!ALLOWED_TARGETS.includes(TARGET_BROWSER)) {
   throw new Error(`Invalid target: ${TARGET_BROWSER}`);
 }
 
-// TODO: production url
-const SIFT_API_URL = APP_ENV === "development" ? "http://localhost:3000" : null;
+const SIFT_API_URL =
+  APP_ENV === "development"
+    ? "http://localhost:3000"
+    : "https://api.getsift.today";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
