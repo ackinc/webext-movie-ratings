@@ -18,10 +18,11 @@ if (process.env["APP_ENV"] === "production") {
     "0 0 1,16 * *", // twice a month
     () =>
       spawn("node", [path.join(__dirname, "./scripts/refreshImdbData.ts")], {
+        // we don't want this process to be interrupted if the server is restarting
         detached: true,
         env: { IMDB_DATA_DIR: env.IMDB_DATA_DIR! },
         stdio: "inherit",
-      }).unref(),
+      }).unref(), // we don't want the server to wait until this process is done before closing
   );
 }
 
