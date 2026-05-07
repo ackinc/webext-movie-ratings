@@ -7,7 +7,7 @@ import {
   type SiftApiProgramMatching,
   siftApiProgramMatchSchemas,
 } from "sifttypes";
-import { pick } from "siftutils";
+import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
 import {
   createProgramMatchRecord,
@@ -46,9 +46,31 @@ export function createServer(db: Database) {
   });
 
   // health check route
-  fastify.get("/", function (_request, reply) {
-    reply.send({ status: "ok" });
-  });
+  fastify.get<{
+    Querystring: { delayMs?: number; error?: string };
+    Reply: { 200: { status: "ok" } };
+  }>(
+    "/",
+    {
+      schema: {
+        querystring: {
+          type: "object",
+          properties: {
+            delayMs: { type: "number" },
+            error: { type: "string" },
+          },
+          additionalProperties: false,
+        },
+      },
+    },
+    async function (request, reply) {
+      const { delayMs: qDelayMs, error } = request.query;
+      if (qDelayMs !== undefined) await delayMs(qDelayMs);
+      if (error !== undefined) throw new Error(error);
+
+      reply.code(200).send({ status: "ok" });
+    },
+  );
 
   // program-matching route
   // Q: Why bother involving a db at all, when we are already querying
