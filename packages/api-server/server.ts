@@ -14,6 +14,7 @@ import {
   getProgramMatchRecord,
   updateProgramMatchRecord,
 } from "./helpers.ts";
+import Sentry from "./instrument.ts";
 import loggerInstance from "./logger.ts";
 import { querySearchEngine, getIndexLastUpdatedTime } from "./searchEngine.ts";
 
@@ -43,6 +44,9 @@ export function createServer(db: Database) {
     reply
       .status(statusCode)
       .send({ error: statusCode < 500 ? error.message : "Server error" });
+    if (statusCode >= 500) {
+      Sentry.captureException(error);
+    }
   });
 
   // health check route
