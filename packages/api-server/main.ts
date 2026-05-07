@@ -28,6 +28,15 @@ if (process.env["APP_ENV"] === "production") {
         stdio: "inherit",
       }).unref(), // we don't want the server to wait until this process is done before closing
   );
+
+  cron.schedule(
+    "0 1 * * *", // every day
+    () =>
+      spawn("node", [path.join(__dirname, "./scripts/backupDatabase.ts")], {
+        detached: true,
+        stdio: "inherit",
+      }).unref(),
+  );
 }
 
 const server = createServer(db);
