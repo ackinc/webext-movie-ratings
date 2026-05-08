@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import { CssClasses, ErrorMessage } from "../../common";
-import type { IMDBData, ProgramContainer, Program } from "../../common/types";
+import type { ProgramContainer, Program } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
 export default class AmazonPrimeVideoPage extends AbstractPage {
@@ -164,24 +164,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     );
     if (isInSearchResultsPreviewPane) return false;
 
-    const hasImdbNode = !!(
-      this.constructor as typeof AbstractPage
-    ).ProgramNode.getIMDBNode(program.node);
-    return hasImdbNode;
-  }
-
-  override addIMDBData(program: Program, data: IMDBData) {
-    // see note about SEARCH_RESULTS_PREVIEW_PANE
-    const isInSearchResultsPreviewPane = program.node.matches(
-      'div[data-testid="navigation-bar-content-cards-below"] article > a',
-    );
-    if (isInSearchResultsPreviewPane) {
-      (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
-        program.node,
-      );
-    }
-
-    super.addIMDBData(program, data);
+    return super.checkIMDBDataAlreadyAdded(program);
   }
 
   protected override getGeneralizedUrlPath(href: string): string {

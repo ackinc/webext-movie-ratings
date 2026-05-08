@@ -1,4 +1,5 @@
 import { limitThroughput } from "rate-limit-utils";
+import { captureException } from "../common/errorReporter";
 import { pick, type Program, type IMDBData, ErrorMessage } from "../common";
 
 const MAX_REQ_PER_SECOND = 50;
@@ -23,11 +24,11 @@ export default class OmdbApiClient {
   async fetchIMDBData(
     imdbIdOrProgram: string | Omit<Program, "node">,
   ): Promise<IMDBData> {
+    const imdbId = typeof imdbIdOrProgram === "string" ? imdbIdOrProgram : null;
     let searchParams: URLSearchParams;
 
     if (typeof imdbIdOrProgram === "string") {
-      const imdbId = imdbIdOrProgram;
-      searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, i: imdbId });
+      searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, i: imdbId! });
     } else {
       const { title, type, year } = imdbIdOrProgram;
       searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, t: title });
@@ -56,9 +57,11 @@ export default class OmdbApiClient {
       let result: IMDBData;
       if ("Error" in respBody) {
         if (!respBody.Error.includes("not found")) {
-          throw new Error(respBody.Error);
+          // url already carries necessary context, so we don't need to
+          //   explicitly add it here
+          captureException(new Error(`omdbApi error: ${respBody.Error}`));
         }
-        result = { imdbRating: "N/F", imdbID: "" };
+        result = { imdbRating: "N/F", imdbID: imdbId ?? "" };
       } else {
         result = pick(respBody, ["imdbID", "imdbRating"]);
       }

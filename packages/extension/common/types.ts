@@ -21,6 +21,7 @@ export type Program = {
 export type IMDBData = {
   imdbID: string;
   imdbRating: string;
+  expiry?: number;
 };
 
 export type CachedIMDBData = IMDBData & {

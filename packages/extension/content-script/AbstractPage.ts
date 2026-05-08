@@ -168,12 +168,25 @@ valid containers:\n\t${programContainers
   };
 
   checkIMDBDataAlreadyAdded(program: Program): boolean {
-    return !!(this.constructor as typeof AbstractPage).ProgramNode.getIMDBNode(
-      program.node,
+    const imdbNode = (
+      this.constructor as typeof AbstractPage
+    ).ProgramNode.getIMDBNode(program.node);
+
+    return Boolean(
+      imdbNode &&
+      !(
+        "expiry" in imdbNode.dataset &&
+        +imdbNode.dataset["expiry"]! <= +new Date()
+      ),
     );
   }
 
   addIMDBData(program: Program, data: IMDBData) {
+    // remove existing node (no-op if doesn't exist)
+    (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
+      program.node,
+    );
+
     const ratingNode = this.#createIMDBDataNode(data);
     (this.constructor as typeof AbstractPage).ProgramNode.insertIMDBNode(
       program.node,
@@ -272,6 +285,7 @@ valid containers:\n\t${programContainers
     node.classList.add(CssClasses.imdbDataNode);
     node.dataset["imdbID"] = data.imdbID;
     node.dataset["imdbRating"] = data.imdbRating;
+    if ("expiry" in data) node.dataset["expiry"] = String(data.expiry);
     if (data.imdbRating !== "N/F") {
       node.setAttribute("href", getIMDBLink(data.imdbID));
       node.setAttribute("target", "_blank");

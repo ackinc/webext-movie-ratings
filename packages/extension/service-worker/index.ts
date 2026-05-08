@@ -246,7 +246,7 @@ function handleMessage(
 function getIMDBData(
   program: Omit<Program, "node">,
   pageUrl: string,
-): Promise<IMDBData> {
+): Promise<Required<IMDBData>> {
   return new Promise((resolve, reject) => {
     if (FF_TELEMETRY_ENABLED) {
       telemetryStore
@@ -258,8 +258,9 @@ function getIMDBData(
     }
 
     ratingsCache.get(program).then((result) => {
-      if (result && !result.isExpired) return resolve(result.data);
-      const matchedImdbId = result?.data.imdbID;
+      if (result && result.expiry > new Date())
+        return resolve({ ...result.imdbData, expiry: +result.expiry });
+      const matchedImdbId = result?.imdbData.imdbID;
 
       setTimeout(
         () => reject(new Error(ErrorMessage.ratingsApiRequestTimedOut)),
@@ -271,7 +272,9 @@ function getIMDBData(
         //   operator below
         .fetchIMDBData(matchedImdbId || program)
         .then((imdbData) => cacheFetchedImdbRating(program, imdbData, pageUrl))
-        .then(({ imdbData }) => resolve(imdbData))
+        .then(({ imdbData, expiry }) =>
+          resolve({ ...imdbData, expiry: +expiry }),
+        )
         .catch(reject);
     });
   });
@@ -282,8 +285,9 @@ async function cacheFetchedImdbRating(
   imdbData: IMDBData,
   requestingPageUrl: string,
 ) {
-  const ratingFound = imdbData.imdbRating !== "N/F";
-  if (ratingFound) return ratingsCache.putOne({ program, imdbData });
+  if (imdbData.imdbID || imdbData.imdbRating !== "N/F") {
+    return ratingsCache.putOne({ program, imdbData });
+  }
 
   let matchResult;
   try {
