@@ -24,11 +24,11 @@ export default class OmdbApiClient {
   async fetchIMDBData(
     imdbIdOrProgram: string | Omit<Program, "node">,
   ): Promise<IMDBData> {
+    const imdbId = typeof imdbIdOrProgram === "string" ? imdbIdOrProgram : null;
     let searchParams: URLSearchParams;
 
     if (typeof imdbIdOrProgram === "string") {
-      const imdbId = imdbIdOrProgram;
-      searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, i: imdbId });
+      searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, i: imdbId! });
     } else {
       const { title, type, year } = imdbIdOrProgram;
       searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, t: title });
@@ -61,7 +61,7 @@ export default class OmdbApiClient {
           //   explicitly add it here
           captureException(new Error(`omdbApi error: ${respBody.Error}`));
         }
-        result = { imdbRating: "N/F", imdbID: "" };
+        result = { imdbRating: "N/F", imdbID: imdbId ?? "" };
       } else {
         result = pick(respBody, ["imdbID", "imdbRating"]);
       }

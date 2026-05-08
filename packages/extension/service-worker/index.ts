@@ -285,8 +285,9 @@ async function cacheFetchedImdbRating(
   imdbData: IMDBData,
   requestingPageUrl: string,
 ) {
-  const ratingFound = imdbData.imdbRating !== "N/F";
-  if (ratingFound) return ratingsCache.putOne({ program, imdbData });
+  if (imdbData.imdbID || imdbData.imdbRating !== "N/F") {
+    return ratingsCache.putOne({ program, imdbData });
+  }
 
   let matchResult;
   try {
