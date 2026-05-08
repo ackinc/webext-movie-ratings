@@ -79,6 +79,7 @@ export const enum ErrorMessage {
   hostPermissionNotGranted = "A requested host permission was not granted",
   noAsyncPermissionRequestInFirefox = "permission.request must be called synchronously inside a user-gesture handler in Firefox",
   unexpectedTargetBrowser = "This code is running in the wrong browser!",
+  siftApiServerError = "There was an error on the Sift API server-side",
 }
 
 export const supportedSites = {

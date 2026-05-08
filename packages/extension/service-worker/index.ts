@@ -231,6 +231,8 @@ function handleMessage(
       ErrorMessage.telemetryStoreNotReady,
       ErrorMessage.ratingsApiRequestTimedOut,
       ErrorMessage.ratingsApiRequestAlreadyInFlight,
+      // would've been captured from the server-side
+      ErrorMessage.siftApiServerError,
     ];
     if (errorsToIgnore.includes(error.message)) return;
     captureException(error, metadata);
@@ -283,19 +285,21 @@ async function cacheFetchedImdbRating(
   const ratingFound = imdbData.imdbRating !== "N/F";
   if (ratingFound) return ratingsCache.putOne({ program, imdbData });
 
-  const matchResult = await siftApiService.getMatchedImdbId(
-    program,
-    requestingPageUrl,
-  );
-  if ("error" in matchResult) {
-    return ratingsCache.putOne({
+  let matchResult;
+  try {
+    matchResult = await siftApiService.getMatchedImdbId(
       program,
-      imdbData,
-      // need to cool our heels until the issue on the server-side
-      //   is sorted out
-      expiry: addMinutes(new Date(), 60),
-    });
-  } else if (matchResult.status === "pending") {
+      requestingPageUrl,
+    );
+  } catch (e) {
+    // give some time for any server-side issues to be sorted out
+    // we don't want to hammer the server with the same request
+    //   on the next invocation of the loopFn
+    await ratingsCache.putOne({ program, imdbData });
+    throw e;
+  }
+
+  if (matchResult.status === "pending") {
     // cache for long enough that the matching process on the
     //   server-side will have run before the next time we try
     //   to fetch this program's rating from the ratings-API

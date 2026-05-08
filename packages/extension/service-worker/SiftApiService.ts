@@ -1,13 +1,12 @@
 import type { ProgramData } from "../common/types";
 import { pick } from "siftutils";
 import type { SiftApiProgramMatching } from "sifttypes";
-
-type MatchResult = { error: "string" } | SiftApiProgramMatching.Response;
+import { ErrorMessage } from "../common";
 
 export async function getMatchedImdbId(
   programData: ProgramData,
   pageUrl: string,
-): Promise<MatchResult> {
+): Promise<SiftApiProgramMatching.Response> {
   const url = new URL(`${SIFT_API_URL}/imdbId`);
 
   const searchParams = {
@@ -22,5 +21,6 @@ export async function getMatchedImdbId(
   ).toString();
 
   const response = await fetch(url);
-  return (await response.json()) as MatchResult;
+  if (!response.ok) throw new Error(ErrorMessage.siftApiServerError);
+  return (await response.json()) as SiftApiProgramMatching.Response;
 }
