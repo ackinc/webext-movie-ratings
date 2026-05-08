@@ -1,4 +1,5 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
+import { addMilliseconds } from "date-fns";
 import {
   ONE_WEEK_IN_MS,
   type CachedIMDBData,
@@ -45,40 +46,47 @@ export default class RatingsCache {
 
   async get(
     program: ProgramData,
-  ): Promise<{ data: IMDBData; isExpired: boolean } | undefined> {
+  ): Promise<Omit<Required<CacheEntry>, "program"> | undefined> {
     const cached = await this.db.get(storeName, this.#getKey(program));
     return cached
       ? {
-          data: pick(cached, ["imdbID", "imdbRating"]),
-          isExpired: this.#checkExpired(cached),
+          imdbData: pick(cached, ["imdbID", "imdbRating"]),
+          expiry: new Date(cached.expiry),
         }
       : undefined;
   }
 
-  async put(programsAndRatings: CacheEntry[]): Promise<void> {
+  async put(programsAndRatings: CacheEntry[]): Promise<Required<CacheEntry>[]> {
     const txn = this.db.transaction([storeName], "readwrite");
     const ratingsStore = txn.objectStore(storeName);
 
+    const entriesToPut = programsAndRatings.map((data) => ({
+      ...data,
+      expiry:
+        data.expiry ??
+        addMilliseconds(
+          new Date(),
+          data.imdbData.imdbRating === "N/F"
+            ? nfRatingCacheTime
+            : imdbRatingCacheTime,
+        ),
+    }));
+
     await Promise.all(
-      programsAndRatings.map((data) =>
+      entriesToPut.map((data) =>
         ratingsStore.put({
           ...data.imdbData,
           key: this.#getKey(data.program),
-          expiry:
-            "expiry" in data
-              ? +data.expiry
-              : +new Date() +
-                (data.imdbData.imdbRating === "N/F"
-                  ? nfRatingCacheTime
-                  : imdbRatingCacheTime),
+          expiry: +data.expiry,
         }),
       ),
     );
+
+    return entriesToPut;
   }
 
-  async putOne(entry: CacheEntry) {
-    await this.put([entry]);
-    return entry;
+  async putOne(entry: CacheEntry): Promise<Required<CacheEntry>> {
+    return (await this.put([entry]))[0]!;
   }
 
   // useful when migrating previously cached data from elsewhere
@@ -104,14 +112,6 @@ export default class RatingsCache {
       [utf8EncodedTitle.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
         .filter(Boolean)
         .join("|"),
-    );
-  }
-
-  #checkExpired(data: CachedIMDBData): boolean {
-    return !(
-      data.imdbRating &&
-      (data.imdbID || data.imdbRating === "N/F") &&
-      data.expiry > +new Date()
     );
   }
 }
