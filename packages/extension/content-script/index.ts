@@ -200,19 +200,16 @@ async function loopFn(abortController: AbortController) {
 async function addRating(p: Program): Promise<Program> {
   if (page.checkIMDBDataAlreadyAdded(p)) return p;
 
-  let result: IMDBData;
   try {
-    result = await fetchIMDBData(p);
-  } catch (_e) {
-    // do nothing if the promise was rejected; the error would
-    //   already have been logged and captured in the SW
-    return p;
-  }
-
-  try {
+    const result = await fetchIMDBData(p);
     page.addIMDBData(p, result);
   } catch (e) {
-    captureException(e, { context: { program: p } });
+    if (e instanceof SWError) {
+      // do nothing; the error would already have been logged
+      //   and captured from the SW-side
+    } else {
+      captureException(e, { context: { program: p } });
+    }
   }
 
   return p;
