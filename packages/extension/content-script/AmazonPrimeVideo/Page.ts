@@ -164,10 +164,7 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     );
     if (isInSearchResultsPreviewPane) return false;
 
-    const hasImdbNode = !!(
-      this.constructor as typeof AbstractPage
-    ).ProgramNode.getIMDBNode(program.node);
-    return hasImdbNode;
+    return super.checkIMDBDataAlreadyAdded(program);
   }
 
   override addIMDBData(program: Program, data: IMDBData) {
