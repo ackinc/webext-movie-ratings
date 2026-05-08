@@ -1,0 +1,22 @@
+info:
+  name: Delete doc from index
+  type: http
+  seq: 8
+
+http:
+  method: DELETE
+  url: "{{MEILISEARCH_URL}}/indexes/:indexName/documents/:docId"
+  params:
+    - name: indexName
+      value: "{{indexName}}"
+      type: path
+    - name: docId
+      value: somefakedoc
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

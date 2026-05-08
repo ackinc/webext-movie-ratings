@@ -1,0 +1,12 @@
+info:
+  name: Meilisearch requests
+  type: folder
+  seq: 1
+
+request:
+  auth:
+    type: bearer
+    token: "{{MEILISEARCH_MASTER_KEY}}"
+  variables:
+    - name: indexName
+      value: imdb

@@ -1,0 +1,8 @@
+name: sift-local
+variables:
+  - name: API_URL
+    value: http://localhost:3000
+  - name: MEILISEARCH_URL
+    value: http://localhost:7700
+  - secret: true
+    name: MEILISEARCH_MASTER_KEY

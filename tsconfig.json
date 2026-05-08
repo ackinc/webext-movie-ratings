@@ -1,9 +1,14 @@
 {
   "files": [],
+  "exclude": ["**/tmp/**/*"],
   "references": [
-    { "path": "./extension" },
-    { "path": "./scripts" },
-    { "path": "./tests" }
+    { "path": "./packages/extension" },
+    { "path": "./packages/api-server" },
+    { "path": "./packages/browse-otts" },
+    { "path": "./packages/website" },
+    { "path": "./shared/utils" },
+    { "path": "./shared/nodeutils" },
+    { "path": "./shared/types" }
   ],
 
   // Visit https://aka.ms/tsconfig to read more about this file

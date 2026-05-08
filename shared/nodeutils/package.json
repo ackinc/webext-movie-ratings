@@ -1,0 +1,17 @@
+{
+  "name": "nodeutils",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.33.0",
+  "devDependencies": {
+    "@types/node": "^25.6.0"
+  },
+  "type": "module"
+}

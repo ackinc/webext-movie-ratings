@@ -1,0 +1,19 @@
+info:
+  name: Delete all docs in index
+  type: http
+  seq: 9
+
+http:
+  method: DELETE
+  url: "{{MEILISEARCH_URL}}/indexes/:indexName/documents"
+  params:
+    - name: indexName
+      value: "{{indexName}}"
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

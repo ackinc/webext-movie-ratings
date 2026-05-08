@@ -1,0 +1,12 @@
+{
+  "include": ["**/*"],
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+
+    "types": [],
+    "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true,
+    "erasableSyntaxOnly": true
+  }
+}
