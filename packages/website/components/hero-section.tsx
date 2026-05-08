@@ -32,8 +32,7 @@ export function HeroSection() {
           </div>
 
           <h1 className="mb-6 text-5xl font-bold tracking-tight text-foreground md:text-7xl text-balance">
-            IMDB ratings on your
-            <br />
+            IMDB ratings on your favourite{" "}
             <span className="text-accent">streaming apps</span>
           </h1>
 
