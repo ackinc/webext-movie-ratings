@@ -33,7 +33,7 @@ jobs:
         with:
           base-ref: ${{ github.event.before }}
           head-ref: ${{ github.event.after }}
-          filename-pattern: "packages/website/dist"
+          filename-pattern: "packages/website/dist/*"
       - name: Check website among changed files
         id: check-website-changed
         run: |
