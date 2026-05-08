@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import { CssClasses, ErrorMessage } from "../../common";
-import type { Program, ProgramContainer, IMDBData } from "../../common/types";
+import type { Program, ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
 
 export default class AppleTvPage extends AbstractPage {
@@ -126,20 +126,6 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     }
 
     return super.checkIMDBDataAlreadyAdded(program);
-  }
-
-  override addIMDBData(program: Program, data: IMDBData) {
-    // see note about SEARCH_RESULTS_PREVIEW_PANE
-    const isInSearchResultsPreviewPane = program.node.matches(
-      "ul.search-suggestions div.search-hint-lockup",
-    );
-    if (isInSearchResultsPreviewPane) {
-      (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
-        program.node,
-      );
-    }
-
-    super.addIMDBData(program, data);
   }
 
   protected override getGeneralizedUrlPath(href: string): string {

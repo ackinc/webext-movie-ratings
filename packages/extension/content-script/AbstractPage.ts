@@ -174,6 +174,11 @@ valid containers:\n\t${programContainers
   }
 
   addIMDBData(program: Program, data: IMDBData) {
+    // remove existing node (no-op if doesn't exist)
+    (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
+      program.node,
+    );
+
     const ratingNode = this.#createIMDBDataNode(data);
     (this.constructor as typeof AbstractPage).ProgramNode.insertIMDBNode(
       program.node,
