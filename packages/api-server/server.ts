@@ -56,7 +56,7 @@ export function createServer(db: Database) {
       error?: string;
       workThroughDelay?: boolean;
     };
-    Reply: { 200: { status: "ok" } };
+    Reply: { 200: { status: string } };
   }>(
     "/",
     {
@@ -84,7 +84,7 @@ export function createServer(db: Database) {
       }
       if (error !== undefined) throw new Error(error);
 
-      reply.code(200).send({ status: "ok" });
+      reply.code(200).send({ status: "ok!" });
     },
   );
 
