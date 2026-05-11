@@ -4,15 +4,14 @@ import "./ErrorReportingOptIn.css";
 import CheckboxInput from "./Inputs/CheckboxInput";
 
 interface ErrorReportingOptInProps {
-  allowShowDetails?: boolean;
+  onClickShowDetails?: () => void;
   style?: Record<string, string>;
 }
 
 function ErrorReportingOptIn({
-  allowShowDetails,
+  onClickShowDetails,
   style,
 }: ErrorReportingOptInProps) {
-  const [showDetails, setShowDetails] = useState(false);
   const [optedInToErrorReporting, setOptedInToErrorReporting] = useState(false);
 
   useEffect(() => {
@@ -24,13 +23,7 @@ function ErrorReportingOptIn({
 
   return (
     <form className="error-reporting-form" style={{ ...style }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
         <CheckboxInput
           name="errorReportingOptIn"
           label="Opt-in to error reporting"
@@ -38,37 +31,19 @@ function ErrorReportingOptIn({
           onChange={toggleErrorReportingOptIn}
         />
 
-        {allowShowDetails ? (
+        {onClickShowDetails ? (
           <button
-            className="toggle-info-btn"
+            className="show-details-btn"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setShowDetails((x) => !x);
+              onClickShowDetails();
             }}
           >
-            ?
+            More
           </button>
         ) : null}
       </div>
-
-      {showDetails ? (
-        <div className="error-reporting-details">
-          <p>
-            With your permission, we can collect the following information when
-            an error occurs in the extension.
-          </p>
-          <ul>
-            <li>Device, OS, and browser</li>
-            <li>Dimensions of the browser</li>
-            <li>Error details</li>
-          </ul>
-          <p>
-            This will help us deliver fixes faster when updates to an OTT
-            website's design causes the extension to break.
-          </p>
-        </div>
-      ) : null}
     </form>
   );
 

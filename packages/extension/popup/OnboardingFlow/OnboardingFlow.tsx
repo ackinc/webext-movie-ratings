@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import WelcomePage from "./WelcomePage";
-import PitchErrorReportingOptInPage from "./PitchErrorReportingPage";
+import PitchErrorReportingOptInPage from "../PitchErrorReportingPage";
 import CheckAndRequestPermissionsPage from "./CheckAndRequestPermissionsPage";
 import CheckAndDisplayPermissionStatusPage from "./CheckAndDisplayPermissionStatusPage";
 import type { PermString, Sitename } from "../common";
@@ -64,6 +64,12 @@ export default function OnboardingFlow({ onFinish }: OnboardingFlowProps) {
   useEffect(() => {
     setError(null);
   }, [selectedSites]);
+
+  useEffect(() => {
+    if (curPage === "pitchErrorReporting") {
+      setSetting("onboardingStatus", "pitchedErrorReporting");
+    }
+  }, [curPage]);
 
   return (
     <div className="onboarding-flow">

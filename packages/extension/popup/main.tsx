@@ -10,6 +10,7 @@ import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
 import SettingsPage from "./SettingsPage";
+import PitchErrorReportingPage from "./PitchErrorReportingPage";
 import Footer from "./Footer";
 import "./main.css";
 
@@ -51,6 +52,9 @@ function App() {
           ) : null}
           {curPage === "filters" ? <ProgramFilters /> : null}
           {curPage === "settings" ? <SettingsPage /> : null}
+          {curPage === "pitchErrorReporting" ? (
+            <PitchErrorReportingPage />
+          ) : null}
         </main>
 
         {curPage !== "onboarding" ? <Footer curPage={curPage} /> : null}
