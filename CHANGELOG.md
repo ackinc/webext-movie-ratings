@@ -1,5 +1,9 @@
 # Changelog
 
+## v9.0.0
+
+- Sift now automatically attempts to match programs that the OMDB API could not find a rating for
+
 ## v8.1.1
 
 - Now asking permission for primevideo.com and amazon.com(/gp/video) separately
