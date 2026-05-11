@@ -35,27 +35,21 @@ systemctl start meilisearch.service
 systemctl enable meilisearch.service
 
 
-# oxmgr
-curl -fsSL https://vladimir-urik.github.io/OxMgr/apt/keyrings/oxmgr-archive-keyring.gpg \
-  | tee /etc/apt/keyrings/oxmgr-archive-keyring.gpg >/dev/null
-echo "deb [signed-by=/etc/apt/keyrings/oxmgr-archive-keyring.gpg] https://vladimir-urik.github.io/OxMgr/apt stable main" \
-  | tee /etc/apt/sources.list.d/oxmgr.list
-apt-get update
-apt-get install oxmgr
+# nodev24 and pnpm
+curl -fsSL https://deb.nodesource.com/setup_24.x -o nodesource_setup.sh
+bash nodesource_setup.sh
+rm nodesource_setup.sh
+apt-get install nodejs
+npm install --global corepack@latest
+corepack enable pnpm
 
-# installing oxmgr as a service fails when run as root
-runuser -u ubuntu bash << EOF
-  oxmgr service install
-EOF
+# pm2
+npm install -g pm2
+pm2 startup systemd -u ubuntu --hp /home/ubuntu
+# ensure pm2 and application logs don't fill up the disk;
+# the default options are sane enough
+pm2 install pm2-logrotate
 
-
-# node and pnpm
-runuser -u ubuntu bash << EOF
-  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
-  source "$HOME/.nvm/nvm.sh"
-  nvm install 24
-  corepack enable pnpm
-EOF
 
 snap install aws-cli --classic
 
@@ -65,7 +59,16 @@ runuser -u ubuntu bash << EOF
   cd ~
   git clone https://github.com/ackinc/webext-movie-ratings sift
 
-  cd packages/api-server
+  cd ~/sift
+  # --ignore-scripts flag prevents the prepare script in the project's
+  #   root package.json from running, which would fail because husky
+  #   is not being installed here
+  pnpm install --filter ./shared/* ./packages/api-server --ignore-scripts --prod
+
+  # pnpm's defaults prevent better-sqlite3's postinstall script from running
+  cd node_modules/better-sqlite3 && pnpm run install
+
+  cd ~/sift/packages/api-server
 
   # normally we pull secrets from a secure vault, but in this case, none
   #   of these env vars are sensitive
@@ -78,11 +81,12 @@ MEILISEARCH_URL="http://localhost:7700"
 MEILISEARCH_MASTER_KEY=$MEILISEARCH_MASTER_KEY
 EOF1
 
-  # starts the server
-  oxmgr apply oxfile.toml
+  # starts the server and ensures pm2 will resurrect it on system reboot
+  pm2 start ecosystem.config.js
+  pm2 save
 EOF
 
-# TODO: ensure oxmgr is able to redeploy on git push + webhook
+# TODO: deploy on git push
 
 
 # install and configure nginx as reverse-proxy

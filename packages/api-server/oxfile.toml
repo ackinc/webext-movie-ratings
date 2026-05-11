@@ -1,8 +1,0 @@
-version = 1
-
-[[apps]]
-name = "sift-server"
-command = "pnpm run start"
-restart_policy = "on_failure"
-max_restarts = 10
-stop_timeout_secs = 5
