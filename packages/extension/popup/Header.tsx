@@ -1,4 +1,6 @@
+import { useEffect, useState } from "preact/hooks";
 import { type PopupPage } from "./common";
+import { getSetting } from "../common";
 import CloseIconButton from "./Buttons/CloseIconButton";
 import SettingsIconButton from "./Buttons/SettingsIconButton";
 import "./Header.css";
@@ -9,6 +11,25 @@ interface HeaderProps {
 }
 
 export default function Header({ curPage, setCurPage }: HeaderProps) {
+  const [showingNewFeature, setShowingNewFeature] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const pitchMissingRatingReportingPageSeen = await getSetting(
+        "pitchMissingRatingReportingPageSeen",
+      );
+      if (
+        curPage === "pitchMissingRatingReporting" &&
+        !pitchMissingRatingReportingPageSeen
+      ) {
+        setShowingNewFeature(true);
+        return;
+      }
+
+      setShowingNewFeature(false);
+    })();
+  }, [curPage]);
+
   return (
     <div className="header">
       <div className="logo-container">
@@ -16,17 +37,19 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
       </div>
 
       <h3>
-        {curPage === "onboarding"
-          ? "Welcome!"
-          : curPage === "filters"
-            ? "Filter Programs"
-            : curPage === "settings"
-              ? "Settings"
-              : curPage === "pitchErrorReporting"
-                ? "Opt-in to error reporting"
-                : curPage === "pitchMissingRatingReporting"
-                  ? "New feature alert!"
-                  : null}
+        {showingNewFeature
+          ? "New feature alert!"
+          : curPage === "onboarding"
+            ? "Welcome!"
+            : curPage === "filters"
+              ? "Filter Programs"
+              : curPage === "settings"
+                ? "Settings"
+                : curPage === "pitchErrorReporting"
+                  ? "Opt-in to error reporting"
+                  : curPage === "pitchMissingRatingReporting"
+                    ? "Opt-in to error reporting"
+                    : null}
       </h3>
 
       {curPage === "settings" ? (
