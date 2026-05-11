@@ -3,6 +3,7 @@
 set -euo pipefail
 
 apt-get update && apt-get upgrade
+apt-get install -y curl tree
 
 
 # vars
@@ -91,16 +92,38 @@ EOF
 # TODO: deploy on git push
 
 
-# install and configure nginx as reverse-proxy
-apt-get install -y nginx
-
-# install https cert for api.getsift.today
+# install https cert for api.getsift.today (we do this first so we only
+#   have to write an nginx config file once)
+# WARN: DNS record pointing domain to instance should already be in place
 apt-get remove certbot
 snap install --classic certbot
 ln -s /snap/bin/certbot /usr/local/bin/certbot
-certbot --nginx # TODO: configure this for api.getsifttoday.app
+certbot certonly -n --nginx -d api.getsift.today
+echo "0 0 1 * * root certbot renew -n" | tee -a /etc/crontab
 
-# TODO: add nginx conf that does
-# - SSL termination
-# - redirects port 80 -> 443
-# - forwards traffic on port 443 to port 3000
+
+# install and configure nginx as reverse-proxy
+apt-get install -y nginx
+cat << EOF > /etc/nginx/sites-available/api.getsift.today
+server {
+  listen 80;
+  listen [::]:80;
+  listen 443 ssl;
+
+  server_name api.getsift.today;
+
+  ssl_certificate     /etc/letsencrypt/live/api.getsift.today/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/api.getsift.today/privkey.pem;
+  ssl_protocols       TLSv1.2 TLSv1.3;
+
+  if ($scheme = http) {
+    return 301 https://$server_name$request_uri;
+  }
+
+  location / {
+    proxy_pass http://127.0.0.1:3000;
+  }
+}
+EOF
+ln -s /etc/nginx/sites-available/api.getsift.today /etc/nginx/sites-enabled/api.getsift.today
+systemctl reload nginx.service
