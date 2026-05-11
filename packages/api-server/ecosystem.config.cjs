@@ -5,7 +5,7 @@ module.exports = {
       script: "./main.ts",
       instances: -1,
       exec_mode: "cluster",
-      watch: true,
+      watch: false,
       ignore_watch: ["node_modules"],
       interpreter: "node",
       node_args: "--unhandled-rejections=strict",
