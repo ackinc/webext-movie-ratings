@@ -67,9 +67,20 @@ let omdbApiClient: OmdbApiClient;
 //////////////////////////////
 
 async function onInstalled() {
-  const onboardingStatus = await getSetting("onboardingStatus");
+  const [
+    onboardingStatus,
+    errorReportingOptIn,
+    pitchMissingRatingReportingPageSeen,
+  ] = await Promise.all([
+    getSetting("onboardingStatus"),
+    getSetting("errorReportingOptIn"),
+    getSetting("pitchMissingRatingReportingPageSeen"),
+  ]);
 
-  if (onboardingStatus !== "finished") {
+  if (
+    onboardingStatus !== "finished" ||
+    (!errorReportingOptIn && !pitchMissingRatingReportingPageSeen)
+  ) {
     addBadge("!");
 
     // firefox won't let us open the popup outside of a user-gesture

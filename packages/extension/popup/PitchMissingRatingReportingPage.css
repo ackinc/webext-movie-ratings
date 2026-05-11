@@ -1,0 +1,7 @@
+.pitch-missing-rating-reporting-page {
+  margin-bottom: 16px;
+}
+
+.pitch-missing-rating-reporting-page > *:not(:last-child) {
+  margin-bottom: 16px;
+}

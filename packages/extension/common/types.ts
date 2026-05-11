@@ -164,6 +164,7 @@ export type ExtensionSettings = {
     | "displayedPermissionStatus"
     | "pitchedErrorReporting"
     | "finished";
+  pitchMissingRatingReportingPageSeen: boolean;
 };
 
 export type ExtensionContext =

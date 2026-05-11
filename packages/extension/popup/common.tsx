@@ -2,7 +2,8 @@ export type PopupPage =
   | "onboarding"
   | "filters"
   | "settings"
-  | "pitchErrorReporting";
+  | "pitchErrorReporting"
+  | "pitchMissingRatingReporting";
 
 export type { PermString, Sitename } from "../common/types";
 export { supportedSites, permStringToSitename } from "../common/constants";

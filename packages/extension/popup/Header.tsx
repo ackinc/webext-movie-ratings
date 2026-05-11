@@ -24,7 +24,9 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
               ? "Settings"
               : curPage === "pitchErrorReporting"
                 ? "Opt-in to error reporting"
-                : null}
+                : curPage === "pitchMissingRatingReporting"
+                  ? "New feature alert!"
+                  : null}
       </h3>
 
       {curPage === "settings" ? (
@@ -33,6 +35,8 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
         <SettingsIconButton onClick={() => setCurPage("settings")} />
       ) : curPage === "pitchErrorReporting" ? (
         <CloseIconButton onClick={() => setCurPage("settings")} />
+      ) : curPage === "pitchMissingRatingReporting" ? (
+        <CloseIconButton onClick={() => setCurPage("filters")} />
       ) : null}
     </div>
   );

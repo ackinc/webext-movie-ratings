@@ -11,6 +11,7 @@ import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
 import SettingsPage from "./SettingsPage";
 import PitchErrorReportingPage from "./PitchErrorReportingPage";
+import PitchMissingRatingReportingPage from "./PitchMissingRatingReportingPage";
 import Footer from "./Footer";
 import "./main.css";
 
@@ -26,6 +27,15 @@ function App() {
     (async () => {
       if ((await getSetting("onboardingStatus")) !== "finished") {
         setCurPage("onboarding");
+      }
+
+      const [errorReportingOptedIn, pitchMissingRatingReportingPageSeen] =
+        await Promise.all([
+          getSetting("errorReportingOptIn"),
+          getSetting("pitchMissingRatingReportingPageSeen"),
+        ]);
+      if (!errorReportingOptedIn && !pitchMissingRatingReportingPageSeen) {
+        setCurPage("pitchMissingRatingReporting");
       }
     })();
   }, []);
@@ -55,9 +65,15 @@ function App() {
           {curPage === "pitchErrorReporting" ? (
             <PitchErrorReportingPage />
           ) : null}
+          {curPage === "pitchMissingRatingReporting" ? (
+            <PitchMissingRatingReportingPage />
+          ) : null}
         </main>
 
-        {curPage !== "onboarding" ? <Footer curPage={curPage} /> : null}
+        {curPage !== "onboarding" &&
+        curPage !== "pitchMissingRatingReporting" ? (
+          <Footer curPage={curPage} />
+        ) : null}
       </SetCurPageContext.Provider>
     </div>
   );
