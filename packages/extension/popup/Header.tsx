@@ -22,13 +22,21 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
             ? "Filter Programs"
             : curPage === "settings"
               ? "Settings"
-              : null}
+              : curPage === "pitchErrorReporting"
+                ? "Opt-in to error reporting"
+                : curPage === "pitchMissingRatingReporting"
+                  ? "New feature alert!"
+                  : null}
       </h3>
 
       {curPage === "settings" ? (
         <CloseIconButton onClick={() => setCurPage("filters")} />
       ) : curPage === "filters" ? (
         <SettingsIconButton onClick={() => setCurPage("settings")} />
+      ) : curPage === "pitchErrorReporting" ? (
+        <CloseIconButton onClick={() => setCurPage("settings")} />
+      ) : curPage === "pitchMissingRatingReporting" ? (
+        <CloseIconButton onClick={() => setCurPage("filters")} />
       ) : null}
     </div>
   );

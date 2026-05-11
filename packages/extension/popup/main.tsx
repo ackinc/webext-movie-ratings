@@ -3,12 +3,15 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { render, h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
+import SetCurPageContext from "./Contexts/SetCurPageContext";
 import { type PopupPage } from "./common";
 import { removeBadge, getSetting } from "../common";
 import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
 import SettingsPage from "./SettingsPage";
+import PitchErrorReportingPage from "./PitchErrorReportingPage";
+import PitchMissingRatingReportingPage from "./PitchMissingRatingReportingPage";
 import Footer from "./Footer";
 import "./main.css";
 
@@ -25,6 +28,15 @@ function App() {
       if ((await getSetting("onboardingStatus")) !== "finished") {
         setCurPage("onboarding");
       }
+
+      const [errorReportingOptedIn, pitchMissingRatingReportingPageSeen] =
+        await Promise.all([
+          getSetting("errorReportingOptIn"),
+          getSetting("pitchMissingRatingReportingPageSeen"),
+        ]);
+      if (!errorReportingOptedIn && !pitchMissingRatingReportingPageSeen) {
+        setCurPage("pitchMissingRatingReporting");
+      }
     })();
   }, []);
 
@@ -36,22 +48,33 @@ function App() {
 
   return (
     <div className="app">
-      <Header curPage={curPage} setCurPage={setCurPage} />
+      <SetCurPageContext.Provider value={setCurPage}>
+        <Header curPage={curPage} setCurPage={setCurPage} />
 
-      <main>
-        {curPage === "onboarding" ? (
-          <OnboardingFlow
-            onFinish={() => {
-              removeBadge();
-              setCurPage("filters");
-            }}
-          />
+        <main>
+          {curPage === "onboarding" ? (
+            <OnboardingFlow
+              onFinish={() => {
+                removeBadge();
+                setCurPage("filters");
+              }}
+            />
+          ) : null}
+          {curPage === "filters" ? <ProgramFilters /> : null}
+          {curPage === "settings" ? <SettingsPage /> : null}
+          {curPage === "pitchErrorReporting" ? (
+            <PitchErrorReportingPage />
+          ) : null}
+          {curPage === "pitchMissingRatingReporting" ? (
+            <PitchMissingRatingReportingPage />
+          ) : null}
+        </main>
+
+        {curPage !== "onboarding" &&
+        curPage !== "pitchMissingRatingReporting" ? (
+          <Footer curPage={curPage} />
         ) : null}
-        {curPage === "filters" ? <ProgramFilters /> : null}
-        {curPage === "settings" ? <SettingsPage /> : null}
-      </main>
-
-      {curPage !== "onboarding" ? <Footer curPage={curPage} /> : null}
+      </SetCurPageContext.Provider>
     </div>
   );
 }

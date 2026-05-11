@@ -6,33 +6,17 @@ form.error-reporting-form {
   gap: 0.5rem;
 }
 
-form.error-reporting-form button.toggle-info-btn {
-  width: 16px;
-  height: 16px;
+form.error-reporting-form button.show-details-btn {
   border: 1px solid var(--main-text-color);
-  border-radius: 50%;
+  border-radius: 12px;
   background-color: transparent;
   cursor: pointer;
   font-size: 12px;
   font-weight: normal;
+  padding: 0 8px;
 }
 
-form.error-reporting-form button.toggle-info-btn:hover {
+form.error-reporting-form button.show-details-btn:hover {
   background-color: var(--highlighted-bg-color);
-  border: 0;
-}
-
-.error-reporting-details {
-  border: 1px solid #00000045;
-  border-radius: 8px;
-  padding: 16px 24px;
-
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: var(--secondary-font-size);
-}
-
-.error-reporting-details ul {
-  padding-left: 16px;
+  border: 1px solid transparent;
 }

@@ -1,3 +1,11 @@
+.pitch-error-reporting-page {
+  margin-bottom: 16px;
+}
+
+.pitch-error-reporting-page > *:not(:last-child) {
+  margin-bottom: 16px;
+}
+
 .pitch-error-reporting-page p.data-collection-details ul {
   margin-top: 4px;
   list-style-type: none;

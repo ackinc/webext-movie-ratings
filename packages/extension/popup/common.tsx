@@ -1,4 +1,9 @@
-export type PopupPage = "onboarding" | "filters" | "settings";
+export type PopupPage =
+  | "onboarding"
+  | "filters"
+  | "settings"
+  | "pitchErrorReporting"
+  | "pitchMissingRatingReporting";
 
 export type { PermString, Sitename } from "../common/types";
 export { supportedSites, permStringToSitename } from "../common/constants";

@@ -1,13 +1,7 @@
-import { useEffect } from "preact/hooks";
-import { setSetting } from "../../common";
-import ErrorReportingOptIn from "../ErrorReportingOptIn";
+import ErrorReportingOptIn from "./ErrorReportingOptIn";
 import "./PitchErrorReportingPage.css";
 
 export default function PitchErrorReportingOptInPage() {
-  useEffect(() => {
-    setSetting("onboardingStatus", "pitchedErrorReporting");
-  }, []);
-
   return (
     <div className="page pitch-error-reporting-page">
       <p>
@@ -15,8 +9,17 @@ export default function PitchErrorReportingOptInPage() {
       </p>
 
       <p>
-        ... but you can opt-in to automatic error reporting below to notify the
-        developer when the extension encounters an error.
+        ... but you can opt-in to automatic error reporting below to notify us
+        when the extension encounters an error.
+      </p>
+
+      <p>
+        <span style={{ fontWeight: "bold" }}>
+          This includes cases where Sift is unable to find ratings for a
+          particular movie / show
+        </span>{" "}
+        - we'll send the program's title and other details to our servers where
+        we'll attempt to match it to an entry in the IMDB database
       </p>
 
       <ErrorReportingOptIn
