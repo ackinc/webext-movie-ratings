@@ -3,6 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { render, h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
+import SetCurPageContext from "./Contexts/SetCurPageContext";
 import { type PopupPage } from "./common";
 import { removeBadge, getSetting } from "../common";
 import Header from "./Header";
@@ -36,22 +37,24 @@ function App() {
 
   return (
     <div className="app">
-      <Header curPage={curPage} setCurPage={setCurPage} />
+      <SetCurPageContext.Provider value={setCurPage}>
+        <Header curPage={curPage} setCurPage={setCurPage} />
 
-      <main>
-        {curPage === "onboarding" ? (
-          <OnboardingFlow
-            onFinish={() => {
-              removeBadge();
-              setCurPage("filters");
-            }}
-          />
-        ) : null}
-        {curPage === "filters" ? <ProgramFilters /> : null}
-        {curPage === "settings" ? <SettingsPage /> : null}
-      </main>
+        <main>
+          {curPage === "onboarding" ? (
+            <OnboardingFlow
+              onFinish={() => {
+                removeBadge();
+                setCurPage("filters");
+              }}
+            />
+          ) : null}
+          {curPage === "filters" ? <ProgramFilters /> : null}
+          {curPage === "settings" ? <SettingsPage /> : null}
+        </main>
 
-      {curPage !== "onboarding" ? <Footer curPage={curPage} /> : null}
+        {curPage !== "onboarding" ? <Footer curPage={curPage} /> : null}
+      </SetCurPageContext.Provider>
     </div>
   );
 }
