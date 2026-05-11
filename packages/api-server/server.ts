@@ -51,7 +51,11 @@ export function createServer(db: Database) {
 
   // health check route
   fastify.get<{
-    Querystring: { delayMs?: number; error?: string };
+    Querystring: {
+      delayMs?: number;
+      error?: string;
+      workThroughDelay?: boolean;
+    };
     Reply: { 200: { status: "ok" } };
   }>(
     "/",
@@ -62,14 +66,22 @@ export function createServer(db: Database) {
           properties: {
             delayMs: { type: "number" },
             error: { type: "string" },
+            workThroughDelay: { type: "boolean" },
           },
           additionalProperties: false,
         },
       },
     },
     async function (request, reply) {
-      const { delayMs: qDelayMs, error } = request.query;
-      if (qDelayMs !== undefined) await delayMs(qDelayMs);
+      const { delayMs: qDelayMs, error, workThroughDelay } = request.query;
+      if (qDelayMs !== undefined) {
+        if (workThroughDelay) {
+          const endTime = +new Date() + qDelayMs;
+          while (+new Date() < endTime);
+        } else {
+          await delayMs(qDelayMs);
+        }
+      }
       if (error !== undefined) throw new Error(error);
 
       reply.code(200).send({ status: "ok" });
