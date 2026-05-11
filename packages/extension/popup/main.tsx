@@ -19,9 +19,7 @@ const root = document.querySelector<HTMLDivElement>("div#root")!;
 render(<App />, root);
 
 function App() {
-  const [curPage, setCurPage] = useState<PopupPage>(
-    (localStorage.getItem("lastSeenPage") as PopupPage | null) ?? "filters",
-  );
+  const [curPage, setCurPage] = useState<PopupPage>(getDefaultPage());
 
   useEffect(() => {
     (async () => {
@@ -79,4 +77,9 @@ function App() {
       </SetCurPageContext.Provider>
     </div>
   );
+}
+
+function getDefaultPage(): PopupPage {
+  const lastSeen = localStorage.getItem("lastSeenPage") as PopupPage | null;
+  return lastSeen ?? "filters";
 }
