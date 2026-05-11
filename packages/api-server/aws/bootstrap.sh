@@ -5,8 +5,9 @@ set -euo pipefail
 apt-get update && apt-get upgrade
 
 
-# meilisearch
+# vars
 MEILISEARCH_MASTER_KEY=8lNc7cEcH5QK7BDLkoKxgFx0kbGB8Ij0yPGLlalAl934KQpJ
+GIT_REPO_URL="https://github.com/ackinc/webext-movie-ratings"
 
 runuser -u ubuntu bash << EOF
   cd ~
@@ -57,13 +58,14 @@ snap install aws-cli --classic
 # install and run the application server
 runuser -u ubuntu bash << EOF
   cd ~
-  git clone https://github.com/ackinc/webext-movie-ratings sift
+  git clone $GIT_REPO_URL sift
 
   cd ~/sift
   # --ignore-scripts flag prevents the prepare script in the project's
   #   root package.json from running, which would fail because husky
   #   is not being installed here
-  pnpm install --filter ./shared/* ./packages/api-server --ignore-scripts --prod
+  pnpm --filter "./shared/**" install --ignore-scripts --prod
+  pnpm --filter "./packages/api-server" install --ignore-scripts --prod
 
   # pnpm's defaults prevent better-sqlite3's postinstall script from running
   cd node_modules/better-sqlite3 && pnpm run install
