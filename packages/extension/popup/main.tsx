@@ -27,6 +27,7 @@ function App() {
     (async () => {
       if ((await getSetting("onboardingStatus")) !== "finished") {
         setCurPage("onboarding");
+        return;
       }
 
       const [errorReportingOptedIn, pitchMissingRatingReportingPageSeen] =
@@ -36,6 +37,7 @@ function App() {
         ]);
       if (!errorReportingOptedIn && !pitchMissingRatingReportingPageSeen) {
         setCurPage("pitchMissingRatingReporting");
+        return;
       }
     })();
   }, []);
