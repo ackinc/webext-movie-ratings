@@ -53,6 +53,7 @@ export const enum MessageType {
   placeholder = "sift:placeholderForTestingAndDebugging",
   sitesEnabled = "sift:sitesEnabled",
   sitesDisabled = "sift:sitesDisabled",
+  toggleLoopState = "sift:toggleLoopState",
 }
 
 export const defaultProgramFilterSettings: ProgramFilterSettings = {
