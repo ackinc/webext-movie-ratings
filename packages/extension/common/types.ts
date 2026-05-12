@@ -115,6 +115,10 @@ export type Message =
       type: MessageType.healthCheck;
     }
   | {
+      // sent on user-action from popup to active tab's ISO content-script
+      type: MessageType.toggleLoopState;
+    }
+  | {
       type: MessageType.webpageRatingStats;
       data: {
         sessionStartTime: number;

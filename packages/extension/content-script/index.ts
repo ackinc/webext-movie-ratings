@@ -50,6 +50,7 @@ interface LoopState {
     | "pageHidden"
     | "error"
     | "cleanup"
+    | "userRequest"
     | undefined;
 }
 const loopState: LoopState = {
@@ -119,13 +120,19 @@ function removeListeners() {
   document.removeEventListener("visibilitychange", handlePageVisibilityChange);
 }
 
-function startLoop() {
+function startLoop(reason?: LoopState["haltReason"]) {
+  if (loopState.timeout || (reason && loopState.haltReason !== reason)) {
+    return;
+  }
+
   loopState.abortController = new AbortController();
   loopState.timeout = setTimeout(() => loopFn(loopState.abortController!), 0);
   loopState.haltReason = undefined;
 }
 
 function stopLoop(reason: LoopState["haltReason"]) {
+  if (loopState.haltReason) return; // no-op if already halted
+
   // Prevent running loopFn from scheduling another invocation
   // WARN: If tab was backgrounded before first invocation of loop,
   //   loopState.abortController will be undefined; the use of optional-
@@ -294,19 +301,27 @@ function handleMessage(
     handleFilterSettingsChange(msg.data);
   } else if (type === MessageType.healthCheck) {
     if (sendResponse) sendResponse("ok");
+  } else if (type === MessageType.toggleLoopState) {
+    if (loopState.timeout) {
+      stopLoop("userRequest");
+      console.log("stopped loop on user request");
+    } else {
+      startLoop("userRequest");
+      console.log("started loop on user request");
+    }
   }
 }
 
 function handleUrlChange() {
   stopLoop("urlChanged");
   sessionStartTime = +new Date();
-  startLoop();
+  startLoop("urlChanged");
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
   stopLoop("filterSettingsChanged");
   updateFilteredOutProgramNodeStyles(updatedSettings);
-  startLoop();
+  startLoop("filterSettingsChanged");
 }
 
 function cleanup(broadcast = true) {
@@ -322,15 +337,8 @@ function cleanup(broadcast = true) {
 
 function handlePageVisibilityChange() {
   if (FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE) {
-    if (document.visibilityState === "hidden") {
-      stopLoop("pageHidden");
-    } else {
-      if (
-        loopState.timeout === undefined &&
-        loopState.haltReason === "pageHidden"
-      ) {
-        startLoop();
-      }
-    }
+    document.visibilityState === "hidden"
+      ? stopLoop("pageHidden")
+      : startLoop("pageHidden");
   }
 }
