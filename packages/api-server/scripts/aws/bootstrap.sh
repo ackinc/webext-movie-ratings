@@ -3,7 +3,7 @@
 set -euo pipefail
 
 apt-get update && apt-get upgrade
-apt-get install -y curl tree
+apt-get install -y curl sqlite3 tree
 
 
 # vars
