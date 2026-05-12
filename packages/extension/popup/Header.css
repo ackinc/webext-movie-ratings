@@ -21,6 +21,8 @@
   height: 100%;
 }
 
-.header button {
+.header .nav-controls {
   margin-left: auto;
+  display: flex;
+  gap: 8px;
 }

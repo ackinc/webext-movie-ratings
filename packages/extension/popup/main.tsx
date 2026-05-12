@@ -12,6 +12,7 @@ import ProgramFilters from "./ProgramFilters";
 import SettingsPage from "./SettingsPage";
 import PitchErrorReportingPage from "./PitchErrorReportingPage";
 import PitchMissingRatingReportingPage from "./PitchMissingRatingReportingPage";
+import DevControlPanel from "./DevControlPanel";
 import Footer from "./Footer";
 import "./main.css";
 
@@ -68,10 +69,12 @@ function App() {
           {curPage === "pitchMissingRatingReporting" ? (
             <PitchMissingRatingReportingPage />
           ) : null}
+          {curPage === "devControlPanel" && APP_ENV !== "production" ? (
+            <DevControlPanel />
+          ) : null}
         </main>
 
-        {curPage !== "onboarding" &&
-        curPage !== "pitchMissingRatingReporting" ? (
+        {(["filters", "settings"] as PopupPage[]).includes(curPage) ? (
           <Footer curPage={curPage} />
         ) : null}
       </SetCurPageContext.Provider>

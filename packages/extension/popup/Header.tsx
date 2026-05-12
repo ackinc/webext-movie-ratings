@@ -49,18 +49,31 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
                   ? "Opt-in to error reporting"
                   : curPage === "pitchMissingRatingReporting"
                     ? "Opt-in to error reporting"
-                    : null}
+                    : curPage === "devControlPanel"
+                      ? "Developer Control Panel"
+                      : null}
       </h3>
 
-      {curPage === "settings" ? (
-        <CloseIconButton onClick={() => setCurPage("filters")} />
-      ) : curPage === "filters" ? (
-        <SettingsIconButton onClick={() => setCurPage("settings")} />
-      ) : curPage === "pitchErrorReporting" ? (
-        <CloseIconButton onClick={() => setCurPage("settings")} />
-      ) : curPage === "pitchMissingRatingReporting" ? (
-        <CloseIconButton onClick={() => setCurPage("filters")} />
-      ) : null}
+      <div className="nav-controls">
+        {curPage === "settings" ? (
+          <>
+            {APP_ENV !== "production" ? (
+              <SettingsIconButton
+                onClick={() => setCurPage("devControlPanel")}
+              />
+            ) : null}
+            <CloseIconButton onClick={() => setCurPage("filters")} />
+          </>
+        ) : curPage === "filters" ? (
+          <SettingsIconButton onClick={() => setCurPage("settings")} />
+        ) : curPage === "pitchErrorReporting" ? (
+          <CloseIconButton onClick={() => setCurPage("settings")} />
+        ) : curPage === "pitchMissingRatingReporting" ? (
+          <CloseIconButton onClick={() => setCurPage("filters")} />
+        ) : curPage === "devControlPanel" ? (
+          <CloseIconButton onClick={() => setCurPage("settings")} />
+        ) : null}
+      </div>
     </div>
   );
 }
