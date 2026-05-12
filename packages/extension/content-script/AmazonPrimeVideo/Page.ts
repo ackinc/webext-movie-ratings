@@ -116,6 +116,14 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     return title.trim();
   }
 
+  protected override isValidProgramContainer(
+    pContainer: ProgramContainer,
+  ): boolean {
+    return !["watch in your language"].some(
+      (x) => pContainer.title.toLowerCase() === x,
+    );
+  }
+
   protected override getProgramNodeSelectors(
     pContainer: ProgramContainer,
   ): string[] {
