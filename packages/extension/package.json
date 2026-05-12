@@ -19,7 +19,7 @@
   "description": "Sift adds IMDB ratings next to programs on various OTT platforms to help you choose what to watch faster.",
   "packageManager": "pnpm@10.33.0",
   "devDependencies": {
-    "@sentry/esbuild-plugin": "^4.6.1",
+    "@sentry/esbuild-plugin": "^5.2.1",
     "@sentry/react": "^10.32.1",
     "@types/chrome": "^0.1.32",
     "@types/fs-extra": "^11.0.4",
