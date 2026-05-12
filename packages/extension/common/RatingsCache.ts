@@ -47,7 +47,7 @@ export default class RatingsCache {
   async get(
     program: ProgramData,
   ): Promise<Omit<Required<CacheEntry>, "program"> | undefined> {
-    const cached = await this.db.get(storeName, this.#getKey(program));
+    const cached = await this.db.get(storeName, this.getKey(program));
     return cached
       ? {
           imdbData: pick(cached, ["imdbID", "imdbRating"]),
@@ -76,7 +76,7 @@ export default class RatingsCache {
       entriesToPut.map((data) =>
         ratingsStore.put({
           ...data.imdbData,
-          key: this.#getKey(data.program),
+          key: this.getKey(data.program),
           expiry: +data.expiry,
         }),
       ),
@@ -101,7 +101,7 @@ export default class RatingsCache {
     return this;
   }
 
-  #getKey(program: ProgramData): string {
+  getKey(program: ProgramData): string {
     const { title, type, year } = program;
     // using btoa directly on a title with non-latin1 chars (without
     //   encoding to utf-8 first) will cause an error to be thrown
