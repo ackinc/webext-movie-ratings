@@ -29,6 +29,8 @@ import { limitConcurrency } from "rate-limit-utils";
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
 
+  inSelectProgramMode: boolean = false;
+
   // Caching these allows us to avoid a `findPrograms` call inside `cleanup`
   // Decided this was worth doing because of the annoying data extraction
   //   errors I was seeing during old-content-script `cleanup` after deploying
@@ -42,6 +44,7 @@ export default class AbstractPage {
     this.isValidProgram = this.isValidProgram.bind(this);
 
     this.#foundPrograms = [];
+    this.inSelectProgramMode = false;
   }
 
   async initialize() {
@@ -59,6 +62,8 @@ export default class AbstractPage {
         p.node,
       );
     }
+
+    if (this.inSelectProgramMode) this.toggleSelectProgramMode();
   }
 
   findPrograms(): Program[] {
@@ -368,5 +373,51 @@ valid containers:\n\t${programContainers
 
   protected getGeneralizedUrlPath(href: string): string {
     return getGeneralizedUrlPath(href);
+  }
+
+  toggleSelectProgramMode() {
+    if (this.inSelectProgramMode) {
+      document.body.removeEventListener("click", this.#showProgramInfo, {
+        capture: true,
+      });
+
+      const elem = document.body.querySelector(
+        ":scope > .sift-select-program-mode",
+      );
+      if (elem) document.body.removeChild(elem);
+    } else {
+      document.body.appendChild(this.#createSelectProgramNodeNotification());
+
+      document.body.addEventListener("click", this.#showProgramInfo, {
+        capture: true,
+      });
+    }
+    this.inSelectProgramMode = !this.inSelectProgramMode;
+  }
+
+  #createSelectProgramNodeNotification(): HTMLDivElement {
+    const elem = document.createElement("div");
+    elem.innerText = "Click on a program tile to examine it ...";
+    elem.classList.add("sift-select-program-mode");
+    elem.style = `
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background-color: white;
+      color: black;
+      padding: 8px 16px;
+    `;
+    return elem;
+  }
+
+  #showProgramInfo(e: MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    console.log(e.target);
+    // TODO: identify program at click-site
+    // TODO: extract program data
+    // TODO: get cached data (and cache key)
+    // TODO: print everything to console
   }
 }

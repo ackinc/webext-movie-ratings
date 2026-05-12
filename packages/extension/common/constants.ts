@@ -56,6 +56,8 @@ export const enum MessageType {
   sitesDisabled = "sift:sitesDisabled",
   getActiveTabLoopState = "sift:getActiveTabLoopState",
   toggleActiveTabLoopState = "sift:toggleActiveTabLoopState",
+  getSelectProgramModeState = "sift:getSelectProgramModeState",
+  toggleSelectProgramMode = "sift:toggleSelectProgramMode",
 }
 
 export const defaultProgramFilterSettings: ProgramFilterSettings = {

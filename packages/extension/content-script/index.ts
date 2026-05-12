@@ -311,6 +311,10 @@ function handleMessage(
       startLoop("userRequest");
       console.log("started loop on user request");
     }
+  } else if (type === MessageType.getSelectProgramModeState) {
+    if (sendResponse) sendResponse(page.inSelectProgramMode ? "on" : "off");
+  } else if (type === MessageType.toggleSelectProgramMode) {
+    page.toggleSelectProgramMode();
   }
 }
 
