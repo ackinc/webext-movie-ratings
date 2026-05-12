@@ -51,6 +51,12 @@ export interface ErrorDetails {
 
 export type Message =
   | {
+      type: MessageType.fetchCachedIMDBRating;
+      data: {
+        program: Omit<Program, "node">;
+      };
+    }
+  | {
       type: MessageType.fetchIMDBRating;
       data: {
         program: Omit<Program, "node">;

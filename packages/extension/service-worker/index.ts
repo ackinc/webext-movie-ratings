@@ -161,6 +161,13 @@ function handleMessage(
         );
 
       return true; // keeps channel open until sendReponse is called
+    } else if (request.type === MessageType.fetchCachedIMDBRating) {
+      const { program } = request.data;
+      getCachedIMDBData(program)
+        .then((data) => sendResponse({ data }))
+        .catch((e) => handleError(e, { context: { program } }));
+
+      return true;
     } else if (request.type === MessageType.webpageRatingStats) {
       if (FF_TELEMETRY_ENABLED) {
         telemetryStore
@@ -248,6 +255,18 @@ function handleMessage(
     if (errorsToIgnore.includes(error.message)) return;
     captureException(error, metadata);
   }
+}
+
+async function getCachedIMDBData(
+  program: Omit<Program, "node">,
+): Promise<(Required<IMDBData> & { key: string }) | undefined> {
+  const cached = await ratingsCache.get(program);
+  if (!cached) return undefined;
+  return {
+    ...cached.imdbData,
+    expiry: +cached.expiry,
+    key: ratingsCache.getKey(program),
+  };
 }
 
 // not using async-await here because we don't want to throw
