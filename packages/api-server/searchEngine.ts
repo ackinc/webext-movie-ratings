@@ -19,15 +19,32 @@ export async function querySearchEngine(
   rankingScoreThreshold: number = defaultThreshold,
   limit: number = defaultLimit,
 ): Promise<IndexedImdbTitle[]> {
-  let { hits: searchResults } = await index.search<IndexedImdbTitle>(
+  const { hits: searchResults } = await index.search<IndexedImdbTitle>(
     program.title,
     { limit, rankingScoreThreshold },
   );
-  searchResults = searchResults.filter(
+
+  if (searchResults.length === 0) return [];
+
+  // The streaming websites sometimes get program details wrong
+  // Example: YT movies lists the release year of "The Shawshank Redemption"
+  //   as 1995, when it is actually 1994
+  // For this reason, if we don't get matches when applying the type
+  //   and year constraints, we'll relax them
+
+  const searchResultsWithTypeAndYearMatch = searchResults.filter(
     ({ type, year }) =>
       (type === program.type || program.type === undefined) &&
       (year === program.year || program.year === undefined),
   );
+  if (searchResultsWithTypeAndYearMatch.length > 0)
+    return searchResultsWithTypeAndYearMatch;
+
+  const searchResultsWithTypeMatch = searchResults.filter(
+    ({ type }) => type === program.type || program.type === undefined,
+  );
+  if (searchResultsWithTypeMatch.length > 0) return searchResultsWithTypeMatch;
+
   return searchResults;
 }
 
