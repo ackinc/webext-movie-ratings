@@ -1,9 +1,12 @@
 export const abandonedMatchStatusExpiryInDays = 30;
 
 export const extensionIds = {
-  cws: "pfnhkljamlclkackkndllofcfhihacna",
-  eas: "odgepppomekmdiifmjmocpjhopdmgjnl",
-  mas: "4c906ec0-98c8-47e7-a309-8824c57decce",
+  chrome: [
+    "pfnhkljamlclkackkndllofcfhihacna", // CWS
+    "ocdolfllmmikkhckpeggnkehehdgoalo", // unpacked
+  ],
+  edge: ["odgepppomekmdiifmjmocpjhopdmgjnl"],
+  firefox: ["4c906ec0-98c8-47e7-a309-8824c57decce"],
 };
 
 export const imdbDataFileUrls = [

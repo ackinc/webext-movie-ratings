@@ -26,10 +26,10 @@ export function createServer(db: Database) {
     origin:
       APP_ENV === "production"
         ? [
-            extensionIds.cws ? `chrome-extension://${extensionIds.cws}` : "",
-            extensionIds.eas ? `chrome-extension://${extensionIds.eas}` : "",
-            extensionIds.mas ? `moz-extension://${extensionIds.mas}` : "",
-          ].filter((x) => x)
+            extensionIds.chrome.map((id) => `chrome-extension://${id}`),
+            extensionIds.edge.map((id) => `chrome-extension://${id}`),
+            extensionIds.firefox.map((id) => `moz-extension://${id}`),
+          ].flat()
         : true,
   });
 
