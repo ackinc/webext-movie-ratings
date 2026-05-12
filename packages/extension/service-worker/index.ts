@@ -288,8 +288,9 @@ function getIMDBData(
     }
 
     ratingsCache.get(program).then((result) => {
-      if (result && result.expiry > new Date())
+      if (result && result.expiry > new Date()) {
         return resolve({ ...result.imdbData, expiry: +result.expiry });
+      }
       const matchedImdbId = result?.imdbData.imdbID;
 
       setTimeout(
