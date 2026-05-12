@@ -86,18 +86,22 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
-  protected override isValidProgramContainer(pContainer: ProgramContainer): boolean {
+  protected override isValidProgramContainer(
+    pContainer: ProgramContainer,
+  ): boolean {
     return !!pContainer.title;
   }
 
-  protected override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
+  protected override getProgramNodeSelectors(
+    pContainer: ProgramContainer,
+  ): string[] {
     const { node } = pContainer;
     if (node.matches('ytd-browse[role="main"] ytd-item-section-renderer')) {
       return ["ytd-grid-movie-renderer"];
     }
 
     if (node.matches("ytd-watch-next-secondary-results-renderer > div#items")) {
-      return ["ytd-compact-movie-renderer"];
+      return ["yt-lockup-view-model"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

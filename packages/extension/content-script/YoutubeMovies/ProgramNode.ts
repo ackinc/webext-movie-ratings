@@ -1,17 +1,41 @@
 import AbstractProgramNode from "../AbstractProgramNode";
 import type { ProgramData } from "../../common/types";
-import { ErrorMessage } from "../../common";
+import { ErrorMessage, extractProgramTitle } from "../../common";
+import { captureException } from "../../common/errorReporter";
+import { DataExtractionError } from "../../common/customErrors";
 
 export default class ProgramNode extends AbstractProgramNode {
   static override extractProgramData(programNode: HTMLElement): ProgramData {
     if (programNode.matches("ytd-grid-movie-renderer")) {
       const titleNode = programNode.querySelector("span#video-title")!;
-      return { title: titleNode.textContent.trim() };
+      return { title: extractProgramTitle(titleNode.textContent) };
     }
 
-    if (programNode.matches("ytd-compact-movie-renderer")) {
-      const titleNode = programNode.querySelector("h3#movie-title")!;
-      return { title: titleNode.textContent.trim() };
+    if (programNode.matches("yt-lockup-view-model")) {
+      const titleNode = programNode.querySelector("h3[title]")!;
+      const title = extractProgramTitle(titleNode.textContent);
+
+      let year: number | null = null;
+      const yearNode = programNode.querySelector(
+        "div.ytLockupMetadataViewModelMetadata span.ytContentMetadataViewModelMetadataText",
+      )!;
+      if (yearNode && /\d{4}$/.test(yearNode.textContent.trim())) {
+        year = +yearNode.textContent.slice(-4);
+      } else {
+        captureException(
+          DataExtractionError.from(
+            new Error(ErrorMessage.unexpectedDataExtractionFailure),
+            // attributing this error to the parent of the programNode
+            //   instead of the programNode directly because we don't
+            //   want or need one-error-per-program to be captured
+            programNode.parentElement!,
+            "yt-lockup-view-model",
+          ),
+          { tags: { attribute: "year" } },
+        );
+      }
+
+      return { title, ...(year ? { year } : {}) };
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramNode);
@@ -29,9 +53,9 @@ export default class ProgramNode extends AbstractProgramNode {
       return;
     }
 
-    if (programNode.matches("ytd-compact-movie-renderer")) {
+    if (programNode.matches("yt-lockup-view-model")) {
       const badgesContainer = programNode.querySelector(
-        "div.details > a > ytd-badge-supported-renderer",
+        "yt-content-metadata-view-model > div:nth-child(2)",
       )!;
       badgesContainer.appendChild(imdbNode);
       return;

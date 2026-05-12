@@ -80,6 +80,7 @@ export const enum ErrorMessage {
   noAsyncPermissionRequestInFirefox = "permission.request must be called synchronously inside a user-gesture handler in Firefox",
   unexpectedTargetBrowser = "This code is running in the wrong browser!",
   siftApiServerError = "There was an error on the Sift API server-side",
+  unexpectedDataExtractionFailure = "Failed to extract data from program node",
 }
 
 export const supportedSites = {
