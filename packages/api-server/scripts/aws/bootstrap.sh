@@ -77,6 +77,8 @@ runuser -u ubuntu bash << EOF
   #   of these env vars are sensitive
   cat << EOF1 > .env
 APP_ENV=production
+AWS_REGION=ap-south-1
+AWS_S3_BUCKET_NAME=sift-db-backups-458735596401-ap-south-1-an
 DB_PATH=/home/ubuntu/db.sqlite
 IMDB_DATA_DIR=/home/ubuntu/imdbData
 PORT=3000
