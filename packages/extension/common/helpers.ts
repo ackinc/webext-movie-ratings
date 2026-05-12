@@ -29,9 +29,15 @@ export function getExtensionContext(): ExtensionContext {
   throw new Error(`Could not figure out context. Running at ${location.href}`);
 }
 
-export async function sendMessageToActiveTab(message: Message) {
+export async function sendMessageToActiveTab<T>(
+  message: Message,
+): Promise<T | null> {
   const [tab] = await browser.tabs.query({ active: true });
-  if (tab?.url) browser.tabs.sendMessage(tab.id as number, message)
+  if (tab?.url) {
+    return browser.tabs.sendMessage<Message, T>(tab.id as number, message);
+  }
+
+  return null;
 }
 
 // A better name would've been 'sendMessageToAllRelevantTabs'

@@ -3,12 +3,28 @@ import { browser, sendMessageToActiveTab, MessageType } from "../common";
 import Button from "./Buttons/Button";
 
 export default function DevControlPanel() {
-  const [activeTabIsRelevant, setActiveTabIsRelevant] = useState(false);
+  const [activeTabState, setActiveTabState] = useState<{
+    isRelevant: boolean;
+    loopIsRunning: boolean;
+  }>({
+    isRelevant: false,
+    loopIsRunning: true,
+  });
 
   useEffect(() => {
     (async () => {
       const [tab] = await browser.tabs.query({ active: true });
-      setActiveTabIsRelevant(Boolean(tab?.url));
+      if (!tab?.url) {
+        return setActiveTabState({ isRelevant: false, loopIsRunning: false });
+      }
+
+      const result = await sendMessageToActiveTab<"started" | "stopped">({
+        type: MessageType.getActiveTabLoopState,
+      });
+      setActiveTabState({
+        isRelevant: true,
+        loopIsRunning: result === "started",
+      });
     })();
   }, []);
 
@@ -19,12 +35,15 @@ export default function DevControlPanel() {
     >
       <Button
         variant="primary"
-        disabled={!activeTabIsRelevant}
-        onClick={() =>
-          sendMessageToActiveTab({ type: MessageType.toggleActiveTabLoopState })
-        }
+        disabled={!activeTabState.isRelevant}
+        onClick={() => {
+          sendMessageToActiveTab({
+            type: MessageType.toggleActiveTabLoopState,
+          });
+          setActiveTabState((x) => ({ ...x, loopIsRunning: !x.loopIsRunning }));
+        }}
       >
-        Toggle loop
+        {activeTabState.loopIsRunning ? "Stop" : "Start"} loop
       </Button>
     </div>
   );

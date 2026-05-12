@@ -117,6 +117,7 @@ export type Message =
   | {
       // sent from popup's dev control panel to active tab's ISO content-script
       type:
+        | MessageType.getActiveTabLoopState
         | MessageType.toggleActiveTabLoopState;
     }
   | {
