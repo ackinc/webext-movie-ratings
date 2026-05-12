@@ -162,23 +162,24 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
-  protected override isValidProgramContainer(pContainer: ProgramContainer): boolean {
+  protected override isValidProgramContainer(
+    pContainer: ProgramContainer,
+  ): boolean {
     return Boolean(
       pContainer.title &&
       !["News Collection"].some((x) => x === pContainer.title),
     );
   }
 
-  protected override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
-    const { node } = pContainer;
-
-    if (node.matches('section.cr-browse-section[data-t="browse-section"]')) {
+  protected override getProgramNodeSelectors({
+    selector,
+  }: Pick<ProgramContainer, "selector">): string[] {
+    if (selector === 'section.cr-browse-section[data-t="browse-section"]') {
       return ['div[data-t="carousel-card-wrapper"]'];
     }
     if (
-      node.matches(
-        'div.dynamic-feed-wrapper > div[data-id]:has(div[class^="feed-header"])',
-      )
+      selector ===
+      'div.dynamic-feed-wrapper > div[data-id]:has(div[class^="feed-header"])'
     ) {
       return [
         'div[data-t="carousel-card-wrapper"]',
@@ -189,31 +190,30 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
       ];
     }
     if (
-      node.matches(
-        'div.dynamic-feed-wrapper > div[data-id]:has(div[data-t="single-show-card"])',
-      )
+      selector ===
+      'div.dynamic-feed-wrapper > div[data-id]:has(div[data-t="single-show-card"])'
     ) {
       return ['div[data-t="single-show-card"]'];
     }
-    if (node.matches("div.erc-browse-collection")) {
+    if (selector === "div.erc-browse-collection") {
       return ["div.browse-card"];
     }
-    if (node.matches("div.erc-alphabetical-virtual-list")) {
+    if (selector === "div.erc-alphabetical-virtual-list") {
       return ['div[data-t="series-card"]'];
     }
-    if (node.matches("div.erc-genres-collection")) {
+    if (selector === "div.erc-genres-collection") {
       return ['div[data-t="carousel-card-wrapper"]'];
     }
-    if (node.matches("div.erc-similar-to")) {
+    if (selector === "div.erc-similar-to") {
       return ['div[data-t="carousel-card-wrapper"]'];
     }
-    if (node.matches("div.erc-top-results,div.erc-series-results")) {
+    if (["div.erc-top-results", "div.erc-series-results"].includes(selector)) {
       return ['div[data-t="search-series-card"]'];
     }
-    if (node.matches("div.erc-movies-results")) {
+    if (selector === "div.erc-movies-results") {
       return ['div[data-t="search-movie-card"]'];
     }
-    if (node.matches("div.erc-episodes-results")) {
+    if (selector === "div.erc-episodes-results") {
       return ['div[data-t="search-episode-card"]'];
     }
 

@@ -113,11 +113,10 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
     );
   }
 
-  protected override getProgramNodeSelectors(
-    pContainer: ProgramContainer,
-  ): string[] {
-    const { node } = pContainer;
-    if (node.matches("div.tray-container")) {
+  protected override getProgramNodeSelectors({
+    selector,
+  }: Pick<ProgramContainer, "selector">): string[] {
+    if (selector === "div.tray-container") {
       return ['div[data-testid="tray-card-default"]'];
     }
 

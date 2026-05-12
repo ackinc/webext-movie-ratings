@@ -138,12 +138,10 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
     return Boolean(pContainer.title) && !pContainer.title.startsWith("WWE:");
   }
 
-  protected override getProgramNodeSelectors(
-    pContainer: ProgramContainer,
-  ): string[] {
-    const { node } = pContainer;
-
-    if (node.matches("div.billboard")) {
+  protected override getProgramNodeSelectors({
+    selector,
+  }: Pick<ProgramContainer, "selector">): string[] {
+    if (selector === "div.billboard") {
       return ["div.info.meta-layer"];
     }
 
@@ -152,16 +150,16 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
         "div.lolomoRow:not(.lolomoPreview)",
         "div.titleGroup--wrapper",
         "div.gallery",
-      ].some((sel) => node.matches(sel))
+      ].includes(selector)
     ) {
       return ["div.title-card-container"];
     }
 
-    if (node.matches("div.moreLikeThis--wrapper")) {
+    if (selector === "div.moreLikeThis--wrapper") {
       return ["div.titleCard--container"];
     }
 
-    if (node.matches('section[data-uia="search-gallery"]')) {
+    if (selector === 'section[data-uia="search-gallery"]') {
       return ['a[data-uia="search-gallery-video-card"][aria-label]'];
     }
 

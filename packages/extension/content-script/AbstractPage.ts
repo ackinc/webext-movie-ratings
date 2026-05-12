@@ -248,7 +248,9 @@ valid containers:\n\t${programContainers
 
   // NOTE: when implementing this in a subclass, ensure every selector appearing
   //   in getProgramContainerNodeSelectors is covered
-  protected getProgramNodeSelectors(_pContainer: ProgramContainer): string[] {
+  protected getProgramNodeSelectors(
+    _pContainerLike: Pick<ProgramContainer, "selector">,
+  ): string[] {
     throw new Error("Not implemented");
   }
 

@@ -94,15 +94,10 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     );
   }
 
-  protected override getProgramNodeSelectors(
-    pContainer: ProgramContainer,
-  ): string[] {
-    const { node } = pContainer;
-    if (
-      ['div.section[data-testid="section-container"]'].some((sel) =>
-        node.matches(sel),
-      )
-    ) {
+  protected override getProgramNodeSelectors({
+    selector,
+  }: Pick<ProgramContainer, "selector">): string[] {
+    if (['div.section[data-testid="section-container"]'].includes(selector)) {
       return [
         "ul > li button.epic-showcase-item",
         "ul > li a.lockup",
@@ -110,7 +105,7 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
       ];
     }
 
-    if (["ul.search-suggestions"].some((sel) => node.matches(sel))) {
+    if (["ul.search-suggestions"].includes(selector)) {
       return ["div.search-hint-lockup"];
     }
 

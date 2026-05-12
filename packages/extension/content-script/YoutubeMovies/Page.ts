@@ -92,15 +92,14 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
     return !!pContainer.title;
   }
 
-  protected override getProgramNodeSelectors(
-    pContainer: ProgramContainer,
-  ): string[] {
-    const { node } = pContainer;
-    if (node.matches('ytd-browse[role="main"] ytd-item-section-renderer')) {
+  protected override getProgramNodeSelectors({
+    selector,
+  }: Pick<ProgramContainer, "selector">): string[] {
+    if (selector === 'ytd-browse[role="main"] ytd-item-section-renderer') {
       return ["ytd-grid-movie-renderer"];
     }
 
-    if (node.matches("ytd-watch-next-secondary-results-renderer > div#items")) {
+    if (selector === "ytd-watch-next-secondary-results-renderer > div#items") {
       return ["yt-lockup-view-model"];
     }
 

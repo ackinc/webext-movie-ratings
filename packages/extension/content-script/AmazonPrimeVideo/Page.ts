@@ -124,16 +124,15 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     );
   }
 
-  protected override getProgramNodeSelectors(
-    pContainer: ProgramContainer,
-  ): string[] {
-    const { node } = pContainer;
+  protected override getProgramNodeSelectors({
+    selector,
+  }: Pick<ProgramContainer, "selector">): string[] {
     if (
       [
         'section[data-testid="standard-carousel"]',
         'section[data-testid="charts-container"]',
         'div[data-testid="grid-container"]',
-      ].some((sel) => node.matches(sel))
+      ].includes(selector)
     ) {
       // NOTE: adding the :not clause to the selector below fixes
       //   https://github.com/ackinc/webext-movie-ratings/issues/2
@@ -146,14 +145,14 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
       [
         'section[data-testid="super-carousel"]',
         'section[data-testid="collection-carousel"]',
-      ].some((sel) => node.matches(sel))
+      ].includes(selector)
     ) {
       return ['article[data-testid="super-carousel-card"]'];
     }
 
     if (
-      ['div[data-testid="navigation-bar-content-cards-below"]'].some((sel) =>
-        node.matches(sel),
+      ['div[data-testid="navigation-bar-content-cards-below"]'].includes(
+        selector,
       )
     ) {
       return ["article > a"];

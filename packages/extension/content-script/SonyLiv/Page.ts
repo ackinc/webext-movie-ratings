@@ -137,7 +137,9 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     ];
   }
 
-  protected override getTitleFromProgramContainerNode(node: HTMLElement): string {
+  protected override getTitleFromProgramContainerNode(
+    node: HTMLElement,
+  ): string {
     if (node.matches("div.layout-main-container:has(> div.listView)")) {
       return node.querySelector("span.title")!.textContent;
     }
@@ -168,7 +170,9 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
-  protected override isValidProgramContainer(pContainer: ProgramContainer): boolean {
+  protected override isValidProgramContainer(
+    pContainer: ProgramContainer,
+  ): boolean {
     const { title } = pContainer;
     return Boolean(
       title &&
@@ -186,14 +190,14 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     );
   }
 
-  protected override getProgramNodeSelectors(pContainer: ProgramContainer): string[] {
-    const { node } = pContainer;
-
-    if (node.matches("div.layout-main-container:has(> div.listView)")) {
+  protected override getProgramNodeSelectors({
+    selector,
+  }: Pick<ProgramContainer, "selector">): string[] {
+    if (selector === "div.layout-main-container:has(> div.listView)") {
       return ["a.portrait-link"];
     }
 
-    if (node.matches("div.layout-main-container:has(> div.slick-slider)")) {
+    if (selector === "div.layout-main-container:has(> div.slick-slider)") {
       return [
         "a.trending-tray-link",
 
@@ -207,11 +211,11 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
       ];
     }
 
-    if (node.matches("div.PopularSearchContainer")) {
+    if (selector === "div.PopularSearchContainer") {
       return ["a[id]", "div.sonyliv-original-block-wrap"];
     }
 
-    if (node.matches("div.page-position > div.potraitTrayCards")) {
+    if (selector === "div.page-position > div.potraitTrayCards") {
       return ["a.link_container"];
     }
 
