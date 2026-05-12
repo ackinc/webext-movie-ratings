@@ -12,6 +12,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently --names tsc,esbuild,api 'tsc -b --noEmit --watch --preserveWatchOutput' 'pnpm --filter ./packages/extension run build:dev' 'pnpm --filter ./packages/api-server run dev'",
+    "dev:firefox": "concurrently --names tsc,esbuild,api 'tsc -b --noEmit --watch --preserveWatchOutput' 'pnpm --filter ./packages/extension run build:dev --target=firefox' 'pnpm --filter ./packages/api-server run dev'",
     "prepare": "husky"
   },
   "devDependencies": {
