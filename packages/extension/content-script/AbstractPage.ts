@@ -5,10 +5,13 @@ import type {
   Program,
   ProgramData,
   IMDBData,
+  Message,
   Selector,
+  SWMessageResponse,
   UrlPath,
 } from "../common/types";
 import {
+  browser,
   CssClasses,
   defaultProgramFilterSettings,
   getGeneralizedUrlPath,
@@ -16,13 +19,14 @@ import {
   getSetting,
   ErrorMessage,
   ensureError,
+  MessageType,
 } from "../common";
 import {
   getSelectorStatusForCurrentSite,
   makeFilteredOutProgramNodeStylesClause,
   setSelectorStatusForCurrentSite,
 } from "./utils";
-import { DataExtractionError } from "../common/customErrors";
+import { DataExtractionError, SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import { limitConcurrency } from "rate-limit-utils";
 
@@ -410,14 +414,49 @@ valid containers:\n\t${programContainers
     return elem;
   }
 
-  #showProgramInfo(e: MouseEvent) {
+  #showProgramInfo = async (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    console.log(e.target);
-    // TODO: identify program at click-site
-    // TODO: extract program data
-    // TODO: get cached data (and cache key)
-    // TODO: print everything to console
-  }
+    const allProgramNodeSelectors =
+      this.getProgramContainerNodeSelectors().flatMap((pcNodeSel) =>
+        this.getProgramNodeSelectors({ selector: pcNodeSel }).map(
+          (pNodeSel) => `${pcNodeSel} ${pNodeSel}`,
+        ),
+      );
+
+    let cur: Element | null = e.target as Element;
+    let matchingSelector: string | undefined;
+    do {
+      matchingSelector = allProgramNodeSelectors.find((sel) =>
+        cur!.matches(sel),
+      );
+      if (matchingSelector) break;
+      cur = cur.parentElement;
+    } while (cur);
+    if (!cur) {
+      console.log(`No program node found at that location`);
+      return;
+    }
+
+    const programNode = cur as HTMLElement;
+
+    const program = this.#safeCreateProgram({
+      node: programNode,
+      selector: matchingSelector!,
+    });
+    if (!program) return;
+    console.log(program);
+
+    const response = await browser.runtime.sendMessage<
+      Message,
+      SWMessageResponse<Required<IMDBData> & { key: string }>
+    >({
+      type: MessageType.fetchCachedIMDBRating,
+      data: { program },
+    });
+
+    if ("error" in response) throw new SWError(response.error);
+    console.log(response.data);
+  };
 }
