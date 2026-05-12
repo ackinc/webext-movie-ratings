@@ -21,7 +21,7 @@ export default function DevControlPanel() {
         variant="primary"
         disabled={!activeTabIsRelevant}
         onClick={() =>
-          sendMessageToActiveTab({ type: MessageType.toggleLoopState })
+          sendMessageToActiveTab({ type: MessageType.toggleActiveTabLoopState })
         }
       >
         Toggle loop

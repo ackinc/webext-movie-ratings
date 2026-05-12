@@ -301,7 +301,7 @@ function handleMessage(
     handleFilterSettingsChange(msg.data);
   } else if (type === MessageType.healthCheck) {
     if (sendResponse) sendResponse("ok");
-  } else if (type === MessageType.toggleLoopState) {
+  } else if (type === MessageType.toggleActiveTabLoopState) {
     if (loopState.timeout) {
       stopLoop("userRequest");
       console.log("stopped loop on user request");
