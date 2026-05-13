@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 // initialize Sentry
-import "./instrument.ts";
+import Sentry from "./instrument.ts";
 
 import type { Database } from "better-sqlite3";
 import { parseISO } from "date-fns";
@@ -18,7 +18,6 @@ import {
   getProgramMatchRecord,
   updateProgramMatchRecord,
 } from "./helpers.ts";
-import Sentry from "./instrument.ts";
 import db from "./db.ts";
 import logger from "./logger.ts";
 import { querySearchEngine, getIndexLastUpdatedTime } from "./searchEngine.ts";
@@ -178,5 +177,6 @@ async function cleanup(signal: "SIGINT" | "SIGTERM") {
   logger.info(`Received ${signal}. Exiting ...`);
   await server.close();
   db.close();
+  await Sentry.close();
   process.exit(0);
 }
