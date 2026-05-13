@@ -18,7 +18,7 @@ cd ~/sift/packages/api-server
 X=$(git diff --name-only $HEAD_OLD HEAD | grep packages/api-server/ecosystem.config.cjs | wc -l)
 if [ $X -gt 0 ]; then
     # pm2 config was changed
-    pm2 delete sift-server
+    pm2 delete all
     pm2 start ecosystem.config.cjs
     pm2 save
 else
