@@ -45,6 +45,17 @@ div.title-card-container:has(svg.top-10-rank) .${CssClasses.imdbDataNode} {
   margin-left: 50%;
 }
 
+div.titleGroup--wrapper div.titleCard--container .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin: 0;
+  padding: 0 4px;
+  background-color: #0000007f;
+  border-radius: 0;
+  color: white;
+}
+
 div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode} {
   position: absolute;
   top: 4px;
@@ -174,7 +185,7 @@ div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssC
         "div.gallery",
       ].includes(selector)
     ) {
-      return ["div.title-card-container"];
+      return ["div.title-card-container", "div.titleCard--container"];
     }
 
     if (selector === "div.moreLikeThis--wrapper") {
