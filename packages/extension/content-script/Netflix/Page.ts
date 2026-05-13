@@ -70,6 +70,11 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
   border-radius: 0;
   color: white;
 }
+
+section[data-uia="billboard"] .${CssClasses.imdbDataNode} {
+  margin-left: 0;
+  color: white;
+}
     `;
   }
 
@@ -81,6 +86,9 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
       "div.moreLikeThis--wrapper",
       "div.gallery",
       'section[data-uia="search-gallery"]',
+
+      // 2026-05-14
+      'div:has(> section[data-uia="billboard"])',
     ];
   }
 
@@ -129,6 +137,10 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
       return "Search results";
     }
 
+    if (pContainerNode.matches('div:has(> section[data-uia="billboard"])')) {
+      return "Billboard";
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -161,6 +173,10 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
 
     if (selector === 'section[data-uia="search-gallery"]') {
       return ['a[data-uia="search-gallery-video-card"][aria-label]'];
+    }
+
+    if (selector === 'div:has(> section[data-uia="billboard"])') {
+      return ['section[data-uia="billboard"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

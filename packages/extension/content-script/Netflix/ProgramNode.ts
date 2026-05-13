@@ -21,6 +21,33 @@ export default class ProgramNode extends AbstractProgramNode {
       ].some((s) => programNode.matches(s))
     ) {
       title = programNode.getAttribute("aria-label")!;
+    } else if (programNode.matches('section[data-uia="billboard"]')) {
+      const title = programNode
+        .getAttribute("aria-label")!
+        .replace("Featured Content:", "")
+        .trim();
+
+      const [yearNode, typeNode] = Array.from(
+        programNode.querySelectorAll(
+          'div[data-uia="billboard-title"] div[data-uia="attributes-elements"] > span',
+        ),
+      ).slice(1, 3);
+      const type = typeNode?.textContent
+        ? ["Seasons", "Episodes", "Series"].some((x) =>
+            typeNode.textContent.includes(x),
+          )
+          ? "series"
+          : "movie"
+        : undefined;
+      const year = yearNode?.textContent ? +yearNode.textContent : undefined;
+
+      return {
+        title: extractProgramTitle(title),
+        ...(type ? { type } : {}),
+        // specifying year for series is causing many false negatives
+        //   when querying omdbapi
+        ...(year && Number.isInteger(year) ? { year } : {}),
+      };
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -58,6 +85,15 @@ export default class ProgramNode extends AbstractProgramNode {
     if (programNode.matches("div.billboard div.info.meta-layer")) {
       const titleNode = programNode.querySelector("div.billboard-title");
       titleNode!.insertAdjacentElement("afterend", imdbNode);
+
+      return;
+    }
+
+    if (programNode.matches('section[data-uia="billboard"]')) {
+      const attributesNode = programNode.querySelector(
+        'div[data-uia="billboard-title"] div[data-uia="attributes-elements"]',
+      )!;
+      attributesNode.insertAdjacentElement("afterend", imdbNode);
 
       return;
     }
