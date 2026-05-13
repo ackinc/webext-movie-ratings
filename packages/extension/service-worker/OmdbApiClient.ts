@@ -57,9 +57,9 @@ export default class OmdbApiClient {
       let result: IMDBData;
       if ("Error" in respBody) {
         if (!respBody.Error.includes("not found")) {
-          // url already carries necessary context, so we don't need to
-          //   explicitly add it here
-          captureException(new Error(`omdbApi error: ${respBody.Error}`));
+          captureException(new Error(`omdbApi error: ${respBody.Error}`), {
+            context: { request: { url } },
+          });
         }
         result = { imdbRating: "N/F", imdbID: imdbId ?? "" };
       } else {
