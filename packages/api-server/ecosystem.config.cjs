@@ -4,6 +4,7 @@ module.exports = {
       name: "sift-api-server",
       script: "./server.ts",
       instances: "max",
+      merge_logs: true,
       exec_mode: "cluster",
       watch: false,
       ignore_watch: ["node_modules"],
