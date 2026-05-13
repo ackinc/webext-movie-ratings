@@ -50,6 +50,14 @@ export default class ProgramNode extends AbstractProgramNode {
       title = (programNode.firstChild! as HTMLElement).getAttribute(
         "aria-label",
       )!;
+    } else if (
+      programNode.matches(
+        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"])',
+      )
+    ) {
+      title = (programNode.firstChild! as HTMLElement).getAttribute(
+        "aria-label",
+      )!;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }

@@ -75,6 +75,10 @@ section[data-uia="billboard"] .${CssClasses.imdbDataNode} {
   margin-left: 0;
   color: white;
 }
+
+div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssClasses.imdbDataNode} {
+  margin-top: 12px;
+}
     `;
   }
 
@@ -188,6 +192,7 @@ section[data-uia="billboard"] .${CssClasses.imdbDataNode} {
     if (selector === "section.carousel-row") {
       return [
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="standard-card"])',
+        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"])',
       ];
     }
 
