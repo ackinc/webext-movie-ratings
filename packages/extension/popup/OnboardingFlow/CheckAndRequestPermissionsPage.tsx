@@ -9,7 +9,7 @@ import {
 } from "../../common";
 import Button from "../Buttons/Button";
 import ExclmarkOnCircle from "../Icons/ExclmarkOnCircle";
-import LoadingIndicator from "../../../../images/loading.svg";
+import LoadingIndicator from "@/images/loading.svg";
 
 interface PageProps {
   sitesToEnable: Sitename[];

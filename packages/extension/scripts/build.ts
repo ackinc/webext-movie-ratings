@@ -63,6 +63,9 @@ const config: esbuild.BuildOptions = {
       ? null
       : { in: path.join(srcDir, "dashboard/main.jsx"), out: "dashboard/main" },
   ].filter((x) => x !== null),
+  alias: {
+    "@": "../..",
+  },
   bundle: true,
   define: {
     APP_ENV: `"${APP_ENV}"`,
