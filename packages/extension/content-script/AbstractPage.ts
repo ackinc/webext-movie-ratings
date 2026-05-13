@@ -28,6 +28,7 @@ import {
 } from "./utils";
 import { DataExtractionError, SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
+import { addSidecar, removeSidecar } from "./sidecar";
 import { limitConcurrency } from "rate-limit-utils";
 
 export default class AbstractPage {
@@ -384,32 +385,57 @@ valid containers:\n\t${programContainers
       document.body.removeEventListener("click", this.#showProgramInfo, {
         capture: true,
       });
-
-      const elem = document.body.querySelector(
-        ":scope > .sift-select-program-mode",
+      document.body.removeEventListener(
+        "keyup",
+        this.#exitSelectProgramModeOnEsc,
       );
-      if (elem) document.body.removeChild(elem);
-    } else {
-      document.body.appendChild(this.#createSelectProgramNodeNotification());
 
+      this.#removeSelectProgramModeNotification();
+      this.inSelectProgramMode = false;
+
+      // IMPORTANT: sidecar must be mounted *after* this.inSelectProgramMode
+      //   has been inverted
+      addSidecar({ page: this });
+    } else {
+      removeSidecar();
+      this.#addSelectProgramModeNotification();
+
+      document.body.addEventListener("keyup", this.#exitSelectProgramModeOnEsc);
       document.body.addEventListener("click", this.#showProgramInfo, {
         capture: true,
       });
+      this.inSelectProgramMode = true;
     }
-    this.inSelectProgramMode = !this.inSelectProgramMode;
   }
+
+  #exitSelectProgramModeOnEsc = (e: KeyboardEvent) => {
+    if (e.code !== "Escape") return;
+    this.toggleSelectProgramMode();
+  };
+
+  #addSelectProgramModeNotification = () => {
+    document.body.appendChild(this.#createSelectProgramNodeNotification());
+  };
+
+  #removeSelectProgramModeNotification = () => {
+    const elem = document.body.querySelector(
+      ":scope > .sift-select-program-mode",
+    );
+    if (elem) document.body.removeChild(elem);
+  };
 
   #createSelectProgramNodeNotification(): HTMLDivElement {
     const elem = document.createElement("div");
-    elem.innerText = "Click on a program tile to examine it ...";
+    elem.innerText = "Esc to exit ...";
     elem.classList.add("sift-select-program-mode");
     elem.style = `
       position: fixed;
       bottom: 32px;
       right: 32px;
+      z-index: 1000;
       background-color: white;
       color: black;
-      padding: 8px 16px;
+      padding: 12px 24px;
     `;
     return elem;
   }
