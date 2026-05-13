@@ -27,6 +27,8 @@ export default function PageControlPanel({
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-end",
+        gap: expanded ? "16px" : "0px",
+        transition: "all 0.2s ease-out",
       }}
       onMouseLeave={() => {
         if (expanded) setExpanded(false);
@@ -40,8 +42,6 @@ export default function PageControlPanel({
         }}
         style={{
           opacity: expanded ? "1" : "0",
-          position: "relative",
-          top: expanded ? "-32px" : "0",
           pointerEvents: expanded ? "all" : "none",
           minHeight: "unset",
           margin: "0",
@@ -61,8 +61,6 @@ export default function PageControlPanel({
         }
         style={{
           opacity: expanded ? "1" : "0",
-          position: "relative",
-          top: expanded ? "-16px" : "0",
           pointerEvents: expanded ? "all" : "none",
           minHeight: "unset",
           margin: "0",
