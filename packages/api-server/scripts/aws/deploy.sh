@@ -20,6 +20,7 @@ if [ $X -gt 0 ]; then
     # pm2 config was changed
     pm2 delete sift-server
     pm2 start ecosystem.config.cjs
+    pm2 save
 else
     pm2 reload ecosystem.config.cjs
 fi
