@@ -25,6 +25,7 @@ import AppleTVPage from "./AppleTV/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 import YoutubeMoviesPage from "./YoutubeMovies/Page";
 import { updateFilteredOutProgramNodeStyles } from "./utils";
+import { addSidecar, removeSidecar } from "./sidecar";
 
 let page: AbstractPage;
 let programFilterSettings: ProgramFilterSettings;
@@ -70,6 +71,8 @@ const loopState: LoopState = {
     await initializePage();
     addListeners();
     startLoop();
+
+    addSidecar();
   } catch (e) {
     captureException(e);
   }
@@ -335,6 +338,7 @@ function cleanup(broadcast = true) {
     window.postMessage({ type: MessageType.cleanup } satisfies Message);
   }
 
+  removeSidecar();
   stopLoop("cleanup");
   removeListeners();
   page.cleanup();
