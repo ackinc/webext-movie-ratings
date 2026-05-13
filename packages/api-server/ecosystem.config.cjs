@@ -1,9 +1,9 @@
 module.exports = {
   apps: [
     {
-      name: "sift-server",
-      script: "./main.ts",
-      instances: -1,
+      name: "sift-api-server",
+      script: "./server.ts",
+      instances: "max",
       exec_mode: "cluster",
       watch: false,
       ignore_watch: ["node_modules"],
@@ -12,6 +12,19 @@ module.exports = {
       autorestart: true,
       max_restarts: 3,
       min_uptime: 5000,
+    },
+    {
+      name: "sift-crons",
+      script: "./crons.ts",
+      instances: 1,
+      exec_mode: "fork",
+      watch: false,
+      ignore_watch: ["node_modules"],
+      interpreter: "node",
+      node_args: "--unhandled-rejections=strict",
+      autorestart: true,
+      max_restarts: 3,
+      min_uptime: 1000,
     },
   ],
 };

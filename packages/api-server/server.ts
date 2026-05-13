@@ -1,4 +1,8 @@
 import "dotenv/config";
+
+// initialize Sentry
+import "./instrument.ts";
+
 import type { Database } from "better-sqlite3";
 import { parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
@@ -15,16 +19,27 @@ import {
   updateProgramMatchRecord,
 } from "./helpers.ts";
 import Sentry from "./instrument.ts";
-import loggerInstance from "./logger.ts";
+import db from "./db.ts";
+import logger from "./logger.ts";
 import { querySearchEngine, getIndexLastUpdatedTime } from "./searchEngine.ts";
 
-const { APP_ENV } = process.env;
+const env = pick(process.env, ["APP_ENV", "PORT"], true);
 
-export function createServer(db: Database) {
-  const fastify = Fastify({ loggerInstance });
+const server = createServer(db);
+server.listen({ port: +env.PORT! }, function (err, _address) {
+  if (err) {
+    server.log.error(err);
+    process.exit(1);
+  }
+});
+process.on("SIGINT", cleanup);
+process.on("SIGTERM", cleanup);
+
+function createServer(db: Database) {
+  const fastify = Fastify({ loggerInstance: logger });
   fastify.register(cors, {
     origin:
-      APP_ENV === "production"
+      env.APP_ENV === "production"
         ? [
             extensionIds.chrome.map((id) => `chrome-extension://${id}`),
             extensionIds.edge.map((id) => `chrome-extension://${id}`),
@@ -157,4 +172,11 @@ export function createServer(db: Database) {
   );
 
   return fastify;
+}
+
+async function cleanup(signal: "SIGINT" | "SIGTERM") {
+  logger.info(`Received ${signal}. Exiting ...`);
+  await server.close();
+  db.close();
+  process.exit(0);
 }

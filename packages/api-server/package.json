@@ -2,11 +2,12 @@
   "name": "sift-api-server",
   "version": "1.0.0",
   "description": "",
-  "main": "main.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node main.ts",
-    "dev": "tsx watch --clear-screen=false main.ts"
+    "start": "node server.ts",
+    "dev": "tsx watch --clear-screen=false server.ts",
+    "start:crons": "node crons.ts",
+    "dev:crons": "tsx watch --clear-screen=false crons.ts"
   },
   "keywords": [],
   "author": "",
