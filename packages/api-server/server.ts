@@ -116,28 +116,29 @@ export function createServer(db: Database) {
         (row.status === "abandoned" &&
           parseISO(row.updatedAt) < seIndexLastUpdatedAt)
       ) {
-        // We insert the row synchronously when we find it doesn't already
-        //   exist because if another request arrives for the same program
-        //   before we're finished with this request, we do not want it to
-        //   attempt another insert (which would risk lastInsertRowId being
-        //   undefined in the handler of that request)
-        const { changes, lastInsertRowid } = createProgramMatchRecord(db, {
-          ...pick(program, ["title", "type", "year"]),
-          meta: JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
-        });
+        if (!row) {
+          createProgramMatchRecord(db, {
+            ...pick(program, ["title", "type", "year"]),
+            meta: JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
+          });
+
+          // If multiple instances of the server are running, a race condition
+          //   may cause the createProgramMatchRecord call above above to no-op
+          //   even if the previous getProgramMatchRecord call returned nothing
+          // Because of this, we cannot rely on the lastInsertRowId attr of the
+          //   return value of the createProgramMatchRecord call above; the
+          //   seemingly unnecessary getProgramMatchRecord below is actually
+          //   required
+          row = getProgramMatchRecord(db, program);
+        }
 
         const [bestMatch] = await querySearchEngine(program);
-        updateProgramMatchRecord(
-          db,
-          // the insert could only have failed if the row already existed
-          changes === 0 ? row!.id : lastInsertRowid,
-          {
-            status: bestMatch ? "matched" : "abandoned",
-            imdbId: bestMatch ? bestMatch.imdbId : null,
-          },
-        );
+        updateProgramMatchRecord(db, row!.id, {
+          status: bestMatch ? "matched" : "abandoned",
+          imdbId: bestMatch ? bestMatch.imdbId : null,
+        });
 
-        row = getProgramMatchRecord(db, lastInsertRowid)!;
+        row = getProgramMatchRecord(db, row!.id)!;
       }
 
       if (row.status === "pending") {

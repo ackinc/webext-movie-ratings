@@ -17,7 +17,7 @@ const env = pick(
   true,
 );
 
-const backupPath = path.join(path.dirname(env.DB_PATH!), "backup.db");
+const backupPath = path.join(path.dirname(env.DB_PATH!), "db_backup.sqlite");
 const logger = baseLogger.child({ script: __filename });
 
 const db = new Database(env.DB_PATH!);
@@ -30,6 +30,7 @@ try {
   logger.info("db backup created");
 
   await uploadBackupToS3();
+  logger.info("db backup uploaded to s3");
 } catch (e) {
   const err = e instanceof Error ? e : new Error(`${e}`);
   err.message = `db backup failed: ${err.message}`;
@@ -50,5 +51,4 @@ async function uploadBackupToS3() {
     Body: fs.createReadStream(backupPath),
   });
   await s3Client.send(command);
-  logger.info("db backup uploaded to s3");
 }
