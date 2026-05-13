@@ -1,6 +1,5 @@
 // @ts-expect-error `h` and `Fragment` need to be imported here, even
 //   though they are unused
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { render, h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import SetCurPageContext from "./Contexts/SetCurPageContext";
