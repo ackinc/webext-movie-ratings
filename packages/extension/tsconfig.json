@@ -1,5 +1,5 @@
 {
-  "include": ["**/*", "../utils/**/*"],
+  "include": ["**/*"],
   "exclude": ["scripts/*"],
   "extends": "../../tsconfig.json",
   "compilerOptions": {
