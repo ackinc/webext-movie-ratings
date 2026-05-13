@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { browser, sendMessageToActiveTab, MessageType } from "../common";
-import Button from "./Buttons/Button";
+import Button from "../common/components/Buttons/Button";
 
 export default function DevControlPanel() {
   const [activeTabState, setActiveTabState] = useState<{

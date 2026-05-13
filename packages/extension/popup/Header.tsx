@@ -1,8 +1,8 @@
 import { useEffect, useState } from "preact/hooks";
 import { type PopupPage } from "./common";
 import { getSetting } from "../common";
-import CloseIconButton from "./Buttons/CloseIconButton";
-import SettingsIconButton from "./Buttons/SettingsIconButton";
+import CloseIconButton from "../common/components/Buttons/CloseIconButton";
+import SettingsIconButton from "../common/components/Buttons/SettingsIconButton";
 import "./Header.css";
 
 interface HeaderProps {
