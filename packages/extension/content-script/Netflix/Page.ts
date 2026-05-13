@@ -137,6 +137,10 @@ div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssC
 
       if (pContainerParent.matches('div[data-uia="modal-content-wrapper"]')) {
         return pContainerNode.previousElementSibling!.textContent;
+      } else if (location.href.includes("/browse/person")) {
+        return pContainerNode.parentElement!.previousElementSibling!.querySelector(
+          "div.sub-header div.personHeader span.title",
+        )!.textContent;
       } else {
         return (
           /* My List page */
