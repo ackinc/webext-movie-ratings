@@ -5,10 +5,13 @@ import type {
   Program,
   ProgramData,
   IMDBData,
+  Message,
   Selector,
+  SWMessageResponse,
   UrlPath,
 } from "../common/types";
 import {
+  browser,
   CssClasses,
   defaultProgramFilterSettings,
   getGeneralizedUrlPath,
@@ -16,18 +19,22 @@ import {
   getSetting,
   ErrorMessage,
   ensureError,
+  MessageType,
 } from "../common";
 import {
   getSelectorStatusForCurrentSite,
   makeFilteredOutProgramNodeStylesClause,
   setSelectorStatusForCurrentSite,
 } from "./utils";
-import { DataExtractionError } from "../common/customErrors";
+import { DataExtractionError, SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
+import { addSidecar, removeSidecar } from "./sidecar";
 import { limitConcurrency } from "rate-limit-utils";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
+
+  inSelectProgramMode: boolean = false;
 
   // Caching these allows us to avoid a `findPrograms` call inside `cleanup`
   // Decided this was worth doing because of the annoying data extraction
@@ -42,6 +49,7 @@ export default class AbstractPage {
     this.isValidProgram = this.isValidProgram.bind(this);
 
     this.#foundPrograms = [];
+    this.inSelectProgramMode = false;
   }
 
   async initialize() {
@@ -59,6 +67,8 @@ export default class AbstractPage {
         p.node,
       );
     }
+
+    if (this.inSelectProgramMode) this.toggleSelectProgramMode();
   }
 
   findPrograms(): Program[] {
@@ -369,4 +379,110 @@ valid containers:\n\t${programContainers
   protected getGeneralizedUrlPath(href: string): string {
     return getGeneralizedUrlPath(href);
   }
+
+  toggleSelectProgramMode() {
+    if (this.inSelectProgramMode) {
+      document.body.removeEventListener("click", this.#showProgramInfo, {
+        capture: true,
+      });
+      document.body.removeEventListener(
+        "keyup",
+        this.#exitSelectProgramModeOnEsc,
+      );
+
+      this.#removeSelectProgramModeNotification();
+      this.inSelectProgramMode = false;
+
+      // IMPORTANT: sidecar must be mounted *after* this.inSelectProgramMode
+      //   has been inverted
+      addSidecar({ page: this });
+    } else {
+      removeSidecar();
+      this.#addSelectProgramModeNotification();
+
+      document.body.addEventListener("keyup", this.#exitSelectProgramModeOnEsc);
+      document.body.addEventListener("click", this.#showProgramInfo, {
+        capture: true,
+      });
+      this.inSelectProgramMode = true;
+    }
+  }
+
+  #exitSelectProgramModeOnEsc = (e: KeyboardEvent) => {
+    if (e.code !== "Escape") return;
+    this.toggleSelectProgramMode();
+  };
+
+  #addSelectProgramModeNotification = () => {
+    document.body.appendChild(this.#createSelectProgramNodeNotification());
+  };
+
+  #removeSelectProgramModeNotification = () => {
+    const elem = document.body.querySelector(
+      ":scope > .sift-select-program-mode",
+    );
+    if (elem) document.body.removeChild(elem);
+  };
+
+  #createSelectProgramNodeNotification(): HTMLDivElement {
+    const elem = document.createElement("div");
+    elem.innerText = "Esc to exit ...";
+    elem.classList.add("sift-select-program-mode");
+    elem.style = `
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 1000;
+      background-color: white;
+      color: black;
+      padding: 12px 24px;
+    `;
+    return elem;
+  }
+
+  #showProgramInfo = async (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const allProgramNodeSelectors =
+      this.getProgramContainerNodeSelectors().flatMap((pcNodeSel) =>
+        this.getProgramNodeSelectors({ selector: pcNodeSel }).map(
+          (pNodeSel) => `${pcNodeSel} ${pNodeSel}`,
+        ),
+      );
+
+    let cur: Element | null = e.target as Element;
+    let matchingSelector: string | undefined;
+    do {
+      matchingSelector = allProgramNodeSelectors.find((sel) =>
+        cur!.matches(sel),
+      );
+      if (matchingSelector) break;
+      cur = cur.parentElement;
+    } while (cur);
+    if (!cur) {
+      console.log(`No program node found at that location`);
+      return;
+    }
+
+    const programNode = cur as HTMLElement;
+
+    const program = this.#safeCreateProgram({
+      node: programNode,
+      selector: matchingSelector!,
+    });
+    if (!program) return;
+    console.log(program);
+
+    const response = await browser.runtime.sendMessage<
+      Message,
+      SWMessageResponse<Required<IMDBData> & { key: string }>
+    >({
+      type: MessageType.fetchCachedIMDBRating,
+      data: { program },
+    });
+
+    if ("error" in response) throw new SWError(response.error);
+    console.log(response.data);
+  };
 }

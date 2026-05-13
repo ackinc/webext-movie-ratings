@@ -1,6 +1,6 @@
 import { supportedSites, type Sitename } from "../common";
 import SiteChooserFormControl from "../SiteChooserFormControl";
-import SettingsIcon from "../../../../images/settings.svg";
+import SettingsIcon from "@/images/settings.svg";
 
 interface WelcomePageProps {
   selectedSites: Sitename[];

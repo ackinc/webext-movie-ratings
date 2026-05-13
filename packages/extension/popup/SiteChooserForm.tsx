@@ -18,7 +18,7 @@ import {
 import { SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import SiteChooserFormControl from "./SiteChooserFormControl";
-import loadingIndicator from "../../../images/loading.svg";
+import loadingIndicator from "@/images/loading.svg";
 import "./SiteChooserForm.css";
 
 // We want to wait for the user to stop interacting with the form before

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import IconButton from "./IconButton";
-import copyIcon from "../../../../images/copy.svg";
-import tickIcon from "../../../../images/tick.svg";
+import copyIcon from "@/images/copy.svg";
+import tickIcon from "@/images/tick.svg";
 
 interface CopyToClipboardButtonProps {
   textToCopy: string;

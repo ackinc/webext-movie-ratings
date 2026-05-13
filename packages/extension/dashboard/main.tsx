@@ -1,6 +1,5 @@
 // @ts-expect-error `h` and `Fragment` need to be imported here, even
 //   though they are unused
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { render, h, Fragment } from "preact";
 import { type IDBPDatabase } from "idb";
 import { upgradeIdbAndGetConnection } from "../common";

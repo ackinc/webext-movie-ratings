@@ -25,6 +25,7 @@ import AppleTVPage from "./AppleTV/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 import YoutubeMoviesPage from "./YoutubeMovies/Page";
 import { updateFilteredOutProgramNodeStyles } from "./utils";
+import { addSidecar, removeSidecar } from "./sidecar";
 
 let page: AbstractPage;
 let programFilterSettings: ProgramFilterSettings;
@@ -67,9 +68,11 @@ const loopState: LoopState = {
       data: { trigger: "new-content-script-injection" },
     } satisfies Message);
 
-    await initializePage();
+    page = await initializePage();
     addListeners();
     startLoop();
+
+    if (APP_ENV !== "production") addSidecar({ page });
   } catch (e) {
     captureException(e);
   }
@@ -100,6 +103,8 @@ async function initializePage() {
 
   sessionStartTime = +new Date();
   await page.initialize();
+
+  return page;
 }
 
 function addListeners() {
@@ -311,6 +316,10 @@ function handleMessage(
       startLoop("userRequest");
       console.log("started loop on user request");
     }
+  } else if (type === MessageType.getSelectProgramModeState) {
+    if (sendResponse) sendResponse(page.inSelectProgramMode ? "on" : "off");
+  } else if (type === MessageType.toggleSelectProgramMode) {
+    page.toggleSelectProgramMode();
   }
 }
 
@@ -331,6 +340,7 @@ function cleanup(broadcast = true) {
     window.postMessage({ type: MessageType.cleanup } satisfies Message);
   }
 
+  removeSidecar();
   stopLoop("cleanup");
   removeListeners();
   page.cleanup();

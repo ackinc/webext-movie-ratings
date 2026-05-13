@@ -1,0 +1,95 @@
+import { useState } from "preact/hooks";
+import Button from "@components/Buttons/Button";
+import IconButton from "@components/Buttons/IconButton";
+import { MessageType } from "../../common";
+import type AbstractPage from "../AbstractPage";
+import siftLogoIcon from "@/images/logo48.png";
+import closeIcon from "@/images/close.svg";
+
+interface PageControlPanelProps {
+  className?: string;
+  page: AbstractPage;
+}
+
+export default function PageControlPanel({
+  className,
+  page,
+}: PageControlPanelProps) {
+  const [expanded, setExpanded] = useState(false);
+  const [inSelectProgramMode, setInSelectProgramMode] = useState(
+    page.inSelectProgramMode,
+  );
+
+  return (
+    <div
+      className={`${className ?? ""} page-control-panel`}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end",
+      }}
+    >
+      <Button
+        variant="primary"
+        onClick={() => {
+          page.toggleSelectProgramMode();
+          setInSelectProgramMode((x) => !x);
+        }}
+        style={{
+          opacity: expanded ? "1" : "0",
+          position: "relative",
+          top: expanded ? "-32px" : "0",
+          minHeight: "unset",
+          margin: "0",
+          padding: "8px 8px",
+          backgroundColor: "#f5c618",
+          backgroundImage: "unset",
+          transition: "all 0.2s ease-out",
+        }}
+      >
+        {inSelectProgramMode ? "Exit" : "Turn on"} select program mode
+      </Button>
+
+      <Button
+        variant="primary"
+        onClick={() =>
+          window.postMessage({ type: MessageType.toggleActiveTabLoopState })
+        }
+        style={{
+          opacity: expanded ? "1" : "0",
+          position: "relative",
+          top: expanded ? "-16px" : "0",
+          minHeight: "unset",
+          margin: "0",
+          padding: "8px 8px",
+          backgroundColor: "#f5c618",
+          backgroundImage: "unset",
+          transition: "all 0.2s ease-out",
+        }}
+      >
+        Toggle loop state
+      </Button>
+
+      <IconButton
+        variant="primary"
+        onClick={() => setExpanded((x) => !x)}
+        style={{
+          width: "48px",
+          height: "48px",
+          backgroundColor: "#f5c618",
+          border: "0",
+          padding: "8px",
+          borderRadius: "50%",
+          overflow: "hidden",
+          transform: expanded ? "rotateZ(90deg)" : "rotateZ(0deg)",
+          transition: "all 0.2s ease-out",
+        }}
+      >
+        <img
+          src={expanded ? closeIcon : siftLogoIcon}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </IconButton>
+    </div>
+  );
+}

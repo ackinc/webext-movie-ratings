@@ -7,9 +7,9 @@ import {
   setSetting,
   type Message,
 } from "../../common";
-import Button from "../Buttons/Button";
+import Button from "../../common/components/Buttons/Button";
 import ExclmarkOnCircle from "../Icons/ExclmarkOnCircle";
-import LoadingIndicator from "../../../../images/loading.svg";
+import LoadingIndicator from "@/images/loading.svg";
 
 interface PageProps {
   sitesToEnable: Sitename[];

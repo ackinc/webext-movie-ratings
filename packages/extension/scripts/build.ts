@@ -63,6 +63,9 @@ const config: esbuild.BuildOptions = {
       ? null
       : { in: path.join(srcDir, "dashboard/main.jsx"), out: "dashboard/main" },
   ].filter((x) => x !== null),
+  alias: {
+    "@": "../..",
+  },
   bundle: true,
   define: {
     APP_ENV: `"${APP_ENV}"`,
@@ -79,6 +82,7 @@ const config: esbuild.BuildOptions = {
     SIFT_API_URL: `"${SIFT_API_URL}"`,
   },
   loader: {
+    ".png": "dataurl",
     ".svg": "dataurl",
   },
   logLevel: "info",
