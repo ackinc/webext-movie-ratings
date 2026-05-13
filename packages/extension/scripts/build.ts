@@ -82,6 +82,7 @@ const config: esbuild.BuildOptions = {
     SIFT_API_URL: `"${SIFT_API_URL}"`,
   },
   loader: {
+    ".png": "dataurl",
     ".svg": "dataurl",
   },
   logLevel: "info",
