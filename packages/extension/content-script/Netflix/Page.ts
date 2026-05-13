@@ -45,6 +45,17 @@ div.title-card-container:has(svg.top-10-rank) .${CssClasses.imdbDataNode} {
   margin-left: 50%;
 }
 
+div.titleGroup--wrapper div.titleCard--container .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin: 0;
+  padding: 0 4px;
+  background-color: #0000007f;
+  border-radius: 0;
+  color: white;
+}
+
 div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode} {
   position: absolute;
   top: 4px;
@@ -70,6 +81,19 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
   border-radius: 0;
   color: white;
 }
+
+section[data-uia="billboard"] .${CssClasses.imdbDataNode} {
+  margin-left: 0;
+  color: white;
+}
+
+div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssClasses.imdbDataNode} {
+  margin-top: 12px;
+}
+
+div.previewModal--container .${CssClasses.imdbDataNode} {
+  margin: 4px 0;
+}
     `;
   }
 
@@ -81,6 +105,11 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
       "div.moreLikeThis--wrapper",
       "div.gallery",
       'section[data-uia="search-gallery"]',
+
+      // 2026-05-14
+      'div:has(> section[data-uia="billboard"])',
+      "section.carousel-row",
+      "div.previewModal--wrapper:has(> div.previewModal--container)",
     ];
   }
 
@@ -113,6 +142,10 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
 
       if (pContainerParent.matches('div[data-uia="modal-content-wrapper"]')) {
         return pContainerNode.previousElementSibling!.textContent;
+      } else if (location.href.includes("/browse/person")) {
+        return pContainerNode.parentElement!.previousElementSibling!.querySelector(
+          "div.sub-header div.personHeader span.title",
+        )!.textContent;
       } else {
         return (
           /* My List page */
@@ -127,6 +160,23 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
 
     if (pContainerNode.matches('section[data-uia="search-gallery"]')) {
       return "Search results";
+    }
+
+    if (pContainerNode.matches('div:has(> section[data-uia="billboard"])')) {
+      return "Billboard";
+    }
+
+    if (pContainerNode.matches("section.carousel-row")) {
+      return (pContainerNode.firstChild as HTMLElement).querySelector("p")!
+        .textContent;
+    }
+
+    if (
+      pContainerNode.matches(
+        "div.previewModal--wrapper:has(> div.previewModal--container)",
+      )
+    ) {
+      return "Preview modal";
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
@@ -152,7 +202,7 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
         "div.gallery",
       ].includes(selector)
     ) {
-      return ["div.title-card-container"];
+      return ["div.title-card-container", "div.titleCard--container"];
     }
 
     if (selector === "div.moreLikeThis--wrapper") {
@@ -161,6 +211,24 @@ section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
 
     if (selector === 'section[data-uia="search-gallery"]') {
       return ['a[data-uia="search-gallery-video-card"][aria-label]'];
+    }
+
+    if (selector === 'div:has(> section[data-uia="billboard"])') {
+      return ['section[data-uia="billboard"]'];
+    }
+
+    if (selector === "section.carousel-row") {
+      return [
+        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="standard-card"])',
+        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"])',
+      ];
+    }
+
+    if (
+      selector ===
+      "div.previewModal--wrapper:has(> div.previewModal--container)"
+    ) {
+      return ["div.previewModal--container"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

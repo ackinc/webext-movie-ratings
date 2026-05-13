@@ -388,6 +388,7 @@ valid containers:\n\t${programContainers
       document.body.removeEventListener(
         "keyup",
         this.#exitSelectProgramModeOnEsc,
+        true,
       );
 
       this.#removeSelectProgramModeNotification();
@@ -400,7 +401,11 @@ valid containers:\n\t${programContainers
       removeSidecar();
       this.#addSelectProgramModeNotification();
 
-      document.body.addEventListener("keyup", this.#exitSelectProgramModeOnEsc);
+      document.body.addEventListener(
+        "keyup",
+        this.#exitSelectProgramModeOnEsc,
+        true,
+      );
       document.body.addEventListener("click", this.#showProgramInfo, {
         capture: true,
       });
@@ -409,6 +414,8 @@ valid containers:\n\t${programContainers
   }
 
   #exitSelectProgramModeOnEsc = (e: KeyboardEvent) => {
+    e.preventDefault();
+    e.stopImmediatePropagation();
     if (e.code !== "Escape") return;
     this.toggleSelectProgramMode();
   };
