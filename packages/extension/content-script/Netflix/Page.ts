@@ -89,6 +89,7 @@ section[data-uia="billboard"] .${CssClasses.imdbDataNode} {
 
       // 2026-05-14
       'div:has(> section[data-uia="billboard"])',
+      "section.carousel-row",
     ];
   }
 
@@ -141,6 +142,11 @@ section[data-uia="billboard"] .${CssClasses.imdbDataNode} {
       return "Billboard";
     }
 
+    if (pContainerNode.matches("section.carousel-row")) {
+      return (pContainerNode.firstChild as HTMLElement).querySelector("p")!
+        .textContent;
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -177,6 +183,12 @@ section[data-uia="billboard"] .${CssClasses.imdbDataNode} {
 
     if (selector === 'div:has(> section[data-uia="billboard"])') {
       return ['section[data-uia="billboard"]'];
+    }
+
+    if (selector === "section.carousel-row") {
+      return [
+        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="standard-card"])',
+      ];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

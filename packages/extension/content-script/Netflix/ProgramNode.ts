@@ -5,6 +5,8 @@ import type { ProgramData } from "../../common/types";
 export default class ProgramNode extends AbstractProgramNode {
   static override extractProgramData(programNode: HTMLElement): ProgramData {
     let title: string = "";
+    let type: "movie" | "series" | null = null;
+    let year: number | null = null;
 
     if (programNode.matches("div.billboard div.info.meta-layer")) {
       title = programNode
@@ -22,7 +24,7 @@ export default class ProgramNode extends AbstractProgramNode {
     ) {
       title = programNode.getAttribute("aria-label")!;
     } else if (programNode.matches('section[data-uia="billboard"]')) {
-      const title = programNode
+      title = programNode
         .getAttribute("aria-label")!
         .replace("Featured Content:", "")
         .trim();
@@ -32,47 +34,50 @@ export default class ProgramNode extends AbstractProgramNode {
           'div[data-uia="billboard-title"] div[data-uia="attributes-elements"] > span',
         ),
       ).slice(1, 3);
-      const type = typeNode?.textContent
+      type = typeNode?.textContent
         ? ["Seasons", "Episodes", "Series"].some((x) =>
             typeNode.textContent.includes(x),
           )
           ? "series"
           : "movie"
-        : undefined;
-      const year = yearNode?.textContent ? +yearNode.textContent : undefined;
-
-      return {
-        title: extractProgramTitle(title),
-        ...(type ? { type } : {}),
-        // specifying year for series is causing many false negatives
-        //   when querying omdbapi
-        ...(year && Number.isInteger(year) ? { year } : {}),
-      };
+        : null;
+      year = yearNode?.textContent ? +yearNode.textContent : null;
+    } else if (
+      programNode.matches(
+        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="standard-card"])',
+      )
+    ) {
+      title = (programNode.firstChild! as HTMLElement).getAttribute(
+        "aria-label",
+      )!;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
 
-    const metadataWrapperNode = programNode.querySelector(
-      "div.titleCard--metadataWrapper",
-    );
-    const durationNode = programNode.querySelector("span.duration");
-
-    const type = durationNode
-      ? ["Seasons", "Episodes", "Series"].some((x) =>
-          durationNode.textContent.includes(x),
-        )
-        ? "series"
-        : "movie"
-      : null;
-    const year =
-      type === "movie" && metadataWrapperNode
-        ? +metadataWrapperNode.querySelector("div.year")!.textContent
+    if (!type) {
+      const durationNode = programNode.querySelector("span.duration");
+      type = durationNode
+        ? ["Seasons", "Episodes", "Series"].some((x) =>
+            durationNode.textContent.includes(x),
+          )
+          ? "series"
+          : "movie"
         : null;
+    }
+    if (!year) {
+      const metadataWrapperNode = programNode.querySelector(
+        "div.titleCard--metadataWrapper",
+      );
+      year =
+        type === "movie" && metadataWrapperNode
+          ? +metadataWrapperNode.querySelector("div.year")!.textContent
+          : null;
+    }
 
     return {
       title: extractProgramTitle(title),
       ...(type ? { type } : {}),
-      // specifying year for series is causing many false negatives
+      // WARN: specifying year for series is causing many false negatives
       //   when querying omdbapi
       ...(year && Number.isInteger(year) ? { year } : {}),
     };
