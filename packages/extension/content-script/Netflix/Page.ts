@@ -90,6 +90,10 @@ section[data-uia="billboard"] .${CssClasses.imdbDataNode} {
 div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssClasses.imdbDataNode} {
   margin-top: 12px;
 }
+
+div.previewModal--container .${CssClasses.imdbDataNode} {
+  margin: 4px 0;
+}
     `;
   }
 
@@ -105,6 +109,7 @@ div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssC
       // 2026-05-14
       'div:has(> section[data-uia="billboard"])',
       "section.carousel-row",
+      "div.previewModal--wrapper:has(> div.previewModal--container)",
     ];
   }
 
@@ -166,6 +171,14 @@ div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssC
         .textContent;
     }
 
+    if (
+      pContainerNode.matches(
+        "div.previewModal--wrapper:has(> div.previewModal--container)",
+      )
+    ) {
+      return "Preview modal";
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -209,6 +222,13 @@ div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssC
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="standard-card"])',
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"])',
       ];
+    }
+
+    if (
+      selector ===
+      "div.previewModal--wrapper:has(> div.previewModal--container)"
+    ) {
+      return ["div.previewModal--container"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
