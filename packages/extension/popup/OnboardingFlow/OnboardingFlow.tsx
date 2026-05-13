@@ -10,7 +10,7 @@ import {
   permStringToSitename,
   setSetting,
 } from "../../common";
-import Button from "../Buttons/Button";
+import Button from "../../common/components/Buttons/Button";
 import "./OnboardingFlow.css";
 
 type OnboardingFlowPage =

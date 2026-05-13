@@ -1,6 +1,5 @@
 // @ts-expect-error `h` and `Fragment` need to be imported here, even
 //   though they are unused
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { render, h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import SetCurPageContext from "./Contexts/SetCurPageContext";
@@ -12,7 +11,6 @@ import ProgramFilters from "./ProgramFilters";
 import SettingsPage from "./SettingsPage";
 import PitchErrorReportingPage from "./PitchErrorReportingPage";
 import PitchMissingRatingReportingPage from "./PitchMissingRatingReportingPage";
-import DevControlPanel from "./DevControlPanel";
 import Footer from "./Footer";
 import "./main.css";
 
@@ -68,9 +66,6 @@ function App() {
           ) : null}
           {curPage === "pitchMissingRatingReporting" ? (
             <PitchMissingRatingReportingPage />
-          ) : null}
-          {curPage === "devControlPanel" && APP_ENV !== "production" ? (
-            <DevControlPanel />
           ) : null}
         </main>
 

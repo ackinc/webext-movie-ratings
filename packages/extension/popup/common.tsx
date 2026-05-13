@@ -3,8 +3,7 @@ export type PopupPage =
   | "filters"
   | "settings"
   | "pitchErrorReporting"
-  | "pitchMissingRatingReporting"
-  | "devControlPanel";
+  | "pitchMissingRatingReporting";
 
 export type { PermString, Sitename } from "../common/types";
 export { supportedSites, permStringToSitename } from "../common/constants";
