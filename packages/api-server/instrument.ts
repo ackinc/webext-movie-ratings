@@ -5,6 +5,10 @@ Sentry.init({
   environment: process.env["APP_ENV"] ?? "production",
   maxValueLength: 1000,
   sendDefaultPii: false,
+  beforeSend(event) {
+    if (process.env["APP_ENV"] === "development") return null;
+    return event;
+  },
 });
 
 export default Sentry;
