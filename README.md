@@ -39,7 +39,7 @@
 
 [chrome-link]: https://chromewebstore.google.com/detail/sift-imdb-ratings-on-indi/pfnhkljamlclkackkndllofcfhihacna
 [edge-link]: https://microsoftedge.microsoft.com/addons/detail/odgepppomekmdiifmjmocpjhopdmgjnl
-[firefox-link]: https://addons.mozilla.org/en-US/firefox/addon/imdb-ratings-for-various-ott/
+[firefox-link]: https://addons.mozilla.org/firefox/addon/imdb-ratings-for-various-ott/
 [omdbapi-link]: https://omdbapi.com
 [omdbapi-patreon-link]: https://www.patreon.com/join/omdb
 [demo-video-link]: https://youtu.be/0nacMtjRhk4
