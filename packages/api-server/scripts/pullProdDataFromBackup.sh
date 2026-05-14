@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-# This script will be run as a cron-job on my local machine at the top
-#   of every hour to maximize the chances of it running at least once a
-#   day (it won't run if the laptop is not on!)
-# Because of this, it's important to have early-detection for whether
-#   it has already run today 
-
 set -eu
 
 set -a
