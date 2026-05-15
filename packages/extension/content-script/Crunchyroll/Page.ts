@@ -18,7 +18,7 @@ export default class CrunchyrollPage extends AbstractPage {
       .getPropertyValue("font-family");
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.innerHTML += `
+    styleNode.textContent += `
 a.${CssClasses.imdbDataNode} {
   color: #999999 !important;
   display: block;
@@ -56,6 +56,43 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
   font-size: 0.625rem;
   font-weight: bold;
   line-height: 16px;
+}
+
+div.erc-episodes-results div[class^="search-episode-card-hover"][data-t="hover-component"] a[data-t="series-title"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+div.erc-episodes-results div[class^="search-episode-card-hover"][data-t="hover-component"] a[data-t="series-title"] .${CssClasses.imdbDataNode} {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  font-weight: bold;
+  line-height: 16px;
+}
+
+div[data-t="release-episode-card-stack-hover"] .${CssClasses.imdbDataNode} {
+  padding-top: 4px;
+  padding-left: 12px;
+}
+
+/* the 'div.' prefix to the selector below might look unnecessary, but it is
+in fact what will prevent this clause from disappearing when the filtered-out
+nodes' styles are overwritten due to a filter settings change */
+div.${CssClasses.filteredOutProgramNode} {
+  transition: opacity 0.5s ease-out;
+}
+
+.${CssClasses.filteredOutProgramNode}:hover {
+  opacity: 1;
+}
+
+.${CssClasses.filteredOutProgramNode}[data-t="hover-component"] {
+  opacity: 0;
+}
+
+.${CssClasses.filteredOutProgramNode}[data-t="hover-component"]:hover {
+  opacity: 1;
 }
     `;
   }
@@ -183,10 +220,13 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
     ) {
       return [
         'div[data-t="carousel-card-wrapper"]',
+        'div[class^="browse-card-hover"][data-t="hover-component"]',
         'div[data-t^="episode-card"]',
+        'div[class^="playable-card-hover"][data-t="hover-component"]',
         'div[data-t^="watch-list-card"]',
         'div[data-t="release-episode-card-stack"]',
         'div[data-t="release-episode-card"]',
+        'div[data-t="release-episode-card-stack-hover"]',
       ];
     }
     if (
@@ -196,10 +236,16 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
       return ['div[data-t="single-show-card"]'];
     }
     if (selector === "div.erc-browse-collection") {
-      return ["div.browse-card"];
+      return [
+        "div.browse-card",
+        'div[class^="browse-card-hover"][data-t="hover-component"]',
+      ];
     }
     if (selector === "div.erc-alphabetical-virtual-list") {
-      return ['div[data-t="series-card"]'];
+      return [
+        'div[data-t="series-card"]',
+        'div[class^="horizontal-card-hover"][data-t="hover-component"]',
+      ];
     }
     if (selector === "div.erc-genres-collection") {
       return ['div[data-t="carousel-card-wrapper"]'];
@@ -208,13 +254,19 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
       return ['div[data-t="carousel-card-wrapper"]'];
     }
     if (["div.erc-top-results", "div.erc-series-results"].includes(selector)) {
-      return ['div[data-t="search-series-card"]'];
+      return [
+        'div[data-t="search-series-card"]',
+        'div[class^="search-show-card-hover"][data-t="hover-component"]',
+      ];
     }
     if (selector === "div.erc-movies-results") {
       return ['div[data-t="search-movie-card"]'];
     }
     if (selector === "div.erc-episodes-results") {
-      return ['div[data-t="search-episode-card"]'];
+      return [
+        'div[data-t="search-episode-card"]',
+        'div[class^="search-episode-card-hover"][data-t="hover-component"]',
+      ];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

@@ -14,7 +14,7 @@ export default class AppleTvPage extends AbstractPage {
     await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.innerHTML += `
+    styleNode.textContent += `
 a.${CssClasses.imdbDataNode} {
   color: var(--systemSecondary);
   margin-left: 4px;
@@ -66,7 +66,9 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
     let title: string;
 
     if (
-      pContainerNode.matches('div.section[data-testid="section-container"]')
+      pContainerNode.matches(
+        'div.section[data-testid="section-container"]:has(div.header)',
+      )
     ) {
       title = pContainerNode.querySelector(
         "div.header h2 span.dir-wrapper",
@@ -97,7 +99,11 @@ a.search-card.lockup .${CssClasses.imdbDataNode} {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
-    if (['div.section[data-testid="section-container"]'].includes(selector)) {
+    if (
+      ['div.section[data-testid="section-container"]:has(div.header)'].includes(
+        selector,
+      )
+    ) {
       return [
         "ul > li button.epic-showcase-item",
         "ul > li a.lockup",

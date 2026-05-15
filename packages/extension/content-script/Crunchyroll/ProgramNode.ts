@@ -9,8 +9,33 @@ export default class ProgramNode extends AbstractProgramNode {
       return { title };
     }
 
+    if (
+      programNode.matches(
+        'div[class^="browse-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const hrefNode = programNode.querySelector('a[data-t="hover-link"]')!;
+      const title = hrefNode.getAttribute("aria-label")!;
+      const type = hrefNode.getAttribute("href")?.startsWith("/series")
+        ? "series"
+        : "movie";
+      return { title, type };
+    }
+
     if (programNode.matches('div[data-t^="episode-card"]')) {
       const title = programNode.querySelector("small")!.textContent;
+      return { title };
+    }
+
+    if (
+      programNode.matches(
+        'div[class^="playable-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const hrefNode = programNode.querySelector(
+        'a[class^="playable-card-hover"][data-t="series-title"]',
+      )!;
+      const title = extractProgramTitle(hrefNode.textContent);
       return { title };
     }
 
@@ -23,6 +48,7 @@ export default class ProgramNode extends AbstractProgramNode {
       [
         'div[data-t="release-episode-card-stack"]',
         'div[data-t="release-episode-card"]',
+        'div[data-t="release-episode-card-stack-hover"]',
       ].some((sel) => programNode.matches(sel))
     ) {
       const title = extractProgramTitle(
@@ -51,8 +77,29 @@ export default class ProgramNode extends AbstractProgramNode {
       return { title };
     }
 
+    if (
+      programNode.matches(
+        'div[class^="horizontal-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const titleNode = programNode.querySelector(
+        'h2[class*="horizontal-card-hover__title"] > a:first-child',
+      )!;
+      return { title: titleNode.textContent };
+    }
+
     if (programNode.matches('div[data-t="search-series-card"]')) {
       const title = programNode.querySelector("h2")!.textContent;
+      return { title };
+    }
+
+    if (
+      programNode.matches(
+        'div[class^="search-show-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const title =
+        programNode.querySelector('h2[data-t="title"]')!.textContent;
       return { title };
     }
 
@@ -66,6 +113,17 @@ export default class ProgramNode extends AbstractProgramNode {
         'small[data-t="series-title"]',
       )!.textContent;
       return { title };
+    }
+
+    if (
+      programNode.matches(
+        'div[class^="search-episode-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const titleNode = programNode.querySelector(
+        'a[data-t="series-title"] > small',
+      )!;
+      return { title: titleNode.textContent };
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramNode);
@@ -83,9 +141,31 @@ export default class ProgramNode extends AbstractProgramNode {
       return;
     }
 
+    if (
+      programNode.matches(
+        'div[class^="browse-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const titleNode = programNode.querySelector('h3[data-t="title"]')!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
     if (programNode.matches('div[data-t^="episode-card"]')) {
       const titleNode = programNode.lastElementChild!.querySelector("small");
       titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (
+      programNode.matches(
+        'div[class^="playable-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const hrefNode = programNode.querySelector(
+        'a[class^="playable-card-hover"][data-t="series-title"]',
+      )!;
+      hrefNode.insertAdjacentElement("afterend", imdbNode);
       return;
     }
 
@@ -121,6 +201,18 @@ export default class ProgramNode extends AbstractProgramNode {
 
     if (
       programNode.matches(
+        'div[class^="horizontal-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const titleNode = programNode.querySelector(
+        'h2[class*="horizontal-card-hover__title"] > a:first-child',
+      )!;
+      titleNode!.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (
+      programNode.matches(
         'div[data-t="search-series-card"],div[data-t="search-movie-card"]',
       )
     ) {
@@ -129,11 +221,33 @@ export default class ProgramNode extends AbstractProgramNode {
       return;
     }
 
+    if (
+      programNode.matches(
+        'div[class^="search-show-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const titleNode = programNode.querySelector('h2[data-t="title"]')!;
+      titleNode!.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
     if (programNode.matches('div[data-t="search-episode-card"]')) {
       const titleNode = programNode.querySelector(
         'small[data-t="series-title"]',
       );
       titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (
+      programNode.matches(
+        'div[class^="search-episode-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const titleNode = programNode.querySelector(
+        'a[data-t="series-title"] > small',
+      )!;
+      titleNode!.insertAdjacentElement("afterend", imdbNode);
       return;
     }
   }

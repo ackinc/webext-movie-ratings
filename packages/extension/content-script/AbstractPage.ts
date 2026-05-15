@@ -211,7 +211,7 @@ valid containers:\n\t${programContainers
 
     const styleNode = document.createElement("style");
     styleNode.classList.add(CssClasses.styleNode);
-    styleNode.innerHTML =
+    styleNode.textContent =
       makeFilteredOutProgramNodeStylesClause(filterSettings);
     document.head.appendChild(styleNode);
   }

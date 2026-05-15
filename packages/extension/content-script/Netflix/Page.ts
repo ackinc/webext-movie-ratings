@@ -18,7 +18,7 @@ export default class NetflixPage extends AbstractPage {
       .getPropertyValue("font-family");
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.innerHTML += `
+    styleNode.textContent += `
 a.${CssClasses.imdbDataNode} {
   color: #999999;
   display: block;
@@ -109,7 +109,8 @@ div.previewModal--container .${CssClasses.imdbDataNode} {
       // 2026-05-14
       'div:has(> section[data-uia="billboard"])',
       "section.carousel-row",
-      "div.previewModal--wrapper:has(> div.previewModal--container)",
+      "div.previewModal--wrapper.mini-modal:has(> div.previewModal--container)",
+      "div.previewModal--wrapper:not(.mini-modal):has(> div.previewModal--container)",
     ];
   }
 
@@ -173,7 +174,15 @@ div.previewModal--container .${CssClasses.imdbDataNode} {
 
     if (
       pContainerNode.matches(
-        "div.previewModal--wrapper:has(> div.previewModal--container)",
+        "div.previewModal--wrapper.mini-modal:has(> div.previewModal--container)",
+      )
+    ) {
+      return "Preview modal (mini)";
+    }
+
+    if (
+      pContainerNode.matches(
+        "div.previewModal--wrapper:not(.mini-modal):has(> div.previewModal--container)",
       )
     ) {
       return "Preview modal";
@@ -226,9 +235,16 @@ div.previewModal--container .${CssClasses.imdbDataNode} {
 
     if (
       selector ===
-      "div.previewModal--wrapper:has(> div.previewModal--container)"
+      "div.previewModal--wrapper.mini-modal:has(> div.previewModal--container)"
     ) {
-      return ["div.previewModal--container"];
+      return ["div.previewModal--container.mini-modal"];
+    }
+
+    if (
+      selector ===
+      "div.previewModal--wrapper:not(.mini-modal):has(> div.previewModal--container)"
+    ) {
+      return ["div.previewModal--container:not(.mini-modal)"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
