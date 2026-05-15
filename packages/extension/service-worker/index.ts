@@ -400,16 +400,27 @@ async function fetchWithAddedTelemetry(
 }
 
 async function setMediaRequestBlockingState(value: boolean): Promise<void> {
+  const initiatorDomains = (
+    browser.runtime.getManifest().optional_host_permissions! as string[]
+  ).map((url) => new URL(url).hostname);
   const rules: chrome.declarativeNetRequest.Rule[] = [
     {
       id: 1,
       priority: 1,
       condition: {
-        initiatorDomains: (
-          browser.runtime.getManifest().optional_host_permissions! as string[]
-        ).map((url) => new URL(url).hostname),
+        initiatorDomains,
         requestMethods: ["get"],
         resourceTypes: ["image", "media"],
+      },
+      action: { type: "block" },
+    },
+    {
+      id: 2,
+      priority: 2,
+      condition: {
+        initiatorDomains,
+        requestMethods: ["get"],
+        requestDomains: ["nflxvideo.net"],
       },
       action: { type: "block" },
     },
