@@ -48,6 +48,7 @@ export default class ProgramNode extends AbstractProgramNode {
       [
         'div[data-t="release-episode-card-stack"]',
         'div[data-t="release-episode-card"]',
+        'div[data-t="release-episode-card-stack-hover"]',
       ].some((sel) => programNode.matches(sel))
     ) {
       const title = extractProgramTitle(

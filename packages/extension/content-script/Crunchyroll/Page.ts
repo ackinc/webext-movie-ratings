@@ -58,6 +58,15 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
   line-height: 16px;
 }
 
+div[data-t="release-episode-card-stack-hover"] .${CssClasses.imdbDataNode} {
+  padding-top: 4px;
+  padding-left: 12px;
+}
+
+.${CssClasses.filteredOutProgramNode} {
+  transition: opacity 0.5s ease-out;
+}
+
 .${CssClasses.filteredOutProgramNode}:hover {
   opacity: 1;
 }
@@ -201,6 +210,7 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
         'div[data-t^="watch-list-card"]',
         'div[data-t="release-episode-card-stack"]',
         'div[data-t="release-episode-card"]',
+        'div[data-t="release-episode-card-stack-hover"]',
       ];
     }
     if (
