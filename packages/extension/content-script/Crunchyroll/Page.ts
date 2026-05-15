@@ -63,7 +63,10 @@ div[data-t="release-episode-card-stack-hover"] .${CssClasses.imdbDataNode} {
   padding-left: 12px;
 }
 
-.${CssClasses.filteredOutProgramNode} {
+/* the 'div.' prefix to the selector below might look unnecessary, but it is
+in fact what will prevent this clause from disappearing when the filtered-out
+nodes' styles are overwritten due to a filter settings change */
+div.${CssClasses.filteredOutProgramNode} {
   transition: opacity 0.5s ease-out;
 }
 

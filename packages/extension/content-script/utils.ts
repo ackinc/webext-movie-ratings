@@ -28,7 +28,7 @@ export function updateFilteredOutProgramNodeStyles(
   ) as HTMLElement;
 
   const fopnRegexp = new RegExp(
-    `\\.${CssClasses.filteredOutProgramNode}\\s*{[^}]*?}`,
+    `^\\s*\\.${CssClasses.filteredOutProgramNode}\\s*{[^}]*?}`,
     "gs",
   );
 
