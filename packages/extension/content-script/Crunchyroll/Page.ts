@@ -57,6 +57,18 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
   font-weight: bold;
   line-height: 16px;
 }
+
+.${CssClasses.filteredOutProgramNode}:hover {
+  opacity: 1;
+}
+
+.${CssClasses.filteredOutProgramNode}[data-t="hover-component"] {
+  opacity: 0;
+}
+
+.${CssClasses.filteredOutProgramNode}[data-t="hover-component"]:hover {
+  opacity: 1;
+}
     `;
   }
 
@@ -185,6 +197,7 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
         'div[data-t="carousel-card-wrapper"]',
         'div[class^="browse-card-hover"][data-t="hover-component"]',
         'div[data-t^="episode-card"]',
+        'div[class^="playable-card-hover"][data-t="hover-component"]',
         'div[data-t^="watch-list-card"]',
         'div[data-t="release-episode-card-stack"]',
         'div[data-t="release-episode-card"]',

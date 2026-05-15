@@ -27,6 +27,18 @@ export default class ProgramNode extends AbstractProgramNode {
       return { title };
     }
 
+    if (
+      programNode.matches(
+        'div[class^="playable-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const hrefNode = programNode.querySelector(
+        'a[class^="playable-card-hover"][data-t="series-title"]',
+      )!;
+      const title = extractProgramTitle(hrefNode.textContent);
+      return { title };
+    }
+
     if (programNode.matches('div[data-t^="watch-list-card"]')) {
       const title = programNode.querySelector("h3")!.textContent;
       return { title };
@@ -109,6 +121,18 @@ export default class ProgramNode extends AbstractProgramNode {
     if (programNode.matches('div[data-t^="episode-card"]')) {
       const titleNode = programNode.lastElementChild!.querySelector("small");
       titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (
+      programNode.matches(
+        'div[class^="playable-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const hrefNode = programNode.querySelector(
+        'a[class^="playable-card-hover"][data-t="series-title"]',
+      )!;
+      hrefNode.insertAdjacentElement("afterend", imdbNode);
       return;
     }
 
