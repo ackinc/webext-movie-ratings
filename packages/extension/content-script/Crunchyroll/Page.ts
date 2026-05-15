@@ -183,6 +183,7 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
     ) {
       return [
         'div[data-t="carousel-card-wrapper"]',
+        'div[class^="browse-card-hover"][data-t="hover-component"]',
         'div[data-t^="episode-card"]',
         'div[data-t^="watch-list-card"]',
         'div[data-t="release-episode-card-stack"]',
