@@ -23,19 +23,23 @@ export function makeFilteredOutProgramNodeStylesClause(
 export function updateFilteredOutProgramNodeStyles(
   filterSettings: ProgramFilterSettings,
 ): void {
-  const styleNode = document.querySelector(
+  const styleNode = document.querySelector<HTMLStyleElement>(
     `style.${CssClasses.styleNode}`,
-  ) as HTMLElement;
-
-  const fopnRegexp = new RegExp(
-    `^\\s*\\.${CssClasses.filteredOutProgramNode}\\s*{[^}]*?}`,
-    "gs",
+  )!;
+  const styleSheet = Array.from(document.styleSheets).find(
+    (ss) => ss.ownerNode === styleNode,
+  )!;
+  const fopnRuleIndex = Array.from(styleSheet.cssRules).findIndex(
+    (rule) =>
+      rule instanceof CSSStyleRule &&
+      rule.selectorText === `.${CssClasses.filteredOutProgramNode}`,
   );
+  styleSheet.deleteRule(fopnRuleIndex);
+  styleSheet.insertRule(makeFilteredOutProgramNodeStylesClause(filterSettings));
 
-  styleNode.textContent = [
-    styleNode.textContent.replace(fopnRegexp, "").trim(),
-    makeFilteredOutProgramNodeStylesClause(filterSettings),
-  ].join("\n");
+  styleNode.textContent = Array.from(styleSheet.cssRules)
+    .map((rule) => rule.cssText)
+    .join("\n\n");
 }
 
 export async function getSelectorStatusForCurrentSite(): Promise<SelectorStatusForSite> {
