@@ -14,7 +14,7 @@ export default class AppleTvPage extends AbstractPage {
     await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.innerHTML += `
+    styleNode.textContent += `
 a.${CssClasses.imdbDataNode} {
   color: var(--systemSecondary);
   margin-left: 4px;

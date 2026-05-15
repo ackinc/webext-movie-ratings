@@ -14,7 +14,7 @@ export default class YoutubeMoviesPage extends AbstractPage {
     await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.innerHTML += `
+    styleNode.textContent += `
 .${CssClasses.imdbDataNode} {
     margin-left: 4px;
     padding: 0 4px;

@@ -18,7 +18,7 @@ export default class CrunchyrollPage extends AbstractPage {
       .getPropertyValue("font-family");
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.innerHTML += `
+    styleNode.textContent += `
 a.${CssClasses.imdbDataNode} {
   color: #999999 !important;
   display: block;

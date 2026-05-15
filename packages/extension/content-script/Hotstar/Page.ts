@@ -17,7 +17,7 @@ export default class HotstarPage extends AbstractPage {
     const pageFontFamily = window
       .getComputedStyle(document.body)
       .getPropertyValue("font-family");
-    styleNode.innerHTML += `
+    styleNode.textContent += `
 div.swiper-slide > div:first-child {
   padding-bottom: 21px;
 }
