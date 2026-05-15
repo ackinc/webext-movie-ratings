@@ -82,6 +82,16 @@ export default class ProgramNode extends AbstractProgramNode {
       return { title };
     }
 
+    if (
+      programNode.matches(
+        'div[class^="search-show-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const title =
+        programNode.querySelector('h2[data-t="title"]')!.textContent;
+      return { title };
+    }
+
     if (programNode.matches('div[data-t="search-movie-card"]')) {
       const title = programNode.querySelector("h2")!.textContent;
       return { title };
@@ -92,6 +102,17 @@ export default class ProgramNode extends AbstractProgramNode {
         'small[data-t="series-title"]',
       )!.textContent;
       return { title };
+    }
+
+    if (
+      programNode.matches(
+        'div[class^="search-episode-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const titleNode = programNode.querySelector(
+        'a[data-t="series-title"] > small',
+      )!;
+      return { title: titleNode.textContent };
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramNode);
@@ -177,11 +198,33 @@ export default class ProgramNode extends AbstractProgramNode {
       return;
     }
 
+    if (
+      programNode.matches(
+        'div[class^="search-show-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const titleNode = programNode.querySelector('h2[data-t="title"]')!;
+      titleNode!.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
     if (programNode.matches('div[data-t="search-episode-card"]')) {
       const titleNode = programNode.querySelector(
         'small[data-t="series-title"]',
       );
       titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (
+      programNode.matches(
+        'div[class^="search-episode-card-hover"][data-t="hover-component"]',
+      )
+    ) {
+      const titleNode = programNode.querySelector(
+        'a[data-t="series-title"] > small',
+      )!;
+      titleNode!.insertAdjacentElement("afterend", imdbNode);
       return;
     }
   }

@@ -58,6 +58,19 @@ div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-
   line-height: 16px;
 }
 
+div.erc-episodes-results div[class^="search-episode-card-hover"][data-t="hover-component"] a[data-t="series-title"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+div.erc-episodes-results div[class^="search-episode-card-hover"][data-t="hover-component"] a[data-t="series-title"] .${CssClasses.imdbDataNode} {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  font-weight: bold;
+  line-height: 16px;
+}
+
 div[data-t="release-episode-card-stack-hover"] .${CssClasses.imdbDataNode} {
   padding-top: 4px;
   padding-left: 12px;
@@ -223,7 +236,10 @@ div.${CssClasses.filteredOutProgramNode} {
       return ['div[data-t="single-show-card"]'];
     }
     if (selector === "div.erc-browse-collection") {
-      return ["div.browse-card"];
+      return [
+        "div.browse-card",
+        'div[class^="browse-card-hover"][data-t="hover-component"]',
+      ];
     }
     if (selector === "div.erc-alphabetical-virtual-list") {
       return ['div[data-t="series-card"]'];
@@ -235,13 +251,19 @@ div.${CssClasses.filteredOutProgramNode} {
       return ['div[data-t="carousel-card-wrapper"]'];
     }
     if (["div.erc-top-results", "div.erc-series-results"].includes(selector)) {
-      return ['div[data-t="search-series-card"]'];
+      return [
+        'div[data-t="search-series-card"]',
+        'div[class^="search-show-card-hover"][data-t="hover-component"]',
+      ];
     }
     if (selector === "div.erc-movies-results") {
       return ['div[data-t="search-movie-card"]'];
     }
     if (selector === "div.erc-episodes-results") {
-      return ['div[data-t="search-episode-card"]'];
+      return [
+        'div[data-t="search-episode-card"]',
+        'div[class^="search-episode-card-hover"][data-t="hover-component"]',
+      ];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
