@@ -58,7 +58,25 @@ export default class ProgramNode extends AbstractProgramNode {
       title = (programNode.firstChild! as HTMLElement).getAttribute(
         "aria-label",
       )!;
-    } else if (programNode.matches("div.previewModal--container")) {
+    } else if (programNode.matches("div.previewModal--container.mini-modal")) {
+      title = programNode
+        .querySelector(
+          "div.videoMerchPlayer--boxart-wrapper > img.previewModal--boxart",
+        )!
+        .getAttribute("alt")!;
+      const typeNode = programNode.querySelector(
+        "div.previewModal--info div.previewModal--metadatAndControls-info div.videoMetadata--container > div.videoMetadata--line > span.duration",
+      );
+      type = typeNode
+        ? ["Seasons", "Episodes", "Series"].some((x) =>
+            typeNode.textContent.includes(x),
+          )
+          ? "series"
+          : "movie"
+        : null;
+    } else if (
+      programNode.matches("div.previewModal--container:not(.mini-modal)")
+    ) {
       title = programNode
         .querySelector("div.storyArt > img")!
         .getAttribute("alt")!;
@@ -133,7 +151,16 @@ export default class ProgramNode extends AbstractProgramNode {
       return;
     }
 
-    if (programNode.matches("div.previewModal--container")) {
+    if (programNode.matches("div.previewModal--container.mini-modal")) {
+      const videoMetadataNode = programNode.querySelector(
+        'div.videoMetadata--container[data-uia="videoMetadata--container"]',
+      )!;
+      videoMetadataNode.insertAdjacentElement("beforebegin", imdbNode);
+
+      return;
+    }
+
+    if (programNode.matches("div.previewModal--container:not(.mini-modal)")) {
       const videoMetadataNode = programNode.querySelector(
         'div.videoMetadata--container[data-uia="videoMetadata--container"]',
       )!;
