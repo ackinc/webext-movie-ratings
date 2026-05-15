@@ -71,10 +71,12 @@ async function onInstalled() {
     onboardingStatus,
     errorReportingOptIn,
     pitchMissingRatingReportingPageSeen,
+    mediaRequestBlockingEnabled,
   ] = await Promise.all([
     getSetting("onboardingStatus"),
     getSetting("errorReportingOptIn"),
     getSetting("pitchMissingRatingReportingPageSeen"),
+    getSetting("mediaRequestBlockingEnabled"),
   ]);
 
   if (
@@ -87,6 +89,10 @@ async function onInstalled() {
     if (TARGET_BROWSER !== "firefox") {
       browser.action.openPopup();
     }
+  }
+
+  if (APP_ENV === "development") {
+    await setMediaRequestBlockingState(Boolean(mediaRequestBlockingEnabled));
   }
 }
 
@@ -229,6 +235,15 @@ function handleMessage(
         })
         .catch(handleError);
       return true; // keep channel open until sendReponse is called
+    } else if (
+      APP_ENV === "development" &&
+      request.type === MessageType.setMediaRequestBlockingState
+    ) {
+      setMediaRequestBlockingState(request.data.value)
+        .then(() => sendResponse({ data: { enabled: request.data.value } }))
+        .catch(handleError);
+
+      return true;
     } else {
       throw new Error(`Unknown message type: ${request.type}`);
     }
@@ -382,4 +397,29 @@ async function fetchWithAddedTelemetry(
   }
 
   return response;
+}
+
+async function setMediaRequestBlockingState(value: boolean): Promise<void> {
+  const rules: chrome.declarativeNetRequest.Rule[] = [
+    {
+      id: 1,
+      priority: 1,
+      condition: {
+        requestMethods: ["get"],
+        resourceTypes: ["image", "media"],
+      },
+      action: { type: "block" },
+    },
+  ];
+
+  const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
+  if (value && existingRules.length === 0) {
+    await browser.declarativeNetRequest.updateDynamicRules({
+      addRules: rules,
+    });
+  } else if (!value && existingRules.length > 0) {
+    await browser.declarativeNetRequest.updateDynamicRules({
+      removeRuleIds: existingRules.map(({ id }) => id),
+    });
+  }
 }

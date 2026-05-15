@@ -3,6 +3,7 @@ import SetCurPageContext from "./Contexts/SetCurPageContext";
 import ErrorReportingOptIn from "./ErrorReportingOptIn";
 import SiteChooserForm from "./SiteChooserForm";
 import Separator from "./Separator";
+import ToggleMediaRequestBlocking from "./ToggleMediaRequestBlocking";
 import "./SettingsPage.css";
 
 export default function SettingsPage() {
@@ -15,6 +16,7 @@ export default function SettingsPage() {
       <ErrorReportingOptIn
         onClickShowDetails={() => setCurPage("pitchErrorReporting")}
       />
+      {APP_ENV === "development" ? <ToggleMediaRequestBlocking /> : null}
     </div>
   );
 }

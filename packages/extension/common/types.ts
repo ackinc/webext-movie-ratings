@@ -148,6 +148,10 @@ export type Message =
       };
     }
   | {
+      type: MessageType.setMediaRequestBlockingState;
+      data: { value: boolean };
+    }
+  | {
       type: MessageType.placeholder;
       data?: unknown;
     };
@@ -179,6 +183,7 @@ export type ExtensionSettings = {
     | "pitchedErrorReporting"
     | "finished";
   pitchMissingRatingReportingPageSeen: boolean;
+  mediaRequestBlockingEnabled: boolean;
 };
 
 export type ExtensionContext =

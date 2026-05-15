@@ -58,6 +58,7 @@ export const enum MessageType {
   toggleActiveTabLoopState = "sift:toggleActiveTabLoopState",
   getSelectProgramModeState = "sift:getSelectProgramModeState",
   toggleSelectProgramMode = "sift:toggleSelectProgramMode",
+  setMediaRequestBlockingState = "sift:setMediaRequestBlockingState",
 }
 
 export const defaultProgramFilterSettings: ProgramFilterSettings = {
