@@ -48,15 +48,26 @@ div[data-scale-down="true"] a.${CssClasses.imdbDataNode} {
 div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-label])) .${CssClasses.imdbDataNode} {
   position: relative;
 }
+
+div[data-testid="tray-card-hover"] div[data-scale-down="true"]  .${CssClasses.imdbDataNode} {
+  margin-left: 0;
+}
     `;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
+    if (["/categories", "/sports"].some((x) => location.href.includes(x))) {
+      return [];
+    }
+
     return [
       // seen everywhere on the site, but there are variants
       // - the most common variant has the title inside
       // - there are variants with the title outside (search results)
       "div.tray-container",
+
+      // seen on home page when hovering over a program tile
+      "div.hover-portal",
     ];
   }
 
@@ -99,6 +110,10 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
       return (node.firstChild as HTMLElement)!.querySelector("h2")!.textContent;
     }
 
+    if (node.matches("div.hover-portal")) {
+      return "Preview modal";
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -107,9 +122,17 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
   }: ProgramContainer): boolean {
     return Boolean(
       title &&
-      !["Popular Languages", "Popular Genres", "Popular Channels"].includes(
-        title,
-      ),
+      ![
+        "Non-Stop Sports",
+        "Popular Languages",
+        "Popular Genres",
+        "Popular Channels",
+        "The Ultimate Learning Game Show",
+        "Studios",
+        "Latest TV Episodes",
+        "Live News",
+        /^MTV Splitsvilla/,
+      ].some((x) => (x instanceof RegExp ? x.test(title) : x === title)),
     );
   }
 
@@ -118,6 +141,10 @@ div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-lab
   }: Pick<ProgramContainer, "selector">): string[] {
     if (selector === "div.tray-container") {
       return ['div[data-testid="tray-card-default"]'];
+    }
+
+    if (selector === "div.hover-portal") {
+      return ['div[data-testid="tray-card-hover"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
