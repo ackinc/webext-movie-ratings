@@ -96,6 +96,10 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
   margin: 0;
 }
 
+div.card_container .${CssClasses.imdbDataNode} {
+  margin: 0;
+}
+
 @media screen and (max-width: 420px) {
   a.${CssClasses.imdbDataNode} {
     position: absolute;
@@ -147,6 +151,7 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
     if (node.matches("div.layout-main-container:has(> div.slick-slider)")) {
       return (
         node.querySelector("span.title")?.textContent ??
+        node.querySelector("h3.layout-label")?.textContent ??
         /* on home page, the 'best in your language' PC has the title
              outside the program-container */
         node.parentElement!.parentElement!.querySelector("span.title")!
@@ -208,6 +213,9 @@ div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDat
         "a.portrait-link",
 
         "a.multipurpose-portrait-link",
+
+        // appears on hovering over a program tile
+        "div.card_container",
       ];
     }
 

@@ -24,6 +24,7 @@ export default class ProgramNode extends AbstractProgramNode {
   static override extractProgramData(programNode: HTMLElement): ProgramData {
     let title: string;
     let type: Program["type"] | undefined;
+    let year: number | undefined;
 
     if (
       [
@@ -73,11 +74,26 @@ export default class ProgramNode extends AbstractProgramNode {
       type = programNode.querySelector("strong.episode-count")
         ? "series"
         : "movie";
+    } else if (programNode.matches("div.card_container")) {
+      title = programNode.querySelector(
+        "div.img_container span.errorTitle",
+      )!.textContent!;
+      const yearNode = programNode.querySelector(
+        "div.genre_list_items span.item:first-child",
+      );
+      year =
+        yearNode && /^\d{4}$/.test(yearNode.textContent)
+          ? +yearNode.textContent
+          : undefined;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
 
-    return { title: extractProgramTitle(title), ...(type ? { type } : {}) };
+    return {
+      title: extractProgramTitle(title),
+      ...(type ? { type } : {}),
+      ...(year ? { year } : {}),
+    };
 
     function getProgramTypeFromHref(href: string): Program["type"] | undefined {
       return href.startsWith("/movies")
@@ -101,6 +117,12 @@ export default class ProgramNode extends AbstractProgramNode {
         "div.sonyliv-original-right-sec > h2",
       );
       titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches("div.card_container")) {
+      const tagsNode = programNode.querySelector("div.genre_list_item")!;
+      tagsNode.insertAdjacentElement("beforebegin", imdbNode);
       return;
     }
 
