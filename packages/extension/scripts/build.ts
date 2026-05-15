@@ -48,8 +48,19 @@ const staticFiles = [
   .map((f) => path.join(srcDir, f));
 const manifestFiles = [
   `manifest.json`,
+  `manifest.${APP_ENV}.json`,
   `misc/${TARGET_BROWSER}/manifest.json`,
-].map((f) => path.join(srcDir, f));
+  `misc/${TARGET_BROWSER}/manifest.${APP_ENV}.json`,
+]
+  .map((f) => path.join(srcDir, f))
+  .filter((f) => {
+    try {
+      fs.accessSync(f);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  });
 const config: esbuild.BuildOptions = {
   entryPoints: [
     { in: path.join(srcDir, "content-script/index.ts"), out: "content-script" },
