@@ -11,9 +11,13 @@ set +a
 assert_env() {
   local var_name="$1"
   if [[ -z "${!var_name:-}" ]]; then
-    echo "Error: env var $var_name is not set" >&2
+    log "Error: env var $var_name is not set" >&2
     exit 1
   fi
+}
+
+log() {
+    echo `date -Iseconds` "$1"
 }
 
 restore_table() {
@@ -29,7 +33,7 @@ restore_table() {
         sed "s/INSERT INTO $table_name/INSERT INTO prod_$table_name/g" |
         sqlite3 "$to_db"
     
-    echo "Restored $table_name into prod_$table_name"
+    log "Restored $table_name into prod_$table_name"
 }
 
 # start
@@ -46,7 +50,7 @@ TODAY=$( date --iso-8601 )
 if [[ $DB_BACKUP_DATE < $TODAY ]]; then
     aws s3 cp "$DB_BACKUP_URI" "$DB_BACKUP_PATH"
 elif [[ $RUN_CHECKS -eq 1 ]]; then
-    echo "This script already ran today. Exiting early ..."
+    log "This script already ran today. Exiting early ..."
     exit 0
 fi;
 
