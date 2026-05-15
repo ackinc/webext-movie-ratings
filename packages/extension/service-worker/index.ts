@@ -405,6 +405,9 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
       id: 1,
       priority: 1,
       condition: {
+        initiatorDomains: (
+          browser.runtime.getManifest().optional_host_permissions! as string[]
+        ).map((url) => new URL(url).hostname),
         requestMethods: ["get"],
         resourceTypes: ["image", "media"],
       },
@@ -413,13 +416,8 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
   ];
 
   const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
-  if (value && existingRules.length === 0) {
-    await browser.declarativeNetRequest.updateDynamicRules({
-      addRules: rules,
-    });
-  } else if (!value && existingRules.length > 0) {
-    await browser.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: existingRules.map(({ id }) => id),
-    });
-  }
+  await browser.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: existingRules.map(({ id }) => id),
+    addRules: value ? rules : [],
+  });
 }
