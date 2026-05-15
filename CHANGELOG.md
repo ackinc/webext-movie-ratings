@@ -1,5 +1,9 @@
 # Changelog
 
+## v9.0.5
+
+- Ratings now show up on streaming websites' "preview" tiles, which show up when hovering over program tiles
+
 ## v9.0.0
 
 - Sift now automatically attempts to match programs that the OMDB API could not find a rating for
