@@ -424,11 +424,25 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
       },
       action: { type: "block" },
     },
+    {
+      id: 3,
+      priority: 2,
+      condition: {
+        initiatorDomains,
+        requestMethods: ["get"],
+        regexFilter: "^https://hses\\d+\\.hotstar\\.com/videos/.+\\.(mp4|m4s)$",
+      },
+      action: { type: "block" },
+    },
   ];
 
   const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
   await browser.declarativeNetRequest.updateDynamicRules({
     removeRuleIds: existingRules.map(({ id }) => id),
-    addRules: value ? rules : [],
   });
+  if (value) {
+    await browser.declarativeNetRequest.updateDynamicRules({
+      addRules: value ? rules : [],
+    });
+  }
 }
