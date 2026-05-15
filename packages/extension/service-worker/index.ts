@@ -434,6 +434,16 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
       },
       action: { type: "block" },
     },
+    {
+      id: 4,
+      priority: 2,
+      condition: {
+        initiatorDomains,
+        requestMethods: ["get"],
+        requestDomains: ["streaming.sonyliv.com"],
+      },
+      action: { type: "block" },
+    },
   ];
 
   const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
