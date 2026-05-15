@@ -242,7 +242,10 @@ div.${CssClasses.filteredOutProgramNode} {
       ];
     }
     if (selector === "div.erc-alphabetical-virtual-list") {
-      return ['div[data-t="series-card"]'];
+      return [
+        'div[data-t="series-card"]',
+        'div[class^="horizontal-card-hover"][data-t="hover-component"]',
+      ];
     }
     if (selector === "div.erc-genres-collection") {
       return ['div[data-t="carousel-card-wrapper"]'];
