@@ -17,6 +17,13 @@ export default class ProgramNode extends AbstractProgramNode {
       };
     }
 
+    if (programNode.matches('div[data-testid="standard-mini-details"]')) {
+      const titleNode = programNode.querySelector(
+        'h4[data-testid="title-art"]',
+      )!;
+      return { title: extractProgramTitle(titleNode.textContent) };
+    }
+
     if (programNode.matches('article[data-testid="super-carousel-card"]')) {
       return {
         title: extractProgramTitle(
@@ -35,5 +42,20 @@ export default class ProgramNode extends AbstractProgramNode {
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramNode);
+  }
+
+  static override insertIMDBNode(
+    programNode: HTMLElement,
+    imdbNode: HTMLElement,
+  ): void {
+    if (programNode.matches('div[data-testid="standard-mini-details"]')) {
+      const titleNode = programNode.querySelector(
+        'h4[data-testid="title-art"]',
+      )!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    super.insertIMDBNode(programNode, imdbNode);
   }
 }

@@ -83,10 +83,6 @@ div.${CssClasses.filteredOutProgramNode} {
   transition: opacity 0.5s ease-out;
 }
 
-.${CssClasses.filteredOutProgramNode}:hover {
-  opacity: 1;
-}
-
 .${CssClasses.filteredOutProgramNode}[data-t="hover-component"] {
   opacity: 0;
 }

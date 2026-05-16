@@ -30,6 +30,10 @@ article[data-card-title] .${CssClasses.imdbDataNode} {
   margin: 4px 0 0 4px;
 }
 
+div[data-testid="standard-mini-details"] a.${CssClasses.imdbDataNode} {
+  margin-left: 0;
+}
+
 article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
     position: absolute;
     top: 0;
@@ -134,10 +138,9 @@ article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
         'div[data-testid="grid-container"]',
       ].includes(selector)
     ) {
-      // NOTE: adding the :not clause to the selector below fixes
-      //   https://github.com/ackinc/webext-movie-ratings/issues/2
       return [
-        'article[data-card-title]:not([class*="hoverTransitionPreconditions"])',
+        "article[data-card-title]",
+        'div[data-testid="standard-mini-details"]',
       ];
     }
 

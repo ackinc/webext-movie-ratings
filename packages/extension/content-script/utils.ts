@@ -6,18 +6,24 @@ import {
 } from "../common";
 import type { ProgramFilterSettings, SelectorStatusForSite } from "../common";
 
-export function makeFilteredOutProgramNodeStylesClause(
+export function getFopnCssRules(
   filterSettings: ProgramFilterSettings,
-): string {
+): string[] {
   const { transparency } = filterSettings;
   const opacity = 1 - clampNum(transparency, 0, 100) / 100;
 
-  return `
+  return [
+    `
 .${CssClasses.filteredOutProgramNode} {
-  ${transparency > 100 ? `display: none;` : ""}
   opacity: ${opacity};
 }
-  `.trim();
+    `,
+    `
+.${CssClasses.filteredOutProgramNode}:hover {
+  opacity: 1;
+}
+    `,
+  ];
 }
 
 export function updateFilteredOutProgramNodeStyles(
@@ -29,13 +35,28 @@ export function updateFilteredOutProgramNodeStyles(
   const styleSheet = Array.from(document.styleSheets).find(
     (ss) => ss.ownerNode === styleNode,
   )!;
-  const fopnRuleIndex = Array.from(styleSheet.cssRules).findIndex(
-    (rule) =>
-      rule instanceof CSSStyleRule &&
-      rule.selectorText === `.${CssClasses.filteredOutProgramNode}`,
+  const fopnRuleIndices = Array.from(styleSheet.cssRules).reduce(
+    (acc, rule, idx) => {
+      if (
+        rule instanceof CSSStyleRule &&
+        [
+          `.${CssClasses.filteredOutProgramNode}`,
+          `.${CssClasses.filteredOutProgramNode}:hover`,
+        ].includes(rule.selectorText)
+      ) {
+        acc.push(idx);
+      }
+      return acc;
+    },
+    [] as number[],
   );
-  styleSheet.deleteRule(fopnRuleIndex);
-  styleSheet.insertRule(makeFilteredOutProgramNodeStylesClause(filterSettings));
+  // deleting in reverse order so target rules' indexes don't change
+  //   during deletion
+  fopnRuleIndices.reverse().forEach((idx) => styleSheet.deleteRule(idx));
+
+  getFopnCssRules(filterSettings).forEach((rule) =>
+    styleSheet.insertRule(rule),
+  );
 
   styleNode.textContent = Array.from(styleSheet.cssRules)
     .map((rule) => rule.cssText)
