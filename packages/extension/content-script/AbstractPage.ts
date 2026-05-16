@@ -23,7 +23,7 @@ import {
 } from "../common";
 import {
   getSelectorStatusForCurrentSite,
-  makeFilteredOutProgramNodeStylesClause,
+  getFopnCssRules,
   setSelectorStatusForCurrentSite,
 } from "./utils";
 import { DataExtractionError, SWError } from "../common/customErrors";
@@ -211,8 +211,7 @@ valid containers:\n\t${programContainers
 
     const styleNode = document.createElement("style");
     styleNode.classList.add(CssClasses.styleNode);
-    styleNode.textContent =
-      makeFilteredOutProgramNodeStylesClause(filterSettings);
+    styleNode.textContent = getFopnCssRules(filterSettings).join("\n");
     document.head.appendChild(styleNode);
   }
 
