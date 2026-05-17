@@ -98,6 +98,10 @@ export const supportedSites = {
     displayName: "Crunchyroll",
     permStrings: ["https://www.crunchyroll.com/*"],
   },
+  hbomax: {
+    displayName: "HBO Max",
+    permStrings: ["https://www.hbomax.com/*"],
+  },
   hotstar: {
     displayName: "Hotstar",
     permStrings: ["https://www.hotstar.com/*"],
