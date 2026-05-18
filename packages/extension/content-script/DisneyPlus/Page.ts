@@ -31,17 +31,23 @@ a.${CssClasses.imdbDataNode} {
 div[data-testid^="collection"] a.${CssClasses.imdbDataNode} {
   margin-top: 8px;
 }
+
+div[data-testid="you-may-also-like"] a.${CssClasses.imdbDataNode} {
+  margin-top: 8px;
+}
     `;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
-    if (location.pathname.startsWith("/browse")) {
-      return ['div[data-testid^="collection"]'];
-    }
-
     return [
       // home page
       'div[data-testid="slider-container"]:has(ul)',
+
+      // brand/collection pages
+      'div[data-testid^="collection"]',
+
+      // single program page
+      'div[data-testid="you-may-also-like"]',
     ];
   }
 
@@ -59,6 +65,7 @@ div[data-testid^="collection"] a.${CssClasses.imdbDataNode} {
         );
       if (titleNode) return titleNode.textContent;
 
+      // on home page, on scrolling down: bundle showcase
       if (
         (pContainerNode.parentElement!.previousElementSibling! as HTMLElement)
           .dataset["testid"] === "spacer"
@@ -67,6 +74,10 @@ div[data-testid^="collection"] a.${CssClasses.imdbDataNode} {
       }
 
       return "";
+    }
+
+    if (pContainerNode.matches('div[data-testid="you-may-also-like"]')) {
+      return "You may also like";
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
@@ -95,6 +106,12 @@ div[data-testid^="collection"] a.${CssClasses.imdbDataNode} {
     if (selector === 'div[data-testid="slider-container"]:has(ul)') {
       return [
         'li[data-testid^="collection-tile"]:has(> figure:first-child)',
+        'li[data-testid^="collection-tile"]:has(> div.block:first-child)',
+      ];
+    }
+
+    if (selector === 'div[data-testid="you-may-also-like"]') {
+      return [
         'li[data-testid^="collection-tile"]:has(> div.block:first-child)',
       ];
     }
