@@ -15,6 +15,26 @@ export default class ProgramNode extends AbstractProgramNode {
         'p[data-testid="tile-title"]',
       )!;
       title = titleNode.textContent;
+    } else if (programNode.matches('a[data-testid="grid-tile"]')) {
+      title = programNode.getAttribute("aria-label")!;
+    } else if (
+      programNode.matches(
+        'div[data-testid^="IA-slide-recommendations-carousel"]',
+      )
+    ) {
+      const titleNode = programNode.querySelector("h3")!;
+      title = titleNode.textContent;
+    } else if (programNode.matches('div.slick-slide div[role="group"]')) {
+      const titleNode = programNode.querySelector("h3")!;
+      title = titleNode.textContent;
+    } else if (programNode.matches('div.slick-slide div[role="listitem"]')) {
+      const titleNode = programNode.querySelector("h3")!;
+      title = titleNode.textContent;
+    } else if (programNode.matches('div[data-testid^="grid-item"]')) {
+      const titleNode = programNode.querySelector(
+        'a[data-preview-selector^="gridData-"][data-preview-selector$="showTitle"]',
+      )!;
+      title = titleNode.textContent;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -33,6 +53,42 @@ export default class ProgramNode extends AbstractProgramNode {
     if (programNode.matches('a[data-testid="tile-link-wrapper"]')) {
       const titleNode = programNode.querySelector(
         'p[data-testid="tile-title"]',
+      )!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('a[data-testid="grid-tile"]')) {
+      const titleNode = programNode.querySelector("p");
+      titleNode!.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (
+      programNode.matches(
+        'div[data-testid^="IA-slide-recommendations-carousel"]',
+      )
+    ) {
+      const titleNode = programNode.querySelector("h3")!;
+      titleNode!.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('div.slick-slide div[role="group"]')) {
+      const titleNode = programNode.querySelector("h3")!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('div.slick-slide div[role="listitem"]')) {
+      const titleNode = programNode.querySelector("h3")!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('div[data-testid^="grid-item"]')) {
+      const titleNode = programNode.querySelector(
+        'a[data-preview-selector^="gridData-"][data-preview-selector$="showTitle"]',
       )!;
       titleNode.insertAdjacentElement("afterend", imdbNode);
       return;
