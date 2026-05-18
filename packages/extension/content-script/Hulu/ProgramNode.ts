@@ -27,10 +27,10 @@ export default class ProgramNode extends AbstractProgramNode {
       const yearRegexpMatch = typeAndYear?.match(/\((\d{4})\)$/);
       year = yearRegexpMatch ? +yearRegexpMatch[1]! : null;
     } else if (programNode.matches("div.PortraitTile")) {
-      const titleNode = programNode.querySelector(
-        "div.PortraitTile__title img",
-      )!;
-      title = titleNode.getAttribute("aria-label")!;
+      const titleNode =
+        programNode.querySelector("div.PortraitTile__title img") ??
+        programNode.querySelector("div.PortraitTile__title span")!;
+      title = titleNode.getAttribute("aria-label") ?? titleNode.textContent;
 
       const typeAndYearNode = programNode.querySelector(
         "span.PortraitTile__joined-tags",
@@ -85,9 +85,9 @@ export default class ProgramNode extends AbstractProgramNode {
     }
 
     if (programNode.matches("div.PortraitTile")) {
-      const titleNode = programNode.querySelector(
-        "div.PortraitTile__title img",
-      )!;
+      const titleNode =
+        programNode.querySelector("div.PortraitTile__title img") ??
+        programNode.querySelector("div.PortraitTile__title span")!;
       titleNode.insertAdjacentElement("afterend", imdbNode);
       return;
     }
