@@ -98,6 +98,10 @@ export const supportedSites = {
     displayName: "Crunchyroll",
     permStrings: ["https://www.crunchyroll.com/*"],
   },
+  disneyplus: {
+    displayName: "Disney Plus",
+    permStrings: ["https://www.disneyplus.com/*"],
+  },
   hbomax: {
     displayName: "HBO Max",
     permStrings: ["https://www.hbomax.com/*"],

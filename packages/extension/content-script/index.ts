@@ -17,6 +17,7 @@ import type {
   ProgramFilterSettings,
   WebpageStats,
 } from "../common/types";
+import DisneyPlusPage from "./DisneyPlus/Page";
 import HBOMaxPage from "./HBOMax/Page";
 import HotstarPage from "./Hotstar/Page";
 import SonyLivPage from "./SonyLiv/Page";
@@ -80,7 +81,9 @@ const loopState: LoopState = {
 })();
 
 async function initializePage() {
-  if (location.hostname === "www.hbomax.com") {
+  if (location.hostname === "www.disneyplus.com") {
+    page = new DisneyPlusPage();
+  } else if (location.hostname === "www.hbomax.com") {
     page = new HBOMaxPage();
   } else if (location.hostname === "www.hotstar.com") {
     page = new HotstarPage();
