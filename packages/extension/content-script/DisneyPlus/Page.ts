@@ -1,7 +1,7 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
-import type { ProgramContainer, Program } from "../../common/types";
+import type { ProgramContainer } from "../../common/types";
 
 export default class DisneyPlusPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -117,9 +117,5 @@ div[data-testid="you-may-also-like"] a.${CssClasses.imdbDataNode} {
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
-  }
-
-  override checkIMDBDataAlreadyAdded(program: Program): boolean {
-    return super.checkIMDBDataAlreadyAdded(program);
   }
 }
