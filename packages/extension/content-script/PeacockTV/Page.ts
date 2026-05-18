@@ -38,6 +38,54 @@ div[data-testid="recommendations"] .${CssClasses.imdbDataNode} {
 section[data-testid="IA-video-template-multi-rails"] .${CssClasses.imdbDataNode} {
   padding: 0 16px;
 }
+
+div.rootPortraitRail .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  right: unset;
+  bottom: unset;
+  left: 4px;
+  border-radius: 16px;
+  background-color: #2a2a2aca;
+  color: white;
+  padding: 4px 8px;
+}
+
+ul[data-testid="numbered-rail-slider"] .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  right: unset;
+  bottom: unset;
+  left: 4px;
+  border-radius: 16px;
+  background-color: #2a2a2aca;
+  color: white;
+  padding: 4px 8px;
+}
+
+li[data-testid="collection-tile"] .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  right: unset;
+  bottom: unset;
+  left: 4px;
+  border-radius: 16px;
+  background-color: #2a2a2aca;
+  color: white;
+  padding: 4px 8px;
+}
+
+section[data-testid="recommendations-section"] .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  right: unset;
+  bottom: unset;
+  left: 4px;
+  border-radius: 16px;
+  background-color: #2a2a2aca;
+  color: white;
+  padding: 4px 8px;
+}
     `;
   }
 
@@ -66,6 +114,20 @@ section[data-testid="IA-video-template-multi-rails"] .${CssClasses.imdbDataNode}
 
       // "new on peacock"
       'section[data-testid="ia-content-grid"]',
+
+      // post-login home page
+      "div.rootPortraitRail",
+      'ul[data-testid="numbered-rail-slider"]',
+
+      // post-login collection page
+      "div#collection",
+
+      // post-login single program page
+      'section[data-testid="recommendations-section"]',
+
+      // search page
+      'ul[data-testid="popular-searches-grid"]',
+      'ul[data-testid="search-results-grid"]',
     ];
   }
 
@@ -108,6 +170,50 @@ section[data-testid="IA-video-template-multi-rails"] .${CssClasses.imdbDataNode}
         .textContent;
     }
 
+    if (pContainerNode.matches("div.rootPortraitRail")) {
+      // getting only the first child of the h2 since it also contains
+      //   a 'view all' button
+      return pContainerNode.querySelector('h2[data-testid="rail-title"]')!
+        .firstChild!.textContent!;
+    }
+
+    if (pContainerNode.matches('ul[data-testid="numbered-rail-slider"]')) {
+      return pContainerNode.parentElement!.parentElement!.querySelector(
+        'h2[data-testid="rail-title"]',
+      )!.textContent;
+    }
+
+    if (pContainerNode.matches("div#collection")) {
+      return pContainerNode.querySelector('h1[data-testid="collection-title"]')!
+        .textContent;
+    }
+
+    if (
+      pContainerNode.matches('section[data-testid="recommendations-section"]')
+    ) {
+      return pContainerNode.querySelector("h1")!.textContent;
+    }
+
+    if (pContainerNode.matches('ul[data-testid="popular-searches-grid"]')) {
+      return pContainerNode.parentElement!.querySelector(
+        'h1[data-testid="popular-searches-title"]',
+      )!.textContent;
+    }
+
+    if (pContainerNode.matches('ul[data-testid="search-results-grid"]')) {
+      // search results area contains two tabs - results and clips
+      // we only care about the former
+      if (
+        pContainerNode.parentElement!.previousElementSibling!.querySelector(
+          'button[aria-label="Results"][data-testid$="active"]',
+        )
+      ) {
+        return "Search results";
+      } else {
+        return "";
+      }
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -115,6 +221,14 @@ section[data-testid="IA-video-template-multi-rails"] .${CssClasses.imdbDataNode}
     pContainer: ProgramContainer,
   ): boolean {
     if (!Boolean(pContainer.title)) return false;
+
+    if (
+      ["Live & Upcoming", "Featured Channels", "Featured Brands"].includes(
+        pContainer.title,
+      )
+    ) {
+      return false;
+    }
 
     return true;
   }
@@ -148,6 +262,30 @@ section[data-testid="IA-video-template-multi-rails"] .${CssClasses.imdbDataNode}
 
     if (selector === 'section[data-testid="ia-content-grid"]') {
       return ['div[data-testid^="grid-item"]'];
+    }
+
+    if (selector === "div.rootPortraitRail") {
+      return ['li[data-testid="rail-tile"]'];
+    }
+
+    if (selector === 'ul[data-testid="numbered-rail-slider"]') {
+      return ['li[data-testid="rail-tile"]'];
+    }
+
+    if (selector === "div#collection") {
+      return ['li[data-testid="collection-tile"]'];
+    }
+
+    if (selector === 'section[data-testid="recommendations-section"]') {
+      return ['ul[data-grid="recommendations"] > li'];
+    }
+
+    if (selector === 'ul[data-testid="popular-searches-grid"]') {
+      return ['li[data-testid="collection-tile"]'];
+    }
+
+    if (selector === 'ul[data-testid="search-results-grid"]') {
+      return ['li[data-testid="collection-tile"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

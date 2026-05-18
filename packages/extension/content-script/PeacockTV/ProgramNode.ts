@@ -35,6 +35,12 @@ export default class ProgramNode extends AbstractProgramNode {
         'a[data-preview-selector^="gridData-"][data-preview-selector$="showTitle"]',
       )!;
       title = titleNode.textContent;
+    } else if (programNode.matches('li[data-testid="rail-tile"]')) {
+      title = programNode.querySelector("img")!.getAttribute("alt")!;
+    } else if (programNode.matches('li[data-testid="collection-tile"]')) {
+      title = programNode.querySelector('h4[data-testid="title"]')!.textContent;
+    } else if (programNode.matches('ul[data-grid="recommendations"] > li')) {
+      title = programNode.querySelector('h4[data-testid="title"]')!.textContent;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -91,6 +97,26 @@ export default class ProgramNode extends AbstractProgramNode {
         'a[data-preview-selector^="gridData-"][data-preview-selector$="showTitle"]',
       )!;
       titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('li[data-testid="rail-tile"]')) {
+      if (
+        programNode.matches('div.rootPortraitRail li[data-testid="rail-tile"]')
+      ) {
+        super.insertIMDBNode(programNode, imdbNode);
+        return;
+      } else if (
+        programNode.matches(
+          'ul[data-testid="numbered-rail-slider"] li[data-testid="rail-tile"]',
+        )
+      ) {
+        const imgNode = programNode.querySelector("img")!;
+        imgNode.insertAdjacentElement("afterend", imdbNode);
+        return;
+      } else {
+        throw new Error(ErrorMessage.unrecognizedProgramNode);
+      }
       return;
     }
 
