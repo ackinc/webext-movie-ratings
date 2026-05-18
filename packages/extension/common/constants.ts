@@ -110,6 +110,10 @@ export const supportedSites = {
     displayName: "Hotstar",
     permStrings: ["https://www.hotstar.com/*"],
   },
+  hulu: {
+    displayName: "Hulu",
+    permStrings: ["https://www.hulu.com/*"],
+  },
   netflix: {
     displayName: "Netflix",
     permStrings: ["https://www.netflix.com/*"],

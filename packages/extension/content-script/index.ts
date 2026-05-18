@@ -20,6 +20,7 @@ import type {
 import DisneyPlusPage from "./DisneyPlus/Page";
 import HBOMaxPage from "./HBOMax/Page";
 import HotstarPage from "./Hotstar/Page";
+import HuluPage from "./Hulu/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
@@ -87,6 +88,8 @@ async function initializePage() {
     page = new HBOMaxPage();
   } else if (location.hostname === "www.hotstar.com") {
     page = new HotstarPage();
+  } else if (location.hostname === "www.hulu.com") {
+    page = new HuluPage();
   } else if (location.hostname === "www.sonyliv.com") {
     page = new SonyLivPage();
   } else if (location.hostname === "www.netflix.com") {
