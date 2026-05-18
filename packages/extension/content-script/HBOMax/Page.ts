@@ -49,6 +49,21 @@ a.ymal-content-item h6 {
 a.ymal-content-item a.${CssClasses.imdbDataNode} {
   margin-left: 2px;
 }
+
+section[data-sonic-id^="home-page-rail"] a.${CssClasses.imdbDataNode} {
+  margin-top: 4px;
+  text-decoration: none;
+}
+
+section[data-sonic-id^="home-page-rail"] a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin-top: 0;
+  background-color: #2a2a2aca;
+  color: white;
+  padding: 4px 8px;
+}
     `;
   }
 
@@ -72,6 +87,9 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
 
       // single series page
       "div.max-section-ymal",
+
+      // home page (post login)
+      'section[data-sonic-id^="home-page-rail"]',
     ];
   }
 
@@ -114,6 +132,10 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
       return "You may also like:";
     }
 
+    if (pContainerNode.matches('section[data-sonic-id^="home-page-rail"]')) {
+      return pContainerNode.querySelector("h2")!.getAttribute("aria-label")!;
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -123,7 +145,12 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
     if (!Boolean(pContainer.title)) return false;
 
     if (location.pathname.startsWith("/sports")) {
-      if (["Upcoming Games"].includes(pContainer.title)) return false;
+      if (
+        ["Upcoming Games", "Channels", "Discover Our Collections"].includes(
+          pContainer.title,
+        )
+      )
+        return false;
     }
 
     return true;
@@ -161,6 +188,10 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
 
     if (selector === "div.max-section-ymal") {
       return ["a.ymal-content-item"];
+    }
+
+    if (selector === 'section[data-sonic-id^="home-page-rail"]') {
+      return ['a[data-sonic-type="show"]', 'a[data-sonic-type="video"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

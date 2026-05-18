@@ -85,7 +85,9 @@ const loopState: LoopState = {
 async function initializePage() {
   if (location.hostname === "www.disneyplus.com") {
     page = new DisneyPlusPage();
-  } else if (location.hostname === "www.hbomax.com") {
+  } else if (
+    ["www.hbomax.com", "play.hbomax.com"].includes(location.hostname)
+  ) {
     page = new HBOMaxPage();
   } else if (location.hostname === "www.hotstar.com") {
     page = new HotstarPage();

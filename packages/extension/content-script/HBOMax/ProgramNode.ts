@@ -26,6 +26,21 @@ export default class ProgramNode extends AbstractProgramNode {
         programNode.querySelector("img")!.getAttribute("alt")!;
     } else if (programNode.matches("a.ymal-content-item")) {
       title = programNode.querySelector("h6")!.textContent;
+    } else if (programNode.matches('a[data-sonic-type="show"]')) {
+      title = programNode.getAttribute("aria-label")!.split(".")[0]!;
+      if (
+        programNode.firstElementChild!.matches(
+          'div[class^="StyledRankImageContainer"]',
+        )
+      ) {
+        // "top 10 ... lists"
+        title = title.split(/Number \d+:\s+/)[1]!;
+      }
+    } else if (programNode.matches('a[data-sonic-type="video"]')) {
+      const titleNode = programNode.querySelector(
+        'span[class^="StyledPrimaryTitle"]',
+      )!;
+      title = titleNode.textContent.replace(/(Teaser|Trailer)$/, "");
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -41,6 +56,27 @@ export default class ProgramNode extends AbstractProgramNode {
     programNode: HTMLElement,
     imdbNode: HTMLElement,
   ) {
+    if (programNode.matches('a[data-sonic-type="show"]')) {
+      if (
+        programNode.firstElementChild!.matches(
+          'div[class^="StyledRankImageContainer"]',
+        )
+      ) {
+        programNode.lastElementChild!.appendChild(imdbNode);
+      } else {
+        super.insertIMDBNode(programNode, imdbNode);
+      }
+      return;
+    }
+
+    if (programNode.matches('a[data-sonic-type="video"]')) {
+      const titleNode = programNode.querySelector(
+        'span[class^="StyledPrimaryTitle"]',
+      )!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
     super.insertIMDBNode(programNode, imdbNode);
   }
 }

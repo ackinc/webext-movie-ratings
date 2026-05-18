@@ -104,7 +104,7 @@ export const supportedSites = {
   },
   hbomax: {
     displayName: "HBO Max",
-    permStrings: ["https://www.hbomax.com/*"],
+    permStrings: ["https://www.hbomax.com/*", "https://play.hbomax.com/*"],
   },
   hotstar: {
     displayName: "Hotstar",
