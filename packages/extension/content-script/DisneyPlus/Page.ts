@@ -27,10 +27,18 @@ a.${CssClasses.imdbDataNode} {
   font-weight: bold;
   text-align: left;
 }
+
+div[data-testid^="collection"] a.${CssClasses.imdbDataNode} {
+  margin-top: 8px;
+}
     `;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
+    if (location.pathname.startsWith("/browse")) {
+      return ['div[data-testid^="collection"]'];
+    }
+
     return [
       // home page
       'div[data-testid="slider-container"]:has(ul)',
@@ -40,6 +48,10 @@ a.${CssClasses.imdbDataNode} {
   protected override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
+    if (pContainerNode.matches('div[data-testid^="collection"]')) {
+      return pContainerNode.parentElement!.previousElementSibling!.textContent;
+    }
+
     if (pContainerNode.matches('div[data-testid="slider-container"]:has(ul)')) {
       const titleNode =
         pContainerNode.parentElement?.previousElementSibling?.querySelector(
@@ -65,12 +77,21 @@ a.${CssClasses.imdbDataNode} {
   ): boolean {
     if (!Boolean(pContainer.title)) return false;
 
+    if (["Collections"].includes(pContainer.title)) return false;
+
     return true;
   }
 
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (selector === 'div[data-testid^="collection"]') {
+      return [
+        'li[data-testid^="collection-tile"]:has(> figure:first-child)',
+        'li[data-testid^="collection-tile"]:has(> div.block:first-child)',
+      ];
+    }
+
     if (selector === 'div[data-testid="slider-container"]:has(ul)') {
       return [
         'li[data-testid^="collection-tile"]:has(> figure:first-child)',
