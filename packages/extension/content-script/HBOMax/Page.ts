@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
+import { climbDOMUntil } from "../utils";
 
 export default class HBOMaxPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -172,7 +173,23 @@ section[data-appearance="ImmersiveHero"] .${CssClasses.imdbDataNode} {
     }
 
     if (pContainerNode.matches('section[data-sonic-id*="page-rail"]')) {
-      return pContainerNode.querySelector("h2")!.getAttribute("aria-label")!;
+      if (
+        pContainerNode.matches(
+          'section[data-sonic-id^="my-stuff-page-rail-my-list"]',
+        )
+      ) {
+        return (
+          climbDOMUntil(pContainerNode, (node) =>
+            node.matches('div[aria-label="My List"]'),
+          )?.previousElementSibling?.querySelector(
+            'button[data-selected="true"]',
+          )?.textContent ?? ""
+        );
+      } else {
+        return (
+          pContainerNode.querySelector("h2")?.getAttribute("aria-label") ?? ""
+        );
+      }
     }
 
     if (pContainerNode.matches('div[data-testid="tileList"]')) {
