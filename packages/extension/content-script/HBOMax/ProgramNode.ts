@@ -39,16 +39,6 @@ export default class ProgramNode extends AbstractProgramNode {
     programNode: HTMLElement,
     imdbNode: HTMLElement,
   ) {
-    if (
-      programNode.matches(
-        "li.react-multi-carousel-item a:has(div.item-container)",
-      )
-    ) {
-      const titleNode = programNode.querySelector("h6")!;
-      titleNode.insertAdjacentElement("afterend", imdbNode);
-      return;
-    }
-
     super.insertIMDBNode(programNode, imdbNode);
   }
 }

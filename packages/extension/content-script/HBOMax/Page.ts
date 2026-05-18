@@ -33,7 +33,7 @@ div.image-grid-item a.${CssClasses.imdbDataNode} {
 }
 
 li.react-multi-carousel-item a:has(div.item-container) h6 {
-  margin-top: 0px;
+  margin-top: 0;
   margin-bottom: 0
 }
 
@@ -55,6 +55,10 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
   protected override getProgramContainerNodeSelectors(): string[] {
     if (location.pathname.startsWith("/sitemap")) return [];
 
+    if (location.pathname === "/channel") {
+      return ["section.content-tray-section-parent"];
+    }
+
     return [
       // home page (pre-sign up)
       "div.image-grid:not(.sports-league-tiles)",
@@ -71,6 +75,14 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
   protected override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
+    if (pContainerNode.matches("section.content-tray-section-parent")) {
+      return pContainerNode
+        .querySelector("div.rich-text div.pt a[href]")!
+        .getAttribute("href")!
+        .split("/")
+        .at(-1)!;
+    }
+
     if (pContainerNode.matches("div.image-grid:not(.sports-league-tiles)")) {
       return pContainerNode.previousElementSibling?.textContent ?? "<UNKNOWN>";
     }
@@ -111,6 +123,14 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (selector === "section.content-tray-section-parent") {
+      // NOTE WHY_EXTRA_QUALIFIER
+      // qualifying the a-clause in the selector below ensures
+      //   the imdb-nodes that sift inserts are excluded from
+      //   being identified as program nodes
+      return ["li.react-multi-carousel-item a:has(div.item-container)"];
+    }
+
     if (selector === "div.image-grid:not(.sports-league-tiles)") {
       return ["div.image-grid-item", "div.img-wrapper-override"];
     }
@@ -121,9 +141,7 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
 
     if (selector === "section.collection-content") {
       return [
-        // qualifying the a-clause in the selector below ensures
-        //   the imdb-nodes that sift inserts are excluded from
-        //   being identified as program nodes
+        // See NOTE WHY_EXTRA_QUALIFIER above
         "li.react-multi-carousel-item a:has(div.item-container)",
       ];
     }
