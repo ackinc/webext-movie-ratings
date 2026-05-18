@@ -21,7 +21,9 @@ export default class ProgramNode extends AbstractProgramNode {
         "li.react-multi-carousel-item a:has(div.item-container)",
       )
     ) {
-      title = programNode.querySelector("h6")!.textContent;
+      title =
+        programNode.querySelector("h6")?.textContent ??
+        programNode.querySelector("img")!.getAttribute("alt")!;
     } else if (programNode.matches("a.ymal-content-item")) {
       title = programNode.querySelector("h6")!.textContent;
     } else {
