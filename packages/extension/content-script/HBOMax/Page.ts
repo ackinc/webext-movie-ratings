@@ -67,8 +67,11 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
       // movies page
       "section.collection-content",
 
-      // single-program page
+      // single movie page
       "div.max-section-ymal-parent",
+
+      // single series page
+      "div.max-section-ymal",
     ];
   }
 
@@ -101,7 +104,13 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
       );
     }
 
+    // single-movie page
     if (pContainerNode.matches("div.max-section-ymal-parent")) {
+      return "You may also like:";
+    }
+
+    // single series page
+    if (pContainerNode.matches("div.max-section-ymal")) {
       return "You may also like:";
     }
 
@@ -147,6 +156,10 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
     }
 
     if (selector === "div.max-section-ymal-parent") {
+      return ["a.ymal-content-item"];
+    }
+
+    if (selector === "div.max-section-ymal") {
       return ["a.ymal-content-item"];
     }
 
