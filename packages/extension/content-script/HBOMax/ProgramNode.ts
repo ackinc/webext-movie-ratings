@@ -58,6 +58,16 @@ export default class ProgramNode extends AbstractProgramNode {
   ) {
     if (programNode.matches('a[data-sonic-type="show"]')) {
       if (
+        programNode.matches(
+          'section[data-sonic-id="search-page-rail-results"] a[data-sonic-type="show"]',
+        )
+      ) {
+        const titleNode = programNode.querySelector(
+          'span[class^="StyledPrimaryTitle"]',
+        )!;
+        titleNode.insertAdjacentElement("afterend", imdbNode);
+        return;
+      } else if (
         programNode.firstElementChild!.matches(
           'div[class^="StyledRankImageContainer"]',
         )

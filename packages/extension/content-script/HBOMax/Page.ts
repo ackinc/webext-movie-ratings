@@ -93,17 +93,20 @@ a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClas
       // single series page
       "div.max-section-ymal",
 
+      // search results page
+      'section[data-sonic-id="search-page-rail-results"]',
+
       // (post login) home page, movies page
       'section[data-sonic-id*="page-rail"]',
 
       // (post login) single series page
       'div[data-testid="tileList"]',
 
-      // (post login) movies page
+      // (post login) movies page, series page, hbo page, ...
       'section[data-sonic-id*="page-featured-tab-rail"]',
       'section[data-sonic-id*="featured-rail"]',
       'section[data-sonic-id*="page-featured-tab"]',
-      'section[data-testid^="movies-page-"][data-testid$="_rail"]',
+      'section[data-testid*="-page-"][data-testid$="_rail"]',
     ];
   }
 
@@ -146,6 +149,14 @@ a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClas
       return "You may also like:";
     }
 
+    if (
+      pContainerNode.matches(
+        'section[data-sonic-id="search-page-rail-results"]',
+      )
+    ) {
+      return "Search results";
+    }
+
     if (pContainerNode.matches('section[data-sonic-id*="page-rail"]')) {
       return pContainerNode.querySelector("h2")!.getAttribute("aria-label")!;
     }
@@ -163,7 +174,7 @@ a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClas
         'section[data-sonic-id*="page-featured-tab-rail"]',
         'section[data-sonic-id*="featured-rail"]',
         'section[data-sonic-id*="page-featured-tab"]',
-        'section[data-testid^="movies-page-"][data-testid$="_rail"]',
+        'section[data-testid*="-page-"][data-testid$="_rail"]',
       ].some((sel) => pContainerNode.matches(sel))
     ) {
       if (pContainerNode.firstElementChild?.matches("picture")) {
@@ -233,6 +244,10 @@ a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClas
       return ["a.ymal-content-item"];
     }
 
+    if (selector === 'section[data-sonic-id="search-page-rail-results"]') {
+      return ['a[data-sonic-type="show"]'];
+    }
+
     if (selector === 'section[data-sonic-id*="page-rail"]') {
       return ['a[data-sonic-type="show"]', 'a[data-sonic-type="video"]'];
     }
@@ -246,7 +261,7 @@ a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClas
         'section[data-sonic-id*="page-featured-tab-rail"]',
         'section[data-sonic-id*="featured-rail"]',
         'section[data-sonic-id*="page-featured-tab"]',
-        'section[data-testid^="movies-page-"][data-testid$="_rail"]',
+        'section[data-testid*="-page-"][data-testid$="_rail"]',
       ].includes(selector)
     ) {
       return ['a[data-sonic-type="show"]'];
