@@ -8,11 +8,7 @@ export default class ProgramNode extends AbstractProgramNode {
     let type: "movie" | "series" | null = null;
     let year: number | null = null;
 
-    if (
-      programNode.matches(
-        'div.Slider__item div.Tile[data-automationid^="tile"]',
-      )
-    ) {
+    if (programNode.matches('div.Tile[data-automationid^="tile"]')) {
       const titleNode =
         programNode.querySelector("a.Tile__title-link") ??
         // streaming library (url: /content?tab=premium)
@@ -21,6 +17,23 @@ export default class ProgramNode extends AbstractProgramNode {
 
       const typeAndYearNode = programNode.querySelector(
         "span.Tile__description",
+      )!;
+      const typeAndYear = typeAndYearNode.textContent.split("•").at(-1);
+      type = typeAndYear?.includes("Movie")
+        ? "movie"
+        : typeAndYear?.includes("Series")
+          ? "series"
+          : null;
+      const yearRegexpMatch = typeAndYear?.match(/\((\d{4})\)$/);
+      year = yearRegexpMatch ? +yearRegexpMatch[1]! : null;
+    } else if (programNode.matches("div.PortraitTile")) {
+      const titleNode = programNode.querySelector(
+        "div.PortraitTile__title img",
+      )!;
+      title = titleNode.getAttribute("aria-label")!;
+
+      const typeAndYearNode = programNode.querySelector(
+        "span.PortraitTile__joined-tags",
       )!;
       const typeAndYear = typeAndYearNode.textContent.split("•").at(-1);
       type = typeAndYear?.includes("Movie")
@@ -45,15 +58,19 @@ export default class ProgramNode extends AbstractProgramNode {
     programNode: HTMLElement,
     imdbNode: HTMLElement,
   ) {
-    if (
-      programNode.matches(
-        'div.Slider__item div.Tile[data-automationid^="tile"]',
-      )
-    ) {
+    if (programNode.matches('div.Tile[data-automationid^="tile"]')) {
       const titleNode =
         programNode.querySelector("a.Tile__title-link") ??
         // streaming library (url: /content?tab=premium)
         programNode.querySelector("h3.Tile__title")!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches("div.PortraitTile")) {
+      const titleNode = programNode.querySelector(
+        "div.PortraitTile__title img",
+      )!;
       titleNode.insertAdjacentElement("afterend", imdbNode);
       return;
     }

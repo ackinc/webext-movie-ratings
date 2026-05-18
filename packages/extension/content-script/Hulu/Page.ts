@@ -26,6 +26,12 @@ a.${CssClasses.imdbDataNode} {
   font-family: ${pageFontFamily};
   font-size: 14px;
 }
+
+div.PortraitTile a.${CssClasses.imdbDataNode} {
+  margin-top: 8px;
+  color: white;
+  font-weight: 400;
+}
     `;
   }
 
@@ -33,9 +39,17 @@ a.${CssClasses.imdbDataNode} {
     // live tv, live news, live sports
     if (location.pathname.startsWith("/live")) return [];
 
+    if (location.pathname === "/hub/networks") return [];
+
     return [
       // home page
       "div.SimpleCollection",
+
+      // tv shows page
+      "div.PortraitCollection",
+
+      // 'top 15 ...' page
+      "div.GridCollection",
     ];
   }
 
@@ -43,7 +57,17 @@ a.${CssClasses.imdbDataNode} {
     pContainerNode: HTMLElement,
   ): string {
     if (pContainerNode.matches("div.SimpleCollection")) {
-      return pContainerNode.querySelector("h2")!.textContent;
+      return pContainerNode.querySelector(".SimpleCollection__title")!
+        .textContent;
+    }
+
+    if (pContainerNode.matches("div.PortraitCollection")) {
+      return pContainerNode.querySelector("a.PortraitCollection__title")!
+        .textContent;
+    }
+
+    if (pContainerNode.matches("div.GridCollection")) {
+      return "Grid";
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
@@ -61,7 +85,15 @@ a.${CssClasses.imdbDataNode} {
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
     if (selector === "div.SimpleCollection") {
-      return ['div.Slider__item div.Tile[data-automationid^="tile"]'];
+      return ['div.Tile[data-automationid^="tile"]'];
+    }
+
+    if (selector === "div.PortraitCollection") {
+      return ["div.PortraitTile"];
+    }
+
+    if (selector === "div.GridCollection") {
+      return ['div.Tile[data-automationid^="tile"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
