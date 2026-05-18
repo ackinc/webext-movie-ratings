@@ -21,6 +21,7 @@ import DisneyPlusPage from "./DisneyPlus/Page";
 import HBOMaxPage from "./HBOMax/Page";
 import HotstarPage from "./Hotstar/Page";
 import HuluPage from "./Hulu/Page";
+import PeacockTVPage from "./PeacockTV/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
@@ -106,6 +107,8 @@ async function initializePage() {
     page = new CrunchyrollPage();
   } else if (location.hostname === "www.youtube.com") {
     page = new YoutubeMoviesPage();
+  } else if (location.hostname === "www.peacocktv.com") {
+    page = new PeacockTVPage();
   } else {
     throw new Error("Page not recognized");
   }
