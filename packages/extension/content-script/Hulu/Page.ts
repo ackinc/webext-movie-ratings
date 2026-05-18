@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
+import { climbDOMUntil } from "../utils";
 
 export default class HuluPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -67,7 +68,19 @@ div.PortraitTile a.${CssClasses.imdbDataNode} {
     }
 
     if (pContainerNode.matches("div.GridCollection")) {
-      return "Grid";
+      if (pContainerNode.parentElement?.matches("div.tab")) {
+        const gp = pContainerNode.parentElement.parentElement!;
+        const tabs = Array.from(gp.querySelectorAll("div.tab"));
+        const curTabNum = tabs.indexOf(pContainerNode.parentElement!);
+
+        const candidates = Array.from(
+          climbDOMUntil(pContainerNode, (node) =>
+            node.matches("div.tabs"),
+          )?.querySelectorAll(".nav .nav-item") ?? [],
+        ).map((node) => node.textContent);
+
+        return candidates[curTabNum] ?? "";
+      }
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
@@ -77,6 +90,10 @@ div.PortraitTile a.${CssClasses.imdbDataNode} {
     pContainer: ProgramContainer,
   ): boolean {
     if (!Boolean(pContainer.title)) return false;
+
+    if (["episodes", "extras"].includes(pContainer.title.toLowerCase())) {
+      return false;
+    }
 
     return true;
   }
