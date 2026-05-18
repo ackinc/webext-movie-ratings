@@ -50,12 +50,17 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
   margin-left: 2px;
 }
 
-section[data-sonic-id^="home-page-rail"] a.${CssClasses.imdbDataNode} {
+a[data-sonic-type="show"] a.${CssClasses.imdbDataNode} {
   margin-top: 4px;
   text-decoration: none;
 }
 
-section[data-sonic-id^="home-page-rail"] a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClasses.imdbDataNode} {
+a[data-sonic-type="video"] a.${CssClasses.imdbDataNode} {
+  margin-top: 4px;
+  text-decoration: none;
+}
+
+a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClasses.imdbDataNode} {
   position: absolute;
   top: 4px;
   left: 4px;
@@ -88,8 +93,17 @@ section[data-sonic-id^="home-page-rail"] a[data-sonic-type="show"]:has(div[class
       // single series page
       "div.max-section-ymal",
 
-      // home page (post login)
-      'section[data-sonic-id^="home-page-rail"]',
+      // (post login) home page, movies page
+      'section[data-sonic-id*="page-rail"]',
+
+      // (post login) single series page
+      'div[data-testid="tileList"]',
+
+      // (post login) movies page
+      'section[data-sonic-id*="page-featured-tab-rail"]',
+      'section[data-sonic-id*="featured-rail"]',
+      'section[data-sonic-id*="page-featured-tab"]',
+      'section[data-testid^="movies-page-"][data-testid$="_rail"]',
     ];
   }
 
@@ -132,8 +146,34 @@ section[data-sonic-id^="home-page-rail"] a[data-sonic-type="show"]:has(div[class
       return "You may also like:";
     }
 
-    if (pContainerNode.matches('section[data-sonic-id^="home-page-rail"]')) {
+    if (pContainerNode.matches('section[data-sonic-id*="page-rail"]')) {
       return pContainerNode.querySelector("h2")!.getAttribute("aria-label")!;
+    }
+
+    if (pContainerNode.matches('div[data-testid="tileList"]')) {
+      return (
+        pContainerNode.parentElement!.querySelector(
+          'h2 span[data-testid$="gridTitle"]',
+        )?.textContent ?? ""
+      );
+    }
+
+    if (
+      [
+        'section[data-sonic-id*="page-featured-tab-rail"]',
+        'section[data-sonic-id*="featured-rail"]',
+        'section[data-sonic-id*="page-featured-tab"]',
+        'section[data-testid^="movies-page-"][data-testid$="_rail"]',
+      ].some((sel) => pContainerNode.matches(sel))
+    ) {
+      if (pContainerNode.firstElementChild?.matches("picture")) {
+        // "turner classic movies"
+        return pContainerNode
+          .querySelector('div#tileList div[role="heading"][aria-label]')!
+          .getAttribute("aria-label")!;
+      } else {
+        return pContainerNode.querySelector("h2")!.getAttribute("aria-label")!;
+      }
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
@@ -146,9 +186,12 @@ section[data-sonic-id^="home-page-rail"] a[data-sonic-type="show"]:has(div[class
 
     if (location.pathname.startsWith("/sports")) {
       if (
-        ["Upcoming Games", "Channels", "Discover Our Collections"].includes(
-          pContainer.title,
-        )
+        [
+          "Browse by Genre",
+          "Channels",
+          "Discover Our Collections",
+          "Upcoming Games",
+        ].includes(pContainer.title)
       )
         return false;
     }
@@ -190,8 +233,23 @@ section[data-sonic-id^="home-page-rail"] a[data-sonic-type="show"]:has(div[class
       return ["a.ymal-content-item"];
     }
 
-    if (selector === 'section[data-sonic-id^="home-page-rail"]') {
+    if (selector === 'section[data-sonic-id*="page-rail"]') {
       return ['a[data-sonic-type="show"]', 'a[data-sonic-type="video"]'];
+    }
+
+    if (selector === 'div[data-testid="tileList"]') {
+      return ['a[data-sonic-type="show"]'];
+    }
+
+    if (
+      [
+        'section[data-sonic-id*="page-featured-tab-rail"]',
+        'section[data-sonic-id*="featured-rail"]',
+        'section[data-sonic-id*="page-featured-tab"]',
+        'section[data-testid^="movies-page-"][data-testid$="_rail"]',
+      ].includes(selector)
+    ) {
+      return ['a[data-sonic-type="show"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
