@@ -33,6 +33,14 @@ div.PortraitTile a.${CssClasses.imdbDataNode} {
   color: white;
   font-weight: 400;
 }
+
+div.DetailEntityMasthead .${CssClasses.filteredOutProgramNode} {
+  opacity: 1;
+}
+
+div.DetailEntityMasthead a.${CssClasses.imdbDataNode} {
+  color: white;
+}
     `;
   }
 
@@ -51,6 +59,9 @@ div.PortraitTile a.${CssClasses.imdbDataNode} {
 
       // 'top 15 ...' page
       "div.GridCollection",
+
+      // top of single-program page
+      "div.DetailEntityMasthead",
     ];
   }
 
@@ -83,6 +94,10 @@ div.PortraitTile a.${CssClasses.imdbDataNode} {
       }
     }
 
+    if (pContainerNode.matches("div.DetailEntityMasthead")) {
+      return "Billboard";
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -111,6 +126,10 @@ div.PortraitTile a.${CssClasses.imdbDataNode} {
 
     if (selector === "div.GridCollection") {
       return ['div.Tile[data-automationid^="tile"]'];
+    }
+
+    if (selector === "div.DetailEntityMasthead") {
+      return ["div.DetailEntityMasthead__entity"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

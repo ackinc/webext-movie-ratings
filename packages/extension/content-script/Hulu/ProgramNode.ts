@@ -43,6 +43,23 @@ export default class ProgramNode extends AbstractProgramNode {
           : null;
       const yearRegexpMatch = typeAndYear?.match(/\((\d{4})\)$/);
       year = yearRegexpMatch ? +yearRegexpMatch[1]! : null;
+    } else if (programNode.matches("div.DetailEntityMasthead__entity")) {
+      const titleNode = programNode.querySelector(
+        "span.DetailEntityMasthead__title__text",
+      )!;
+      title = titleNode.textContent;
+
+      const typeAndYearNode = programNode.querySelector(
+        "div.DetailEntityMetadata__tag-group",
+      )!;
+      const typeAndYear = typeAndYearNode.textContent.split("•").at(-1);
+      type = typeAndYear?.includes("Movie")
+        ? "movie"
+        : typeAndYear?.includes("Series")
+          ? "series"
+          : null;
+      const yearRegexpMatch = typeAndYear?.match(/\((\d{4})\)$/);
+      year = yearRegexpMatch ? +yearRegexpMatch[1]! : null;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -72,6 +89,17 @@ export default class ProgramNode extends AbstractProgramNode {
         "div.PortraitTile__title img",
       )!;
       titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches("div.DetailEntityMasthead__entity")) {
+      const tagGroupNode = programNode.querySelector(
+        "div.DetailEntityMetadata__tag-group",
+      )!;
+      tagGroupNode.parentElement!.insertAdjacentElement(
+        "beforebegin",
+        imdbNode,
+      );
       return;
     }
 
