@@ -118,6 +118,10 @@ export const supportedSites = {
     displayName: "Netflix",
     permStrings: ["https://www.netflix.com/*"],
   },
+  paramountplus: {
+    displayName: "Paramount Plus",
+    permStrings: ["https://www.paramountplus.com/*"],
+  },
   primevideo: {
     displayName: "Prime Video (primevideo.com)",
     permStrings: ["https://www.primevideo.com/*"],

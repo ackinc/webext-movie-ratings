@@ -23,6 +23,7 @@ import HotstarPage from "./Hotstar/Page";
 import HuluPage from "./Hulu/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
+import ParamountPlusPage from "./ParamountPlus/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
@@ -106,6 +107,8 @@ async function initializePage() {
     page = new CrunchyrollPage();
   } else if (location.hostname === "www.youtube.com") {
     page = new YoutubeMoviesPage();
+  } else if (location.hostname === "www.paramountplus.com") {
+    page = new ParamountPlusPage();
   } else {
     throw new Error("Page not recognized");
   }
