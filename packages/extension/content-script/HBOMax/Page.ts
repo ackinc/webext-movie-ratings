@@ -55,7 +55,7 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
   protected override getProgramContainerNodeSelectors(): string[] {
     if (location.pathname.startsWith("/sitemap")) return [];
 
-    if (location.pathname === "/channel") {
+    if (["/channel", "/collections"].includes(location.pathname)) {
       return ["section.content-tray-section-parent"];
     }
 
@@ -80,7 +80,7 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
   ): string {
     if (pContainerNode.matches("section.content-tray-section-parent")) {
       return pContainerNode
-        .querySelector("div.rich-text div.pt a[href]")!
+        .querySelector("a[href]")!
         .getAttribute("href")!
         .split("/")
         .at(-1)!;
