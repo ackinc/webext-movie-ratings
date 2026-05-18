@@ -22,6 +22,8 @@ export default class ProgramNode extends AbstractProgramNode {
       )
     ) {
       title = programNode.querySelector("h6")!.textContent;
+    } else if (programNode.matches("a.ymal-content-item")) {
+      title = programNode.querySelector("h6")!.textContent;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }

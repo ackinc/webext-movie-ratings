@@ -40,6 +40,15 @@ li.react-multi-carousel-item a:has(div.item-container) h6 {
 li.react-multi-carousel-item a:has(div.item-container) a.${CssClasses.imdbDataNode} {
   margin-left: 2px;
 }
+
+a.ymal-content-item h6 {
+  margin-top: 0;
+  margin-bottom: 0
+}
+
+a.ymal-content-item a.${CssClasses.imdbDataNode} {
+  margin-left: 2px;
+}
     `;
   }
 
@@ -53,6 +62,9 @@ li.react-multi-carousel-item a:has(div.item-container) a.${CssClasses.imdbDataNo
 
       // movies page
       "section.collection-content",
+
+      // single-program page
+      "div.max-section-ymal-parent",
     ];
   }
 
@@ -77,13 +89,23 @@ li.react-multi-carousel-item a:has(div.item-container) a.${CssClasses.imdbDataNo
       );
     }
 
+    if (pContainerNode.matches("div.max-section-ymal-parent")) {
+      return "You may also like:";
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
   protected override isValidProgramContainer(
     pContainer: ProgramContainer,
   ): boolean {
-    return Boolean(pContainer.title);
+    if (!Boolean(pContainer.title)) return false;
+
+    if (location.pathname.startsWith("/sports")) {
+      if (["Upcoming Games"].includes(pContainer.title)) return false;
+    }
+
+    return true;
   }
 
   protected override getProgramNodeSelectors({
@@ -104,6 +126,10 @@ li.react-multi-carousel-item a:has(div.item-container) a.${CssClasses.imdbDataNo
         //   being identified as program nodes
         "li.react-multi-carousel-item a:has(div.item-container)",
       ];
+    }
+
+    if (selector === "div.max-section-ymal-parent") {
+      return ["a.ymal-content-item"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
