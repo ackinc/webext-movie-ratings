@@ -41,6 +41,9 @@ export default class ProgramNode extends AbstractProgramNode {
         'span[class^="StyledPrimaryTitle"]',
       )!;
       title = titleNode.textContent.replace(/(Teaser|Trailer)$/, "");
+    } else if (programNode.matches('div[data-id="hero-info-block-wrapper"]')) {
+      const titleNode = programNode.querySelector('div[role="heading"]')!;
+      title = titleNode.getAttribute("aria-label")!;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -83,6 +86,12 @@ export default class ProgramNode extends AbstractProgramNode {
       const titleNode = programNode.querySelector(
         'span[class^="StyledPrimaryTitle"]',
       )!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('div[data-id="hero-info-block-wrapper"]')) {
+      const titleNode = programNode.querySelector('div[role="heading"]')!;
       titleNode.insertAdjacentElement("afterend", imdbNode);
       return;
     }

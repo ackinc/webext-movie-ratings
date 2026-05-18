@@ -69,6 +69,15 @@ a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClas
   color: white;
   padding: 4px 8px;
 }
+
+section[data-appearance="ImmersiveHero"] .${CssClasses.filteredOutProgramNode} {
+  opacity: 1;
+}
+
+section[data-appearance="ImmersiveHero"] .${CssClasses.imdbDataNode} {
+  color: white;
+  text-decoration: none;
+}
     `;
   }
 
@@ -97,6 +106,7 @@ a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClas
       'section[data-sonic-id="search-page-rail-results"]',
 
       // (post login) home page, movies page
+      'section[data-appearance="ImmersiveHero"]',
       'section[data-sonic-id*="page-rail"]',
 
       // (post login) single series page
@@ -155,6 +165,10 @@ a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClas
       )
     ) {
       return "Search results";
+    }
+
+    if (pContainerNode.matches('section[data-appearance="ImmersiveHero"]')) {
+      return "Billboard";
     }
 
     if (pContainerNode.matches('section[data-sonic-id*="page-rail"]')) {
@@ -246,6 +260,10 @@ a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClas
 
     if (selector === 'section[data-sonic-id="search-page-rail-results"]') {
       return ['a[data-sonic-type="show"]'];
+    }
+
+    if (selector === 'section[data-appearance="ImmersiveHero"]') {
+      return ['div[data-id="hero-info-block-wrapper"]'];
     }
 
     if (selector === 'section[data-sonic-id*="page-rail"]') {
