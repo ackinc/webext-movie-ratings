@@ -114,6 +114,10 @@ export const supportedSites = {
   //   displayName: "Hulu",
   //   permStrings: ["https://www.hulu.com/*"],
   // },
+  mxplayer: {
+    displayName: "MX Player",
+    permStrings: ["https://www.mxplayer.in/*"],
+  },
   netflix: {
     displayName: "Netflix",
     permStrings: ["https://www.netflix.com/*"],
