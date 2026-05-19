@@ -1,5 +1,10 @@
 # Changelog
 
+## v9.1.0
+
+- Added support for HBOMax, PeacockTV, Zee5, and MXPlayer
+- Popup can now display in-apps notifications; on extension update, the service-worker will attempt to open the popup if it detects one is available
+
 ## v9.0.5
 
 - Ratings now show up on streaming websites' "preview" tiles, which show up when hovering over program tiles
