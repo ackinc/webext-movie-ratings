@@ -16,6 +16,14 @@ export default class ProgramNode extends AbstractProgramNode {
     } else if (programNode.matches("div.keen-slider__slide article")) {
       const titleNode = programNode.querySelector("img")!;
       title = titleNode.getAttribute("alt")!;
+    } else if (programNode.matches("div.movieCard")) {
+      title = programNode
+        .querySelector("div[data-minutelytitle]")!
+        .getAttribute("data-minutelytitle")!;
+    } else if (
+      programNode.matches('div[data-testid^="recommended-thumbnail"')
+    ) {
+      title = programNode.getAttribute("title")!;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }

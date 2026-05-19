@@ -39,6 +39,10 @@ div.keen-slider__slide article .${CssClasses.imdbDataNode} {
 div.keen-slider__slide article:has(footer) .${CssClasses.imdbDataNode} {
   margin: 4px 0 0 0px;
 }
+
+div.movieCard .${CssClasses.imdbDataNode} {
+  margin: 4px 0 0 4px;
+}
 `;
   }
 
@@ -48,6 +52,12 @@ div.keen-slider__slide article:has(footer) .${CssClasses.imdbDataNode} {
       'div[aria-label="Featured banners"]',
       'div[data-testid$="rail-container"]',
       'div[class^="rail-"]:not(:has(div[data-testid$="rail-container"])):not(:has(div[aria-label="Featured banners"]))',
+
+      // movies collections page
+      "div.viewAllMovie",
+
+      // single program page
+      'div[data-testid="reco-container"]',
     ];
   }
 
@@ -70,6 +80,16 @@ div.keen-slider__slide article:has(footer) .${CssClasses.imdbDataNode} {
       return pContainerNode.querySelector("h2")!.textContent;
     }
 
+    if (pContainerNode.matches("div.viewAllMovie")) {
+      return pContainerNode.querySelector("h1")!.textContent;
+    }
+
+    if (pContainerNode.matches('div[data-testid="reco-container"]')) {
+      return pContainerNode.querySelector(
+        'h2[data-testid="recommended-contents-title"]',
+      )!.textContent;
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -79,7 +99,12 @@ div.keen-slider__slide article:has(footer) .${CssClasses.imdbDataNode} {
     if (!Boolean(pContainer.title)) return false;
 
     if (
-      ["Z Live TV Channels", /^Live News/i, "Explore on FREE5"].some((x) =>
+      [
+        "Z Live TV Channels",
+        /^Live News/i,
+        "Explore on FREE5",
+        /^Browse by/,
+      ].some((x) =>
         x instanceof RegExp ? x.test(pContainer.title) : x === pContainer.title,
       )
     ) {
@@ -105,6 +130,14 @@ div.keen-slider__slide article:has(footer) .${CssClasses.imdbDataNode} {
       'div[class^="rail-"]:not(:has(div[data-testid$="rail-container"])):not(:has(div[aria-label="Featured banners"]))'
     ) {
       return ["div.keen-slider__slide article"];
+    }
+
+    if (selector === "div.viewAllMovie") {
+      return ["div.movieCard"];
+    }
+
+    if (selector === 'div[data-testid="reco-container"]') {
+      return ['div[data-testid^="recommended-thumbnail"'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
