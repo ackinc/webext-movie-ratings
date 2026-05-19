@@ -1,11 +1,4 @@
-export type PopupPage =
-  | "onboarding"
-  | "filters"
-  | "settings"
-  | "pitchErrorReporting"
-  | "pitchMissingRatingReporting";
-
-export type { PermString, Sitename } from "../common/types";
+export type { PermString, PopupPage, Sitename } from "../common/types";
 export { supportedSites, permStringToSitename } from "../common/constants";
 
 export type SiteStatus = "enabled" | "toEnable" | "disabled" | "toDisable";

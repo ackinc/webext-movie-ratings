@@ -30,6 +30,7 @@ import TelemetryStore, {
 import OmdbApiClient from "./OmdbApiClient";
 import * as siftApiService from "./SiftApiService";
 import { RATING_API_REQUEST_TIMEOUT_MS } from "./constants";
+import * as notificationsService from "../common/notificationsService";
 
 let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
@@ -72,11 +73,13 @@ async function onInstalled() {
     errorReportingOptIn,
     pitchMissingRatingReportingPageSeen,
     mediaRequestBlockingEnabled,
+    newNotifications,
   ] = await Promise.all([
     getSetting("onboardingStatus"),
     getSetting("errorReportingOptIn"),
     getSetting("pitchMissingRatingReportingPageSeen"),
     getSetting("mediaRequestBlockingEnabled"),
+    notificationsService.checkForNewNotifications(),
   ]);
 
   if (APP_ENV === "development") {
@@ -85,7 +88,8 @@ async function onInstalled() {
 
   if (
     onboardingStatus !== "finished" ||
-    (!errorReportingOptIn && !pitchMissingRatingReportingPageSeen)
+    (!errorReportingOptIn && !pitchMissingRatingReportingPageSeen) ||
+    newNotifications.length > 0
   ) {
     addBadge("!");
 
