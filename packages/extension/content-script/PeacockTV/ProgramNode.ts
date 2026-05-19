@@ -105,7 +105,6 @@ export default class ProgramNode extends AbstractProgramNode {
         programNode.matches('div.rootPortraitRail li[data-testid="rail-tile"]')
       ) {
         super.insertIMDBNode(programNode, imdbNode);
-        return;
       } else if (
         programNode.matches(
           'ul[data-testid="numbered-rail-slider"] li[data-testid="rail-tile"]',
@@ -113,7 +112,6 @@ export default class ProgramNode extends AbstractProgramNode {
       ) {
         const imgNode = programNode.querySelector("img")!;
         imgNode.insertAdjacentElement("afterend", imdbNode);
-        return;
       } else {
         throw new Error(ErrorMessage.unrecognizedProgramNode);
       }
