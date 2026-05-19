@@ -35,22 +35,6 @@ const client = new BrowserClient({
   integrations: integrations,
 
   beforeSend: async (evt: ErrorEvent, hint: EventHint) => {
-    if (["development", "testing"].includes(APP_ENV)) {
-      // calls to console.error from extension service worker appear
-      //   in the extension error log at chrome://extensions (or equiv. in
-      //   other browsers)
-      // while this channel logs errors properly, it doesn't do well with
-      //   other objects - what appears is "[object Object]" instead of
-      //   actually useful data
-      // by logging error metadata with console.log instead of console.error,
-      //   we prevent useless ("[object Object]") stuff from filling up the
-      //   extension error log, while still allowing the observation of the
-      //   error metadata from the SW's devtools console
-      console.error(hint.originalException);
-      console.log(evt.tags);
-      console.log(evt.contexts);
-    }
-
     const optedIn = await getSetting("errorReportingOptIn");
     if (!optedIn) return null;
 
@@ -115,5 +99,27 @@ export function captureException(
       selector: e.selector,
     });
   }
+
+  // want to make sure we have useful logs for debugging
+  if (["development", "testing"].includes(APP_ENV)) {
+    // calls to console.error from extension service worker appear
+    //   in the extension error log at chrome://extensions (or equiv. in
+    //   other browsers)
+    // while this channel logs errors properly, it doesn't do well with
+    //   other objects - what appears is "[object Object]" instead of
+    //   actually useful data
+    // by logging error metadata with console.log instead of console.error,
+    //   we prevent useless ("[object Object]") stuff from filling up the
+    //   extension error log, while still allowing the observation of the
+    //   error metadata from the SW's devtools console
+    console.error(e);
+    console.log(clonedScope.getScopeData().tags);
+    console.log(clonedScope.getScopeData().contexts);
+
+    // for easy access to the node causing the error in
+    //   the console during debugging
+    if (e instanceof DataExtractionError) console.log(e.node);
+  }
+
   clonedScope.captureException(e);
 }

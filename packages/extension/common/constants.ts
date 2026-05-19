@@ -114,6 +114,10 @@ export const supportedSites = {
   //   displayName: "Hulu",
   //   permStrings: ["https://www.hulu.com/*"],
   // },
+  mxplayer: {
+    displayName: "MX Player",
+    permStrings: ["https://www.mxplayer.in/*"],
+  },
   netflix: {
     displayName: "Netflix",
     permStrings: ["https://www.netflix.com/*"],
@@ -137,6 +141,10 @@ export const supportedSites = {
   youtubemovies: {
     displayName: "Youtube Movies",
     permStrings: ["https://www.youtube.com/*"],
+  },
+  zee5: {
+    displayName: "Zee5",
+    permStrings: ["https://www.zee5.com/*"],
   },
 } as const;
 

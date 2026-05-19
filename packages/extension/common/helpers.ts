@@ -89,13 +89,16 @@ export function extractProgramTitle(str: string): string {
     ...languages.map((l) => `${l} Movie`),
     ...languages.map((l) => `(${l} Dub)`),
     ...languages.map((l) => `(${l})`),
+    ...languages.map((l) => new RegExp(`${l} movie$`, "i")),
+    ...languages.map((l) => new RegExp(`${l} dubbed$`, "i")),
+    ...languages.map((l) => new RegExp(`${l} dubbed movie$`, "i")),
     "(Dub)",
     "(Dubs)",
     /\sS\d+$/, // suffixes like "S09"; see https://github.com/ackinc/webext-movie-ratings/issues/1
     /\(\d{4}\)/, // year
     // REVIEW: are there many programs whose titles legitimately
     //   end with these words?
-    /Movie|Series$/,
+    /Movie|Series$/i,
     /: Restored Version$/i,
     /\(Extended Version\)$/i,
     /\(Extended Edition\)$/i,
