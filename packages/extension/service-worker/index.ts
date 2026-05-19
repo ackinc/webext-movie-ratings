@@ -415,6 +415,21 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
       action: { type: "block" },
     },
     {
+      id: 6,
+      priority: 1,
+      condition: {
+        // when images are blocked, zee5 enters an infinite loop where it tries
+        // to load a particular svg; we want to avoid this
+        initiatorDomains: initiatorDomains.filter((d) =>
+          d.includes("zee5.com"),
+        ),
+        requestMethods: ["get"],
+        requestDomains: ["www.zee5.com"],
+        urlFilter: "/fallback_landscape_new.svg|",
+      },
+      action: { type: "allow" },
+    },
+    {
       id: 2,
       priority: 2,
       condition: {
