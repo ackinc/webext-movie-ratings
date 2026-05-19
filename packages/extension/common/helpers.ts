@@ -98,7 +98,7 @@ export function extractProgramTitle(str: string): string {
     /\(\d{4}\)/, // year
     // REVIEW: are there many programs whose titles legitimately
     //   end with these words?
-    /Movie|Series$/,
+    /Movie|Series$/i,
     /: Restored Version$/i,
     /\(Extended Version\)$/i,
     /\(Extended Edition\)$/i,

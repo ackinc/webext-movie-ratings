@@ -26,7 +26,11 @@ export default class ProgramNode extends AbstractProgramNode {
 
       if (programNode.querySelector("div.is-loader")) {
         title = "";
-      } else if (linkNode?.dataset["to"]?.startsWith("/detail")) {
+      } else if (
+        ["/detail", "/shorts"].some((x) =>
+          linkNode?.dataset["to"]?.startsWith(x),
+        )
+      ) {
         title = "";
       } else if (linkNode?.dataset["to"]?.startsWith("/movie")) {
         title =

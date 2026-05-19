@@ -54,7 +54,7 @@ div.browse-header-section div.portrait-container .${CssClasses.imdbDataNode} {
   padding: 4px 8px;
 }
 
-div.detail-recommendations div.landscape-container .${CssClasses.imdbDataNode} {
+div.landscape-container .${CssClasses.imdbDataNode} {
   position: absolute;
   top: 12px;
   left: 8px;
@@ -78,6 +78,9 @@ div.detail-recommendations div.landscape-container .${CssClasses.imdbDataNode} {
 
       // single program page
       "div.detail-recommendations",
+
+      // search results
+      "div.sc_results",
     ];
   }
 
@@ -103,6 +106,10 @@ div.detail-recommendations div.landscape-container .${CssClasses.imdbDataNode} {
 
     if (pContainerNode.matches("div.detail-recommendations")) {
       return pContainerNode.querySelector("h2")!.textContent;
+    }
+
+    if (pContainerNode.matches("div.sc_results")) {
+      return pContainerNode.querySelector("div.sc_results-title")!.textContent;
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
@@ -136,6 +143,10 @@ div.detail-recommendations div.landscape-container .${CssClasses.imdbDataNode} {
     }
 
     if (selector === "div.detail-recommendations") {
+      return ["div.landscape-container"];
+    }
+
+    if (selector === "div.sc_results") {
       return ["div.landscape-container"];
     }
 
