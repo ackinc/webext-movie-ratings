@@ -28,16 +28,34 @@ a.${CssClasses.imdbDataNode} {
   line-height: normal;
   text-decoration: none;
 }
+
+div.banner-card .${CssClasses.imdbDataNode} {
+  position: relative;
+  top: -24px;
+}
 `;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
-    return [];
+    return [
+      // home page
+      "div.banner-slider",
+      "div.card-section",
+    ];
   }
 
   protected override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
+    if (pContainerNode.matches("div.banner-slider")) {
+      return "Billboard";
+    }
+
+    if (pContainerNode.matches("div.card-section")) {
+      return pContainerNode.querySelector('h2[class$="header-title"]')!
+        .textContent;
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -52,6 +70,14 @@ a.${CssClasses.imdbDataNode} {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (selector === "div.banner-slider") {
+      return ["div.banner-card"];
+    }
+
+    if (selector === "div.card-section") {
+      return ["div.portrait-container"];
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 }
