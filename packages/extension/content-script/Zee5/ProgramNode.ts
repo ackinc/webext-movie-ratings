@@ -13,6 +13,9 @@ export default class ProgramNode extends AbstractProgramNode {
         programNode.firstElementChild!.lastElementChild!.firstElementChild!
           .firstElementChild!;
       title = titleNode.textContent;
+    } else if (programNode.matches("div.keen-slider__slide article")) {
+      const titleNode = programNode.querySelector("img")!;
+      title = titleNode.getAttribute("alt")!;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
