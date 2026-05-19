@@ -33,6 +33,16 @@ div.banner-card .${CssClasses.imdbDataNode} {
   position: relative;
   top: -24px;
 }
+
+div.see-more div.portrait-container .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  background-color: #2a2a2aca;
+  border-radius: 4px;
+  color: white;
+  padding: 4px 8px;
+}
 `;
   }
 
@@ -41,6 +51,8 @@ div.banner-card .${CssClasses.imdbDataNode} {
       // home page
       "div.banner-slider",
       "div.card-section",
+
+      "div.see-more",
     ];
   }
 
@@ -54,6 +66,10 @@ div.banner-card .${CssClasses.imdbDataNode} {
     if (pContainerNode.matches("div.card-section")) {
       return pContainerNode.querySelector('h2[class$="header-title"]')!
         .textContent;
+    }
+
+    if (pContainerNode.matches("div.see-more")) {
+      return pContainerNode.querySelector("h2")!.textContent;
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
@@ -75,6 +91,10 @@ div.banner-card .${CssClasses.imdbDataNode} {
     }
 
     if (selector === "div.card-section") {
+      return ["div.portrait-container"];
+    }
+
+    if (selector === "div.see-more") {
       return ["div.portrait-container"];
     }
 
