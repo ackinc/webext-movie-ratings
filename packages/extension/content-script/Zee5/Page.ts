@@ -25,6 +25,7 @@ a.${CssClasses.imdbDataNode} {
   font-family: ${pageFontFamily};
   font-size: 14px;
   font-weight: bold;
+  line-height: normal;
   text-decoration: none;
 }
 
@@ -58,6 +59,11 @@ div.movieCard .${CssClasses.imdbDataNode} {
 
       // single program page
       'div[data-testid="reco-container"]',
+
+      // search results page
+      "div.tray-container",
+      // search previews
+      'div[data-testid="recent-search"] div.keen-slider',
     ];
   }
 
@@ -90,6 +96,18 @@ div.movieCard .${CssClasses.imdbDataNode} {
       )!.textContent;
     }
 
+    if (pContainerNode.matches("div.tray-container")) {
+      return pContainerNode.querySelector("div.trayHeader")!.textContent;
+    }
+
+    if (
+      pContainerNode.matches('div[data-testid="recent-search"] div.keen-slider')
+    ) {
+      return pContainerNode.parentElement!.previousElementSibling!.querySelector(
+        "h3",
+      )!.textContent;
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -104,6 +122,7 @@ div.movieCard .${CssClasses.imdbDataNode} {
         /^Live News/i,
         "Explore on FREE5",
         /^Browse by/,
+        "Related Videos",
       ].some((x) =>
         x instanceof RegExp ? x.test(pContainer.title) : x === pContainer.title,
       )
@@ -138,6 +157,14 @@ div.movieCard .${CssClasses.imdbDataNode} {
 
     if (selector === 'div[data-testid="reco-container"]') {
       return ['div[data-testid^="recommended-thumbnail"'];
+    }
+
+    if (selector === "div.tray-container") {
+      return ["div.movieCard"];
+    }
+
+    if (selector === 'div[data-testid="recent-search"] div.keen-slider') {
+      return ["div.keen-slider__slide article"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
