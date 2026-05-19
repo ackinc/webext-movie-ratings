@@ -13,17 +13,27 @@ export default class ProgramNode extends AbstractProgramNode {
         "div.bc-meta-row div.bc-title",
       )!;
       title = titleNode.querySelector("img")!.getAttribute("alt")!;
-    } else if (programNode.matches("div.portrait-container")) {
+    } else if (
+      ["div.portrait-container", "div.landscape-container"].some((sel) =>
+        programNode.matches(sel),
+      )
+    ) {
+      if (programNode.querySelector("div.is-loader")) {
+        title = "";
+      }
+
       const linkNode = programNode.querySelector<HTMLElement>("a[data-to]");
 
-      if (linkNode?.dataset["to"]?.startsWith("/detail")) {
+      if (programNode.querySelector("div.is-loader")) {
+        title = "";
+      } else if (linkNode?.dataset["to"]?.startsWith("/detail")) {
         title = "";
       } else if (linkNode?.dataset["to"]?.startsWith("/movie")) {
         title =
           linkNode
             .getAttribute("data-to")!
             .split("/")[2]
-            ?.match(/watch-(.+?)-movie-online/)?.[1]
+            ?.match(/watch-(.+?)-online/)?.[1]
             ?.replace(/-/g, " ") ?? "";
       } else if (linkNode?.dataset["to"]?.startsWith("/show")) {
         title =

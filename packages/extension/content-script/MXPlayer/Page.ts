@@ -43,6 +43,26 @@ div.see-more div.portrait-container .${CssClasses.imdbDataNode} {
   color: white;
   padding: 4px 8px;
 }
+
+div.browse-header-section div.portrait-container .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  background-color: #2a2a2aca;
+  border-radius: 4px;
+  color: white;
+  padding: 4px 8px;
+}
+
+div.detail-recommendations div.landscape-container .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  background-color: #2a2a2aca;
+  border-radius: 4px;
+  color: white;
+  padding: 4px 8px;
+}
 `;
   }
 
@@ -52,7 +72,12 @@ div.see-more div.portrait-container .${CssClasses.imdbDataNode} {
       "div.banner-slider",
       "div.card-section",
 
+      // list page
       "div.see-more",
+      "div.browse-header-section",
+
+      // single program page
+      "div.detail-recommendations",
     ];
   }
 
@@ -69,6 +94,14 @@ div.see-more div.portrait-container .${CssClasses.imdbDataNode} {
     }
 
     if (pContainerNode.matches("div.see-more")) {
+      return pContainerNode.querySelector("h2")!.textContent;
+    }
+
+    if (pContainerNode.matches("div.browse-header-section")) {
+      return pContainerNode.querySelector("h1")!.textContent;
+    }
+
+    if (pContainerNode.matches("div.detail-recommendations")) {
       return pContainerNode.querySelector("h2")!.textContent;
     }
 
@@ -96,6 +129,14 @@ div.see-more div.portrait-container .${CssClasses.imdbDataNode} {
 
     if (selector === "div.see-more") {
       return ["div.portrait-container"];
+    }
+
+    if (selector === "div.browse-header-section") {
+      return ["div.portrait-container"];
+    }
+
+    if (selector === "div.detail-recommendations") {
+      return ["div.landscape-container"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
