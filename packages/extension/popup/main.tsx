@@ -4,7 +4,9 @@ import { render, h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import SetCurPageContext from "./Contexts/SetCurPageContext";
 import { type PopupPage } from "./common";
-import { removeBadge, getSetting } from "../common";
+import { removeBadge, getSetting, type InAppNotification } from "../common";
+import * as notificationsService from "../common/notificationsService";
+import CloseIconButton from "@components/Buttons/CloseIconButton";
 import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
@@ -19,6 +21,9 @@ render(<App />, root);
 
 function App() {
   const [curPage, setCurPage] = useState<PopupPage>(getDefaultPage());
+  const [notification, setNotification] = useState<InAppNotification | null>(
+    null,
+  );
 
   useEffect(() => {
     (async () => {
@@ -36,6 +41,26 @@ function App() {
         setCurPage("pitchMissingRatingReporting");
         return;
       }
+
+      const [latestNotification] = (
+        await notificationsService.getNotificationsByStatus(["unseen", "seen"])
+      ).sort((a, b) => {
+        if (a.status === "unseen" && b.status === "seen") return -1;
+        if (a.status === "seen" && b.status === "unseen") return 1;
+        return a.timestamp - b.timestamp;
+      });
+      if (!latestNotification) return;
+
+      setNotification(latestNotification);
+      if (latestNotification.status === "unseen") {
+        setCurPage(latestNotification.targetPopupPage);
+        removeBadge();
+        await notificationsService.updateNotificationStatus(
+          latestNotification.id,
+          "seen",
+        );
+      }
+      return;
     })();
   }, []);
 
@@ -49,6 +74,22 @@ function App() {
     <div className="app">
       <SetCurPageContext.Provider value={setCurPage}>
         <Header curPage={curPage} setCurPage={setCurPage} />
+
+        {notification && notification.targetPopupPage === curPage ? (
+          <div className="notification">
+            <p>{notification.message}</p>
+            <CloseIconButton
+              style={{ flexShrink: "0" }}
+              onClick={async () => {
+                await notificationsService.updateNotificationStatus(
+                  notification.id,
+                  "dismissed",
+                );
+                setNotification(null);
+              }}
+            />
+          </div>
+        ) : null}
 
         <main>
           {curPage === "onboarding" ? (

@@ -195,3 +195,19 @@ export type ExtensionContext =
 export type Sitename = keyof typeof supportedSites;
 export type PermString =
   (typeof supportedSites)[Sitename]["permStrings"][number];
+
+export type PopupPage =
+  | "onboarding"
+  | "filters"
+  | "settings"
+  | "pitchErrorReporting"
+  | "pitchMissingRatingReporting";
+
+export type InAppNotificationStatus = "unseen" | "seen" | "dismissed";
+export interface InAppNotification {
+  id: string;
+  message: string;
+  targetPopupPage: PopupPage;
+  status: InAppNotificationStatus;
+  timestamp: number;
+}
