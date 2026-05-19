@@ -418,7 +418,7 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
       id: 2,
       priority: 2,
       condition: {
-        initiatorDomains,
+        initiatorDomains: ["netflix.com"],
         requestMethods: ["get"],
         requestDomains: ["nflxvideo.net"],
       },
@@ -428,7 +428,7 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
       id: 3,
       priority: 2,
       condition: {
-        initiatorDomains,
+        initiatorDomains: ["hotstar.com"],
         requestMethods: ["get"],
         regexFilter: "^https://hses\\d+\\.hotstar\\.com/videos/.+\\.(mp4|m4s)$",
       },
@@ -438,9 +438,19 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
       id: 4,
       priority: 2,
       condition: {
-        initiatorDomains,
+        initiatorDomains: ["sonyliv.com"],
         requestMethods: ["get"],
         requestDomains: ["streaming.sonyliv.com"],
+      },
+      action: { type: "block" },
+    },
+    {
+      id: 5,
+      priority: 2,
+      condition: {
+        initiatorDomains: ["mxplayer.in"],
+        requestMethods: ["get"],
+        regexFilter: "^https://.+\\.cloudfront\\.net/video",
       },
       action: { type: "block" },
     },
