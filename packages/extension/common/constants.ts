@@ -138,6 +138,10 @@ export const supportedSites = {
     displayName: "Youtube Movies",
     permStrings: ["https://www.youtube.com/*"],
   },
+  zee5: {
+    displayName: "Zee5",
+    permStrings: ["https://www.zee5.com/*"],
+  },
 } as const;
 
 export const permStringToSitename = Object.entries(supportedSites).reduce(

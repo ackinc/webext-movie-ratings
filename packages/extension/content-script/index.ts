@@ -28,6 +28,7 @@ import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 import YoutubeMoviesPage from "./YoutubeMovies/Page";
+import Zee5Page from "./Zee5/Page";
 import { updateFilteredOutProgramNodeStyles } from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
 
@@ -111,6 +112,8 @@ async function initializePage() {
     page = new YoutubeMoviesPage();
   } else if (location.hostname === "www.peacocktv.com") {
     page = new PeacockTVPage();
+  } else if (location.hostname === "www.zee5.com") {
+    page = new Zee5Page();
   } else {
     throw new Error("Page not recognized");
   }
