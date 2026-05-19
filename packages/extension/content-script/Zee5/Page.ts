@@ -26,16 +26,27 @@ a.${CssClasses.imdbDataNode} {
   font-size: 14px;
   text-decoration: none;
 }
+
+div[data-testid$="active_carousel"] .${CssClasses.imdbDataNode} {
+  color: white;
+}
 `;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
-    return [];
+    return [
+      // pre-login home page
+      'div[aria-label="Featured banners"]',
+    ];
   }
 
   protected override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
+    if (pContainerNode.matches('div[aria-label="Featured banners"]')) {
+      return "Billboard";
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -50,6 +61,10 @@ a.${CssClasses.imdbDataNode} {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (selector === 'div[aria-label="Featured banners"]') {
+      return ['div[data-testid$="active_carousel"]'];
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 }

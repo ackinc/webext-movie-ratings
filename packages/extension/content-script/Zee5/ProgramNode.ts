@@ -8,7 +8,11 @@ export default class ProgramNode extends AbstractProgramNode {
     let type: "movie" | "series" | null = null;
     let year: number | null = null;
 
-    if (programNode.matches('a[data-testid="tile-link"]')) {
+    if (programNode.matches('div[data-testid$="active_carousel"]')) {
+      const titleNode =
+        programNode.firstElementChild!.lastElementChild!.firstElementChild!
+          .firstElementChild!;
+      title = titleNode.textContent;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -24,6 +28,14 @@ export default class ProgramNode extends AbstractProgramNode {
     programNode: HTMLElement,
     imdbNode: HTMLElement,
   ) {
+    if (programNode.matches('div[data-testid$="active_carousel"]')) {
+      const titleNode =
+        programNode.firstElementChild!.lastElementChild!.firstElementChild!
+          .firstElementChild!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
     super.insertIMDBNode(programNode, imdbNode);
   }
 }
