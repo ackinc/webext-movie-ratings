@@ -98,10 +98,10 @@ export const supportedSites = {
     displayName: "Crunchyroll",
     permStrings: ["https://www.crunchyroll.com/*"],
   },
-  disneyplus: {
-    displayName: "Disney Plus",
-    permStrings: ["https://www.disneyplus.com/*"],
-  },
+  // disneyplus: {
+  //   displayName: "Disney Plus",
+  //   permStrings: ["https://www.disneyplus.com/*"],
+  // },
   hbomax: {
     displayName: "HBO Max",
     permStrings: ["https://www.hbomax.com/*", "https://play.hbomax.com/*"],
@@ -110,10 +110,10 @@ export const supportedSites = {
     displayName: "Hotstar",
     permStrings: ["https://www.hotstar.com/*"],
   },
-  hulu: {
-    displayName: "Hulu",
-    permStrings: ["https://www.hulu.com/*"],
-  },
+  // hulu: {
+  //   displayName: "Hulu",
+  //   permStrings: ["https://www.hulu.com/*"],
+  // },
   netflix: {
     displayName: "Netflix",
     permStrings: ["https://www.netflix.com/*"],
