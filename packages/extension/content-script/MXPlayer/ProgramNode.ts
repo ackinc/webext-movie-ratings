@@ -49,6 +49,9 @@ export default class ProgramNode extends AbstractProgramNode {
       } else {
         throw new Error(ErrorMessage.unrecognizedProgramNode);
       }
+    } else if (programNode.matches("div.hover-card-container")) {
+      const titleNode = programNode.querySelector("div.hc-info h3")!;
+      title = titleNode.textContent;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -68,6 +71,12 @@ export default class ProgramNode extends AbstractProgramNode {
       const titleNode = programNode.querySelector(
         "div.bc-meta-row div.bc-title",
       )!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches("div.hover-card-container")) {
+      const titleNode = programNode.querySelector("div.hc-info h3")!;
       titleNode.insertAdjacentElement("afterend", imdbNode);
       return;
     }

@@ -81,6 +81,9 @@ div.landscape-container .${CssClasses.imdbDataNode} {
 
       // search results
       "div.sc_results",
+
+      // hover card
+      "div#modal:has(div.open div.hover-card-container)",
     ];
   }
 
@@ -110,6 +113,12 @@ div.landscape-container .${CssClasses.imdbDataNode} {
 
     if (pContainerNode.matches("div.sc_results")) {
       return pContainerNode.querySelector("div.sc_results-title")!.textContent;
+    }
+
+    if (
+      pContainerNode.matches("div#modal:has(div.open div.hover-card-container)")
+    ) {
+      return "Hover card";
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
@@ -148,6 +157,10 @@ div.landscape-container .${CssClasses.imdbDataNode} {
 
     if (selector === "div.sc_results") {
       return ["div.landscape-container"];
+    }
+
+    if (selector === "div#modal:has(div.open div.hover-card-container)") {
+      return ["div.hover-card-container"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
