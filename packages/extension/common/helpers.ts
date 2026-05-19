@@ -100,6 +100,8 @@ export function extractProgramTitle(str: string): string {
     /\(Extended Version\)$/i,
     /\(Extended Edition\)$/i,
     /- Extended Edition$/i,
+    /^A Marvel Television Special Presentation —/i,
+    /^thumbnail -/i,
   ];
   toRemove.forEach((x) => (title = title.replace(x, "")));
   return (

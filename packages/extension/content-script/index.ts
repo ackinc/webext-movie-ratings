@@ -17,7 +17,11 @@ import type {
   ProgramFilterSettings,
   WebpageStats,
 } from "../common/types";
+import DisneyPlusPage from "./DisneyPlus/Page";
+import HBOMaxPage from "./HBOMax/Page";
 import HotstarPage from "./Hotstar/Page";
+import HuluPage from "./Hulu/Page";
+import PeacockTVPage from "./PeacockTV/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
@@ -79,8 +83,16 @@ const loopState: LoopState = {
 })();
 
 async function initializePage() {
-  if (location.hostname === "www.hotstar.com") {
+  if (location.hostname === "www.disneyplus.com") {
+    page = new DisneyPlusPage();
+  } else if (
+    ["www.hbomax.com", "play.hbomax.com"].includes(location.hostname)
+  ) {
+    page = new HBOMaxPage();
+  } else if (location.hostname === "www.hotstar.com") {
     page = new HotstarPage();
+  } else if (location.hostname === "www.hulu.com") {
+    page = new HuluPage();
   } else if (location.hostname === "www.sonyliv.com") {
     page = new SonyLivPage();
   } else if (location.hostname === "www.netflix.com") {
@@ -97,6 +109,8 @@ async function initializePage() {
     page = new CrunchyrollPage();
   } else if (location.hostname === "www.youtube.com") {
     page = new YoutubeMoviesPage();
+  } else if (location.hostname === "www.peacocktv.com") {
+    page = new PeacockTVPage();
   } else {
     throw new Error("Page not recognized");
   }
