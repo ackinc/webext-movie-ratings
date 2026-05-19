@@ -79,6 +79,10 @@ async function onInstalled() {
     getSetting("mediaRequestBlockingEnabled"),
   ]);
 
+  if (APP_ENV === "development") {
+    await setMediaRequestBlockingState(Boolean(mediaRequestBlockingEnabled));
+  }
+
   if (
     onboardingStatus !== "finished" ||
     (!errorReportingOptIn && !pitchMissingRatingReportingPageSeen)
@@ -89,10 +93,6 @@ async function onInstalled() {
     if (TARGET_BROWSER !== "firefox") {
       browser.action.openPopup();
     }
-  }
-
-  if (APP_ENV === "development") {
-    await setMediaRequestBlockingState(Boolean(mediaRequestBlockingEnabled));
   }
 }
 
