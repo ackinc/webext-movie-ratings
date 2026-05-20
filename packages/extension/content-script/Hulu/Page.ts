@@ -41,6 +41,17 @@ div.DetailEntityMasthead .${CssClasses.filteredOutProgramNode} {
 div.DetailEntityMasthead a.${CssClasses.imdbDataNode} {
   color: white;
 }
+
+div[data-testid="high-emphasis-tile"]  a.${CssClasses.imdbDataNode} {
+  color: white;
+  font-size: 18px;
+}
+
+div[data-testid="medium-emphasis-vertical-tile"] a.${CssClasses.imdbDataNode} {
+  color: white;
+  margin: 0;
+  font-size: 12px;
+}
     `;
   }
 
@@ -62,6 +73,13 @@ div.DetailEntityMasthead a.${CssClasses.imdbDataNode} {
 
       // top of single-program page
       "div.DetailEntityMasthead",
+
+      // post login home page
+      'div[data-testid="masthead-collection-high-emphasis-tile"]',
+      'div[data-testid="standard-collection-medium-emphasis-vertical-tile"]',
+      'div[data-testid="standard-collection-simple-horizontal-tile"]',
+      'div[data-testid="standard-collection-standard-emphasis-tile"]',
+      'div[data-testid="branded-discover-collection-simple-horizontal-tile"]',
     ];
   }
 
@@ -98,6 +116,36 @@ div.DetailEntityMasthead a.${CssClasses.imdbDataNode} {
       return "Billboard";
     }
 
+    if (
+      pContainerNode.matches(
+        'div[data-testid="masthead-collection-high-emphasis-tile"]',
+      )
+    ) {
+      return "Billboard";
+    }
+
+    if (
+      [
+        'div[data-testid="standard-collection-medium-emphasis-vertical-tile"]',
+        'div[data-testid="standard-collection-simple-horizontal-tile"]',
+        'div[data-testid="standard-collection-standard-emphasis-tile"]',
+      ].some((sel) => pContainerNode.matches(sel))
+    ) {
+      return pContainerNode.querySelector(
+        'h2[data-testid="CollectionHeader__title"]',
+      )!.textContent;
+    }
+
+    if (
+      pContainerNode.matches(
+        'div[data-testid="branded-discover-collection-simple-horizontal-tile"]',
+      )
+    ) {
+      return pContainerNode
+        .querySelector('img[class*="BrandedDiscoverCollection_titleHeader"]')!
+        .getAttribute("alt")!;
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -106,7 +154,11 @@ div.DetailEntityMasthead a.${CssClasses.imdbDataNode} {
   ): boolean {
     if (!Boolean(pContainer.title)) return false;
 
-    if (["episodes", "extras"].includes(pContainer.title.toLowerCase())) {
+    if (
+      ["episodes", "extras", "networks for you"].includes(
+        pContainer.title.toLowerCase(),
+      )
+    ) {
       return false;
     }
 
@@ -130,6 +182,32 @@ div.DetailEntityMasthead a.${CssClasses.imdbDataNode} {
 
     if (selector === "div.DetailEntityMasthead") {
       return ["div.DetailEntityMasthead__entity"];
+    }
+
+    if (
+      selector === 'div[data-testid="masthead-collection-high-emphasis-tile"]'
+    ) {
+      return ['div[data-testid="high-emphasis-tile"'];
+    }
+
+    if (
+      [
+        'div[data-testid="standard-collection-medium-emphasis-vertical-tile"]',
+        'div[data-testid="standard-collection-simple-horizontal-tile"]',
+        'div[data-testid="standard-collection-standard-emphasis-tile"]',
+      ].includes(selector)
+    ) {
+      return [
+        'div[data-testid="medium-emphasis-vertical-tile"]',
+        'div[data-testid="seh-tile-container"]',
+      ];
+    }
+
+    if (
+      selector ===
+      'div[data-testid="branded-discover-collection-simple-horizontal-tile"]'
+    ) {
+      return ['div[data-testid="seh-tile-container"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

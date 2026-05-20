@@ -60,6 +60,30 @@ export default class ProgramNode extends AbstractProgramNode {
           : null;
       const yearRegexpMatch = typeAndYear?.match(/\((\d{4})\)$/);
       year = yearRegexpMatch ? +yearRegexpMatch[1]! : null;
+    } else if (programNode.matches('div[data-testid="high-emphasis-tile"')) {
+      const titleNode = programNode.querySelector(
+        'a[data-testid="high-emphasis-tile-title-button"] img',
+      )!;
+      title = titleNode.getAttribute("alt")!.replace(/^Cover art for /i, "");
+    } else if (
+      programNode.matches('div[data-testid="medium-emphasis-vertical-tile"]')
+    ) {
+      const titleNode = programNode.querySelector(
+        'img[data-testid="medium-emphasis-vertical-tile-title-art"]',
+      )!;
+      title = titleNode.getAttribute("alt")!;
+
+      const yearNode = titleNode.parentElement!.nextElementSibling!;
+      year = /\d{4}$/.test(yearNode.textContent)
+        ? +yearNode.textContent.slice(-4)
+        : null;
+    } else if (programNode.matches('div[data-testid="seh-tile-container"]')) {
+      const titleNode = programNode.querySelector(
+        'a[data-testid="browse-action"]',
+      )!;
+      title = titleNode
+        .getAttribute("aria-label")!
+        .replace(/, Item \d+ of many$/g, "");
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -100,6 +124,37 @@ export default class ProgramNode extends AbstractProgramNode {
         "beforebegin",
         imdbNode,
       );
+      return;
+    }
+
+    if (programNode.matches('div[data-testid="high-emphasis-tile"')) {
+      const descriptionNode = programNode.querySelector(
+        'div[data-testid="high-emphasis-tile-description"]',
+      )!;
+      descriptionNode.insertAdjacentElement("beforebegin", imdbNode);
+      return;
+    }
+
+    if (
+      programNode.matches('div[data-testid="medium-emphasis-vertical-tile"]')
+    ) {
+      const titleNode = programNode.querySelector(
+        'img[data-testid="medium-emphasis-vertical-tile-title-art"]',
+      )!;
+      const yearNode = titleNode.parentElement!.nextElementSibling!;
+      yearNode.insertAdjacentElement("beforebegin", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('div[data-testid="seh-tile-container"]')) {
+      if (programNode.querySelector("figcaption")) {
+        const titleNode = programNode.querySelector(
+          'div[data-testid="seh-tile-content-title"]',
+        )!;
+        titleNode.insertAdjacentElement("afterend", imdbNode);
+      } else {
+        super.insertIMDBNode(programNode, imdbNode);
+      }
       return;
     }
 
