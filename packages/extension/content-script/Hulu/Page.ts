@@ -41,12 +41,43 @@ div.DetailEntityMasthead .${CssClasses.filteredOutProgramNode} {
 div.DetailEntityMasthead a.${CssClasses.imdbDataNode} {
   color: white;
 }
+
+div[data-testid="high-emphasis-tile"]  a.${CssClasses.imdbDataNode} {
+  color: white;
+  font-size: 18px;
+}
+
+div[data-testid="medium-emphasis-vertical-tile"] a.${CssClasses.imdbDataNode} {
+  color: white;
+  margin: 0;
+  font-size: 12px;
+}
+
+div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode} {
+  color: white;
+  display: inline;
+}
+
+div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode}::after {
+  content: ' • '
+}
+
+div.MastheadAndBanner a.${CssClasses.imdbDataNode} {
+  display: inline;
+  color: white;
+  font-size: 12px;
+}
+
+div.MastheadAndBanner a.${CssClasses.imdbDataNode}::after {
+  content: ' • ';
+}
     `;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
     // live tv, live news, live sports
-    if (location.pathname.startsWith("/live")) return [];
+    if (["/live", "/hub/news"].some((x) => location.pathname.startsWith(x)))
+      return [];
 
     if (location.pathname === "/hub/networks") return [];
 
@@ -62,6 +93,25 @@ div.DetailEntityMasthead a.${CssClasses.imdbDataNode} {
 
       // top of single-program page
       "div.DetailEntityMasthead",
+
+      // post login home page
+      'div[data-testid="masthead-collection-high-emphasis-tile"]',
+      'div[data-testid="standard-collection-medium-emphasis-vertical-tile"]',
+      'div[data-testid="standard-collection-simple-horizontal-tile"]',
+      'div[data-testid="standard-collection-standard-emphasis-tile"]',
+      'div[data-testid="branded-discover-collection-simple-horizontal-tile"]',
+
+      // collection page, single-program page
+      "div.AllUpGrid",
+
+      // on hovering over a program tile
+      'div[data-testid="preview-panel-container"]',
+
+      // my-stuff
+      "div.MyStuff__collection",
+
+      // single program page
+      "div.MastheadAndBanner",
     ];
   }
 
@@ -98,6 +148,67 @@ div.DetailEntityMasthead a.${CssClasses.imdbDataNode} {
       return "Billboard";
     }
 
+    if (
+      pContainerNode.matches(
+        'div[data-testid="masthead-collection-high-emphasis-tile"]',
+      )
+    ) {
+      return "Billboard";
+    }
+
+    if (
+      [
+        'div[data-testid="standard-collection-medium-emphasis-vertical-tile"]',
+        'div[data-testid="standard-collection-simple-horizontal-tile"]',
+        'div[data-testid="standard-collection-standard-emphasis-tile"]',
+      ].some((sel) => pContainerNode.matches(sel))
+    ) {
+      return pContainerNode.querySelector(
+        'h2[data-testid="CollectionHeader__title"]',
+      )!.textContent;
+    }
+
+    if (
+      pContainerNode.matches(
+        'div[data-testid="branded-discover-collection-simple-horizontal-tile"]',
+      )
+    ) {
+      return pContainerNode
+        .querySelector('img[class*="BrandedDiscoverCollection_titleHeader"]')!
+        .getAttribute("alt")!;
+    }
+
+    if (pContainerNode.matches("div.AllUpGrid")) {
+      const apexNode = climbDOMUntil(pContainerNode, (node) =>
+        node.matches('div[data-testid="l2-content"]'),
+      )!;
+
+      // single-program page
+      const activeSubnavButton = apexNode.querySelector(
+        "div.Subnav button.Subnav__item.active",
+      );
+      if (activeSubnavButton) return activeSubnavButton.textContent;
+
+      // collection page
+      return apexNode.querySelector(
+        'div [data-testid="simple-modal-nav-title"]',
+      )!.textContent;
+    }
+
+    if (pContainerNode.matches('div[data-testid="preview-panel-container"]')) {
+      return "Preview";
+    }
+
+    if (pContainerNode.matches("div.MyStuff__collection")) {
+      return pContainerNode.querySelector(
+        'h2[data-testid="my-stuff-collection-title"]',
+      )!.textContent;
+    }
+
+    if (pContainerNode.matches("div.MastheadAndBanner")) {
+      return "Single-program page Masthead";
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -106,7 +217,15 @@ div.DetailEntityMasthead a.${CssClasses.imdbDataNode} {
   ): boolean {
     if (!Boolean(pContainer.title)) return false;
 
-    if (["episodes", "extras"].includes(pContainer.title.toLowerCase())) {
+    if (
+      [
+        "all tv networks",
+        "episodes",
+        "extras",
+        "genres",
+        "networks for you",
+      ].includes(pContainer.title.toLowerCase())
+    ) {
       return false;
     }
 
@@ -130,6 +249,48 @@ div.DetailEntityMasthead a.${CssClasses.imdbDataNode} {
 
     if (selector === "div.DetailEntityMasthead") {
       return ["div.DetailEntityMasthead__entity"];
+    }
+
+    if (
+      selector === 'div[data-testid="masthead-collection-high-emphasis-tile"]'
+    ) {
+      return ['div[data-testid="high-emphasis-tile"'];
+    }
+
+    if (
+      [
+        'div[data-testid="standard-collection-medium-emphasis-vertical-tile"]',
+        'div[data-testid="standard-collection-simple-horizontal-tile"]',
+        'div[data-testid="standard-collection-standard-emphasis-tile"]',
+      ].includes(selector)
+    ) {
+      return [
+        'div[data-testid="medium-emphasis-vertical-tile"]',
+        'div[data-testid="seh-tile-container"]',
+      ];
+    }
+
+    if (
+      selector ===
+      'div[data-testid="branded-discover-collection-simple-horizontal-tile"]'
+    ) {
+      return ['div[data-testid="seh-tile-container"]'];
+    }
+
+    if (selector === "div.AllUpGrid") {
+      return ['div[data-testid="seh-tile-container"]'];
+    }
+
+    if (selector === 'div[data-testid="preview-panel-container"]') {
+      return ['div[data-testid="preview-panel"]'];
+    }
+
+    if (selector === "div.MyStuff__collection") {
+      return ['div[data-testid="my-stuff-tile"]'];
+    }
+
+    if (selector === "div.MastheadAndBanner") {
+      return ['div[data-testid="masthead-content"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

@@ -110,10 +110,10 @@ export const supportedSites = {
     displayName: "Hotstar",
     permStrings: ["https://www.hotstar.com/*"],
   },
-  // hulu: {
-  //   displayName: "Hulu",
-  //   permStrings: ["https://www.hulu.com/*"],
-  // },
+  hulu: {
+    displayName: "Hulu",
+    permStrings: ["https://www.hulu.com/*"],
+  },
   mxplayer: {
     displayName: "MX Player",
     permStrings: ["https://www.mxplayer.in/*"],
