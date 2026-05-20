@@ -9,7 +9,14 @@ export async function checkForNewNotifications(): Promise<InAppNotification[]> {
       message: "Sift now supports HBOMax, PeacockTV, Zee5, and MXPlayer!",
       targetPopupPage: "settings",
       status: "unseen",
-      timestamp: +new Date(),
+      timestamp: 1779218228892,
+    },
+    {
+      id: "ADDED_HULU",
+      message: "Sift now supports Hulu!",
+      targetPopupPage: "settings",
+      status: "unseen",
+      timestamp: 1779304615085,
     },
   ];
 
