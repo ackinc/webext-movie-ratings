@@ -69,11 +69,15 @@ export default class ProgramNode extends AbstractProgramNode {
       programNode.matches('div[data-testid="medium-emphasis-vertical-tile"]')
     ) {
       const titleNode = programNode.querySelector(
-        'img[data-testid="medium-emphasis-vertical-tile-title-art"]',
+        'a[data-testid="browse-action"]',
       )!;
-      title = titleNode.getAttribute("alt")!;
+      title = titleNode
+        .getAttribute("aria-label")!
+        .replace(/, Item \d+ of many$/i, "");
 
-      const yearNode = titleNode.parentElement!.nextElementSibling!;
+      const yearNode = programNode.querySelector(
+        'div[data-testid="medium-emphasis-vertical-tile-content"] p',
+      )!;
       year = /\d{4}$/.test(yearNode.textContent)
         ? +yearNode.textContent.slice(-4)
         : null;
@@ -101,10 +105,13 @@ export default class ProgramNode extends AbstractProgramNode {
       const titleNode = programNode.querySelector("a.Tile__title")!;
       title = titleNode.textContent;
     } else if (programNode.matches('div[data-testid="masthead-content"]')) {
-      const titleNode = programNode.querySelector(
+      const titleNode = (programNode.querySelector(
         'div[data-testid="masthead-title-container"] img',
-      )!;
-      title = titleNode.getAttribute("alt")!;
+      ) ??
+        programNode.querySelector(
+          'div[data-testid="masthead-title-container"] div[data-testid="masthead-title-text"]',
+        ))!;
+      title = titleNode.getAttribute("alt") ?? titleNode.textContent;
 
       const typeAndYearNode = programNode.querySelector(
         'ul[data-testid="masthead-metadata"]',
@@ -177,10 +184,9 @@ export default class ProgramNode extends AbstractProgramNode {
     if (
       programNode.matches('div[data-testid="medium-emphasis-vertical-tile"]')
     ) {
-      const titleNode = programNode.querySelector(
-        'img[data-testid="medium-emphasis-vertical-tile-title-art"]',
+      const yearNode = programNode.querySelector(
+        'div[data-testid="medium-emphasis-vertical-tile-content"] p',
       )!;
-      const yearNode = titleNode.parentElement!.nextElementSibling!;
       yearNode.insertAdjacentElement("beforebegin", imdbNode);
       return;
     }
