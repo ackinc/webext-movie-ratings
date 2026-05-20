@@ -92,6 +92,9 @@ export default class ProgramNode extends AbstractProgramNode {
       );
       type = typeAndYearNode?.textContent.includes("mins") ? "movie" : "series";
       year = +(typeAndYearNode?.textContent.match(/\D(\d{4})\D/)?.[1] ?? "");
+    } else if (programNode.matches('div[data-testid="my-stuff-tile"]')) {
+      const titleNode = programNode.querySelector("a.Tile__title")!;
+      title = titleNode.textContent;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -171,6 +174,12 @@ export default class ProgramNode extends AbstractProgramNode {
         'div[data-testid="preview-panel-info-panel"] > div:nth-child(3)',
       );
       typeAndYearNode?.insertAdjacentElement("afterbegin", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('div[data-testid="my-stuff-tile"]')) {
+      const titleNode = programNode.querySelector("a.Tile__title")!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
       return;
     }
 

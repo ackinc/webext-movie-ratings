@@ -96,6 +96,9 @@ div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode}::after {
 
       // on hovering over a program tile
       'div[data-testid="preview-panel-container"]',
+
+      // my-stuff
+      "div.MyStuff__collection",
     ];
   }
 
@@ -172,6 +175,12 @@ div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode}::after {
       return "Preview";
     }
 
+    if (pContainerNode.matches("div.MyStuff__collection")) {
+      return pContainerNode.querySelector(
+        'h2[data-testid="my-stuff-collection-title"]',
+      )!.textContent;
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -181,9 +190,13 @@ div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode}::after {
     if (!Boolean(pContainer.title)) return false;
 
     if (
-      ["episodes", "extras", "genres", "networks for you"].includes(
-        pContainer.title.toLowerCase(),
-      )
+      [
+        "all tv networks",
+        "episodes",
+        "extras",
+        "genres",
+        "networks for you",
+      ].includes(pContainer.title.toLowerCase())
     ) {
       return false;
     }
@@ -242,6 +255,10 @@ div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode}::after {
 
     if (selector === 'div[data-testid="preview-panel-container"]') {
       return ['div[data-testid="preview-panel"]'];
+    }
+
+    if (selector === "div.MyStuff__collection") {
+      return ['div[data-testid="my-stuff-tile"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
