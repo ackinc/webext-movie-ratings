@@ -148,6 +148,10 @@ valid containers:\n\t${programContainers
       }
 
       const err = DataExtractionError.from(e, node, selector);
+      // NOTE_PROD_DATA_EXTRACTION_ERRORS
+      // in prod, we don't want errors affecting one pc- or p-node
+      //   to bring the entire loop to a halt
+      if (APP_ENV === "development") throw err;
       if (!err.__fromCache) captureException(err);
       return null;
     }
@@ -172,6 +176,8 @@ valid containers:\n\t${programContainers
       }
 
       const err = DataExtractionError.from(e, node, selector);
+      // see NOTE_PROD_DATA_EXTRACTION_ERRORS above
+      if (APP_ENV === "development") throw err;
       if (!err.__fromCache) captureException(err);
       return null;
     }
