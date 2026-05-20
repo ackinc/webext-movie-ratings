@@ -87,9 +87,11 @@ export default class ProgramNode extends AbstractProgramNode {
     } else if (programNode.matches('div[data-testid="preview-panel"]')) {
       title = programNode.getAttribute("aria-label")!;
 
-      const typeAndYearNode = programNode.querySelector(
-        'div[data-testid="preview-panel-info-panel"] > div:nth-child(3)',
-      );
+      const typeAndYearNode = Array.from(
+        programNode.querySelectorAll(
+          'div[data-testid="preview-panel-info-panel"] > div',
+        ),
+      ).find((node) => node.textContent.includes("•"));
       type = typeAndYearNode?.textContent.includes("mins") ? "movie" : "series";
       year = +(typeAndYearNode?.textContent.match(/\D(\d{4})\D/)?.[1] ?? "");
     } else if (programNode.matches('div[data-testid="my-stuff-tile"]')) {
@@ -170,9 +172,11 @@ export default class ProgramNode extends AbstractProgramNode {
     }
 
     if (programNode.matches('div[data-testid="preview-panel"]')) {
-      const typeAndYearNode = programNode.querySelector(
-        'div[data-testid="preview-panel-info-panel"] > div:nth-child(3)',
-      );
+      const typeAndYearNode = Array.from(
+        programNode.querySelectorAll(
+          'div[data-testid="preview-panel-info-panel"] > div',
+        ),
+      ).find((node) => node.textContent.includes("•"));
       typeAndYearNode?.insertAdjacentElement("afterbegin", imdbNode);
       return;
     }
