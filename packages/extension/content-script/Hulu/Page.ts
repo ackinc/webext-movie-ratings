@@ -61,6 +61,16 @@ div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode} {
 div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode}::after {
   content: ' • '
 }
+
+div.MastheadAndBanner a.${CssClasses.imdbDataNode} {
+  display: inline;
+  color: white;
+  font-size: 12px;
+}
+
+div.MastheadAndBanner a.${CssClasses.imdbDataNode}::after {
+  content: ' • ';
+}
     `;
   }
 
@@ -99,6 +109,9 @@ div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode}::after {
 
       // my-stuff
       "div.MyStuff__collection",
+
+      // single program page
+      "div.MastheadAndBanner",
     ];
   }
 
@@ -181,6 +194,10 @@ div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode}::after {
       )!.textContent;
     }
 
+    if (pContainerNode.matches("div.MastheadAndBanner")) {
+      return "Single-program page Masthead";
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -259,6 +276,10 @@ div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode}::after {
 
     if (selector === "div.MyStuff__collection") {
       return ['div[data-testid="my-stuff-tile"]'];
+    }
+
+    if (selector === "div.MastheadAndBanner") {
+      return ['div[data-testid="masthead-content"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

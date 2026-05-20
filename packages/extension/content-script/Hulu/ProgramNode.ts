@@ -97,6 +97,29 @@ export default class ProgramNode extends AbstractProgramNode {
     } else if (programNode.matches('div[data-testid="my-stuff-tile"]')) {
       const titleNode = programNode.querySelector("a.Tile__title")!;
       title = titleNode.textContent;
+    } else if (programNode.matches('div[data-testid="masthead-content"]')) {
+      const titleNode = programNode.querySelector(
+        'div[data-testid="masthead-title-container"] img',
+      )!;
+      title = titleNode.getAttribute("alt")!;
+
+      const typeAndYearNode = programNode.querySelector(
+        'ul[data-testid="masthead-metadata"]',
+      )!;
+      const typeNode = Array.from(typeAndYearNode.children).find((node) =>
+        ["movie", "series", "season", "episode"].some((x) =>
+          node.textContent.toLowerCase().includes(x),
+        ),
+      );
+      type = !typeNode
+        ? null
+        : typeNode.textContent.toLowerCase().includes("movie")
+          ? "movie"
+          : "series";
+      const yearNode = Array.from(typeAndYearNode.children).find((node) =>
+        /^\d{4}$/.test(node.textContent),
+      );
+      year = !yearNode ? null : +yearNode.textContent;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -184,6 +207,14 @@ export default class ProgramNode extends AbstractProgramNode {
     if (programNode.matches('div[data-testid="my-stuff-tile"]')) {
       const titleNode = programNode.querySelector("a.Tile__title")!;
       titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('div[data-testid="masthead-content"]')) {
+      const typeAndYearNode = programNode.querySelector(
+        'ul[data-testid="masthead-metadata"]',
+      )!;
+      typeAndYearNode.insertAdjacentElement("afterbegin", imdbNode);
       return;
     }
 
