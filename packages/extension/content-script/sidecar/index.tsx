@@ -13,7 +13,7 @@ export function addSidecar({ page }: { page: AbstractPage }) {
     position: fixed;
     bottom: 32px;
     right: 32px;
-    z-index: 1000;
+    z-index: 10000;
   `;
   document.body.appendChild(siftSidecar);
   render(
