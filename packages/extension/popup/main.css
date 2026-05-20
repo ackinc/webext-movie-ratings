@@ -24,7 +24,6 @@
 }
 
 .app .notification {
-  margin-bottom: 16px;
   background-color: var(--main-bg-color);
   /* asymmetric padding to make the dismiss button
        line up with the header's nav icon */
@@ -32,6 +31,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.app .notification:last-child {
+  margin-bottom: 16px;
 }
 
 .app main {

@@ -21,9 +21,7 @@ render(<App />, root);
 
 function App() {
   const [curPage, setCurPage] = useState<PopupPage>(getDefaultPage());
-  const [notification, setNotification] = useState<InAppNotification | null>(
-    null,
-  );
+  const [notifications, setNotifications] = useState<InAppNotification[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -42,16 +40,16 @@ function App() {
         return;
       }
 
-      const [latestNotification] = (
+      const [latestNotification, ...restNotifications] = (
         await notificationsService.getNotificationsByStatus(["unseen", "seen"])
       ).sort((a, b) => {
         if (a.status === "unseen" && b.status === "seen") return -1;
         if (a.status === "seen" && b.status === "unseen") return 1;
-        return a.timestamp - b.timestamp;
+        return b.timestamp - a.timestamp;
       });
       if (!latestNotification) return;
 
-      setNotification(latestNotification);
+      setNotifications([latestNotification, ...restNotifications]);
       if (latestNotification.status === "unseen") {
         setCurPage(latestNotification.targetPopupPage);
         removeBadge();
@@ -75,21 +73,27 @@ function App() {
       <SetCurPageContext.Provider value={setCurPage}>
         <Header curPage={curPage} setCurPage={setCurPage} />
 
-        {notification && notification.targetPopupPage === curPage ? (
-          <div className="notification">
-            <p>{notification.message}</p>
-            <CloseIconButton
-              style={{ flexShrink: "0" }}
-              onClick={async () => {
-                await notificationsService.updateNotificationStatus(
-                  notification.id,
-                  "dismissed",
-                );
-                setNotification(null);
-              }}
-            />
-          </div>
-        ) : null}
+        <div className="notifications-container">
+          {notifications
+            .filter((notification) => curPage === notification.targetPopupPage)
+            .map((notification) => (
+              <div key={notification.id} className="notification">
+                <p>{notification.message}</p>
+                <CloseIconButton
+                  style={{ flexShrink: "0" }}
+                  onClick={async () => {
+                    await notificationsService.updateNotificationStatus(
+                      notification.id,
+                      "dismissed",
+                    );
+                    setNotifications((ns) =>
+                      ns.filter(({ id }) => id !== notification.id),
+                    );
+                  }}
+                />
+              </div>
+            ))}
+        </div>
 
         <main>
           {curPage === "onboarding" ? (
