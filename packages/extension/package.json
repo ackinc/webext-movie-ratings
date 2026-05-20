@@ -1,6 +1,6 @@
 {
   "name": "sift-web-extension",
-  "version": "9.1.0",
+  "version": "9.2.0",
   "main": "index.js",
   "scripts": {
     "build:dev": "APP_ENV=development pnpm run build --watch",

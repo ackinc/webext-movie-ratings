@@ -1,5 +1,9 @@
 # Changelog
 
+## v9.2.0
+
+- Added support for Hulu
+
 ## v9.1.0
 
 - Added support for HBOMax, PeacockTV, Zee5, and MXPlayer
