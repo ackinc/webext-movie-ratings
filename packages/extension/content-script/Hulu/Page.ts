@@ -52,12 +52,22 @@ div[data-testid="medium-emphasis-vertical-tile"] a.${CssClasses.imdbDataNode} {
   margin: 0;
   font-size: 12px;
 }
+
+div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode} {
+  color: white;
+  display: inline;
+}
+
+div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode}::after {
+  content: ' • '
+}
     `;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
     // live tv, live news, live sports
-    if (location.pathname.startsWith("/live")) return [];
+    if (["/live", "/hub/news"].some((x) => location.pathname.startsWith(x)))
+      return [];
 
     if (location.pathname === "/hub/networks") return [];
 
@@ -80,6 +90,12 @@ div[data-testid="medium-emphasis-vertical-tile"] a.${CssClasses.imdbDataNode} {
       'div[data-testid="standard-collection-simple-horizontal-tile"]',
       'div[data-testid="standard-collection-standard-emphasis-tile"]',
       'div[data-testid="branded-discover-collection-simple-horizontal-tile"]',
+
+      // collection page
+      'div[data-testid="l2-content"]',
+
+      // on hovering over a program tile
+      'div[data-testid="preview-panel-container"]',
     ];
   }
 
@@ -146,6 +162,16 @@ div[data-testid="medium-emphasis-vertical-tile"] a.${CssClasses.imdbDataNode} {
         .getAttribute("alt")!;
     }
 
+    if (pContainerNode.matches('div[data-testid="l2-content"]')) {
+      return pContainerNode.querySelector(
+        'div[data-testid="simple-modal-nav-title"]',
+      )!.textContent;
+    }
+
+    if (pContainerNode.matches('div[data-testid="preview-panel-container"]')) {
+      return "Preview";
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -155,7 +181,7 @@ div[data-testid="medium-emphasis-vertical-tile"] a.${CssClasses.imdbDataNode} {
     if (!Boolean(pContainer.title)) return false;
 
     if (
-      ["episodes", "extras", "networks for you"].includes(
+      ["episodes", "extras", "genres", "networks for you"].includes(
         pContainer.title.toLowerCase(),
       )
     ) {
@@ -208,6 +234,14 @@ div[data-testid="medium-emphasis-vertical-tile"] a.${CssClasses.imdbDataNode} {
       'div[data-testid="branded-discover-collection-simple-horizontal-tile"]'
     ) {
       return ['div[data-testid="seh-tile-container"]'];
+    }
+
+    if (selector === 'div[data-testid="l2-content"]') {
+      return ['div[data-testid="seh-tile-container"]'];
+    }
+
+    if (selector === 'div[data-testid="preview-panel-container"]') {
+      return ['div[data-testid="preview-panel"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
