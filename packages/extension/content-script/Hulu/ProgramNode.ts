@@ -78,9 +78,12 @@ export default class ProgramNode extends AbstractProgramNode {
         ? +yearNode.textContent.slice(-4)
         : null;
     } else if (programNode.matches('div[data-testid="seh-tile-container"]')) {
-      const titleNode = programNode.querySelector(
+      const titleNode = (programNode.querySelector(
         'a[data-testid="browse-action"]',
-      )!;
+      ) ??
+        programNode.querySelector(
+          'button[data-testid="standard-emphasis-tile-thumbnail"]',
+        ))!;
       title = titleNode
         .getAttribute("aria-label")!
         .replace(/, Item \d+ of many$/g, "");

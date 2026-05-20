@@ -101,8 +101,8 @@ div.MastheadAndBanner a.${CssClasses.imdbDataNode}::after {
       'div[data-testid="standard-collection-standard-emphasis-tile"]',
       'div[data-testid="branded-discover-collection-simple-horizontal-tile"]',
 
-      // collection page
-      'div[data-testid="l2-content"]',
+      // collection page, single-program page
+      "div.AllUpGrid",
 
       // on hovering over a program tile
       'div[data-testid="preview-panel-container"]',
@@ -178,9 +178,20 @@ div.MastheadAndBanner a.${CssClasses.imdbDataNode}::after {
         .getAttribute("alt")!;
     }
 
-    if (pContainerNode.matches('div[data-testid="l2-content"]')) {
-      return pContainerNode.querySelector(
-        'div[data-testid="simple-modal-nav-title"]',
+    if (pContainerNode.matches("div.AllUpGrid")) {
+      const apexNode = climbDOMUntil(pContainerNode, (node) =>
+        node.matches('div[data-testid="l2-content"]'),
+      )!;
+
+      // single-program page
+      const activeSubnavButton = apexNode.querySelector(
+        "div.Subnav button.Subnav__item.active",
+      );
+      if (activeSubnavButton) return activeSubnavButton.textContent;
+
+      // collection page
+      return apexNode.querySelector(
+        'div [data-testid="simple-modal-nav-title"]',
       )!.textContent;
     }
 
@@ -266,7 +277,7 @@ div.MastheadAndBanner a.${CssClasses.imdbDataNode}::after {
       return ['div[data-testid="seh-tile-container"]'];
     }
 
-    if (selector === 'div[data-testid="l2-content"]') {
+    if (selector === "div.AllUpGrid") {
       return ['div[data-testid="seh-tile-container"]'];
     }
 
