@@ -1,0 +1,19 @@
+.notifications-container {
+  margin-bottom: 16px;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notification {
+  background-color: #c7e3ff;
+  /* the icon we're using for the 'close' action has some
+  whitespace around it, due to which giving equal horizontal
+  padding to this element is making it look asymmetric */
+  padding: 12px 16px 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px;
+}

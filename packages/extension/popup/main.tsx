@@ -11,11 +11,11 @@ import {
   type InAppNotification,
 } from "../common";
 import * as notificationsService from "../common/notificationsService";
-import CloseIconButton from "@components/Buttons/CloseIconButton";
 import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
 import SettingsPage from "./SettingsPage";
+import Notifications from "./Notifications";
 import PitchErrorReportingPage from "./PitchErrorReportingPage";
 import PitchMissingRatingReportingPage from "./PitchMissingRatingReportingPage";
 import Footer from "./Footer";
@@ -28,6 +28,7 @@ function App() {
   const [curPage, setCurPage] = useState<PopupPage>(getDefaultPage());
   const [notifications, setNotifications] = useState<InAppNotification[]>([]);
 
+  // determine what page the user should see first
   useEffect(() => {
     (async () => {
       if ((await getSetting("onboardingStatus")) !== "finished") {
@@ -45,23 +46,19 @@ function App() {
         return;
       }
 
-      const [latestNotification, ...restNotifications] = (
-        await notificationsService.getNotificationsByStatus(["unseen", "seen"])
-      ).sort((a, b) => {
-        if (a.status === "unseen" && b.status === "seen") return -1;
-        if (a.status === "seen" && b.status === "unseen") return 1;
-        return b.timestamp - a.timestamp;
-      });
+      // show whichever page the user has unseen notifications for
+      const [latestNotification, ...restNotifications] =
+        await notificationsService.getNotificationsBy(
+          { status: ["unseen", "seen"] },
+          notificationsService.cmpNotifications,
+          { limitPerPage: 3 },
+        );
       if (!latestNotification) return;
 
       setNotifications([latestNotification, ...restNotifications]);
       if (latestNotification.status === "unseen") {
         setCurPage(latestNotification.targetPopupPage);
         removeBadge();
-        await notificationsService.updateNotificationStatus(
-          latestNotification.id,
-          "seen",
-        );
       }
       return;
     })();
@@ -73,32 +70,41 @@ function App() {
     localStorage.setItem("lastSeenPage", curPage);
   }, [curPage]);
 
+  // update status of displayed notifications
+  useEffect(() => {
+    (async () => {
+      const idsOfNotifsToUpdate = notifications
+        .filter((n) => n.targetPopupPage === curPage && n.status === "unseen")
+        .map((n) => n.id);
+      if (idsOfNotifsToUpdate.length === 0) return;
+      await notificationsService.updateNotificationStatus(
+        idsOfNotifsToUpdate,
+        "seen",
+      );
+      setNotifications(
+        notifications.map((n) => ({
+          ...n,
+          status: idsOfNotifsToUpdate.includes(n.id) ? "seen" : n.status,
+        })),
+      );
+    })();
+  }, [curPage, notifications]);
+
+  const curPageNotifs = notifications.filter(
+    (notification) => curPage === notification.targetPopupPage,
+  );
+
   return (
     <div className="app">
       <SetCurPageContext.Provider value={setCurPage}>
         <Header curPage={curPage} setCurPage={setCurPage} />
 
-        <div className="notifications-container">
-          {notifications
-            .filter((notification) => curPage === notification.targetPopupPage)
-            .map((notification) => (
-              <div key={notification.id} className="notification">
-                <p>{notification.message}</p>
-                <CloseIconButton
-                  style={{ flexShrink: "0" }}
-                  onClick={async () => {
-                    await notificationsService.updateNotificationStatus(
-                      notification.id,
-                      "dismissed",
-                    );
-                    setNotifications((ns) =>
-                      ns.filter(({ id }) => id !== notification.id),
-                    );
-                  }}
-                />
-              </div>
-            ))}
-        </div>
+        {curPageNotifs.length > 0 ? (
+          <Notifications
+            notifications={curPageNotifs}
+            onDismissNotification={handleNotificationDismissed}
+          />
+        ) : null}
 
         <main>
           {curPage === "onboarding" ? (
@@ -122,15 +128,21 @@ function App() {
   );
 
   async function handleOnboardingFinished() {
-    await Promise.all(
-      ["ADDED_HBOMAX_PEACOCKTV_ZEE5_MXPLAYER", "ADDED_HULU"].map((nId) =>
-        notificationsService.updateNotificationStatus(nId, "dismissed"),
-      ),
+    // these don't need to be shown to a user who has just completed
+    //   onboarding
+    await notificationsService.updateNotificationStatus(
+      ["ADDED_HBOMAX_PEACOCKTV_ZEE5_MXPLAYER", "ADDED_HULU"],
+      "dismissed",
     );
     await setSetting("pitchMissingRatingReportingPageSeen", true);
 
     removeBadge();
     setCurPage("filters");
+  }
+
+  async function handleNotificationDismissed(nId: string) {
+    await notificationsService.updateNotificationStatus([nId], "dismissed");
+    setNotifications((ns) => ns.filter(({ id }) => id !== nId));
   }
 }
 
