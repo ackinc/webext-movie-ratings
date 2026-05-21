@@ -108,7 +108,7 @@ div.previewModal--container .${CssClasses.imdbDataNode} {
 
       // 2026-05-14
       'div:has(> section[data-uia="billboard"])',
-      "section.carousel-row",
+      "section.carousel-row:not(#place-holder-carousel)",
       "div.previewModal--wrapper.mini-modal:has(> div.previewModal--container)",
       "div.previewModal--wrapper:not(.mini-modal):has(> div.previewModal--container)",
     ];
@@ -167,7 +167,9 @@ div.previewModal--container .${CssClasses.imdbDataNode} {
       return "Billboard";
     }
 
-    if (pContainerNode.matches("section.carousel-row")) {
+    if (
+      pContainerNode.matches("section.carousel-row:not(#place-holder-carousel)")
+    ) {
       return (pContainerNode.firstChild as HTMLElement).querySelector("p")!
         .textContent;
     }
@@ -226,7 +228,7 @@ div.previewModal--container .${CssClasses.imdbDataNode} {
       return ['section[data-uia="billboard"]'];
     }
 
-    if (selector === "section.carousel-row") {
+    if (selector === "section.carousel-row:not(#place-holder-carousel)") {
       return [
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="standard-card"])',
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"])',
