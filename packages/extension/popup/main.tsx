@@ -4,7 +4,12 @@ import { render, h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import SetCurPageContext from "./Contexts/SetCurPageContext";
 import { type PopupPage } from "./common";
-import { removeBadge, getSetting, type InAppNotification } from "../common";
+import {
+  removeBadge,
+  getSetting,
+  setSetting,
+  type InAppNotification,
+} from "../common";
 import * as notificationsService from "../common/notificationsService";
 import CloseIconButton from "@components/Buttons/CloseIconButton";
 import Header from "./Header";
@@ -97,12 +102,7 @@ function App() {
 
         <main>
           {curPage === "onboarding" ? (
-            <OnboardingFlow
-              onFinish={() => {
-                removeBadge();
-                setCurPage("filters");
-              }}
-            />
+            <OnboardingFlow onFinish={handleOnboardingFinished} />
           ) : null}
           {curPage === "filters" ? <ProgramFilters /> : null}
           {curPage === "settings" ? <SettingsPage /> : null}
@@ -120,6 +120,18 @@ function App() {
       </SetCurPageContext.Provider>
     </div>
   );
+
+  async function handleOnboardingFinished() {
+    await Promise.all(
+      ["ADDED_HBOMAX_PEACOCKTV_ZEE5_MXPLAYER", "ADDED_HULU"].map((nId) =>
+        notificationsService.updateNotificationStatus(nId, "dismissed"),
+      ),
+    );
+    await setSetting("pitchMissingRatingReportingPageSeen", true);
+
+    removeBadge();
+    setCurPage("filters");
+  }
 }
 
 function getDefaultPage(): PopupPage {
