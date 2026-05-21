@@ -8,8 +8,9 @@
 
 .notification {
   background-color: #c7e3ff;
-  /* asymmetric padding to make the dismiss button
-       line up with the header's nav icon */
+  /* the icon we're using for the 'close' action has some
+  whitespace around it, due to which giving equal horizontal
+  padding to this element is making it look asymmetric */
   padding: 12px 16px 12px 20px;
   display: flex;
   justify-content: space-between;
