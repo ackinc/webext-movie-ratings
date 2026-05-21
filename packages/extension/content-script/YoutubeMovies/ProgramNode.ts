@@ -6,12 +6,18 @@ import { DataExtractionError } from "../../common/customErrors";
 
 export default class ProgramNode extends AbstractProgramNode {
   static override isMovieOrSeries(programNode: HTMLElement): boolean {
-    const hasBuyOrRentBadge = Array.from(
-      programNode.querySelectorAll(
-        "div.ytLockupMetadataViewModelMetadata yt-badge-view-model",
-      ),
-    ).some((badgeNode) => badgeNode.textContent === "Buy or rent");
-    return hasBuyOrRentBadge;
+    if (programNode.matches("ytd-grid-movie-renderer")) return true;
+
+    if (programNode.matches("yt-lockup-view-model")) {
+      const hasBuyOrRentBadge = Array.from(
+        programNode.querySelectorAll(
+          "div.ytLockupMetadataViewModelMetadata yt-badge-view-model",
+        ),
+      ).some((badgeNode) => badgeNode.textContent === "Buy or rent");
+      return hasBuyOrRentBadge;
+    }
+
+    throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 
   static override extractProgramData(programNode: HTMLElement): ProgramData {
