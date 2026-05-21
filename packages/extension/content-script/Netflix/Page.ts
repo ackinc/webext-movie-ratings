@@ -94,6 +94,17 @@ div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssC
 div.previewModal--container .${CssClasses.imdbDataNode} {
   margin: 4px 0;
 }
+
+div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"]) .${CssClasses.imdbDataNode} {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin: 0;
+  padding: 0 4px;
+  background-color: #0000007f;
+  border-radius: 0;
+  color: white;
+}
     `;
   }
 
@@ -232,6 +243,7 @@ div.previewModal--container .${CssClasses.imdbDataNode} {
       return [
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="standard-card"])',
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"])',
+        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"])',
       ];
     }
 

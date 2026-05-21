@@ -58,6 +58,14 @@ export default class ProgramNode extends AbstractProgramNode {
       title = (programNode.firstChild! as HTMLElement).getAttribute(
         "aria-label",
       )!;
+    } else if (
+      programNode.matches(
+        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"])',
+      )
+    ) {
+      title = (programNode.firstChild! as HTMLElement).getAttribute(
+        "aria-label",
+      )!;
     } else if (programNode.matches("div.previewModal--container.mini-modal")) {
       title = programNode
         .querySelector(
@@ -169,6 +177,16 @@ export default class ProgramNode extends AbstractProgramNode {
       return;
     }
 
-    programNode.appendChild(imdbNode);
+    if (
+      programNode.matches(
+        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"])',
+      )
+    ) {
+      const imgNode = programNode.querySelector("img")!;
+      imgNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    super.insertIMDBNode(programNode, imdbNode);
   }
 }
