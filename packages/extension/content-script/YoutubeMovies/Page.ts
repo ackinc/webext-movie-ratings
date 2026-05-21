@@ -35,6 +35,10 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
     outline: 1px solid rgba(0, 0, 0, 0.1);
     outline-offset: -1px;
 }
+
+div#above-the-fold.ytd-watch-metadata.${CssClasses.filteredOutProgramNode} {
+  opacity: 1;
+}
     `;
   }
 
@@ -44,7 +48,10 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
     }
 
     if (location.pathname === "/watch") {
-      return ["ytd-watch-next-secondary-results-renderer > div#items"];
+      return [
+        "ytd-watch-next-secondary-results-renderer > div#items",
+        "ytd-watch-metadata",
+      ];
     }
 
     return [];
@@ -83,6 +90,10 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
       return "More like this";
     }
 
+    if (pContainerNode.matches("ytd-watch-metadata")) {
+      return "Currently watching";
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -101,6 +112,10 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
 
     if (selector === "ytd-watch-next-secondary-results-renderer > div#items") {
       return ["yt-lockup-view-model"];
+    }
+
+    if (selector === "ytd-watch-metadata") {
+      return ["div#above-the-fold.ytd-watch-metadata"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
