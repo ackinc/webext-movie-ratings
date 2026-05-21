@@ -11,11 +11,11 @@ import {
   type InAppNotification,
 } from "../common";
 import * as notificationsService from "../common/notificationsService";
-import CloseIconButton from "@components/Buttons/CloseIconButton";
 import Header from "./Header";
 import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
 import ProgramFilters from "./ProgramFilters";
 import SettingsPage from "./SettingsPage";
+import Notifications from "./Notifications";
 import PitchErrorReportingPage from "./PitchErrorReportingPage";
 import PitchMissingRatingReportingPage from "./PitchMissingRatingReportingPage";
 import Footer from "./Footer";
@@ -90,32 +90,21 @@ function App() {
     })();
   }, [curPage, notifications]);
 
+  const curPageNotifs = notifications.filter(
+    (notification) => curPage === notification.targetPopupPage,
+  );
+
   return (
     <div className="app">
       <SetCurPageContext.Provider value={setCurPage}>
         <Header curPage={curPage} setCurPage={setCurPage} />
 
-        <div className="notifications-container">
-          {notifications
-            .filter((notification) => curPage === notification.targetPopupPage)
-            .map((notification) => (
-              <div key={notification.id} className="notification">
-                <p>{notification.message}</p>
-                <CloseIconButton
-                  style={{ flexShrink: "0" }}
-                  onClick={async () => {
-                    await notificationsService.updateNotificationStatus(
-                      [notification.id],
-                      "dismissed",
-                    );
-                    setNotifications((ns) =>
-                      ns.filter(({ id }) => id !== notification.id),
-                    );
-                  }}
-                />
-              </div>
-            ))}
-        </div>
+        {curPageNotifs.length > 0 ? (
+          <Notifications
+            notifications={curPageNotifs}
+            onDismissNotification={handleNotificationDismissed}
+          />
+        ) : null}
 
         <main>
           {curPage === "onboarding" ? (
@@ -149,6 +138,11 @@ function App() {
 
     removeBadge();
     setCurPage("filters");
+  }
+
+  async function handleNotificationDismissed(nId: string) {
+    await notificationsService.updateNotificationStatus([nId], "dismissed");
+    setNotifications((ns) => ns.filter(({ id }) => id !== nId));
   }
 }
 

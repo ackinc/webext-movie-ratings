@@ -1,0 +1,18 @@
+.notifications-container {
+  margin-bottom: 16px;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notification {
+  background-color: #c7e3ff;
+  /* asymmetric padding to make the dismiss button
+       line up with the header's nav icon */
+  padding: 12px 16px 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px;
+}
