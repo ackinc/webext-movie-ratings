@@ -5,4 +5,5 @@ export interface ButtonProps {
   onMouseEnter?: () => void;
   style?: Record<string, string>;
   variant: "primary" | "outlined" | "ghost";
+  type?: "submit" | "button";
 }

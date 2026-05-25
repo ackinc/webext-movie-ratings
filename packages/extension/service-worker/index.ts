@@ -28,7 +28,7 @@ import TelemetryStore, {
   type TelemetryStoreSchema,
 } from "../common/TelemetryStore";
 import OmdbApiClient from "./OmdbApiClient";
-import * as siftApiService from "./SiftApiService";
+import * as siftApiService from "../common/siftApiService";
 import { RATING_API_REQUEST_TIMEOUT_MS } from "./constants";
 import * as notificationsService from "../common/notificationsService";
 

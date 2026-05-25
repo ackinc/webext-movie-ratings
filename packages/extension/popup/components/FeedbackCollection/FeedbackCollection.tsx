@@ -1,6 +1,6 @@
 import { useState } from "preact/hooks";
-import { type PopupPage } from "./common";
-import CopyToClipboardButton from "../common/components/Buttons/CopyToClipboardButton";
+import { type PopupPage } from "@common";
+import CopyToClipboardButton from "@common/components/Buttons/CopyToClipboardButton";
 import "./FeedbackCollection.css";
 
 const email = "anirudh.nimmagadda@gmail.com";

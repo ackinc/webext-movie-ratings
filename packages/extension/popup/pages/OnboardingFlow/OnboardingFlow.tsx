@@ -1,16 +1,17 @@
 import { useEffect, useState } from "preact/hooks";
 import WelcomePage from "./WelcomePage";
-import PitchErrorReportingOptInPage from "../PitchErrorReportingPage";
+import PitchErrorReportingOptInPage from "../PitchErrorReportingPage/PitchErrorReportingPage";
 import CheckAndRequestPermissionsPage from "./CheckAndRequestPermissionsPage";
 import CheckAndDisplayPermissionStatusPage from "./CheckAndDisplayPermissionStatusPage";
-import type { PermString, Sitename } from "../common";
 import {
   browser,
   getSetting,
   permStringToSitename,
   setSetting,
-} from "../../common";
-import Button from "../../common/components/Buttons/Button";
+  type PermString,
+  type Sitename,
+} from "@common";
+import Button from "@common/components/Buttons/Button";
 import "./OnboardingFlow.css";
 
 type OnboardingFlowPage =

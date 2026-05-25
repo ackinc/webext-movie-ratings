@@ -5,10 +5,10 @@ import {
   MessageType,
   defaultProgramFilterSettings,
   sendMessageToAllTabs,
-} from "../common";
-import type { ProgramFilterSettings } from "../common";
-import Slider from "./Slider";
-import CheckboxInput from "./Inputs/CheckboxInput";
+} from "@common";
+import type { ProgramFilterSettings } from "@common";
+import Slider from "@popup/components/Slider";
+import CheckboxInput from "@popup/components/Inputs/CheckboxInput/CheckboxInput";
 
 import "./ProgramFilters.css";
 

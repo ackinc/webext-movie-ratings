@@ -1,4 +1,4 @@
-import ErrorReportingOptIn from "./ErrorReportingOptIn";
+import ErrorReportingOptIn from "@popup/components/ErrorReportingOptIn/ErrorReportingOptIn";
 import "./PitchErrorReportingPage.css";
 
 export default function PitchErrorReportingOptInPage() {

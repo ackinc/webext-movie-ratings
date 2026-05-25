@@ -1,15 +1,17 @@
 import { useEffect, useState } from "preact/hooks";
-import { type PermString, supportedSites, type Sitename } from "../common";
 import {
   browser,
   CssColors,
   MessageType,
   setSetting,
+  supportedSites,
   type Message,
-} from "../../common";
-import Button from "../../common/components/Buttons/Button";
-import ExclmarkOnCircle from "../Icons/ExclmarkOnCircle";
-import LoadingIndicator from "@/images/loading.svg";
+  type PermString,
+  type Sitename,
+} from "@common";
+import Button from "@common/components/Buttons/Button";
+import ExclmarkOnCircle from "@popup/components/Icons/ExclmarkOnCircle";
+import LoadingIndicator from "@images/loading.svg";
 
 interface PageProps {
   sitesToEnable: Sitename[];

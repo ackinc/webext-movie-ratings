@@ -1,9 +1,9 @@
 import { useContext } from "preact/hooks";
-import SetCurPageContext from "./Contexts/SetCurPageContext";
-import ErrorReportingOptIn from "./ErrorReportingOptIn";
-import SiteChooserForm from "./SiteChooserForm";
-import Separator from "./Separator";
-import ToggleMediaRequestBlocking from "./ToggleMediaRequestBlocking";
+import SetCurPageContext from "@popup/contexts/SetCurPageContext";
+import ErrorReportingOptIn from "@popup/components/ErrorReportingOptIn/ErrorReportingOptIn";
+import SiteChooserForm from "@popup/components/SiteChooserForm/SiteChooserForm";
+import Separator from "@popup/components/Separator";
+import ToggleMediaRequestBlocking from "@popup/components/ToggleMediaRequestBlocking";
 import "./SettingsPage.css";
 
 export default function SettingsPage() {

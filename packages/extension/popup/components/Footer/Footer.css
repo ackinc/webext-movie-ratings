@@ -6,10 +6,10 @@
   align-items: center;
 }
 
-.footer a.rate-us-cta {
+.footer a {
   color: var(--main-text-color);
 }
 
-.footer a.rate-us-cta:hover {
+.footer a:hover {
   color: rgb(11, 87, 208);
 }

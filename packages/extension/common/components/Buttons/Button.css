@@ -8,10 +8,15 @@
   color: var(--main-text-color);
 }
 
+.btn.btn-ghost {
+  background-color: transparent;
+  border: 0;
+  padding: 0;
+}
+
 .btn.btn-primary:hover {
   background-color: var(--highlighted-bg-color);
 }
-
 .btn:disabled {
   background-color: lightgray;
   cursor: not-allowed;

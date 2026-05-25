@@ -1,0 +1,29 @@
+.feedback-form-page {
+  margin-bottom: 24px;
+
+  .feedback-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    textarea {
+      min-height: 5lh;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 8px;
+      resize: vertical;
+    }
+
+    button[type="submit"] {
+      align-self: flex-start;
+    }
+
+    p.error {
+      color: red;
+    }
+
+    p.success {
+      color: green;
+    }
+  }
+}

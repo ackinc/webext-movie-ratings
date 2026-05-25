@@ -6,7 +6,7 @@ import {
   type Sitename,
   type SiteStatus,
   getSiteStatusOnUserToggle,
-} from "./common";
+} from "@popup/common";
 import {
   browser,
   ensureError,
@@ -14,11 +14,11 @@ import {
   MessageType,
   type Message,
   type SWMessageResponse,
-} from "../common";
-import { SWError } from "../common/customErrors";
-import { captureException } from "../common/errorReporter";
-import SiteChooserFormControl from "./SiteChooserFormControl";
-import loadingIndicator from "@/images/loading.svg";
+} from "@common";
+import { SWError } from "@common/customErrors";
+import { captureException } from "@common/errorReporter";
+import SiteChooserFormControl from "@popup/components/SiteChooserFormControl";
+import loadingIndicator from "@images/loading.svg";
 import "./SiteChooserForm.css";
 
 // We want to wait for the user to stop interacting with the form before
