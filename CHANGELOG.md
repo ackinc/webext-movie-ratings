@@ -1,5 +1,9 @@
 # Changelog
 
+## v9.2.5
+
+- Added a proper feedback form
+
 ## v9.2.4
 
 - Extension now takes user to uninstall-reason page on uninstall
