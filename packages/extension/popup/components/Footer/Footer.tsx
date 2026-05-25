@@ -1,6 +1,6 @@
-import FeedbackCollection from "./FeedbackCollection";
-import type { PopupPage } from "./common";
-import { webStoreLink } from "../common/constants";
+import FeedbackCollection from "../FeedbackCollection/FeedbackCollection";
+import type { PopupPage } from "@common";
+import { webStoreLink } from "@common";
 import "./Footer.css";
 
 interface FooterProps {

@@ -16,7 +16,10 @@
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
     "paths": {
-      "@components/*": ["./common/components/*"],
+      "@common": ["./common"],
+      "@common/*": ["./common/*"],
+      "@images/*": ["../../images/*"],
+      "@popup/*": ["./popup/*"],
       "react": ["./node_modules/preact/compat/"],
       "react/jsx-runtime": ["./node_modules/preact/jsx-runtime"],
       "react-dom": ["./node_modules/preact/compat/"],

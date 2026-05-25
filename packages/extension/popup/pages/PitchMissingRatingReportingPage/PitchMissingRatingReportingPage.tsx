@@ -1,8 +1,8 @@
 import { useEffect } from "preact/hooks";
 
-import ErrorReportingOptIn from "./ErrorReportingOptIn";
+import { removeBadge, setSetting } from "@common";
+import ErrorReportingOptIn from "@popup/components/ErrorReportingOptIn/ErrorReportingOptIn";
 import "./PitchMissingRatingReportingPage.css";
-import { removeBadge, setSetting } from "../common";
 
 export default function PitchErrorReportingOptInPage() {
   useEffect(() => {

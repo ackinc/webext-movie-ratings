@@ -1,6 +1,6 @@
 import IconButton from "./IconButton";
 import type { ButtonProps } from "./types";
-import closeIcon from "@/images/close.svg";
+import closeIcon from "@images/close.svg";
 
 export default function CloseButton(props: Partial<ButtonProps>) {
   return (

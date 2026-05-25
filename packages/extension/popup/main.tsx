@@ -2,23 +2,23 @@
 //   though they are unused
 import { render, h, Fragment } from "preact";
 import { useEffect, useState } from "preact/hooks";
-import SetCurPageContext from "./Contexts/SetCurPageContext";
-import { type PopupPage } from "./common";
+import SetCurPageContext from "./contexts/SetCurPageContext";
 import {
   removeBadge,
   getSetting,
   setSetting,
   type InAppNotification,
-} from "../common";
-import * as notificationsService from "../common/notificationsService";
-import Header from "./Header";
-import OnboardingFlow from "./OnboardingFlow/OnboardingFlow";
-import ProgramFilters from "./ProgramFilters";
-import SettingsPage from "./SettingsPage";
-import Notifications from "./Notifications";
-import PitchErrorReportingPage from "./PitchErrorReportingPage";
-import PitchMissingRatingReportingPage from "./PitchMissingRatingReportingPage";
-import Footer from "./Footer";
+  type PopupPage,
+} from "@common";
+import * as notificationsService from "@common/notificationsService";
+import Header from "./components/Header/Header";
+import OnboardingFlow from "./pages/OnboardingFlow/OnboardingFlow";
+import ProgramFilters from "./pages/ProgramFiltersPage/ProgramFilters";
+import SettingsPage from "./pages/SettingsPage/SettingsPage";
+import Notifications from "./components/Notifications/Notifications";
+import PitchErrorReportingPage from "./pages/PitchErrorReportingPage/PitchErrorReportingPage";
+import PitchMissingRatingReportingPage from "./pages/PitchMissingRatingReportingPage/PitchMissingRatingReportingPage";
+import Footer from "./components/Footer/Footer";
 import "./main.css";
 
 const root = document.querySelector<HTMLDivElement>("div#root")!;

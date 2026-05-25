@@ -1,5 +1,5 @@
-import type { InAppNotification } from "../common";
-import CloseIconButton from "@components/Buttons/CloseIconButton";
+import type { InAppNotification } from "@common";
+import CloseIconButton from "@common/components/Buttons/CloseIconButton";
 import "./Notifications.css";
 
 interface NotificationsProps {

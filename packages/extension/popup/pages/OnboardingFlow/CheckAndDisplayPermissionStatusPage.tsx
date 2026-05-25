@@ -1,8 +1,8 @@
 import { useEffect, useState } from "preact/hooks";
-import { browser, CssColors, setSetting } from "../../common";
-import CheckmarkOnCircle from "../Icons/CheckmarkOnCircle";
-import SettingsIcon from "@/images/settings.svg";
-import LoadingIndicator from "@/images/loading.svg";
+import { browser, CssColors, setSetting } from "@common";
+import CheckmarkOnCircle from "@popup/components/Icons/CheckmarkOnCircle";
+import SettingsIcon from "@images/settings.svg";
+import LoadingIndicator from "@images/loading.svg";
 
 export default function CheckAndDisplayPermissionStatusPage() {
   const [state, setState] = useState<{

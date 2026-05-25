@@ -1,10 +1,10 @@
 import { useState } from "preact/hooks";
-import Button from "@components/Buttons/Button";
-import IconButton from "@components/Buttons/IconButton";
-import { MessageType } from "../../common";
+import Button from "@common/components/Buttons/Button";
+import IconButton from "@common/components/Buttons/IconButton";
+import { MessageType } from "@common";
 import type AbstractPage from "../AbstractPage";
-import siftLogoIcon from "@/images/logo48.png";
-import closeIcon from "@/images/close.svg";
+import siftLogoIcon from "@images/logo48.png";
+import closeIcon from "@images/close.svg";
 
 interface PageControlPanelProps {
   className?: string;
