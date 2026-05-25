@@ -34,4 +34,26 @@ db.exec(`
   END
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS "messages" (
+    "id"	INTEGER NOT NULL,
+    "email"	TEXT,
+    "category"	TEXT NOT NULL,
+    "message"	TEXT NOT NULL,
+    "createdAt"	TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt"	TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "meta"	TEXT,
+    PRIMARY KEY("id")
+  );
+`);
+
+db.exec(`
+  CREATE TRIGGER IF NOT EXISTS update_messages_updatedAt
+  AFTER UPDATE ON "messages"
+  FOR EACH ROW
+  BEGIN
+    UPDATE "messages" SET "updatedAt" = CURRENT_TIMESTAMP WHERE "id" = OLD."id";
+  END
+`);
+
 export default db;
