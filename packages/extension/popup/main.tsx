@@ -18,6 +18,7 @@ import SettingsPage from "./pages/SettingsPage/SettingsPage";
 import Notifications from "./components/Notifications/Notifications";
 import PitchErrorReportingPage from "./pages/PitchErrorReportingPage/PitchErrorReportingPage";
 import PitchMissingRatingReportingPage from "./pages/PitchMissingRatingReportingPage/PitchMissingRatingReportingPage";
+import FeedbackFormPage from "./pages/FeedbackFormPage/FeedbackFormPage";
 import Footer from "./components/Footer/Footer";
 import "./main.css";
 
@@ -118,6 +119,7 @@ function App() {
           {curPage === "pitchMissingRatingReporting" ? (
             <PitchMissingRatingReportingPage />
           ) : null}
+          {curPage === "feedbackForm" ? <FeedbackFormPage /> : null}
         </main>
 
         <Footer curPage={curPage} setCurPage={setCurPage} />

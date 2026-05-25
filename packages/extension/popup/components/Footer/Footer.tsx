@@ -1,10 +1,9 @@
-import FeedbackCollection from "../FeedbackCollection/FeedbackCollection";
-import type { PopupPage } from "@common";
-import { webStoreLink } from "@common";
+import { webStoreLink, type PopupPage } from "@common";
 import "./Footer.css";
 
 interface FooterProps {
   curPage: PopupPage;
+  setCurPage: (pg: PopupPage) => void;
 }
 
 export default function Footer({ curPage, setCurPage }: FooterProps) {
@@ -12,7 +11,15 @@ export default function Footer({ curPage, setCurPage }: FooterProps) {
 
   return (
     <div className="footer">
-      <FeedbackCollection curPage={curPage} />
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          setCurPage("feedbackForm");
+        }}
+      >
+        Have feedback?
+      </a>
 
       <a href={webStoreLink} className="rate-us-cta" target="_blank">
         Rate us!

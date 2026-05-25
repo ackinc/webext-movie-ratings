@@ -60,6 +60,8 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
           <CloseIconButton onClick={() => setCurPage("settings")} />
         ) : curPage === "pitchMissingRatingReporting" ? (
           <CloseIconButton onClick={() => setCurPage("filters")} />
+        ) : curPage === "feedbackForm" ? (
+          <CloseIconButton onClick={() => setCurPage("filters")} />
         ) : null}
       </div>
     </div>
