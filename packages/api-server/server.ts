@@ -25,7 +25,7 @@ import db from "./db.ts";
 import logger from "./logger.ts";
 import { querySearchEngine, getIndexLastUpdatedTime } from "./searchEngine.ts";
 
-const env = pick(process.env, ["APP_ENV", "PORT"], true);
+const env = pick(process.env, ["APP_ENV", "PORT", "WEBSITE_URL"], true);
 
 const server = createServer(db);
 server.listen({ port: +env.PORT! }, function (err, _address) {
@@ -46,7 +46,7 @@ function createServer(db: Database) {
             extensionIds.chrome.map((id) => `chrome-extension://${id}`),
             extensionIds.edge.map((id) => `chrome-extension://${id}`),
             extensionIds.firefox.map((id) => `moz-extension://${id}`),
-            "https://getsift.today",
+            env.WEBSITE_URL!,
           ].flat()
         : true,
   });
