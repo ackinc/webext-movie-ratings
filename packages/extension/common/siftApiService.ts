@@ -1,7 +1,7 @@
-import type { ProgramData } from "../common/types";
+import type { ProgramData } from "./types";
 import { pick } from "siftutils";
-import type { SiftApiProgramMatching } from "sifttypes";
-import { ErrorMessage } from "../common";
+import type { SiftApiProgramMatching, UserMessage } from "sifttypes";
+import { ErrorMessage } from ".";
 
 export async function getMatchedImdbId(
   programData: ProgramData,
@@ -23,4 +23,19 @@ export async function getMatchedImdbId(
   const response = await fetch(url);
   if (!response.ok) throw new Error(ErrorMessage.siftApiServerError);
   return (await response.json()) as SiftApiProgramMatching.Response;
+}
+
+export async function sendUserFeedback(message: string, email: string) {
+  const url = new URL(`${SIFT_API_URL}/messages`);
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      category: "feedback",
+      message,
+      ...(email ? { email } : {}),
+    } satisfies UserMessage),
+  });
+  if (!response.ok) throw new Error(ErrorMessage.siftApiServerError);
 }
