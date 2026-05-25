@@ -10,6 +10,15 @@ interface HeaderProps {
   setCurPage: (x: PopupPage) => void;
 }
 
+const popupPageToHeadline: Record<PopupPage, string> = {
+  onboarding: "Welcome!",
+  filters: "Filter Programs",
+  settings: "Settings",
+  pitchErrorReporting: "Opt-in to error reporting",
+  pitchMissingRatingReporting: "Opt-in to error reporting",
+  feedbackForm: "Send us your feedback!",
+};
+
 export default function Header({ curPage, setCurPage }: HeaderProps) {
   const [showingNewFeature, setShowingNewFeature] = useState(false);
 
@@ -39,17 +48,7 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
       <h3>
         {showingNewFeature
           ? "New feature alert!"
-          : curPage === "onboarding"
-            ? "Welcome!"
-            : curPage === "filters"
-              ? "Filter Programs"
-              : curPage === "settings"
-                ? "Settings"
-                : curPage === "pitchErrorReporting"
-                  ? "Opt-in to error reporting"
-                  : curPage === "pitchMissingRatingReporting"
-                    ? "Opt-in to error reporting"
-                    : null}
+          : popupPageToHeadline[curPage]}
       </h3>
 
       <div className="nav-controls">

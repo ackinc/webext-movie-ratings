@@ -201,7 +201,8 @@ export type PopupPage =
   | "filters"
   | "settings"
   | "pitchErrorReporting"
-  | "pitchMissingRatingReporting";
+  | "pitchMissingRatingReporting"
+  | "feedbackForm";
 
 export type InAppNotificationStatus = "unseen" | "seen" | "dismissed";
 export interface InAppNotification {
