@@ -20,3 +20,15 @@ export const siftApiProgramMatchSchemas = {
     imdbId: Type.Optional(Type.String()),
   }),
 };
+
+const userMessageCategory = Type.Enum([
+  "feedback",
+  "incorrect-rating-report",
+  "uninstall-reason",
+  "other",
+]);
+export const userMessageSchema = Type.Object({
+  email: Type.Optional(Type.String()),
+  category: userMessageCategory,
+  message: Type.String(),
+});

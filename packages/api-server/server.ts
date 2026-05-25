@@ -7,9 +7,12 @@ import type { Database } from "better-sqlite3";
 import { parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
 import cors from "@fastify/cors";
+import { Type, type Static } from "typebox";
 import {
   type SiftApiProgramMatching,
   siftApiProgramMatchSchemas,
+  type UserMessage,
+  userMessageSchema,
 } from "sifttypes";
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
@@ -43,6 +46,7 @@ function createServer(db: Database) {
             extensionIds.chrome.map((id) => `chrome-extension://${id}`),
             extensionIds.edge.map((id) => `chrome-extension://${id}`),
             extensionIds.firefox.map((id) => `moz-extension://${id}`),
+            "https://getsift.today",
           ].flat()
         : true,
   });
@@ -64,28 +68,17 @@ function createServer(db: Database) {
   });
 
   // health check route
+  const healthCheckRequestSchema = Type.Object({
+    delayMs: Type.Optional(Type.Number()),
+    error: Type.Optional(Type.String()),
+    workThroughDelay: Type.Optional(Type.Boolean()),
+  });
   fastify.get<{
-    Querystring: {
-      delayMs?: number;
-      error?: string;
-      workThroughDelay?: boolean;
-    };
+    Querystring: Static<typeof healthCheckRequestSchema>;
     Reply: { 200: { status: string } };
   }>(
     "/",
-    {
-      schema: {
-        querystring: {
-          type: "object",
-          properties: {
-            delayMs: { type: "number" },
-            error: { type: "string" },
-            workThroughDelay: { type: "boolean" },
-          },
-          additionalProperties: false,
-        },
-      },
-    },
+    { schema: { querystring: healthCheckRequestSchema } },
     async function (request, reply) {
       const { delayMs: qDelayMs, error, workThroughDelay } = request.query;
       if (qDelayMs !== undefined) {
@@ -167,6 +160,25 @@ function createServer(db: Database) {
 
       // row.status === 'abandoned'
       reply.code(200).send({ status: "abandoned" });
+    },
+  );
+
+  // receive user messages
+  fastify.post<{
+    Body: UserMessage;
+    Reply: { 200: { status: string } };
+  }>(
+    "/messages",
+    { schema: { body: userMessageSchema } } satisfies RouteShorthandOptions,
+    async function (request, reply) {
+      const { email, category, message } = request.body;
+      const { changes } = db
+        .prepare(
+          "INSERT INTO messages (email, category, message) VALUES (?, ?, ?)",
+        )
+        .run(email ?? null, category, message);
+      if (changes != 1) throw new Error(`Insertion failed`);
+      reply.code(200).send({ status: "ok" });
     },
   );
 

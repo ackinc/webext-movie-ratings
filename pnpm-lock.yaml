@@ -65,6 +65,9 @@ importers:
       siftutils:
         specifier: workspace:utils@*
         version: link:../../shared/utils
+      typebox:
+        specifier: ^1.1.34
+        version: 1.1.34
       yargs:
         specifier: ^18.0.0
         version: 18.0.0
@@ -226,6 +229,9 @@ importers:
       react-dom:
         specifier: 19.2.4
         version: 19.2.4(react@19.2.4)
+      sifttypes:
+        specifier: workspace:types@*
+        version: link:../../shared/types
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.5.0

@@ -68,6 +68,8 @@ let omdbApiClient: OmdbApiClient;
 //////////////////////////////
 
 async function onInstalled() {
+  browser.runtime.setUninstallURL(SIFT_WEBSITE_URL + "/uninstall");
+
   const [
     onboardingStatus,
     errorReportingOptIn,

@@ -33,6 +33,8 @@ const SIFT_API_URL =
   APP_ENV === "development"
     ? "http://localhost:3000"
     : "https://api.getsift.today";
+const SIFT_WEBSITE_URL =
+  APP_ENV === "development" ? "http://localhost:3001" : "https://getsift.today";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -91,6 +93,7 @@ const config: esbuild.BuildOptions = {
     TARGET_BROWSER: `"${TARGET_BROWSER}"`,
 
     SIFT_API_URL: `"${SIFT_API_URL}"`,
+    SIFT_WEBSITE_URL: `"${SIFT_WEBSITE_URL}"`,
   },
   loader: {
     ".png": "dataurl",
