@@ -1,0 +1,17 @@
+.text-input {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.text-input input {
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 8px 8px;
+}
+
+.text-input .helper-text {
+  color: gray;
+  font-size: 12px;
+  padding: 0 8px;
+}
