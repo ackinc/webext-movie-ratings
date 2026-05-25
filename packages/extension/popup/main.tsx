@@ -120,9 +120,7 @@ function App() {
           ) : null}
         </main>
 
-        {(["filters", "settings"] as PopupPage[]).includes(curPage) ? (
-          <Footer curPage={curPage} />
-        ) : null}
+        <Footer curPage={curPage} setCurPage={setCurPage} />
       </SetCurPageContext.Provider>
     </div>
   );

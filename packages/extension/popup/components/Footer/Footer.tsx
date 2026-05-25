@@ -7,7 +7,9 @@ interface FooterProps {
   curPage: PopupPage;
 }
 
-export default function Footer({ curPage }: FooterProps) {
+export default function Footer({ curPage, setCurPage }: FooterProps) {
+  if (!["filters", "settings"].includes(curPage)) return null;
+
   return (
     <div className="footer">
       <FeedbackCollection curPage={curPage} />
