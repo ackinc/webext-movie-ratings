@@ -1,5 +1,9 @@
 # Changelog
 
+## v9.2.4
+
+- Extension now takes user to uninstall-reason page on uninstall
+
 ## v9.2.0
 
 - Added support for Hulu
