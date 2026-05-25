@@ -11,6 +11,8 @@ import { Type, type Static } from "typebox";
 import {
   type SiftApiProgramMatching,
   siftApiProgramMatchSchemas,
+  type UserMessage,
+  userMessageSchema,
 } from "sifttypes";
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
@@ -157,6 +159,25 @@ function createServer(db: Database) {
 
       // row.status === 'abandoned'
       reply.code(200).send({ status: "abandoned" });
+    },
+  );
+
+  // receive user messages
+  fastify.post<{
+    Body: UserMessage;
+    Reply: { 200: { status: string } };
+  }>(
+    "/messages",
+    { schema: { body: userMessageSchema } } satisfies RouteShorthandOptions,
+    async function (request, reply) {
+      const { email, category, message } = request.body;
+      const { changes } = db
+        .prepare(
+          "INSERT INTO messages (email, category, message) VALUES (?, ?, ?)",
+        )
+        .run(email ?? null, category, message);
+      if (changes != 1) throw new Error(`Insertion failed`);
+      reply.code(200).send({ status: "ok" });
     },
   );
 
