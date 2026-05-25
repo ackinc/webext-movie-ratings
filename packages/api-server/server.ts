@@ -46,6 +46,7 @@ function createServer(db: Database) {
             extensionIds.chrome.map((id) => `chrome-extension://${id}`),
             extensionIds.edge.map((id) => `chrome-extension://${id}`),
             extensionIds.firefox.map((id) => `moz-extension://${id}`),
+            "https://getsift.today",
           ].flat()
         : true,
   });
