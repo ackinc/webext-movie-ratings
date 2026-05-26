@@ -18,7 +18,7 @@ import {
 import { SWError } from "@common/customErrors";
 import { captureException } from "@common/errorReporter";
 import SiteChooserFormControl from "@popup/components/SiteChooserFormControl";
-import loadingIndicator from "@images/loading.svg";
+import LoadingIndicator from "@common/components/Icons/Loading";
 import "./SiteChooserForm.css";
 
 // We want to wait for the user to stop interacting with the form before
@@ -140,9 +140,7 @@ export default function SiteChooserForm() {
               disabled={["toDisable"].includes(siteStatuses[site])}
               onToggle={toggleSite}
             />
-            {loading ? (
-              <img className="loading-indicator" src={loadingIndicator} />
-            ) : null}
+            {loading ? <LoadingIndicator className="inline-icon" /> : null}
           </div>
         );
       })}

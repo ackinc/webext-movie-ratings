@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import { getSetting, setSetting } from "@common";
 import "./ErrorReportingOptIn.css";
-import CheckboxInput from "../Inputs/CheckboxInput/CheckboxInput";
+import CheckboxInput from "../../../common/components/Inputs/CheckboxInput/CheckboxInput";
 
 interface ErrorReportingOptInProps {
   onClickShowDetails?: () => void;

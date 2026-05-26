@@ -1,6 +1,6 @@
 import { supportedSites, type Sitename } from "@common";
 import SiteChooserFormControl from "@popup/components/SiteChooserFormControl";
-import SettingsIcon from "@images/settings.svg";
+import SettingsIcon from "@common/components/Icons/Settings";
 
 interface WelcomePageProps {
   selectedSites: Sitename[];
@@ -33,7 +33,7 @@ export default function WelcomePage({
       <p style={{ display: "flex", alignItems: "center", flexWrap: "wrap" }}>
         <span>You can change your choices later from </span>
         <span>
-          <img src={SettingsIcon} className="inline-icon" />
+          <SettingsIcon className="inline-icon" />
           <b>Settings</b>
         </span>
       </p>
