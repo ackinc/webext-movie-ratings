@@ -2,3 +2,84 @@ export const API_URL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:3000"
     : "https://api.getsift.today";
+
+export const supportedBrowsers = [
+  {
+    name: "Chrome",
+    logo: "/images/browserLogos/chrome32.png",
+    url: "https://chromewebstore.google.com/detail/sift-imdb-ratings-on-vari/pfnhkljamlclkackkndllofcfhihacna",
+  },
+  {
+    name: "Edge",
+    logo: "/images/browserLogos/edge32.png",
+    url: "https://microsoftedge.microsoft.com/addons/detail/sift-imdb-ratings-on-var/odgepppomekmdiifmjmocpjhopdmgjnl",
+  },
+  {
+    name: "Firefox",
+    logo: "/images/browserLogos/firefox32.png",
+    url: "https://addons.mozilla.org/en-US/firefox/addon/sift-imdb-ratings/",
+  },
+];
+
+export const supportedPlatforms = [
+  {
+    name: "Netflix",
+    logo: "/images/platformWordmarks/netflix.svg",
+    url: "https://www.netflix.com",
+  },
+  {
+    name: "Amazon Prime Video",
+    logo: "/images/platformWordmarks/amazonprimevideo.svg",
+    url: "https://www.primevideo.com",
+  },
+  {
+    name: "YouTube Movies",
+    logo: "/images/platformWordmarks/youtube.png",
+    url: "https://www.youtube.com/movies",
+  },
+  {
+    name: "Apple TV+",
+    logo: "/images/platformWordmarks/appletv.svg",
+    url: "https://tv.apple.com",
+  },
+  {
+    name: "Hotstar",
+    logo: "/images/platformWordmarks/hotstar.png",
+    url: "https://www.hotstar.com",
+  },
+  {
+    name: "SonyLIV",
+    logo: "/images/platformWordmarks/sonyliv.png",
+    url: "https://www.sonyliv.com",
+  },
+  {
+    name: "Crunchyroll",
+    logo: "/images/platformWordmarks/crunchyroll.svg",
+    url: "https://www.crunchyroll.com",
+  },
+  {
+    name: "HBO Max",
+    logo: "/images/platformWordmarks/hbomax.png",
+    url: "https://www.hbomax.com",
+  },
+  {
+    name: "Hulu",
+    logo: "/images/platformWordmarks/hulu.svg",
+    url: "https://www.hulu.com",
+  },
+  {
+    name: "MX Player",
+    logo: "/images/platformWordmarks/mxplayer.svg",
+    url: "https://www.mxplayer.in",
+  },
+  {
+    name: "Zee 5",
+    logo: "/images/platformWordmarks/zee5.svg",
+    url: "https://www.zee5.com",
+  },
+  {
+    name: "PeacockTV",
+    logo: "/images/platformWordmarks/peacocktv.webp",
+    url: "https://www.peacocktv.com",
+  },
+];
