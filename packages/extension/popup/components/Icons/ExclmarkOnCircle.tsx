@@ -1,4 +1,4 @@
-export default function CheckmarkOnCircle({ style }: { style?: object }) {
+export default function ExclmarkOnCircle({ style }: { style?: object }) {
   return (
     <svg
       viewBox="0 0 16 16"
