@@ -1,7 +1,7 @@
 {
   "name": "sift-web-extension",
-  "version": "9.2.5",
-  "main": "index.js",
+  "version": "9.3.0",
+  "description": "Sift adds IMDB ratings next to program tiles on various streaming websites to help you find gems you would normally overlook, and to choose what to watch faster.",
   "scripts": {
     "build:dev": "APP_ENV=development pnpm run build --watch",
     "prebuild": "pnpm run clean && mkdir -p dist && cp -r ../../images dist",
@@ -16,7 +16,6 @@
   },
   "author": "Anirudh Nimmagadda <anirudh.nimmagadda@gmail.com>",
   "license": "ISC",
-  "description": "Sift adds IMDB ratings next to programs on various OTT platforms to help you choose what to watch faster.",
   "packageManager": "pnpm@10.33.0",
   "devDependencies": {
     "@sentry/esbuild-plugin": "^5.2.1",

@@ -10,8 +10,6 @@
 .header .logo-container {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background-color: var(--main-bg-color);
   padding: 2px;
   overflow: hidden;
 }
