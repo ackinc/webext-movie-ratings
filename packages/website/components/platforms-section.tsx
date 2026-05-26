@@ -34,6 +34,31 @@ const platforms = [
     logo: "/logos/crunchyroll_wordmark.svg",
     url: "https://www.crunchyroll.com",
   },
+  {
+    name: "HBO Max",
+    logo: "/logos/hbomax_wordmark.png",
+    url: "https://www.hbomax.com",
+  },
+  {
+    name: "Hulu",
+    logo: "/logos/hulu_wordmark.svg",
+    url: "https://www.hulu.com",
+  },
+  {
+    name: "MX Player",
+    logo: "/logos/mxplayer_wordmark.svg",
+    url: "https://www.mxplayer.in",
+  },
+  {
+    name: "Zee 5",
+    logo: "/logos/zee5_wordmark.svg",
+    url: "https://www.zee5.com",
+  },
+  {
+    name: "PeacockTV",
+    logo: "/logos/peacocktv_wordmark.webp",
+    url: "https://www.peacocktv.com",
+  },
 ];
 
 export function PlatformsSection() {
