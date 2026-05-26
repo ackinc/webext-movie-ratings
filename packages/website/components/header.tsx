@@ -28,7 +28,7 @@ export function Header() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
           <img
-            src="logo128.png"
+            src="images/logo128.png"
             alt="Sift logo"
             className="h-8 w-8 rounded-lg"
           />

@@ -7,7 +7,7 @@ export function Footer() {
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="flex items-center gap-2">
             <img
-              src="logo128.png"
+              src="images/logo128.png"
               alt="Sift logo"
               className="h-8 w-8 rounded-lg"
             />
