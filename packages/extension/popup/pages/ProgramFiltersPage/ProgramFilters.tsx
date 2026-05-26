@@ -8,7 +8,7 @@ import {
 } from "@common";
 import type { ProgramFilterSettings } from "@common";
 import Slider from "@popup/components/Slider";
-import CheckboxInput from "@popup/components/Inputs/CheckboxInput/CheckboxInput";
+import CheckboxInput from "@common/components/Inputs/CheckboxInput/CheckboxInput";
 
 import "./ProgramFilters.css";
 

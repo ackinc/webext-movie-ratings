@@ -19,12 +19,12 @@ See what platforms are supported [here][supported-platforms-link]
 
 ## Build instructions
 
+- To build the extension:
+  - `cd packages/extension && pnpm install`, then
+    - `pnpm run build --target=chrome` for chrome
+    - `pnpm run build --target=firefox` for firefox
+    - `pnpm run build --target=edge` for edge
 - Tested with node v24 and pnpm v10
-- Build commands:
-  - `pnpm run build --target=chrome` for chrome
-  - `pnpm run build --target=firefox` for firefox
-  - `pnpm run build --target=edge` for edge
-- Install dev dependencies before building
 
 ## Misc
 

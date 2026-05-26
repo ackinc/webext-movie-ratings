@@ -47,7 +47,7 @@
   text-align: center;
 }
 
-.onboarding-flow img.inline-icon {
+.onboarding-flow .inline-icon {
   position: relative;
   top: 2px;
   height: 14px;

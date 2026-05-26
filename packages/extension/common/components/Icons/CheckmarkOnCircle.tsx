@@ -1,10 +1,12 @@
-export default function CheckmarkOnCircle({ style }: { style?: object }) {
+import type { IconProps } from "./types";
+
+export default function CheckmarkOnCircle(props: IconProps) {
   return (
     <svg
-      viewBox="0 0 64 64"
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
-      style={{ ...style }}
+      viewBox="0 0 64 64"
+      {...props}
     >
       <path d="M 32,0.01903028 C 14.413701,0.01903028 0.1580687,14.337976 0.1580687,32 0.1580687,49.662024 14.414763,63.98097 32,63.98097 49.585237,63.98097 63.841931,49.662024 63.841931,32 63.841931,14.337976 49.585237,0.01903028 32,0.01903028 Z m -7.403249,51.16955172 -0.02123,-0.02132 -0.01804,0.02132 -14.846831,-15.350866 7.460565,-7.637055 7.405371,7.658376 22.289352,-23.046553 7.423416,7.673301 z" />
     </svg>

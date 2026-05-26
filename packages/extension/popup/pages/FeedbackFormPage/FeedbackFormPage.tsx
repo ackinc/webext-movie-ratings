@@ -1,7 +1,7 @@
 import { useState } from "preact/hooks";
 import Button from "@common/components/Buttons/Button";
 import * as siftApiService from "@common/siftApiService";
-import TextInput from "@popup/components/Inputs/TextInput/TextInput";
+import TextInput from "@common/components/Inputs/TextInput/TextInput";
 import "./FeedbackFormPage.css";
 
 export default function FeedbackFormPage() {

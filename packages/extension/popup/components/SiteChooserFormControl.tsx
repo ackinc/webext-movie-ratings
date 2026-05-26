@@ -1,5 +1,5 @@
 import { supportedSites, type Sitename } from "@popup/common";
-import CheckboxInput from "./Inputs/CheckboxInput/CheckboxInput";
+import CheckboxInput from "../../common/components/Inputs/CheckboxInput/CheckboxInput";
 
 interface SiteChooserFormControlProps {
   site: Sitename;

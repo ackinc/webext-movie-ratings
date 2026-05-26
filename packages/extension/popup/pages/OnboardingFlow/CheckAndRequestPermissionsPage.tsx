@@ -10,8 +10,8 @@ import {
   type Sitename,
 } from "@common";
 import Button from "@common/components/Buttons/Button";
-import ExclmarkOnCircle from "@popup/components/Icons/ExclmarkOnCircle";
-import LoadingIndicator from "@images/loading.svg";
+import ExclmarkOnCircle from "@common/components/Icons/ExclmarkOnCircle";
+import LoadingIndicator from "@common/components/Icons/Loading";
 
 interface PageProps {
   sitesToEnable: Sitename[];
@@ -70,7 +70,7 @@ export default function CheckAndRequestPermissionsPage({
       <div
         className={`loading-overlay overlay flex-center-content ${state.status === "checking" ? "" : "hidden"}`}
       >
-        <img src={LoadingIndicator} alt="loading" />
+        <LoadingIndicator className="inline-icon" />
         <p>Please wait ...</p>
       </div>
 

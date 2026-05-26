@@ -7,7 +7,7 @@ import {
   type Message,
   type SWMessageResponse,
 } from "@common";
-import CheckboxInput from "./Inputs/CheckboxInput/CheckboxInput";
+import CheckboxInput from "../../common/components/Inputs/CheckboxInput/CheckboxInput";
 
 export default function ToggleMediaRequestBlocking() {
   const [enabled, setEnabled] = useState(false);

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "preact/hooks";
 import { browser, CssColors, setSetting } from "@common";
-import CheckmarkOnCircle from "@popup/components/Icons/CheckmarkOnCircle";
-import SettingsIcon from "@images/settings.svg";
-import LoadingIndicator from "@images/loading.svg";
+import CheckmarkOnCircle from "@common/components/Icons/CheckmarkOnCircle";
+import SettingsIcon from "@common/components/Icons/Settings";
+import LoadingIndicator from "@common/components/Icons/Loading";
 
 export default function CheckAndDisplayPermissionStatusPage() {
   const [state, setState] = useState<{
@@ -33,7 +33,7 @@ export default function CheckAndDisplayPermissionStatusPage() {
       <div
         className={`loading-overlay overlay flex-center-content ${state.status === "checking" ? "" : "hidden"}`}
       >
-        <img src={LoadingIndicator} alt="loading" />
+        <LoadingIndicator />
         <p>Please wait ...</p>
       </div>
 
@@ -62,7 +62,7 @@ export default function CheckAndDisplayPermissionStatusPage() {
           <p>
             If you change your mind, you can enable Sift on specific sites from{" "}
             <span>
-              <img src={SettingsIcon} className="inline-icon" />
+              <SettingsIcon className="inline-icon" />
               <b>Settings</b>
             </span>
           </p>
