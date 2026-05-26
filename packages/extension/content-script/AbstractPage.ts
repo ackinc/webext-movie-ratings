@@ -36,6 +36,8 @@ export default class AbstractPage {
 
   inSelectProgramMode: boolean = false;
 
+  #ctor = this.constructor as typeof AbstractPage;
+
   // Caching these allows us to avoid a `findPrograms` call inside `cleanup`
   // Decided this was worth doing because of the annoying data extraction
   //   errors I was seeing during old-content-script `cleanup` after deploying
@@ -47,9 +49,6 @@ export default class AbstractPage {
     this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
     this.isValidProgramContainer = this.isValidProgramContainer.bind(this);
     this.isValidProgram = this.isValidProgram.bind(this);
-
-    this.#foundPrograms = [];
-    this.inSelectProgramMode = false;
   }
 
   async initialize() {
@@ -63,9 +62,7 @@ export default class AbstractPage {
     while (this.#foundPrograms.length > 0) {
       const p = this.#foundPrograms.pop()!;
       p.node.classList.remove(CssClasses.filteredOutProgramNode);
-      (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
-        p.node,
-      );
+      this.#ctor.ProgramNode.removeIMDBNode(p.node);
     }
 
     if (this.inSelectProgramMode) this.toggleSelectProgramMode();
@@ -184,9 +181,7 @@ valid containers:\n\t${programContainers
   };
 
   checkIMDBDataAlreadyAdded(program: Program): boolean {
-    const imdbNode = (
-      this.constructor as typeof AbstractPage
-    ).ProgramNode.getIMDBNode(program.node);
+    const imdbNode = this.#ctor.ProgramNode.getIMDBNode(program.node);
 
     return Boolean(
       imdbNode &&
@@ -199,15 +194,10 @@ valid containers:\n\t${programContainers
 
   addIMDBData(program: Program, data: IMDBData) {
     // remove existing node (no-op if doesn't exist)
-    (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
-      program.node,
-    );
+    this.#ctor.ProgramNode.removeIMDBNode(program.node);
 
     const ratingNode = this.#createIMDBDataNode(data);
-    (this.constructor as typeof AbstractPage).ProgramNode.insertIMDBNode(
-      program.node,
-      ratingNode,
-    );
+    this.#ctor.ProgramNode.insertIMDBNode(program.node, ratingNode);
   }
 
   protected async injectStyles() {
@@ -275,7 +265,7 @@ valid containers:\n\t${programContainers
     const selectors = this.getProgramNodeSelectors(pContainer);
     const results = selectors.map((sel) =>
       Array.from(pContainer.node.querySelectorAll<HTMLElement>(sel)).filter(
-        (this.constructor as typeof AbstractPage).ProgramNode.isMovieOrSeries,
+        this.#ctor.ProgramNode.isMovieOrSeries,
       ),
     );
 
