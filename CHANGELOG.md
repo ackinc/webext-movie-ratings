@@ -1,5 +1,9 @@
 # Changelog
 
+## v9.3.0
+
+- Updated extension name, logo, description
+
 ## v9.2.5
 
 - Added a proper feedback form

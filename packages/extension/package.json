@@ -1,6 +1,6 @@
 {
   "name": "sift-web-extension",
-  "version": "9.3.0",
+  "version": "9.4.0",
   "description": "Sift adds IMDB ratings next to program tiles on various streaming websites to help you find gems you would normally overlook, and to choose what to watch faster.",
   "scripts": {
     "build:dev": "APP_ENV=development pnpm run build --watch",
