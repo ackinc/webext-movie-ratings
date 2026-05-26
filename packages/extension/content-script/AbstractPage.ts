@@ -71,7 +71,7 @@ export default class AbstractPage {
   findPrograms(): Program[] {
     const programContainerNodes = this.#findProgramContainerNodes();
     const programContainers = programContainerNodes
-      .map(this.#safeCreateProgramContainer)
+      .map(dataExtractionErrorHandlingWrapper(this.#createProgramContainer))
       .filter((x) => !!x)
       .filter(this.isValidProgramContainer);
 
@@ -80,7 +80,7 @@ export default class AbstractPage {
     );
     const programsPerPC = programNodesPerPC.map((nodes) =>
       nodes
-        .map(this.#safeCreateProgram)
+        .map(dataExtractionErrorHandlingWrapper(this.#createProgram))
         .filter((x) => !!x)
         .filter(this.isValidProgram),
     );
@@ -110,75 +110,23 @@ valid containers:\n\t${programContainers
     }
   }
 
-  // The #safeCreateX methods below encapsulate the handling of the different
-  //   kinds of errors that can occur when we try to create a ProgramContainer
-  //   or Program from a likely element found on the webpage
-  // Some errors - like ErrorMessage.unrecognizedProgramContainerNode - are
-  //   "showstoppers" - they need to be identified and fixed at build-time.
-  // This method throws these errors so the extension can be brought to an
-  //   immediate halt.
-  // Other errors - like those caused by a failure to extract PC title data
-  //   due to a website markup change - are not showstoppers. If extraction
-  //   for a particular PC/Program fails, it shouldn't affect the processing
-  //   of some other PC/Program.
-  // These methods ensure non-showstopper errors are caught and logged/captured,
-  //   but does not rethrow them up the call stack
-
-  #safeCreateProgramContainer = ({
+  #createProgramContainer = ({
     node,
     selector,
-  }: Omit<
-    ProgramContainer,
-    keyof ProgramContainerData
-  >): ProgramContainer | null => {
-    try {
-      return {
-        selector,
-        node,
-        title: this.getTitleFromProgramContainerNode(node),
-      };
-    } catch (e) {
-      ensureError(e);
+  }: Omit<ProgramContainer, keyof ProgramContainerData>): ProgramContainer => ({
+    selector,
+    node,
+    title: this.getTitleFromProgramContainerNode(node),
+  });
 
-      if (e.message === ErrorMessage.unrecognizedProgramContainerNode) {
-        throw e;
-      }
-
-      const err = DataExtractionError.from(e, node, selector);
-      // NOTE_PROD_DATA_EXTRACTION_ERRORS
-      // in prod, we don't want errors affecting one pc- or p-node
-      //   to bring the entire loop to a halt
-      if (APP_ENV === "development") throw err;
-      if (!err.__fromCache) captureException(err);
-      return null;
-    }
-  };
-
-  #safeCreateProgram = ({
+  #createProgram = ({
     node,
     selector,
-  }: Omit<Program, keyof ProgramData>): Program | null => {
-    try {
-      const ctor = this.constructor as typeof AbstractPage;
-      return {
-        selector,
-        node,
-        ...ctor.ProgramNode.extractProgramData(node),
-      };
-    } catch (e) {
-      ensureError(e);
-
-      if (e.message === ErrorMessage.unrecognizedProgramNode) {
-        throw e;
-      }
-
-      const err = DataExtractionError.from(e, node, selector);
-      // see NOTE_PROD_DATA_EXTRACTION_ERRORS above
-      if (APP_ENV === "development") throw err;
-      if (!err.__fromCache) captureException(err);
-      return null;
-    }
-  };
+  }: Omit<Program, keyof ProgramData>): Program => ({
+    selector,
+    node,
+    ...this.#ctor.ProgramNode.extractProgramData(node),
+  });
 
   checkIMDBDataAlreadyAdded(program: Program): boolean {
     const imdbNode = this.#ctor.ProgramNode.getIMDBNode(program.node);
@@ -469,11 +417,10 @@ valid containers:\n\t${programContainers
 
     const programNode = cur as HTMLElement;
 
-    const program = this.#safeCreateProgram({
+    const program = this.#createProgram({
       node: programNode,
       selector: matchingSelector!,
     });
-    if (!program) return;
     console.log(program);
 
     const response = await browser.runtime.sendMessage<
@@ -486,5 +433,37 @@ valid containers:\n\t${programContainers
 
     if ("error" in response) throw new SWError(response.error);
     console.log(response.data);
+  };
+}
+
+function dataExtractionErrorHandlingWrapper(
+  fn:
+    | ((
+        arg: Omit<ProgramContainer, keyof ProgramContainerData>,
+      ) => ProgramContainer | null)
+    | ((arg: Omit<Program, keyof ProgramData>) => Program | null),
+) {
+  return ({
+    node,
+    selector,
+  }:
+    | Omit<ProgramContainer, keyof ProgramContainerData>
+    | Omit<Program, keyof ProgramData>) => {
+    try {
+      return fn({ node, selector });
+    } catch (e) {
+      ensureError(e);
+
+      const err = DataExtractionError.from(e, node, selector);
+      if (!err.__fromCache) captureException(err);
+
+      if (APP_ENV === "production") {
+        // in prod, we don't want errors affecting one pc- or p-node
+        //   to prevent the processing of other nodes
+        return null;
+      }
+
+      throw err;
+    }
   };
 }
