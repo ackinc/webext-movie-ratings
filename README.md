@@ -4,6 +4,7 @@
 
 - adds the IMDB rating of a movie / tv show next to it's tile on the page
 - clicking on the rating opens the movie's IMDB page in a new tab
+- requests permissions **only** for the sites you enable it on after installation
 - allows you to "fade-to-black" programs that are low-rated
 
 ![Sift](misc/screenshots/what_does_this_extension_do.png)
@@ -14,13 +15,7 @@
 
 ## Supported OTT platforms
 
-- Netflix
-- Amazon Prime Video
-- Youtube Movies
-- AppleTV+
-- Hotstar
-- SonyLIV
-- Crunchyroll
+See what platforms are supported [here][supported-platforms-link]
 
 ## Build instructions
 
@@ -39,9 +34,10 @@
 
 [chrome-link]: https://chromewebstore.google.com/detail/sift-imdb-ratings-on-indi/pfnhkljamlclkackkndllofcfhihacna
 [edge-link]: https://microsoftedge.microsoft.com/addons/detail/odgepppomekmdiifmjmocpjhopdmgjnl
-[firefox-link]: https://addons.mozilla.org/firefox/addon/imdb-ratings-for-various-ott/
+[firefox-link]: https://addons.mozilla.org/firefox/addon/sift-imdb-ratings/
 [omdbapi-link]: https://omdbapi.com
 [omdbapi-patreon-link]: https://www.patreon.com/join/omdb
 [demo-video-link]: https://youtu.be/0nacMtjRhk4
 [github-link]: https://github.com/ackinc/webext-movie-ratings
 [privacy-policy-link]: https://getsift.today/privacy
+[supported-platforms-link]: https://getsift.today#platforms

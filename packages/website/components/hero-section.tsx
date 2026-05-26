@@ -17,7 +17,7 @@ const browsers = [
   {
     name: "Firefox",
     logo: "/firefox32.png",
-    url: "https://addons.mozilla.org/en-US/firefox/addon/imdb-ratings-for-various-ott/",
+    url: "https://addons.mozilla.org/firefox/addon/sift-imdb-ratings/",
   },
 ];
 
