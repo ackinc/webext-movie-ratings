@@ -57,3 +57,5 @@ fi;
 for table_name in "${TABLES_TO_RESTORE[@]}"; do
     restore_table "$DB_BACKUP_PATH" "$DB_PATH" "$table_name"
 done
+
+notify-send -t 5000 -i dialog-information "Sift" "pullProdDataFromBackup.sh completed"
