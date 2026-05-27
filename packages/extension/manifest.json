@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Sift: IMDB ratings on various streaming websites. Free & Open Source.",
-  "description": "Sift adds IMDB ratings next to program tiles on various streaming websites to help you find gems you would normally overlook, and to choose what to watch faster.",
+  "description": "Sift adds IMDB ratings next to program tiles on various streaming websites.",
   "version": "9.4.0",
   "icons": {
     "16": "images/logo16.png",
