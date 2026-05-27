@@ -1,11 +1,11 @@
 {
-  "name": "Sift: IMDB ratings on various streaming websites",
+  "name": "Sift: IMDB ratings on various streaming sites",
   "background": {
     "scripts": ["service-worker.js"]
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "sift_imdb_ratings_on_streaming_websites@example.com",
+      "id": "sift_imdb_ratings_indian_ott@example.com",
       "strict_min_version": "113.0"
     },
     "gecko_android": {
