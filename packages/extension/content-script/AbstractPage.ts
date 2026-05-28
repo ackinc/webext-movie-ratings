@@ -68,7 +68,9 @@ export default class AbstractPage {
     if (this.inSelectProgramMode) this.toggleSelectProgramMode();
   }
 
-  findPrograms(): Program[] {
+  findPrograms({
+    swallowDataExtractionErrors = false,
+  }: { swallowDataExtractionErrors?: boolean } = {}): Program[] {
     const programContainerNodes = this.#findProgramContainerNodes();
     const programContainers = programContainerNodes
       .map(dataExtractionErrorHandlingWrapper(this.#createProgramContainer))
@@ -107,6 +109,34 @@ valid containers:\n\t${programContainers
           .map((p) => p.title)
           .join(", ") + (programsInPc.length > maxProgramTitles ? " ..." : "")
       }`;
+    }
+
+    function dataExtractionErrorHandlingWrapper(
+      fn:
+        | ((
+            arg: Omit<ProgramContainer, keyof ProgramContainerData>,
+          ) => ProgramContainer | null)
+        | ((arg: Omit<Program, keyof ProgramData>) => Program | null),
+    ) {
+      return ({
+        node,
+        selector,
+      }:
+        | Omit<ProgramContainer, keyof ProgramContainerData>
+        | Omit<Program, keyof ProgramData>) => {
+        try {
+          return fn({ node, selector });
+        } catch (e) {
+          ensureError(e);
+
+          const err = DataExtractionError.from(e, node, selector);
+          if (!err.__fromCache) captureException(err);
+
+          if (swallowDataExtractionErrors) return null;
+
+          throw err;
+        }
+      };
     }
   }
 
@@ -433,37 +463,5 @@ valid containers:\n\t${programContainers
 
     if ("error" in response) throw new SWError(response.error);
     console.log(response.data);
-  };
-}
-
-function dataExtractionErrorHandlingWrapper(
-  fn:
-    | ((
-        arg: Omit<ProgramContainer, keyof ProgramContainerData>,
-      ) => ProgramContainer | null)
-    | ((arg: Omit<Program, keyof ProgramData>) => Program | null),
-) {
-  return ({
-    node,
-    selector,
-  }:
-    | Omit<ProgramContainer, keyof ProgramContainerData>
-    | Omit<Program, keyof ProgramData>) => {
-    try {
-      return fn({ node, selector });
-    } catch (e) {
-      ensureError(e);
-
-      const err = DataExtractionError.from(e, node, selector);
-      if (!err.__fromCache) captureException(err);
-
-      if (APP_ENV === "production") {
-        // in prod, we don't want errors affecting one pc- or p-node
-        //   to prevent the processing of other nodes
-        return null;
-      }
-
-      throw err;
-    }
   };
 }

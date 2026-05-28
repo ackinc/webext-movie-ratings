@@ -188,7 +188,11 @@ async function loopFn(abortController: AbortController) {
       ...(await getSetting("programFiltersSettings")),
     };
 
-    const programs = page.findPrograms();
+    const programs = page.findPrograms({
+      // in prod, we don't want an error during data-extraction for
+      //   one pc- or p-node to affect processing of other nodes
+      swallowDataExtractionErrors: APP_ENV === "production",
+    });
     await Promise.all(
       programs.map((p) => addRating(p).then(fadeIfFilteredOut)),
     );
