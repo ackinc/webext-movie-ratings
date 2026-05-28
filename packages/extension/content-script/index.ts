@@ -1,3 +1,4 @@
+import { isEqual } from "lodash-es";
 import {
   browser,
   defaultProgramFilterSettings,
@@ -58,13 +59,23 @@ interface LoopState {
     | "error"
     | "cleanup"
     | "userRequest"
+    | "pageUnchanged"
     | undefined;
+  pageUnchangedCounter: number;
 }
 const loopState: LoopState = {
   timeout: undefined,
   abortController: undefined,
   haltReason: undefined,
+  pageUnchangedCounter: 0,
 };
+
+const maxLoopInvocationsWhenPageUnchanged = 5;
+const mutationObserver = new MutationObserver((mutationList) => {
+  console.log(mutationList);
+  startLoop("pageUnchanged");
+  mutationObserver.disconnect();
+});
 
 (async () => {
   try {
@@ -146,22 +157,28 @@ function removeListeners() {
 }
 
 function startLoop(reason?: LoopState["haltReason"]) {
-  if (loopState.timeout || (reason && loopState.haltReason !== reason)) {
+  const alreadyStarted = Boolean(loopState.timeout);
+  if (alreadyStarted || (reason && loopState.haltReason !== reason)) {
     return;
   }
+
+  if (APP_ENV === "development") console.log(`startLoop: ${reason}`);
 
   loopState.abortController = new AbortController();
   loopState.timeout = setTimeout(() => loopFn(loopState.abortController!), 0);
   loopState.haltReason = undefined;
+  loopState.pageUnchangedCounter = 0;
 }
 
 function stopLoop(reason: LoopState["haltReason"]) {
   if (loopState.haltReason) return; // no-op if already halted
 
+  if (APP_ENV === "development") console.log(`stopLoop: ${reason}`);
+
   // Prevent running loopFn from scheduling another invocation
   // WARN: If tab was backgrounded before first invocation of loop,
   //   loopState.abortController will be undefined; the use of optional-
-  //   chaining below prevents stopLoop from erroring out in this case
+  //   chaining below prevents this function from erroring out in this case
   loopState.abortController?.abort();
   loopState.abortController = undefined;
 
@@ -188,11 +205,27 @@ async function loopFn(abortController: AbortController) {
       ...(await getSetting("programFiltersSettings")),
     };
 
+    const prevFoundPrograms = page.foundPrograms;
     const programs = page.findPrograms({
       // in prod, we don't want an error during data-extraction for
       //   one pc- or p-node to affect processing of other nodes
       swallowDataExtractionErrors: APP_ENV === "production",
     });
+    loopState.pageUnchangedCounter = isEqual(prevFoundPrograms, programs)
+      ? ++loopState.pageUnchangedCounter
+      : 0;
+    if (
+      loopState.pageUnchangedCounter === maxLoopInvocationsWhenPageUnchanged
+    ) {
+      stopLoop("pageUnchanged");
+      mutationObserver.observe(document.body, {
+        subtree: true,
+        childList: true,
+        attributes: false,
+      });
+      return;
+    }
+
     await Promise.all(
       programs.map((p) => addRating(p).then(fadeIfFilteredOut)),
     );

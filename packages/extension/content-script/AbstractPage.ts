@@ -48,7 +48,7 @@ export default class AbstractPage {
   //   a DataExtractionError will cause that very same DataExtractionError to be
   //   logged (spuriously) during the old ISOCS' cleanup operation, which can be
   //   confusing
-  #foundPrograms: Program[] = [];
+  foundPrograms: Program[] = [];
 
   constructor() {
     this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
@@ -64,8 +64,8 @@ export default class AbstractPage {
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
     styleNode?.parentElement?.removeChild(styleNode);
 
-    while (this.#foundPrograms.length > 0) {
-      const p = this.#foundPrograms.pop()!;
+    while (this.foundPrograms.length > 0) {
+      const p = this.foundPrograms.pop()!;
       p.node.classList.remove(CssClasses.filteredOutProgramNode);
       this.#ctor.ProgramNode.removeIMDBNode(p.node);
     }
@@ -103,8 +103,8 @@ valid containers:\n\t${programContainers
       );
     }
 
-    this.#foundPrograms = programsPerPC.flat();
-    return this.#foundPrograms;
+    this.foundPrograms = programsPerPC.flat();
+    return this.foundPrograms;
 
     function logPC(pc: ProgramContainer, programsInPc: Program[]) {
       const maxProgramTitles = 5;
