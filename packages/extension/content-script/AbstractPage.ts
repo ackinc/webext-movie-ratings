@@ -38,11 +38,16 @@ export default class AbstractPage {
 
   #ctor = this.constructor as typeof AbstractPage;
 
-  // Caching these allows us to avoid a `findPrograms` call inside `cleanup`
-  // Decided this was worth doing because of the annoying data extraction
-  //   errors I was seeing during old-content-script `cleanup` after deploying
-  //   a new-content-script with a fix for those very same data extraction
-  //   errors
+  // Caching these allows us to avoid a `findPrograms` call inside `cleanup`,
+  //   which has the following benefits:
+  // 1. It makes the cleanup operation faster, which is valuable because when
+  //   the extension is updated, there is a race between the cleanup operation
+  //   of the now-outdated ISOCS and the initialization of the new ISOCS
+  // 2. During development, if cleanup calls findPrograms without the
+  //   'swallowDataExtractionErrors' option set, deploying an update to fix
+  //   a DataExtractionError will cause that very same DataExtractionError to be
+  //   logged (spuriously) during the old ISOCS' cleanup operation, which can be
+  //   confusing
   #foundPrograms: Program[] = [];
 
   constructor() {
