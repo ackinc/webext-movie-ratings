@@ -58,6 +58,7 @@ export default class AbstractPage {
 
   async initialize() {
     await Promise.all([this.injectStyles(), this.#pruneOutdatedSelectors()]);
+    return this;
   }
 
   cleanup() {

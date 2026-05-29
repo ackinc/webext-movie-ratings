@@ -1,7 +1,6 @@
 import { useState } from "preact/hooks";
 import Button from "@common/components/Buttons/Button";
 import IconButton from "@common/components/Buttons/IconButton";
-import { MessageType } from "@common";
 import type AbstractPage from "../AbstractPage";
 import CloseIcon from "@common/components/Icons/Close";
 import siftLogoIcon from "@images/logo48.png";
@@ -52,25 +51,6 @@ export default function PageControlPanel({
         }}
       >
         {inSelectProgramMode ? "Exit" : "Turn on"} select program mode
-      </Button>
-
-      <Button
-        variant="primary"
-        onClick={() =>
-          window.postMessage({ type: MessageType.toggleActiveTabLoopState })
-        }
-        style={{
-          opacity: expanded ? "1" : "0",
-          pointerEvents: expanded ? "all" : "none",
-          minHeight: "unset",
-          margin: "0",
-          padding: "8px 8px",
-          backgroundColor: "#f5c618",
-          backgroundImage: "unset",
-          transition: "all 0.2s ease-out",
-        }}
-      >
-        Toggle loop state
       </Button>
 
       <IconButton
