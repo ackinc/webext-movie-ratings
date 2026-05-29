@@ -35,54 +35,56 @@ import { addSidecar, removeSidecar } from "./sidecar";
 
 let page: AbstractPage;
 let programFilterSettings: ProgramFilterSettings;
-
-// This var is defined a little differently than most would expect, because
-//   its main utility is for webpage-ratings-stats
-// When tracking webpage-ratings-stats for telemetry:
-// - the session starts when the user lands on an OTT website
-// - stats from when a user is scrolling the first page (pg 1) should be
-//     logged in the same entry
-// - stats from when a user goes to pg 2 should go into a new entry
-// - stats from when a user goes back to pg 1 should also go into a new entry
-// In other words, a session is tied to a visit to a particular OTT webpage;
-//   it ends when the user leaves that webpage
+let mutationObserver: MutationObserver;
+// updated whenever a user navigates to a different page on the website
 let sessionStartTime: number;
+// we schedule calls to findProgramsAndAddRatings with a small
+//   delay instead of synchronously to prevent wasteful computation
+//   when the page is updating rapidly, and the mutation observer's
+//   callback is invoked multiple times in quick succession
+let timeout: ReturnType<typeof setTimeout> | null = null;
 
-interface LoopState {
-  timeout: ReturnType<typeof setTimeout> | undefined;
-  abortController: AbortController | undefined;
-  haltReason:
-    | "filterSettingsChanged"
-    | "urlChanged"
-    | "pageHidden"
-    | "error"
-    | "cleanup"
-    | "userRequest"
-    | undefined;
+main().catch(captureException);
+
+// fn defs
+
+async function main() {
+  // so content scripts belonging to prev. ext. version can cleanup
+  window.postMessage({
+    type: MessageType.orphanCheck,
+    data: { trigger: "new-content-script-injection" },
+  } satisfies Message);
+
+  // initialize state vars
+  page = await initializePage();
+  programFilterSettings = {
+    ...defaultProgramFilterSettings,
+    ...(await getSetting("programFiltersSettings")),
+  };
+  mutationObserver = new MutationObserver((_mutationList) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(findProgramsAndAddRatings, 100);
+  });
+  sessionStartTime = +new Date();
+  timeout = setTimeout(findProgramsAndAddRatings, 100);
+
+  addListeners();
+
+  if (APP_ENV !== "production") addSidecar({ page });
 }
-const loopState: LoopState = {
-  timeout: undefined,
-  abortController: undefined,
-  haltReason: undefined,
-};
 
-(async () => {
-  try {
-    // so content scripts belonging to prev. ext. version can cleanup
-    window.postMessage({
-      type: MessageType.orphanCheck,
-      data: { trigger: "new-content-script-injection" },
-    } satisfies Message);
-
-    page = await initializePage();
-    addListeners();
-    startLoop();
-
-    if (APP_ENV !== "production") addSidecar({ page });
-  } catch (e) {
-    captureException(e);
+function cleanup(broadcast = true) {
+  if (broadcast) {
+    window.postMessage({ type: MessageType.cleanup } satisfies Message);
   }
-})();
+
+  removeSidecar();
+  removeListeners();
+  if (timeout) clearTimeout(timeout);
+  page.cleanup();
+
+  console.log("sift: content script cleanup complete");
+}
 
 async function initializePage() {
   if (location.hostname === "www.disneyplus.com") {
@@ -121,76 +123,43 @@ async function initializePage() {
     throw new Error("Page not recognized");
   }
 
-  sessionStartTime = +new Date();
-  await page.initialize();
-
-  return page;
+  return await page.initialize();
 }
 
 function addListeners() {
+  mutationObserver.observe(document.body, { subtree: true, childList: true });
   window.addEventListener("message", handleMessage);
   browser.runtime.onMessage.addListener(handleMessage);
-  document.addEventListener("visibilitychange", handlePageVisibilityChange);
 }
 
 function removeListeners() {
+  mutationObserver.disconnect();
   window.removeEventListener("message", handleMessage);
 
-  // when extension is turned off, browser.runtime is sometimes
-  //   undefined by the time this line is reached
-  // if we don't preempt the error, it will interfere with subsequent
-  //   parts of the cleanup operation
+  // if cleanup is happening because the user disabled the extension,
+  //   browser.runtime will be undefined
   browser.runtime?.onMessage.removeListener(handleMessage);
-
-  document.removeEventListener("visibilitychange", handlePageVisibilityChange);
 }
 
-function startLoop(reason?: LoopState["haltReason"]) {
-  if (loopState.timeout || (reason && loopState.haltReason !== reason)) {
-    return;
-  }
-
-  loopState.abortController = new AbortController();
-  loopState.timeout = setTimeout(() => loopFn(loopState.abortController!), 0);
-  loopState.haltReason = undefined;
-}
-
-function stopLoop(reason: LoopState["haltReason"]) {
-  if (loopState.haltReason) return; // no-op if already halted
-
-  // Prevent running loopFn from scheduling another invocation
-  // WARN: If tab was backgrounded before first invocation of loop,
-  //   loopState.abortController will be undefined; the use of optional-
-  //   chaining below prevents stopLoop from erroring out in this case
-  loopState.abortController?.abort();
-  loopState.abortController = undefined;
-
-  // clear any scheduled loop
-  clearTimeout(loopState.timeout);
-  loopState.timeout = undefined;
-  loopState.haltReason = reason;
-}
-
-async function loopFn(abortController: AbortController) {
-  if (
-    FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE &&
-    document.visibilityState === "hidden"
-  ) {
-    stopLoop("pageHidden");
-    return;
-  }
-
-  const msDelayBeforeNextInvocation = 2000;
-
+async function findProgramsAndAddRatings() {
   try {
-    programFilterSettings = {
-      ...defaultProgramFilterSettings,
-      ...(await getSetting("programFiltersSettings")),
-    };
+    const programs = page.findPrograms({
+      // in prod, we don't want an error during data-extraction for
+      //   one pc- or p-node to affect processing of other nodes
+      swallowDataExtractionErrors: APP_ENV === "production",
+    });
 
-    const programs = page.findPrograms();
     await Promise.all(
-      programs.map((p) => addRating(p).then(fadeIfFilteredOut)),
+      programs.map((p) =>
+        addRating(p)
+          .then(fadeIfFilteredOut)
+          .catch((e) => {
+            // SWErrors would have been captured from the SW's side
+            if (!(e instanceof SWError)) {
+              captureException(e, { context: { program: p } });
+            }
+          }),
+      ),
     );
 
     if (FF_TELEMETRY_ENABLED) {
@@ -204,16 +173,7 @@ async function loopFn(abortController: AbortController) {
         },
       } satisfies Message);
     }
-
-    if (!abortController.signal.aborted) {
-      loopState.timeout = setTimeout(
-        () => loopFn(abortController),
-        msDelayBeforeNextInvocation,
-      );
-    }
   } catch (e) {
-    stopLoop("error");
-
     if (
       e instanceof Error &&
       e.message.startsWith("Extension context invalidated")
@@ -230,20 +190,9 @@ async function loopFn(abortController: AbortController) {
 }
 
 async function addRating(p: Program): Promise<Program> {
-  if (page.checkIMDBDataAlreadyAdded(p)) return p;
-
-  try {
-    const result = await fetchIMDBData(p);
-    page.addIMDBData(p, result);
-  } catch (e) {
-    if (e instanceof SWError) {
-      // do nothing; the error would already have been logged
-      //   and captured from the SW-side
-    } else {
-      captureException(e, { context: { program: p } });
-    }
+  if (!page.checkIMDBDataAlreadyAdded(p)) {
+    page.addIMDBData(p, await fetchIMDBData(p));
   }
-
   return p;
 }
 
@@ -315,7 +264,7 @@ function handleMessage(
     cleanup();
   } else if (type === MessageType.orphanCheck) {
     if (!browser.runtime.id) {
-      // if the trigger was that new content scripts were injected, the
+      // if the trigger was new-content-script-injection, the
       //   outdated MWCS will be informed of the need to cleanup by
       //   the new MWCS, not by this ISOCS
       cleanup(msg.data.trigger === "extension-runtime-disappeared");
@@ -326,16 +275,6 @@ function handleMessage(
     handleFilterSettingsChange(msg.data);
   } else if (type === MessageType.healthCheck) {
     if (sendResponse) sendResponse("ok");
-  } else if (type === MessageType.getActiveTabLoopState) {
-    if (sendResponse) sendResponse(loopState.timeout ? "started" : "stopped");
-  } else if (type === MessageType.toggleActiveTabLoopState) {
-    if (loopState.timeout) {
-      stopLoop("userRequest");
-      console.log("stopped loop on user request");
-    } else {
-      startLoop("userRequest");
-      console.log("started loop on user request");
-    }
   } else if (type === MessageType.getSelectProgramModeState) {
     if (sendResponse) sendResponse(page.inSelectProgramMode ? "on" : "off");
   } else if (type === MessageType.toggleSelectProgramMode) {
@@ -344,33 +283,14 @@ function handleMessage(
 }
 
 function handleUrlChange() {
-  stopLoop("urlChanged");
+  if (timeout) clearTimeout(timeout);
   sessionStartTime = +new Date();
-  startLoop("urlChanged");
+  timeout = setTimeout(findProgramsAndAddRatings, 100);
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
-  stopLoop("filterSettingsChanged");
+  if (timeout) clearTimeout(timeout);
+  programFilterSettings = { ...programFilterSettings, ...updatedSettings };
   updateFilteredOutProgramNodeStyles(updatedSettings);
-  startLoop("filterSettingsChanged");
-}
-
-function cleanup(broadcast = true) {
-  if (broadcast) {
-    window.postMessage({ type: MessageType.cleanup } satisfies Message);
-  }
-
-  removeSidecar();
-  stopLoop("cleanup");
-  removeListeners();
-  page.cleanup();
-  console.log("sift: orphaned content script cleanup complete");
-}
-
-function handlePageVisibilityChange() {
-  if (FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE) {
-    document.visibilityState === "hidden"
-      ? stopLoop("pageHidden")
-      : startLoop("pageHidden");
-  }
+  timeout = setTimeout(findProgramsAndAddRatings, 100);
 }

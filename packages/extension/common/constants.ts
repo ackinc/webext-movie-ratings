@@ -54,8 +54,6 @@ export const enum MessageType {
   placeholder = "sift:placeholderForTestingAndDebugging",
   sitesEnabled = "sift:sitesEnabled",
   sitesDisabled = "sift:sitesDisabled",
-  getActiveTabLoopState = "sift:getActiveTabLoopState",
-  toggleActiveTabLoopState = "sift:toggleActiveTabLoopState",
   getSelectProgramModeState = "sift:getSelectProgramModeState",
   toggleSelectProgramMode = "sift:toggleSelectProgramMode",
   setMediaRequestBlockingState = "sift:setMediaRequestBlockingState",

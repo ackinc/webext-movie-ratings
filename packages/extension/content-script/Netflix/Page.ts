@@ -92,7 +92,10 @@ div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssC
 }
 
 div.previewModal--container .${CssClasses.imdbDataNode} {
-  margin: 4px 0;
+  margin: 0;
+  font-size: unset;
+  font-weight: unset;
+  color: unset;
 }
 
 div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"]) .${CssClasses.imdbDataNode} {
@@ -155,18 +158,23 @@ div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"]) .${CssCla
       if (pContainerParent.matches('div[data-uia="modal-content-wrapper"]')) {
         return pContainerNode.previousElementSibling!.textContent;
       } else if (location.href.includes("/browse/person")) {
-        return pContainerNode.parentElement!.previousElementSibling!.querySelector(
-          "div.sub-header div.personHeader span.title",
-        )!.textContent;
-      } else {
+        // netflix sometimes takes a while to add the title node to the DOM,
+        //   and not using optional-chaining below was resulting in
+        //   DataExtractionErrors
         return (
-          /* My List page */
-          pContainerParent.previousElementSibling!.querySelector("div.title")
-            ?.textContent ||
-          pContainerParent.previousElementSibling!.querySelector(
-            "div.aro-genre-details > span.genreTitle",
-          )!.textContent
+          pContainerNode.parentElement!.previousElementSibling!.querySelector(
+            "div.sub-header div.personHeader span.title",
+          )?.textContent ?? ""
         );
+      } else if (location.href.includes("/browse/my-list")) {
+        return (
+          pContainerParent.previousElementSibling!.querySelector("div.title")
+            ?.textContent ?? ""
+        );
+      } else {
+        return pContainerParent.previousElementSibling!.querySelector(
+          "div.aro-genre-details > span.genreTitle",
+        )!.textContent;
       }
     }
 

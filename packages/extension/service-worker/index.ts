@@ -160,10 +160,6 @@ function handleMessage(
   sendResponse: (arg: SWMessageResponse<unknown>) => void,
 ) {
   try {
-    if (FF_TELEMETRY_ENABLED && !telemetryStore) {
-      throw new Error(ErrorMessage.telemetryStoreNotReady);
-    }
-
     if (request.type === MessageType.fetchIMDBRating) {
       if (!ratingsCache) throw new Error(ErrorMessage.ratingsCacheNotReady);
 
@@ -184,6 +180,10 @@ function handleMessage(
       return true;
     } else if (request.type === MessageType.webpageRatingStats) {
       if (FF_TELEMETRY_ENABLED) {
+        if (!telemetryStore) {
+          throw new Error(ErrorMessage.telemetryStoreNotReady);
+        }
+
         telemetryStore
           .logEvent({
             type: "WEBPAGE_RATING_STATS_RECEIVED",
@@ -193,6 +193,10 @@ function handleMessage(
       }
     } else if (request.type === MessageType.error) {
       if (FF_TELEMETRY_ENABLED) {
+        if (!telemetryStore) {
+          throw new Error(ErrorMessage.telemetryStoreNotReady);
+        }
+
         telemetryStore
           .logEvent({ type: "ERROR", data: request.data })
           .catch(handleError);
