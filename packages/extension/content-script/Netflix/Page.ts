@@ -92,7 +92,10 @@ div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssC
 }
 
 div.previewModal--container .${CssClasses.imdbDataNode} {
-  margin: 4px 0;
+  margin: 0;
+  font-size: unset;
+  font-weight: unset;
+  color: unset;
 }
 
 div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"]) .${CssClasses.imdbDataNode} {

@@ -162,8 +162,10 @@ export default class ProgramNode extends AbstractProgramNode {
     if (programNode.matches("div.previewModal--container.mini-modal")) {
       const videoMetadataNode = programNode.querySelector(
         'div.videoMetadata--container[data-uia="videoMetadata--container"]',
-      )!;
-      videoMetadataNode.insertAdjacentElement("beforebegin", imdbNode);
+      );
+      // in a few rare cases, netflix fails to add the video metadata node
+      //   to the DOM
+      videoMetadataNode?.firstElementChild?.appendChild(imdbNode);
 
       return;
     }
@@ -172,7 +174,7 @@ export default class ProgramNode extends AbstractProgramNode {
       const videoMetadataNode = programNode.querySelector(
         'div.videoMetadata--container[data-uia="videoMetadata--container"]',
       )!;
-      videoMetadataNode.insertAdjacentElement("afterend", imdbNode);
+      videoMetadataNode?.firstElementChild?.appendChild(imdbNode);
 
       return;
     }
