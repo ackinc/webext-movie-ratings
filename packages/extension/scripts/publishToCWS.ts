@@ -158,6 +158,7 @@ function getFreshTokens() {
         //   to the browser
         // Simply opening the url in chrome's incognito mode, or a different
         //   browser than chrome, makes it work
+        // See https://stackoverflow.com/q/72944466/3112241 for details
         // Weird AF
         const url = new URL(googleOAuthAuthorizationEndpoint);
         url.search = new URLSearchParams({
