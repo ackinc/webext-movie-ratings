@@ -151,6 +151,14 @@ function getFreshTokens() {
       }
 
       function startOAuthFlow() {
+        // WARN:
+        // Due to a bug (?) in chrome, opening this endpoint fails with an
+        //   'Access blocked: Authorization Error' if the browser in which
+        //   it is opened is google-chrome, and the user is already signed-in
+        //   to the browser
+        // Simply opening the url in chrome's incognito mode, or a different
+        //   browser than chrome, makes it work
+        // Weird AF
         const url = new URL(googleOAuthAuthorizationEndpoint);
         url.search = new URLSearchParams({
           client_id: GOOGLE_OAUTH_CLIENT_ID!,
