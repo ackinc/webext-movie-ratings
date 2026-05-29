@@ -9,9 +9,10 @@ export default class ProgramNode extends AbstractProgramNode {
     let year: number | null = null;
 
     if (programNode.matches("div.billboard div.info.meta-layer")) {
-      title = programNode
-        .querySelector("div.titleWrapper img")!
-        .getAttribute("alt")!;
+      title =
+        programNode
+          .querySelector("div.titleWrapper img")
+          ?.getAttribute("alt") ?? "";
     } else if (
       ["div.title-card-container"].some((s) => programNode.matches(s))
     ) {
