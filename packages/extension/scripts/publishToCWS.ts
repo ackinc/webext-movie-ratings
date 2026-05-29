@@ -55,9 +55,7 @@ async function getAccessToken() {
   //   https://developer.chrome.com/docs/webstore/using-api#test-oauth
   const response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       client_id: GOOGLE_OAUTH_CLIENT_ID,
       client_secret: GOOGLE_OAUTH_CLIENT_SECRET,
