@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
+import pageStyles from "./styles.page.css";
 
 export default class HotstarPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -14,45 +15,7 @@ export default class HotstarPage extends AbstractPage {
     await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-    styleNode.textContent += `
-div.swiper-slide > div:first-child {
-  padding-bottom: 21px;
-}
-
-div.search-results {
-  padding-bottom: 16px;
-}
-
-a.${CssClasses.imdbDataNode} {
-  /* absolute positioning is needed to make this node 'extrude' outside the ancestor
-       node that has the 'expand-onMouseEnter' event listener */
-  position: absolute;
-  color: #999999;
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 14px;
-  font-weight: bold;
-}
-
-div[data-scale-down="true"] a.${CssClasses.imdbDataNode} {
-  position: inherit;
-  margin: 0 0 0 2px;
-  color: var(--ON-SURFACE-ALT);
-  font-size: 16px;
-  font-weight: 500;
-}
-
-div[data-testid="tray-card-default"]:has(div[data-testid="action"]:not([aria-label])) .${CssClasses.imdbDataNode} {
-  position: relative;
-}
-
-div[data-testid="tray-card-hover"] div[data-scale-down="true"]  .${CssClasses.imdbDataNode} {
-  margin-left: 0;
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

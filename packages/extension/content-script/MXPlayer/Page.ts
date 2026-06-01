@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
+import pageStyles from "./styles.page.css";
 
 export default class MXPlayerPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -13,57 +14,8 @@ export default class MXPlayerPage extends AbstractPage {
   protected override async injectStyles() {
     await super.injectStyles();
 
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  color: #999999;
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 14px;
-  font-weight: bold;
-  line-height: normal;
-  text-decoration: none;
-}
-
-div.banner-card .${CssClasses.imdbDataNode} {
-  position: relative;
-  top: -24px;
-}
-
-div.see-more div.portrait-container .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 12px;
-  left: 8px;
-  background-color: #2a2a2aca;
-  border-radius: 4px;
-  color: white;
-  padding: 4px 8px;
-}
-
-div.browse-header-section div.portrait-container .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 12px;
-  left: 8px;
-  background-color: #2a2a2aca;
-  border-radius: 4px;
-  color: white;
-  padding: 4px 8px;
-}
-
-div.landscape-container .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 12px;
-  left: 8px;
-  background-color: #2a2a2aca;
-  border-radius: 4px;
-  color: white;
-  padding: 4px 8px;
-}
-`;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

@@ -1,0 +1,59 @@
+.sift-imdb-data {
+  color: #999999;
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+div.image-grid-item .sift-imdb-data {
+  cursor: pointer;
+  pointer-events: unset;
+}
+
+li.react-multi-carousel-item a:has(div.item-container) h6 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+li.react-multi-carousel-item a:has(div.item-container) .sift-imdb-data {
+  margin-left: 2px;
+}
+
+a.ymal-content-item h6 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+a.ymal-content-item .sift-imdb-data {
+  margin-left: 2px;
+}
+
+a[data-sonic-type="show"] .sift-imdb-data {
+  margin-top: 4px;
+  text-decoration: none;
+}
+
+a[data-sonic-type="video"] .sift-imdb-data {
+  margin-top: 4px;
+  text-decoration: none;
+}
+
+a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"])
+  .sift-imdb-data {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin-top: 0;
+  background-color: #2a2a2aca;
+  color: white;
+  padding: 4px 8px;
+}
+
+section[data-appearance="ImmersiveHero"] .sift-filtered-out-program {
+  opacity: 1;
+}
+
+section[data-appearance="ImmersiveHero"] .sift-imdb-data {
+  color: white;
+  text-decoration: none;
+}

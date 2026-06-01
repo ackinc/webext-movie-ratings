@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
+import pageStyles from "./styles.page.css";
 
 export default class DisneyPlusPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -13,29 +14,8 @@ export default class DisneyPlusPage extends AbstractPage {
   protected override async injectStyles() {
     await super.injectStyles();
 
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  color: #999999;
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 14px;
-  font-weight: bold;
-  text-align: left;
-}
-
-div[data-testid^="collection"] a.${CssClasses.imdbDataNode} {
-  margin-top: 8px;
-}
-
-div[data-testid="you-may-also-like"] a.${CssClasses.imdbDataNode} {
-  margin-top: 8px;
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

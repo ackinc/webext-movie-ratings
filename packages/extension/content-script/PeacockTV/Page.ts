@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
+import pageStyles from "./styles.page.css";
 
 export default class PeacockTVPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -13,80 +14,8 @@ export default class PeacockTVPage extends AbstractPage {
   protected override async injectStyles() {
     await super.injectStyles();
 
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  color: #999999;
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 14px;
-  text-decoration: none;
-}
-
-div[data-testid="highlights-carousel"] .${CssClasses.imdbDataNode} {
-  margin: 4px 0 0 4px;
-}
-
-div[data-testid="recommendations"] .${CssClasses.imdbDataNode} {
-  text-decoration: none;
-}
-
-section[data-testid="IA-video-template-multi-rails"] .${CssClasses.imdbDataNode} {
-  padding: 0 16px;
-}
-
-div.rootPortraitRail .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 4px;
-  right: unset;
-  bottom: unset;
-  left: 4px;
-  border-radius: 16px;
-  background-color: #2a2a2aca;
-  color: white;
-  padding: 4px 8px;
-}
-
-ul[data-testid="numbered-rail-slider"] .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 4px;
-  right: unset;
-  bottom: unset;
-  left: 4px;
-  border-radius: 16px;
-  background-color: #2a2a2aca;
-  color: white;
-  padding: 4px 8px;
-}
-
-li[data-testid="collection-tile"] .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 4px;
-  right: unset;
-  bottom: unset;
-  left: 4px;
-  border-radius: 16px;
-  background-color: #2a2a2aca;
-  color: white;
-  padding: 4px 8px;
-}
-
-section[data-testid="recommendations-section"] .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 4px;
-  right: unset;
-  bottom: unset;
-  left: 4px;
-  border-radius: 16px;
-  background-color: #2a2a2aca;
-  color: white;
-  padding: 4px 8px;
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

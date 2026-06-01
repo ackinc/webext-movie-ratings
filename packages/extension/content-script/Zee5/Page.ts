@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
+import pageStyles from "./styles.page.css";
 
 export default class Zee5Page extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -13,38 +14,8 @@ export default class Zee5Page extends AbstractPage {
   protected override async injectStyles() {
     await super.injectStyles();
 
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  color: #999999;
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 14px;
-  font-weight: bold;
-  line-height: normal;
-  text-decoration: none;
-}
-
-div[data-testid$="active_carousel"] .${CssClasses.imdbDataNode} {
-  color: white;
-}
-
-div.keen-slider__slide article .${CssClasses.imdbDataNode} {
-  margin: 4px 0 0 4px;
-}
-
-div.keen-slider__slide article:has(footer) .${CssClasses.imdbDataNode} {
-  margin: 4px 0 0 0px;
-}
-
-div.movieCard .${CssClasses.imdbDataNode} {
-  margin: 4px 0 0 4px;
-}
-`;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
