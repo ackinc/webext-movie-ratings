@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { Program, ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
+import pageStyles from "./styles.page.css";
 
 export default class AppleTvPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -14,35 +15,7 @@ export default class AppleTvPage extends AbstractPage {
     await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  color: var(--systemSecondary);
-  margin-left: 4px;
-}
-
-ul > li button.epic-showcase-item .${CssClasses.imdbDataNode} {
-  position: absolute;
-  bottom: 10px;
-  left: 12px;
-  z-index: 1;
-  margin: 0;
-  color: white;
-}
-
-div.search-hint-lockup div[data-testid="search-hint-lockup-title"] {
-  width: 100%;
-  justify-content: space-between;
-  align-items: center;
-}
-
-div.search-hint-lockup div[data-testid="search-hint-lockup-title"] .${CssClasses.imdbDataNode} {
-  flex-shrink: 0;
-}
-
-a.search-card.lockup .${CssClasses.imdbDataNode} {
-  margin-left: 0;
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
