@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import { CssClasses, ErrorMessage } from "../../common";
 import ProgramNode from "./ProgramNode";
 import type { ProgramContainer } from "../../common/types";
+import pageStyles from "./styles.page.css";
 
 class SonyLivPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -14,110 +15,7 @@ class SonyLivPage extends AbstractPage {
     await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  margin: 2px 0 0 8px;
-  color: #999999;
-  display: block;
-  font-family: sans-serif;
-  font-size: 14px;
-  font-weight: bold;
-  text-align: left;
-  text-decoration: none;
-}
-
-a.trending-tray-link .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  margin: 0;
-  padding: 2px 4px;
-  background-color: #0000007f;
-  border-radius: 4px;
-  color: white;
-}
-
-a.portrait-link .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  margin: 0;
-  padding: 2px 4px;
-  background-color: #0000007f;
-  border-radius: 4px;
-  color: white;
-}
-
-div.listinpage_wrapper .innerlist a[id] div.listing-portrait-card-inner-div {
-  position: relative;
-}
-
-div.listinpage_wrapper .innerlist a[id] .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  margin: 0;
-  padding: 4px 8px;
-  background-color: #454545;
-  border-radius: 4px;
-  color: #eaeaea;
-}
-
-/* these show up when hovering over the "movies" link on the home and
-     other pages */
-div.megaMenu div.layout-container a.portrait-link .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  margin: 0;
-  padding: 4px 8px;
-  background-color: #454545;
-  border-radius: 4px;
-  color: #eaeaea;
-}
-
-div.PopularSearchContainer > a[id] {
-  position: relative;
-}
-
-div.PopularSearchContainer > a[id] .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  z-index: 1;
-  margin: 0;
-  padding: 4px 8px;
-  background-color: #0000007f;
-  border-radius: 4px;
-  color: white;
-}
-
-div.PopularSearchContainer div.sonyliv-original-block-wrap .${CssClasses.imdbDataNode} {
-  margin: 0;
-}
-
-div.card_container .${CssClasses.imdbDataNode} {
-  margin: 0;
-}
-
-@media screen and (max-width: 420px) {
-  a.${CssClasses.imdbDataNode} {
-    position: absolute;
-    top: 2px;
-    right: 10px;
-    margin: 0;
-    width: 48px;
-    height: 20px;
-    border-radius: 4px;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    font-size: 9px;
-  }
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

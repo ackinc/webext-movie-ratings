@@ -1,0 +1,36 @@
+div.swiper-slide > div:first-child {
+  padding-bottom: 21px;
+}
+
+div.search-results {
+  padding-bottom: 16px;
+}
+
+.sift-imdb-data {
+  /* absolute positioning is needed to make this node 'extrude' outside the ancestor
+     node that has the 'expand-onMouseEnter' event listener */
+  position: absolute;
+  color: #999999;
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+div[data-scale-down="true"] .sift-imdb-data {
+  position: inherit;
+  margin: 0 0 0 2px;
+  color: var(--ON-SURFACE-ALT);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+div[data-testid="tray-card-default"]:has(
+    div[data-testid="action"]:not([aria-label])
+  )
+  .sift-imdb-data {
+  position: relative;
+}
+
+div[data-testid="tray-card-hover"] div[data-scale-down="true"] .sift-imdb-data {
+  margin-left: 0;
+}

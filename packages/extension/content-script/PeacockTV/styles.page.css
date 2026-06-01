@@ -1,0 +1,66 @@
+.sift-imdb-data {
+  color: #999999;
+  display: block;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+div[data-testid="highlights-carousel"] .sift-imdb-data {
+  margin: 4px 0 0 4px;
+}
+
+div[data-testid="recommendations"] .sift-imdb-data {
+  text-decoration: none;
+}
+
+section[data-testid="IA-video-template-multi-rails"] .sift-imdb-data {
+  padding: 0 16px;
+}
+
+div.rootPortraitRail .sift-imdb-data {
+  position: absolute;
+  top: 4px;
+  right: unset;
+  bottom: unset;
+  left: 4px;
+  border-radius: 16px;
+  background-color: #2a2a2aca;
+  color: white;
+  padding: 4px 8px;
+}
+
+ul[data-testid="numbered-rail-slider"] .sift-imdb-data {
+  position: absolute;
+  top: 4px;
+  right: unset;
+  bottom: unset;
+  left: 4px;
+  border-radius: 16px;
+  background-color: #2a2a2aca;
+  color: white;
+  padding: 4px 8px;
+}
+
+li[data-testid="collection-tile"] .sift-imdb-data {
+  position: absolute;
+  top: 4px;
+  right: unset;
+  bottom: unset;
+  left: 4px;
+  border-radius: 16px;
+  background-color: #2a2a2aca;
+  color: white;
+  padding: 4px 8px;
+}
+
+section[data-testid="recommendations-section"] .sift-imdb-data {
+  position: absolute;
+  top: 4px;
+  right: unset;
+  bottom: unset;
+  left: 4px;
+  border-radius: 16px;
+  background-color: #2a2a2aca;
+  color: white;
+  padding: 4px 8px;
+}

@@ -1,0 +1,31 @@
+.sift-imdb-data {
+  color: #999999 !important;
+  display: block;
+  font-size: 15px;
+}
+
+article[data-card-title] .sift-imdb-data {
+  margin-top: 4px;
+  margin-left: 4px;
+}
+
+div[data-testid="standard-mini-details"] .sift-imdb-data {
+  margin-left: 0;
+}
+
+article[data-testid="super-carousel-card"] .sift-imdb-data {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  margin: 0;
+  border-radius: 0;
+  border-bottom-right-radius: 3px;
+  padding: 3px 7px;
+  background-color: white;
+  color: black !important;
+  opacity: 1;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: var(--fable-typography-label-90-line-height);
+}

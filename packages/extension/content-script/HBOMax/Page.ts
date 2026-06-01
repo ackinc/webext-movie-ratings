@@ -3,6 +3,7 @@ import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 import { climbDOMUntil } from "../utils";
+import pageStyles from "./styles.page.css";
 
 export default class HBOMaxPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -14,72 +15,8 @@ export default class HBOMaxPage extends AbstractPage {
   protected override async injectStyles() {
     await super.injectStyles();
 
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  color: #999999;
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 14px;
-  font-weight: bold;
-}
-
-div.image-grid-item a.${CssClasses.imdbDataNode} {
-  cursor: pointer;
-  pointer-events: unset;
-}
-
-li.react-multi-carousel-item a:has(div.item-container) h6 {
-  margin-top: 0;
-  margin-bottom: 0
-}
-
-li.react-multi-carousel-item a:has(div.item-container) a.${CssClasses.imdbDataNode} {
-  margin-left: 2px;
-}
-
-a.ymal-content-item h6 {
-  margin-top: 0;
-  margin-bottom: 0
-}
-
-a.ymal-content-item a.${CssClasses.imdbDataNode} {
-  margin-left: 2px;
-}
-
-a[data-sonic-type="show"] a.${CssClasses.imdbDataNode} {
-  margin-top: 4px;
-  text-decoration: none;
-}
-
-a[data-sonic-type="video"] a.${CssClasses.imdbDataNode} {
-  margin-top: 4px;
-  text-decoration: none;
-}
-
-a[data-sonic-type="show"]:has(div[class^="StyledRankImageContainer"]) .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  margin-top: 0;
-  background-color: #2a2a2aca;
-  color: white;
-  padding: 4px 8px;
-}
-
-section[data-appearance="ImmersiveHero"] .${CssClasses.filteredOutProgramNode} {
-  opacity: 1;
-}
-
-section[data-appearance="ImmersiveHero"] .${CssClasses.imdbDataNode} {
-  color: white;
-  text-decoration: none;
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

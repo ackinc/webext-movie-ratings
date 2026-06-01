@@ -1,0 +1,24 @@
+.sift-imdb-data {
+  color: #999999;
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: normal;
+  text-decoration: none;
+}
+
+div[data-testid$="active_carousel"] .sift-imdb-data {
+  color: white;
+}
+
+div.keen-slider__slide article .sift-imdb-data {
+  margin: 4px 0 0 4px;
+}
+
+div.keen-slider__slide article:has(footer) .sift-imdb-data {
+  margin: 4px 0 0 0px;
+}
+
+div.movieCard .sift-imdb-data {
+  margin: 4px 0 0 4px;
+}

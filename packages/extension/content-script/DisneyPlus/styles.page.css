@@ -1,0 +1,15 @@
+.sift-imdb-data {
+  color: #999999;
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+}
+
+div[data-testid^="collection"] .sift-imdb-data {
+  margin-top: 8px;
+}
+
+div[data-testid="you-may-also-like"] .sift-imdb-data {
+  margin-top: 8px;
+}

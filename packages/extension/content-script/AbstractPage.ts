@@ -191,7 +191,7 @@ valid containers:\n\t${programContainers
 
     const styleNode = document.createElement("style");
     styleNode.classList.add(CssClasses.styleNode);
-    styleNode.textContent = getFopnCssRules(filterSettings).join("\n");
+    styleNode.textContent = getFopnCssRules(filterSettings).join("\n") + "\n";
     document.head.appendChild(styleNode);
   }
 

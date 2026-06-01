@@ -3,6 +3,7 @@ import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 import { climbDOMUntil } from "../utils";
+import pageStyles from "./styles.page.css";
 
 export default class HuluPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -14,64 +15,8 @@ export default class HuluPage extends AbstractPage {
   protected override async injectStyles() {
     await super.injectStyles();
 
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  margin: 4px 0;
-  color: #999999;
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 14px;
-}
-
-div.PortraitTile a.${CssClasses.imdbDataNode} {
-  margin-top: 8px;
-  color: white;
-  font-weight: 400;
-}
-
-div.DetailEntityMasthead .${CssClasses.filteredOutProgramNode} {
-  opacity: 1;
-}
-
-div.DetailEntityMasthead a.${CssClasses.imdbDataNode} {
-  color: white;
-}
-
-div[data-testid="high-emphasis-tile"]  a.${CssClasses.imdbDataNode} {
-  color: white;
-  font-size: 18px;
-}
-
-div[data-testid="medium-emphasis-vertical-tile"] a.${CssClasses.imdbDataNode} {
-  color: white;
-  margin: 0;
-  font-size: 12px;
-}
-
-div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode} {
-  color: white;
-  display: inline;
-}
-
-div[data-testid="preview-panel"] a.${CssClasses.imdbDataNode}::after {
-  content: ' • '
-}
-
-div.MastheadAndBanner a.${CssClasses.imdbDataNode} {
-  display: inline;
-  color: white;
-  font-size: 12px;
-}
-
-div.MastheadAndBanner a.${CssClasses.imdbDataNode}::after {
-  content: ' • ';
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

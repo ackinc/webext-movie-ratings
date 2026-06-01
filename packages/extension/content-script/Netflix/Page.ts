@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
+import pageStyles from "./styles.page.css";
 
 export default class NetflixPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -13,102 +14,8 @@ export default class NetflixPage extends AbstractPage {
   protected override async injectStyles() {
     await super.injectStyles();
 
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  color: #999999;
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 14px;
-  font-weight: bold;
-  margin: 4px 0 0 4px;
-}
-
-div.billboard div.info.meta-layer .${CssClasses.imdbDataNode} {
-  margin: 0;
-}
-
-div.title-card-container .${CssClasses.imdbDataNode} {
-  margin: 0;
-  padding-top: 4px;
-}
-
-div.title-card-container:has(> div.progress) .${CssClasses.imdbDataNode} {
-  padding-top: 16px;
-}
-
-div.title-card-container:has(svg.top-10-rank) .${CssClasses.imdbDataNode} {
-  margin-left: 50%;
-}
-
-div.titleGroup--wrapper div.titleCard--container .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  margin: 0;
-  padding: 0 4px;
-  background-color: #0000007f;
-  border-radius: 0;
-  color: white;
-}
-
-div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  margin: 0;
-  padding: 0 4px;
-  background-color: #0000007f;
-  border-radius: 0;
-  color: white;
-}
-
-.titleCard--metadataWrapper a.${CssClasses.imdbDataNode} {
-  margin: 0 0 0.5em 1em;
-}
-
-section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  margin: 0;
-  padding: 0 4px;
-  background-color: #0000007f;
-  border-radius: 0;
-  color: white;
-}
-
-section[data-uia="billboard"] .${CssClasses.imdbDataNode} {
-  margin-left: 0;
-  color: white;
-}
-
-div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssClasses.imdbDataNode} {
-  margin-top: 12px;
-}
-
-div.previewModal--container .${CssClasses.imdbDataNode} {
-  margin: 0;
-  font-size: unset;
-  font-weight: unset;
-  color: unset;
-}
-
-div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"]) .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  margin: 0;
-  padding: 0 4px;
-  background-color: #0000007f;
-  border-radius: 0;
-  color: white;
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
