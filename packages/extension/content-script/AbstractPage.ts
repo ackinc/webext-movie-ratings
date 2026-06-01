@@ -339,7 +339,7 @@ valid containers:\n\t${programContainers
     1,
   );
 
-  // selectors should only ever be abandoned for a particular pathname,
+  // selectors should only ever be abandoned for a particular location.pathname,
   //   not site-wide, since a selector that stops working for one page
   //   may still be active on another page of the same site
   protected getAbandonedSelectors(): Record<UrlPath, Selector[]> {
