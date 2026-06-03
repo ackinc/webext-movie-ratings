@@ -31,6 +31,7 @@ import { captureException } from "../common/errorReporter";
 import { addSidecar, removeSidecar } from "./sidecar";
 import ImdbDataNode from "./ImdbDataNode";
 import { limitConcurrency } from "rate-limit-utils";
+import cssReset from "./reset.styles.css";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
@@ -278,7 +279,13 @@ valid containers:\n\t${programContainers
     node.dataset["imdbID"] = data.imdbID;
     node.dataset["imdbRating"] = data.imdbRating;
     if ("expiry" in data) node.dataset["expiry"] = String(data.expiry);
-    render(h(ImdbDataNode, { imdbData: data }), node);
+
+    const shadowRoot = node.attachShadow({ mode: "open" });
+    const cssStyleSheet = new CSSStyleSheet();
+    cssStyleSheet.replaceSync(cssReset);
+    shadowRoot.adoptedStyleSheets = [cssStyleSheet];
+
+    render(h(ImdbDataNode, { imdbData: data }), shadowRoot);
     return node;
   }
 
