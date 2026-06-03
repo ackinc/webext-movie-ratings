@@ -12,6 +12,7 @@ declare const OMDB_API_KEY: string;
 declare const ISOLATED_CONTENT_SCRIPT_PATH: string;
 declare const MAIN_CONTENT_SCRIPT_PATH: string;
 
+declare module "*.html";
 declare module "*.css";
 declare module "*.png";
 declare module "*.svg";

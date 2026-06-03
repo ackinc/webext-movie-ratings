@@ -93,6 +93,8 @@ const config: esbuild.BuildOptions = {
     SIFT_WEBSITE_URL: `"${SIFT_WEBSITE_URL}"`,
   },
   loader: {
+    ".template.html": "text",
+    ".styles.css": "text",
     ".page.css": "text",
     ".css": "css",
     ".png": "dataurl",

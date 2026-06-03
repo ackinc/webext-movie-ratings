@@ -1,4 +1,4 @@
-import { h, render } from "preact";
+import scopedRegistry from "./components/registry";
 import AbstractProgramNode from "./AbstractProgramNode";
 import type {
   ProgramContainer,
@@ -29,7 +29,6 @@ import {
 import { DataExtractionError, SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import { addSidecar, removeSidecar } from "./sidecar";
-import ImdbDataNode from "./ImdbDataNode";
 import { limitConcurrency } from "rate-limit-utils";
 
 export default class AbstractPage {
@@ -278,7 +277,15 @@ valid containers:\n\t${programContainers
     node.dataset["imdbID"] = data.imdbID;
     node.dataset["imdbRating"] = data.imdbRating;
     if ("expiry" in data) node.dataset["expiry"] = String(data.expiry);
-    render(h(ImdbDataNode, { imdbData: data }), node);
+
+    const shadowRoot = node.attachShadow({
+      mode: "open",
+      customElementRegistry: scopedRegistry,
+    });
+    shadowRoot.innerHTML = `
+      <sift-imdb-data data-imdb-i-d="${data.imdbID}" data-imdb-rating="${data.imdbRating}"></sift-imdb-data>
+    `;
+
     return node;
   }
 

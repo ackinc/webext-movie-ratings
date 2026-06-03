@@ -1,3 +1,4 @@
+import scopedRegistry from "./components/registry";
 import {
   browser,
   defaultProgramFilterSettings,
@@ -32,6 +33,7 @@ import YoutubeMoviesPage from "./YoutubeMovies/Page";
 import Zee5Page from "./Zee5/Page";
 import { updateFilteredOutProgramNodeStyles } from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
+import ImdbData from "./components/ImdbData/ImdbData";
 
 let page: AbstractPage;
 let programFilterSettings: ProgramFilterSettings;
@@ -49,6 +51,8 @@ main().catch(captureException);
 // fn defs
 
 async function main() {
+  scopedRegistry.define("sift-imdb-data", ImdbData);
+
   // so content scripts belonging to prev. ext. version can cleanup
   window.postMessage({
     type: MessageType.orphanCheck,
