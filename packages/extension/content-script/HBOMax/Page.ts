@@ -3,7 +3,7 @@ import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 import { climbDOMUntil } from "../utils";
-import pageStyles from "./styles.page.css";
+import pageStyles from "./page.styles.css";
 
 export default class HBOMaxPage extends AbstractPage {
   static override ProgramNode = ProgramNode;

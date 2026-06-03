@@ -2,7 +2,7 @@ import AbstractPage from "../AbstractPage";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
-import pageStyles from "./styles.page.css";
+import pageStyles from "./page.styles.css";
 
 export default class YoutubeMoviesPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
