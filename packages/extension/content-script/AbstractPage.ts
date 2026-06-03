@@ -1,3 +1,4 @@
+import { h, render } from "preact";
 import AbstractProgramNode from "./AbstractProgramNode";
 import type {
   ProgramContainer,
@@ -15,7 +16,6 @@ import {
   CssClasses,
   defaultProgramFilterSettings,
   getGeneralizedUrlPath,
-  getIMDBLink,
   getSetting,
   ErrorMessage,
   ensureError,
@@ -29,6 +29,7 @@ import {
 import { DataExtractionError, SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import { addSidecar, removeSidecar } from "./sidecar";
+import ImdbDataNode from "./ImdbDataNode";
 import { limitConcurrency } from "rate-limit-utils";
 
 export default class AbstractPage {
@@ -272,21 +273,12 @@ valid containers:\n\t${programContainers
   };
 
   #createIMDBDataNode(data: IMDBData): HTMLElement {
-    const node = document.createElement("a");
+    const node = document.createElement("div");
     node.classList.add(CssClasses.imdbDataNode);
     node.dataset["imdbID"] = data.imdbID;
     node.dataset["imdbRating"] = data.imdbRating;
     if ("expiry" in data) node.dataset["expiry"] = String(data.expiry);
-    if (data.imdbRating !== "N/F") {
-      node.setAttribute("href", getIMDBLink(data.imdbID));
-      node.setAttribute("target", "_blank");
-    }
-    if (["N/F"].includes(data.imdbRating)) {
-      node.style.visibility = "hidden";
-      node.style.display = "none";
-    }
-    node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : data.imdbRating}`;
-    node.addEventListener("click", (e) => e.stopPropagation());
+    render(h(ImdbDataNode, { imdbData: data }), node);
     return node;
   }
 

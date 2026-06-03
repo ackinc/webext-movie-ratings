@@ -6,6 +6,7 @@ export const DB_VERSION = 2;
 export const enum CssClasses {
   styleNode = "sift-style",
   imdbDataNode = "sift-imdb-data",
+  imdbDataNodeContent = "sift-imdb-data-content",
   filteredOutProgramNode = "sift-filtered-out-program",
 }
 export const enum CssColors {
