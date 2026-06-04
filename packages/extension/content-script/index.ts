@@ -1,7 +1,6 @@
 import {
   browser,
   defaultProgramFilterSettings,
-  omit,
   getSetting,
   MessageType,
   CssClasses,
@@ -10,10 +9,8 @@ import { SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import type AbstractPage from "./AbstractPage";
 import type {
-  IMDBData,
   Message,
   Program,
-  SWMessageResponse,
   ProgramFilterSettings,
   WebpageStats,
 } from "../common/types";
@@ -30,7 +27,7 @@ import MXPlayerPage from "./MXPlayer/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 import YoutubeMoviesPage from "./YoutubeMovies/Page";
 import Zee5Page from "./Zee5/Page";
-import { updateFilteredOutProgramNodeStyles } from "./utils";
+import { fetchIMDBData, updateFilteredOutProgramNodeStyles } from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
 
 let page: AbstractPage;
@@ -194,21 +191,6 @@ async function addRating(p: Program): Promise<Program> {
     page.addIMDBData(p, await fetchIMDBData(p));
   }
   return p;
-}
-
-async function fetchIMDBData(program: Program): Promise<IMDBData> {
-  const response = await browser.runtime.sendMessage<
-    Message,
-    SWMessageResponse<IMDBData>
-  >({
-    type: MessageType.fetchIMDBRating,
-    data: {
-      program: omit(program, ["node"]) as Omit<Program, "node">,
-      pageUrl: location.href,
-    },
-  } satisfies Message);
-  if ("error" in response) throw new SWError(response.error);
-  return response.data;
 }
 
 function fadeIfFilteredOut(p: Program): Program {
