@@ -18,4 +18,3 @@ declare module "*.svg";
 
 // feature flags
 declare const FF_TELEMETRY_ENABLED: boolean;
-declare const FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE: boolean;
