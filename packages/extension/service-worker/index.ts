@@ -1,6 +1,6 @@
 import { type IDBPDatabase } from "idb";
 import { addMinutes, addWeeks } from "date-fns";
-import { isNetworkError } from "siftutils";
+import { isNetworkError, pick } from "siftutils";
 import {
   browser,
   getSetting,
@@ -11,7 +11,6 @@ import {
   ErrorMessage,
   upgradeIdbAndGetConnection,
   addBadge,
-  ensureError,
 } from "../common";
 import type {
   ProgramData,
@@ -351,15 +350,20 @@ async function getIMDBData(
   async function fetchIMDBDataFromExternalApi(
     imdbIdOrProgram: string | ProgramData,
   ): Promise<ImdbDataFetchResult> {
-    // represents whether we have the imdbId for the program
-    let matchStatus: SiftApiProgramMatching.Response["status"] | "error" =
-      "matched";
-    let error;
     let imdbData = await omdbApiClient.fetchIMDBData(imdbIdOrProgram);
+    // represents whether we have the imdbId for the program
+    let matchStatus:
+      | SiftApiProgramMatching.Response["status"]
+      | "error"
+      | undefined = undefined;
+    let error: Error | undefined = undefined;
 
-    // if the omdb api wasn't able to find the imdb entry based on the
-    //   program's details, see if sift's program-matching can do it
-    if (typeof imdbIdOrProgram !== "string" && !imdbData.imdbID) {
+    if (typeof imdbIdOrProgram === "string" || imdbData.imdbID) {
+      matchStatus = "matched";
+    } else {
+      // we didn't have the program's imdb id, and the omdb api wasn't
+      //   able to figure it out based on the program's details; let's see
+      //   if sift's program-matching can do it
       let matchedImdbId;
       try {
         ({ status: matchStatus, imdbId: matchedImdbId } =
@@ -368,10 +372,13 @@ async function getIMDBData(
             pageUrl,
           ));
       } catch (e) {
-        // we don't want errors in the sift-api to affect the extension
-        ensureError(e);
+        // if there's an error here, we want to make sure we cache the N/F
+        //   rating for a short while so we give the Sift server-side some
+        //   breathing room to fix the error
+        // so instead of throwing immediately, we'll throw later downstream,
+        //   after the caching step
         matchStatus = "error";
-        error = e;
+        error = e as Error;
       }
 
       if (matchedImdbId) {
@@ -381,23 +388,15 @@ async function getIMDBData(
       }
     }
 
-    let expiry;
-    switch (matchStatus) {
-      case "matched":
-        expiry = addWeeks(new Date(), 2);
-        break;
-      case "abandoned":
-        expiry = addWeeks(new Date(), 1);
-        break;
-      case "error":
-        // give some time for the server error to be sorted out
-        // TODO: exponential back-off?
-        //   - maybe the exponential back-off retry logic can be
-        //       added to SiftApiService itself
-        expiry = addMinutes(new Date(), 5);
-        break;
-      default:
-        throw new Error(`Unexpected match status: ${matchStatus}`);
+    let expiry: Date;
+    if (imdbData.imdbRating !== "N/F") {
+      expiry = addWeeks(new Date(), 2);
+    } else if (matchStatus === "abandoned") {
+      expiry = addWeeks(new Date(), 1);
+    } else if (matchStatus === "error") {
+      expiry = addMinutes(new Date(), 15);
+    } else {
+      throw new Error(`Unexpected: matchStatus '${matchStatus}'`);
     }
 
     return { imdbData, error, expiry };
