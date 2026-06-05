@@ -327,12 +327,12 @@ async function getIMDBData(
   program: ProgramData,
   pageUrl: string,
 ): Promise<Required<IMDBData>> {
-  const cached = await ratingsCache.get(program);
-  if (cached && cached.expiry > new Date()) {
-    return { ...cached.imdbData, expiry: +cached.expiry };
+  const cached = await getCachedIMDBData(program);
+  if (cached && cached.expiry > +new Date()) {
+    return pick(cached, ["imdbID", "imdbRating", "expiry"]);
   }
 
-  const imdbIdFromCache = cached?.imdbData.imdbID;
+  const imdbIdFromCache = cached?.imdbID;
   const { imdbData, expiry, error } = await fetchIMDBDataFromExternalApi(
     // imdbIdFromCache may be '' (cached N/F ratings), so we cannot use '??'
     //   operator below
