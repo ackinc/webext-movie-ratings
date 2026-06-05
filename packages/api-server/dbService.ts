@@ -104,7 +104,7 @@ export function createProgramMatchRecord(
   data: Pick<SiftApiProgramMatching.Request, "title" | "type" | "year"> & {
     meta?: string;
   },
-  onConflictClause = "ON CONFLICT DO NOTHING",
+  onConflictClause = "",
 ) {
   const entries = Object.entries(data);
   if (entries.length === 0) throw new Error("data arg cannot be empty object");
@@ -118,7 +118,7 @@ export function createProgramMatchRecord(
 
   return getProgramMatchRecord(
     changes === 1 ? lastInsertRowid : pick(data, ["title", "type", "year"]),
-  );
+  )!;
 }
 
 export function updateProgramMatchRecord(

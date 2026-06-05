@@ -386,10 +386,6 @@ async function getIMDBData(
       case "matched":
         expiry = addWeeks(new Date(), 2);
         break;
-      case "pending":
-        // TODO: get rid of this as a match-status?
-        expiry = addMinutes(new Date(), 1);
-        break;
       case "abandoned":
         expiry = addWeeks(new Date(), 1);
         break;

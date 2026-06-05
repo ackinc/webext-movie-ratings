@@ -110,50 +110,37 @@ function createServer() {
       const seIndexLastUpdatedAt = await getIndexLastUpdatedTime();
 
       const program = { ...request.query };
-      let row = dbService.getProgramMatchRecord(program);
+
+      let row = dbService.createProgramMatchRecord(
+        {
+          ...pick(program, ["title", "type", "year"]),
+          meta: JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
+        },
+        "ON CONFLICT DO NOTHING",
+      );
 
       if (
-        !row ||
+        row.status === "pending" ||
         (row.status === "abandoned" &&
           parseISO(row.updatedAt) < seIndexLastUpdatedAt)
       ) {
-        if (!row) {
-          dbService.createProgramMatchRecord({
-            ...pick(program, ["title", "type", "year"]),
-            meta: JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
-          });
-
-          // If multiple instances of the server are running, a race condition
-          //   may cause the createProgramMatchRecord call above above to no-op
-          //   even if the previous getProgramMatchRecord call returned nothing
-          // Because of this, we cannot rely on the lastInsertRowId attr of the
-          //   return value of the createProgramMatchRecord call above; the
-          //   seemingly unnecessary getProgramMatchRecord below is actually
-          //   required
-          row = dbService.getProgramMatchRecord(program);
-        }
-
         const [bestMatch] = await querySearchEngine(program);
-        dbService.updateProgramMatchRecord(row!.id, {
+        row = dbService.updateProgramMatchRecord(row.id, {
           status: bestMatch ? "matched" : "abandoned",
           imdbId: bestMatch ? bestMatch.imdbId : null,
         });
-
-        row = dbService.getProgramMatchRecord(row!.id)!;
-      }
-
-      if (row.status === "pending") {
-        reply.code(200).send({ status: "pending" });
-        return;
       }
 
       if (row.status === "matched") {
-        reply.code(200).send({ status: "matched", imdbId: row.imdbId! });
-        return;
+        return reply.code(200).send({ status: "matched", imdbId: row.imdbId! });
       }
 
-      // row.status === 'abandoned'
-      reply.code(200).send({ status: "abandoned" });
+      if (row.status === "abandoned") {
+        return reply.code(200).send({ status: "abandoned" });
+      }
+
+      /* row.status === 'pending' */
+      throw new Error(`Unexpected status '${row.status}' for row id ${row.id}`);
     },
   );
 

@@ -2,11 +2,7 @@ import { Type } from "typebox";
 
 export const programTypeSchema = Type.Enum(["movie", "series"]);
 
-const siftApiProgramMatchStatus = Type.Enum([
-  "pending",
-  "matched",
-  "abandoned",
-]);
+const siftApiProgramMatchStatus = Type.Enum(["matched", "abandoned"]);
 export const siftApiProgramMatchSchemas = {
   status: siftApiProgramMatchStatus,
   request: Type.Object({

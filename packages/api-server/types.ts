@@ -15,7 +15,7 @@ export interface RawProgramMatchRecord extends DbRecord {
   title: string;
   type: ProgramType | "\\N";
   year: number | 0;
-  status: SiftApiProgramMatching.Status;
+  status: SiftApiProgramMatching.Status | "pending";
   imdbId: string | null;
 }
 
