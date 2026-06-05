@@ -285,7 +285,7 @@ function handleMessage(
 }
 
 async function getCachedIMDBData(
-  program: Omit<Program, "node">,
+  program: ProgramData,
 ): Promise<(Required<IMDBData> & { key: string }) | undefined> {
   const cached = await ratingsCache.get(program);
   if (!cached) return undefined;
@@ -301,7 +301,7 @@ async function getCachedIMDBData(
 //   service takes too long (because errors thrown from inside
 //   setTimeout would not be caught by upstream error handling)
 function getIMDBData(
-  program: Omit<Program, "node">,
+  program: ProgramData,
   pageUrl: string,
 ): Promise<Required<IMDBData>> {
   return new Promise((resolve, reject) => {
