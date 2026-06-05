@@ -3,7 +3,6 @@ import "dotenv/config";
 // initialize Sentry
 import Sentry from "./instrument.ts";
 
-import type { Database } from "better-sqlite3";
 import { parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
 import cors from "@fastify/cors";
@@ -16,18 +15,13 @@ import {
 } from "sifttypes";
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
-import {
-  createProgramMatchRecord,
-  getProgramMatchRecord,
-  updateProgramMatchRecord,
-} from "./helpers.ts";
-import db from "./db.ts";
+import * as dbService from "./dbService.ts";
 import logger from "./logger.ts";
 import { querySearchEngine, getIndexLastUpdatedTime } from "./searchEngine.ts";
 
 const env = pick(process.env, ["APP_ENV", "PORT", "WEBSITE_URL"], true);
 
-const server = createServer(db);
+const server = createServer();
 server.listen({ port: +env.PORT! }, function (err, _address) {
   if (err) {
     server.log.error(err);
@@ -37,7 +31,7 @@ server.listen({ port: +env.PORT! }, function (err, _address) {
 process.on("SIGINT", cleanup);
 process.on("SIGTERM", cleanup);
 
-function createServer(db: Database) {
+function createServer() {
   const fastify = Fastify({ loggerInstance: logger });
   fastify.register(cors, {
     origin:
@@ -116,7 +110,7 @@ function createServer(db: Database) {
       const seIndexLastUpdatedAt = await getIndexLastUpdatedTime();
 
       const program = { ...request.query };
-      let row = getProgramMatchRecord(db, program);
+      let row = dbService.getProgramMatchRecord(program);
 
       if (
         !row ||
@@ -124,7 +118,7 @@ function createServer(db: Database) {
           parseISO(row.updatedAt) < seIndexLastUpdatedAt)
       ) {
         if (!row) {
-          createProgramMatchRecord(db, {
+          dbService.createProgramMatchRecord({
             ...pick(program, ["title", "type", "year"]),
             meta: JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
           });
@@ -136,16 +130,16 @@ function createServer(db: Database) {
           //   return value of the createProgramMatchRecord call above; the
           //   seemingly unnecessary getProgramMatchRecord below is actually
           //   required
-          row = getProgramMatchRecord(db, program);
+          row = dbService.getProgramMatchRecord(program);
         }
 
         const [bestMatch] = await querySearchEngine(program);
-        updateProgramMatchRecord(db, row!.id, {
+        dbService.updateProgramMatchRecord(row!.id, {
           status: bestMatch ? "matched" : "abandoned",
           imdbId: bestMatch ? bestMatch.imdbId : null,
         });
 
-        row = getProgramMatchRecord(db, row!.id)!;
+        row = dbService.getProgramMatchRecord(row!.id)!;
       }
 
       if (row.status === "pending") {
@@ -171,13 +165,7 @@ function createServer(db: Database) {
     "/messages",
     { schema: { body: userMessageSchema } } satisfies RouteShorthandOptions,
     async function (request, reply) {
-      const { email, category, message } = request.body;
-      const { changes } = db
-        .prepare(
-          "INSERT INTO messages (email, category, message) VALUES (?, ?, ?)",
-        )
-        .run(email ?? null, category, message);
-      if (changes != 1) throw new Error(`Insertion failed`);
+      dbService.createMessageRecord(request.body);
       reply.code(200).send({ status: "ok" });
     },
   );
@@ -188,7 +176,7 @@ function createServer(db: Database) {
 async function cleanup(signal: "SIGINT" | "SIGTERM") {
   logger.info(`Received ${signal}. Exiting ...`);
   await server.close();
-  db.close();
+  dbService.closeConnection();
   await Sentry.close();
   process.exit(0);
 }
