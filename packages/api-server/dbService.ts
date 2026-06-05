@@ -1,7 +1,12 @@
 import Database, { type Database as TDatabase } from "better-sqlite3";
 import { type SiftApiProgramMatching, type UserMessage } from "sifttypes";
 import { pick } from "siftutils";
-import type { ProgramMatchRecord } from "./types.ts";
+import type {
+  DbRecord,
+  ProgramMatchRecord,
+  RawProgramMatchRecord,
+  UserMessageRecord,
+} from "./types.ts";
 
 const env = pick(process.env, ["DB_PATH"], true);
 
@@ -63,48 +68,57 @@ export function closeConnection() {
 }
 
 export function getProgramMatchRecord(
-  idOrProgram: number | bigint | SiftApiProgramMatching.Request,
-): ProgramMatchRecord | undefined {
-  let row: ProgramMatchRecord | undefined;
+  idOrProgram:
+    | number
+    | bigint
+    | Pick<SiftApiProgramMatching.Request, "title" | "type" | "year">,
+): ProgramMatchRecord | null {
+  let rowId: number | bigint | undefined;
+
   if (typeof idOrProgram === "number" || typeof idOrProgram === "bigint") {
-    row = db.prepare(`SELECT * FROM titles WHERE id = ?`).get(idOrProgram) as
-      | ProgramMatchRecord
-      | undefined;
+    rowId = idOrProgram as number | bigint;
   } else {
-    row = db
-      .prepare(
-        `SELECT * FROM titles WHERE title = $title
-        ${"type" in idOrProgram ? " AND type = $type " : ""}
-        ${"year" in idOrProgram ? " AND year = $year " : ""}`,
+    rowId = db
+      .prepare<
+        Pick<SiftApiProgramMatching.Request, "title" | "type" | "year">,
+        { id: number | bigint }
+      >(
+        `SELECT id FROM titles WHERE title = $title
+          ${"type" in idOrProgram ? " AND type = $type " : ""}
+          ${"year" in idOrProgram ? " AND year = $year " : ""}`,
       )
-      .get(idOrProgram) as ProgramMatchRecord | undefined;
+      .get(idOrProgram)?.id;
   }
 
-  if (row) {
-    // makes future parseISO calls treat the string as representing
-    //   a UTC date, instead of a date in the current system timezone
-    row.createdAt = row.createdAt.replace(" ", "T") + "Z";
-    row.updatedAt = row.updatedAt.replace(" ", "T") + "Z";
-  }
+  if (rowId === undefined) return null;
 
-  return row;
+  const row = getRecordById<RawProgramMatchRecord>(rowId, "titles");
+  return {
+    ...row,
+    type: row.type === "\\N" ? null : row.type,
+    year: row.year === 0 ? null : row.year,
+  };
 }
 
 export function createProgramMatchRecord(
-  data: Partial<
-    Omit<ProgramMatchRecord, "id" | "title" | "createdAt" | "updatedAt">
-  > &
-    Pick<ProgramMatchRecord, "title">,
+  data: Pick<SiftApiProgramMatching.Request, "title" | "type" | "year"> & {
+    meta?: string;
+  },
+  onConflictClause = "ON CONFLICT DO NOTHING",
 ) {
   const entries = Object.entries(data);
   if (entries.length === 0) throw new Error("data arg cannot be empty object");
-  return db
+  const { changes, lastInsertRowid } = db
     .prepare(
       `INSERT INTO titles (${entries.map(([col]) => `"${col}"`).join(", ")})
       VALUES (${new Array(entries.length).fill("?").join(", ")})
-      ON CONFLICT DO NOTHING`,
+      ${onConflictClause}`,
     )
     .run(...entries.map(([, val]) => val));
+
+  return getProgramMatchRecord(
+    changes === 1 ? lastInsertRowid : pick(data, ["title", "type", "year"]),
+  );
 }
 
 export function updateProgramMatchRecord(
@@ -112,17 +126,13 @@ export function updateProgramMatchRecord(
   data: Partial<Pick<ProgramMatchRecord, "status" | "imdbId" | "meta">>,
 ) {
   const entries = Object.entries(data);
-  if (entries.length === 0) return;
-  return db
-    .prepare(
+  if (entries.length > 0) {
+    db.prepare(
       `UPDATE titles SET ${entries.map(([col]) => `${col} = ?`).join(", ")}
-      WHERE id = ?`,
-    )
-    .run(...entries.map(([, val]) => val), rowId);
-}
-
-export function getMessageById(id: number | bigint) {
-  return db.prepare("SELECT * FROM messages WHERE id = ?").run(id);
+        WHERE id = ?`,
+    ).run(...entries.map(([, val]) => val), rowId);
+  }
+  return getRecordById<ProgramMatchRecord>(rowId, "titles");
 }
 
 export function createMessageRecord(userMessage: UserMessage) {
@@ -131,5 +141,23 @@ export function createMessageRecord(userMessage: UserMessage) {
     .prepare("INSERT INTO messages (email, category, message) VALUES (?, ?, ?)")
     .run(email ?? null, category, message);
   if (!lastInsertRowid) throw new Error(`Record creation failed`);
-  return getMessageById(lastInsertRowid);
+  return getRecordById<UserMessageRecord>(lastInsertRowid, "messages");
+}
+
+function getRecordById<T extends DbRecord>(
+  id: number | bigint,
+  table: string,
+): T {
+  const row = db
+    .prepare<[number | bigint], T>(`SELECT * FROM ${table} WHERE id = ?`)
+    .get(id);
+
+  if (!row) throw new Error(`No row with id ${id} in '${table}'`);
+
+  // makes future parseISO calls treat the string as representing
+  //   a UTC date, instead of a date in the current system timezone
+  row.createdAt = row.createdAt.replace(" ", "T") + "Z";
+  row.updatedAt = row.updatedAt.replace(" ", "T") + "Z";
+
+  return row;
 }
