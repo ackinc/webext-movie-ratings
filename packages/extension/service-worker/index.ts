@@ -28,7 +28,7 @@ import TelemetryStore, {
 } from "../common/TelemetryStore";
 import OmdbApiClient from "./OmdbApiClient";
 import * as siftApiService from "../common/siftApiService";
-import { RATING_API_REQUEST_TIMEOUT_MS } from "./constants";
+import { FETCH_IMDB_RATING_TIMEOUT_MS } from "./constants";
 import * as notificationsService from "../common/notificationsService";
 import type { SiftApiProgramMatching } from "sifttypes";
 
@@ -185,7 +185,7 @@ function handleMessage(
       const timeout = setTimeout(() => {
         const e = new Error(ErrorMessage.ratingsApiRequestTimedOut);
         handleError(e, { context: { program, location: { href: pageUrl } } });
-      }, RATING_API_REQUEST_TIMEOUT_MS);
+      }, FETCH_IMDB_RATING_TIMEOUT_MS);
 
       getIMDBData(program, pageUrl)
         .then((data) => {

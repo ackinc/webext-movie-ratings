@@ -1,4 +1,4 @@
-import { parseISO } from "date-fns";
+import { parseISO, differenceInMinutes } from "date-fns";
 import { Meilisearch } from "meilisearch";
 import type { SiftApiProgramMatching } from "sifttypes";
 import type { IndexedImdbTitle } from "./types.ts";
@@ -48,7 +48,17 @@ export async function querySearchEngine(
   return searchResults;
 }
 
+// small hack to reduce the amount of IPC between the api-server and
+//   the search engine
+let cachedIndexLastUpdatedTime: Date | null = null;
 export async function getIndexLastUpdatedTime(): Promise<Date> {
-  const info = await index.getRawInfo();
-  return parseISO(info.updatedAt);
+  if (
+    cachedIndexLastUpdatedTime === null ||
+    differenceInMinutes(new Date(), cachedIndexLastUpdatedTime) >= 1
+  ) {
+    const info = await index.getRawInfo();
+    cachedIndexLastUpdatedTime = parseISO(info.updatedAt);
+  }
+
+  return cachedIndexLastUpdatedTime;
 }
