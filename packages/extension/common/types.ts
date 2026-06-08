@@ -53,13 +53,13 @@ export type Message =
   | {
       type: MessageType.fetchCachedIMDBRating;
       data: {
-        program: Omit<Program, "node">;
+        program: ProgramData;
       };
     }
   | {
       type: MessageType.fetchIMDBRating;
       data: {
-        program: Omit<Program, "node">;
+        program: ProgramData;
         pageUrl: string;
       };
     }

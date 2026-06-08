@@ -1,19 +1,18 @@
 import {
   browser,
   defaultProgramFilterSettings,
-  omit,
+  ErrorMessage,
   getSetting,
   MessageType,
   CssClasses,
+  mainFnInvocationDelayMs,
 } from "../common";
 import { SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import type AbstractPage from "./AbstractPage";
 import type {
-  IMDBData,
   Message,
   Program,
-  SWMessageResponse,
   ProgramFilterSettings,
   WebpageStats,
 } from "../common/types";
@@ -30,7 +29,7 @@ import MXPlayerPage from "./MXPlayer/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 import YoutubeMoviesPage from "./YoutubeMovies/Page";
 import Zee5Page from "./Zee5/Page";
-import { updateFilteredOutProgramNodeStyles } from "./utils";
+import { fetchIMDBData, updateFilteredOutProgramNodeStyles } from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
 
 let page: AbstractPage;
@@ -63,10 +62,10 @@ async function main() {
   };
   mutationObserver = new MutationObserver((_mutationList) => {
     if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(findProgramsAndAddRatings, 100);
+    timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
   });
   sessionStartTime = +new Date();
-  timeout = setTimeout(findProgramsAndAddRatings, 100);
+  timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
 
   addListeners();
 
@@ -149,18 +148,10 @@ async function findProgramsAndAddRatings() {
       swallowDataExtractionErrors: APP_ENV === "production",
     });
 
-    await Promise.all(
-      programs.map((p) =>
-        addRating(p)
-          .then(fadeIfFilteredOut)
-          .catch((e) => {
-            // SWErrors would have been captured from the SW's side
-            if (!(e instanceof SWError)) {
-              captureException(e, { context: { program: p } });
-            }
-          }),
-      ),
+    const results = await Promise.allSettled<Program>(
+      programs.map((p) => addRating(p).then(fadeIfFilteredOut)),
     );
+    processResults(programs, results);
 
     if (FF_TELEMETRY_ENABLED) {
       await browser.runtime.sendMessage({
@@ -176,7 +167,7 @@ async function findProgramsAndAddRatings() {
   } catch (e) {
     if (
       e instanceof Error &&
-      e.message.startsWith("Extension context invalidated")
+      e.message.startsWith(ErrorMessage.extensionContextInvalidated)
     ) {
       window.postMessage({
         type: MessageType.orphanCheck,
@@ -187,6 +178,54 @@ async function findProgramsAndAddRatings() {
 
     captureException(e);
   }
+
+  // deal with any errors that occurred; if any of them indicate it's
+  //   worthwhile to run 'findProgramsAndAddRatings' again after a
+  //   short delay, do so
+  function processResults(
+    programs: Program[],
+    results: PromiseSettledResult<Program>[],
+  ) {
+    const temporaryErrors: Error[] = [];
+    const criticalErrors: Error[] = [];
+    results.forEach((result, idx) => {
+      if (result.status === "fulfilled") return;
+
+      const e = result.reason as Error;
+
+      // SWErrors would have been captured from the SW's side; no need to call
+      //   captureException again
+      if (!(e instanceof SWError)) {
+        captureException(e, { context: { program: programs[idx]! } });
+      }
+
+      if (
+        [
+          ErrorMessage.telemetryStoreNotReady,
+          ErrorMessage.ratingsCacheNotReady,
+          ErrorMessage.ratingsApiRequestTimedOut,
+          ErrorMessage.ratingsApiRequestAlreadyInFlight,
+        ].some((msg) => e.message.startsWith(msg))
+      ) {
+        temporaryErrors.push(e);
+      }
+
+      if (
+        [ErrorMessage.extensionContextInvalidated].some((msg) =>
+          e.message.startsWith(msg),
+        )
+      ) {
+        criticalErrors.push(e);
+      }
+    });
+
+    if (criticalErrors.length > 0) throw criticalErrors[0]!;
+
+    if (temporaryErrors.length > 0) {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
+    }
+  }
 }
 
 async function addRating(p: Program): Promise<Program> {
@@ -194,21 +233,6 @@ async function addRating(p: Program): Promise<Program> {
     page.addIMDBData(p, await fetchIMDBData(p));
   }
   return p;
-}
-
-async function fetchIMDBData(program: Program): Promise<IMDBData> {
-  const response = await browser.runtime.sendMessage<
-    Message,
-    SWMessageResponse<IMDBData>
-  >({
-    type: MessageType.fetchIMDBRating,
-    data: {
-      program: omit(program, ["node"]) as Omit<Program, "node">,
-      pageUrl: location.href,
-    },
-  } satisfies Message);
-  if ("error" in response) throw new SWError(response.error);
-  return response.data;
 }
 
 function fadeIfFilteredOut(p: Program): Program {
@@ -285,12 +309,12 @@ function handleMessage(
 function handleUrlChange() {
   if (timeout) clearTimeout(timeout);
   sessionStartTime = +new Date();
-  timeout = setTimeout(findProgramsAndAddRatings, 100);
+  timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
   if (timeout) clearTimeout(timeout);
   programFilterSettings = { ...programFilterSettings, ...updatedSettings };
   updateFilteredOutProgramNodeStyles(updatedSettings);
-  timeout = setTimeout(findProgramsAndAddRatings, 100);
+  timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
 }

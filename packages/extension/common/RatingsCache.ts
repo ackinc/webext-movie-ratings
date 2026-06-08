@@ -1,12 +1,5 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
-import { addMilliseconds } from "date-fns";
-import {
-  ONE_WEEK_IN_MS,
-  type CachedIMDBData,
-  type IMDBData,
-  type ProgramData,
-  pick,
-} from ".";
+import { type CachedIMDBData, type IMDBData, type ProgramData, pick } from ".";
 
 export interface RatingsCacheSchema extends DBSchema {
   ratingsStore: {
@@ -17,12 +10,10 @@ export interface RatingsCacheSchema extends DBSchema {
 interface CacheEntry {
   program: ProgramData;
   imdbData: IMDBData;
-  expiry?: Date;
+  expiry: Date;
 }
 
 const storeName = "ratingsStore";
-const nfRatingCacheTime = ONE_WEEK_IN_MS;
-const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
 
 export default class RatingsCache {
   db: IDBPDatabase<RatingsCacheSchema>;
@@ -46,7 +37,7 @@ export default class RatingsCache {
 
   async get(
     program: ProgramData,
-  ): Promise<Omit<Required<CacheEntry>, "program"> | undefined> {
+  ): Promise<Omit<CacheEntry, "program"> | undefined> {
     const cached = await this.db.get(storeName, this.getKey(program));
     return cached
       ? {
@@ -56,24 +47,12 @@ export default class RatingsCache {
       : undefined;
   }
 
-  async put(programsAndRatings: CacheEntry[]): Promise<Required<CacheEntry>[]> {
+  async put(programsAndRatings: CacheEntry[]): Promise<CacheEntry[]> {
     const txn = this.db.transaction([storeName], "readwrite");
     const ratingsStore = txn.objectStore(storeName);
 
-    const entriesToPut = programsAndRatings.map((data) => ({
-      ...data,
-      expiry:
-        data.expiry ??
-        addMilliseconds(
-          new Date(),
-          data.imdbData.imdbRating === "N/F"
-            ? nfRatingCacheTime
-            : imdbRatingCacheTime,
-        ),
-    }));
-
     await Promise.all(
-      entriesToPut.map((data) =>
+      programsAndRatings.map((data) =>
         ratingsStore.put({
           ...data.imdbData,
           key: this.getKey(data.program),
@@ -82,10 +61,10 @@ export default class RatingsCache {
       ),
     );
 
-    return entriesToPut;
+    return programsAndRatings;
   }
 
-  async putOne(entry: CacheEntry): Promise<Required<CacheEntry>> {
+  async putOne(entry: CacheEntry): Promise<CacheEntry> {
     return (await this.put([entry]))[0]!;
   }
 

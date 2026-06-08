@@ -84,9 +84,6 @@ const config: esbuild.BuildOptions = {
     MAIN_CONTENT_SCRIPT_PATH: `"./urlchange-dispatcher.js"`,
     FF_TELEMETRY_ENABLED: `${["development", "testing"].includes(APP_ENV)}`,
 
-    // in testing-env (browseOTT script), we need the loop running in backgrounded tabs
-    FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE: `${["production", "development"].includes(APP_ENV)}`,
-
     TARGET_BROWSER: `"${TARGET_BROWSER}"`,
 
     SIFT_API_URL: `"${SIFT_API_URL}"`,

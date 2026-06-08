@@ -3,6 +3,10 @@ import type { PermString, ProgramFilterSettings, Sitename } from "./types";
 export const DB_NAME = "siftDb";
 export const DB_VERSION = 2;
 
+// how long to wait before invoking the 'findProgramsAndAddRatings'
+//   workhorse function after a reason to invoke it is detected
+export const mainFnInvocationDelayMs = 100;
+
 export const enum CssClasses {
   styleNode = "sift-style",
   imdbDataNode = "sift-imdb-data",
@@ -71,6 +75,7 @@ export const telemetryIntervalSizeInSeconds = 1;
 export const selectorStatusKeyPrefix = "selectorStatus_";
 
 export const enum ErrorMessage {
+  extensionContextInvalidated = "Extension context invalidated",
   unrecognizedProgramContainerNode = "ProgramContainerNode does not match a recognized selector",
   unrecognizedProgramNode = "ProgramNode does not match a recognized selector",
   potentiallyOutOfDateSelector = "Potentially out of date selector",

@@ -1,6 +1,6 @@
 import { type IDBPDatabase } from "idb";
-import { addMinutes } from "date-fns";
-import { isNetworkError } from "siftutils";
+import { addMinutes, addWeeks } from "date-fns";
+import { isNetworkError, pick } from "siftutils";
 import {
   browser,
   getSetting,
@@ -13,7 +13,6 @@ import {
   addBadge,
 } from "../common";
 import type {
-  Program,
   ProgramData,
   IMDBData,
   Message,
@@ -31,6 +30,7 @@ import OmdbApiClient from "./OmdbApiClient";
 import * as siftApiService from "../common/siftApiService";
 import { RATING_API_REQUEST_TIMEOUT_MS } from "./constants";
 import * as notificationsService from "../common/notificationsService";
+import type { SiftApiProgramMatching } from "sifttypes";
 
 let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
@@ -161,11 +161,37 @@ function handleMessage(
 ) {
   try {
     if (request.type === MessageType.fetchIMDBRating) {
+      const { pageUrl, program } = request.data;
+
+      if (FF_TELEMETRY_ENABLED) {
+        if (!telemetryStore) {
+          throw new Error(ErrorMessage.telemetryStoreNotReady);
+        }
+        telemetryStore
+          .logEvent({
+            type: "PROGRAM_RATING_REQUEST_RECEIVED",
+            data: { pageUrl },
+          })
+          .catch(handleError);
+      }
+
       if (!ratingsCache) throw new Error(ErrorMessage.ratingsCacheNotReady);
 
-      const { pageUrl, program } = request.data;
+      // if the attempt to fetch imdb data from the ratingsApi takes
+      //   too long, we want two things to happen:
+      // - a 'timed-out' response to be send back to the content-script
+      // - the attempt to keep going and eventually complete, so the response
+      //     can be cached and reused the next time it's needed
+      const timeout = setTimeout(() => {
+        const e = new Error(ErrorMessage.ratingsApiRequestTimedOut);
+        handleError(e, { context: { program, location: { href: pageUrl } } });
+      }, RATING_API_REQUEST_TIMEOUT_MS);
+
       getIMDBData(program, pageUrl)
-        .then((data) => sendResponse({ data }))
+        .then((data) => {
+          clearTimeout(timeout);
+          sendResponse({ data });
+        })
         .catch((e) =>
           handleError(e, { context: { program, location: { href: pageUrl } } }),
         );
@@ -285,7 +311,7 @@ function handleMessage(
 }
 
 async function getCachedIMDBData(
-  program: Omit<Program, "node">,
+  program: ProgramData,
 ): Promise<(Required<IMDBData> & { key: string }) | undefined> {
   const cached = await ratingsCache.get(program);
   if (!cached) return undefined;
@@ -296,92 +322,91 @@ async function getCachedIMDBData(
   };
 }
 
-// not using async-await here because we don't want to throw
-//   inside the setTimeout if the request to the ratings-api
-//   service takes too long (because errors thrown from inside
-//   setTimeout would not be caught by upstream error handling)
-function getIMDBData(
-  program: Omit<Program, "node">,
+async function getIMDBData(
+  program: ProgramData,
   pageUrl: string,
 ): Promise<Required<IMDBData>> {
-  return new Promise((resolve, reject) => {
-    if (FF_TELEMETRY_ENABLED) {
-      telemetryStore
-        .logEvent({
-          type: "PROGRAM_RATING_REQUEST_RECEIVED",
-          data: { pageUrl },
-        })
-        .catch(reject);
+  const cached = await getCachedIMDBData(program);
+  if (cached && cached.expiry > +new Date()) {
+    return pick(cached, ["imdbID", "imdbRating", "expiry"]);
+  }
+
+  const imdbIdFromCache = cached?.imdbID;
+  const { imdbData, expiry, error } = await fetchIMDBDataFromExternalApi(
+    // imdbIdFromCache may be '' (cached N/F ratings), so we cannot use '??'
+    //   operator below
+    imdbIdFromCache || program,
+  ).then(cacheFetchedImdbData);
+  if (error) throw error;
+  return { ...imdbData, expiry: +expiry };
+
+  // helpers
+
+  interface ImdbDataFetchResult {
+    imdbData: IMDBData;
+    expiry: Date;
+    error: Error | undefined;
+  }
+  async function fetchIMDBDataFromExternalApi(
+    imdbIdOrProgram: string | ProgramData,
+  ): Promise<ImdbDataFetchResult> {
+    let imdbData = await omdbApiClient.fetchIMDBData(imdbIdOrProgram);
+    // represents whether we have the imdbId for the program
+    let matchStatus:
+      | SiftApiProgramMatching.Response["status"]
+      | "error"
+      | undefined = undefined;
+    let error: Error | undefined = undefined;
+
+    if (typeof imdbIdOrProgram === "string" || imdbData.imdbID) {
+      matchStatus = "matched";
+    } else {
+      // we didn't have the program's imdb id, and the omdb api wasn't
+      //   able to figure it out based on the program's details; let's see
+      //   if sift's program-matching can do it
+      let matchedImdbId;
+      try {
+        ({ status: matchStatus, imdbId: matchedImdbId } =
+          await siftApiService.getMatchedImdbId(
+            imdbIdOrProgram as ProgramData,
+            pageUrl,
+          ));
+      } catch (e) {
+        // if there's an error here, we want to make sure we cache the N/F
+        //   rating for a short while so we give the Sift server-side some
+        //   breathing room to fix the error
+        // so instead of throwing immediately, we'll throw later downstream,
+        //   after the caching step
+        matchStatus = "error";
+        error = e as Error;
+      }
+
+      if (matchedImdbId) {
+        // try to get the imdb data from omdb by querying with the
+        //   imdb id we just matched this program to
+        imdbData = await omdbApiClient.fetchIMDBData(matchedImdbId);
+      }
     }
 
-    ratingsCache.get(program).then((result) => {
-      if (result && result.expiry > new Date()) {
-        return resolve({ ...result.imdbData, expiry: +result.expiry });
-      }
-      const matchedImdbId = result?.imdbData.imdbID;
+    let expiry: Date;
+    if (imdbData.imdbRating !== "N/F") {
+      expiry = addWeeks(new Date(), 2);
+    } else if (matchStatus === "abandoned") {
+      expiry = addWeeks(new Date(), 1);
+    } else if (matchStatus === "error") {
+      expiry = addMinutes(new Date(), 15);
+    } else {
+      throw new Error(`Unexpected: matchStatus '${matchStatus}'`);
+    }
 
-      setTimeout(
-        () => reject(new Error(ErrorMessage.ratingsApiRequestTimedOut)),
-        RATING_API_REQUEST_TIMEOUT_MS,
-      );
-
-      omdbApiClient
-        // matchedImdbId may be '' (cached N/F ratings), so we cannot use '??'
-        //   operator below
-        .fetchIMDBData(matchedImdbId || program)
-        .then((imdbData) => cacheFetchedImdbRating(program, imdbData, pageUrl))
-        .then(({ imdbData, expiry }) =>
-          resolve({ ...imdbData, expiry: +expiry }),
-        )
-        .catch(reject);
-    });
-  });
-}
-
-async function cacheFetchedImdbRating(
-  program: ProgramData,
-  imdbData: IMDBData,
-  requestingPageUrl: string,
-) {
-  if (imdbData.imdbID || imdbData.imdbRating !== "N/F") {
-    return ratingsCache.putOne({ program, imdbData });
+    return { imdbData, error, expiry };
   }
-
-  let matchResult;
-  try {
-    matchResult = await siftApiService.getMatchedImdbId(
-      program,
-      requestingPageUrl,
-    );
-  } catch (e) {
-    // give some time for any server-side issues to be sorted out
-    // we don't want to hammer the server with the same request
-    //   on the next invocation of the loopFn
-    await ratingsCache.putOne({ program, imdbData });
-    throw e;
-  }
-
-  if (matchResult.status === "pending") {
-    // cache for long enough that the matching process on the
-    //   server-side will have run before the next time we try
-    //   to fetch this program's rating from the ratings-API
-    return ratingsCache.putOne({
-      program,
-      imdbData,
-      expiry: addMinutes(new Date(), 1),
-    });
-  } else if (matchResult.status === "matched") {
-    // next time a rating for this program is requested, we'll
-    //   notice the cached rating is expired and make an api request
-    //   to the ratings-API provider using the cached IMDb ID that
-    //   came from the program-matching API
-    return ratingsCache.putOne({
-      program,
-      imdbData: { ...imdbData, imdbID: matchResult.imdbId! },
-      expiry: addMinutes(new Date(), -1),
-    });
-  } else /* matchResult.status === 'abandoned' */ {
-    return ratingsCache.putOne({ program, imdbData });
+  async function cacheFetchedImdbData(
+    data: ImdbDataFetchResult,
+  ): Promise<ImdbDataFetchResult> {
+    const { imdbData, error, expiry } = data;
+    const cached = await ratingsCache.putOne({ program, imdbData, expiry });
+    return { ...cached, error };
   }
 }
 

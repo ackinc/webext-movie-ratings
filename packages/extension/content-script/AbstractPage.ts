@@ -290,6 +290,8 @@ valid containers:\n\t${programContainers
     return node;
   }
 
+  /* methods dealing with outdated-selector-detection */
+
   // this async method is called many times in the hot path of findPrograms
   //   without being awaited; concurrent executions will interfere with
   //   each other, since they will read from and write to the same storage
@@ -339,7 +341,7 @@ valid containers:\n\t${programContainers
     1,
   );
 
-  // selectors should only ever be abandoned for a particular pathname,
+  // selectors should only ever be abandoned for a particular location.pathname,
   //   not site-wide, since a selector that stops working for one page
   //   may still be active on another page of the same site
   protected getAbandonedSelectors(): Record<UrlPath, Selector[]> {
@@ -358,6 +360,8 @@ valid containers:\n\t${programContainers
   protected getGeneralizedUrlPath(href: string): string {
     return getGeneralizedUrlPath(href);
   }
+
+  /* methods dealing with the "select-program-mode" debugging tool */
 
   toggleSelectProgramMode() {
     if (this.inSelectProgramMode) {

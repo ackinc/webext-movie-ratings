@@ -1,10 +1,20 @@
 import {
+  browser,
   clampNum,
   CssClasses,
+  MessageType,
+  omit,
   selectorStatusKeyPrefix,
   storage,
+  type IMDBData,
+  type Message,
+  type Program,
+  type ProgramData,
+  type ProgramFilterSettings,
+  type SelectorStatusForSite,
+  type SWMessageResponse,
 } from "../common";
-import type { ProgramFilterSettings, SelectorStatusForSite } from "../common";
+import { SWError } from "../common/customErrors";
 
 export function getFopnCssRules(
   filterSettings: ProgramFilterSettings,
@@ -94,4 +104,19 @@ export function climbDOMUntil(
   } while (cur);
 
   return cur;
+}
+
+export async function fetchIMDBData(program: Program): Promise<IMDBData> {
+  const response = await browser.runtime.sendMessage<
+    Message,
+    SWMessageResponse<IMDBData>
+  >({
+    type: MessageType.fetchIMDBRating,
+    data: {
+      program: omit(program, ["node"]) as ProgramData,
+      pageUrl: location.href,
+    },
+  } satisfies Message);
+  if ("error" in response) throw new SWError(response.error);
+  return response.data;
 }
