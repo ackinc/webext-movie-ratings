@@ -107,8 +107,6 @@ function createServer() {
       },
     } satisfies RouteShorthandOptions,
     async function (request, reply) {
-      const seIndexLastUpdatedAt = await getIndexLastUpdatedTime();
-
       const program = { ...request.query };
 
       let row = dbService.createProgramMatchRecord(
@@ -122,7 +120,7 @@ function createServer() {
       if (
         row.status === "pending" ||
         (row.status === "abandoned" &&
-          parseISO(row.updatedAt) < seIndexLastUpdatedAt)
+          parseISO(row.updatedAt) < (await getIndexLastUpdatedTime()))
       ) {
         const [bestMatch] = await querySearchEngine(program);
         row = dbService.updateProgramMatchRecord(row.id, {
