@@ -60,7 +60,18 @@ async function main() {
     ...defaultProgramFilterSettings,
     ...(await getSetting("programFiltersSettings")),
   };
-  mutationObserver = new MutationObserver((_mutationList) => {
+  mutationObserver = new MutationObserver((mutationRecords) => {
+    const addedNodes = mutationRecords
+      .flatMap((r) => Array.from(r.addedNodes))
+      .filter(
+        (node) =>
+          node instanceof HTMLElement &&
+          !node.classList.contains(CssClasses.imdbDataNode),
+      );
+    if (addedNodes.length === 0) return;
+
+    // at least one element was added that is not a sift-imdb-node,
+    //   so it's worth running 'findProgramsAndAddRatings' again
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
   });
