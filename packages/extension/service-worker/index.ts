@@ -328,14 +328,13 @@ async function getIMDBData(
   }
 
   const imdbIdFromCache = cached?.imdbID;
-  const { imdbData, expiry, error } = await ratingsService.fetchIMDBData(
+  const { imdbData, expiry } = await ratingsService.fetchIMDBData(
     // imdbIdFromCache may be '' (cached N/F ratings), so we cannot use '??'
     //   operator below
     imdbIdFromCache || program,
     pageUrl,
   );
   await ratingsCache.putOne({ program, imdbData, expiry });
-  if (error) throw error;
   return { ...imdbData, expiry: +expiry };
 }
 

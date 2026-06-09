@@ -1,4 +1,4 @@
-import { addWeeks, addMinutes } from "date-fns";
+import { addWeeks } from "date-fns";
 import { type SiftApiProgramMatching } from "sifttypes";
 import { type IMDBData, type ProgramData } from "@common";
 import TelemetryStore from "@common/TelemetryStore";
@@ -16,7 +16,6 @@ export function initialize(teleStore: TelemetryStore) {
 interface ImdbDataFetchResult {
   imdbData: IMDBData;
   expiry: Date;
-  error: Error | undefined;
 }
 export async function fetchIMDBData(
   imdbIdOrProgram: string | ProgramData,
@@ -24,11 +23,8 @@ export async function fetchIMDBData(
 ): Promise<ImdbDataFetchResult> {
   let imdbData = await omdbApiClient.fetchIMDBData(imdbIdOrProgram);
   // represents whether we have the imdbId for the program
-  let matchStatus:
-    | SiftApiProgramMatching.Response["status"]
-    | "error"
-    | undefined = undefined;
-  let error: Error | undefined = undefined;
+  let matchStatus: SiftApiProgramMatching.Response["status"] | undefined =
+    undefined;
 
   if (typeof imdbIdOrProgram === "string" || imdbData.imdbID) {
     matchStatus = "matched";
@@ -37,21 +33,11 @@ export async function fetchIMDBData(
     //   able to figure it out based on the program's details; let's see
     //   if sift's program-matching can do it
     let matchedImdbId;
-    try {
-      ({ status: matchStatus, imdbId: matchedImdbId } =
-        await siftApiService.getMatchedImdbId(
-          imdbIdOrProgram as ProgramData,
-          pageUrl,
-        ));
-    } catch (e) {
-      // if there's an error here, we want to make sure we cache the N/F
-      //   rating for a short while so we give the Sift server-side some
-      //   breathing room to fix the error
-      // so instead of throwing immediately, we'll throw later downstream,
-      //   after the caching step
-      matchStatus = "error";
-      error = e as Error;
-    }
+    ({ status: matchStatus, imdbId: matchedImdbId } =
+      await siftApiService.getMatchedImdbId(
+        imdbIdOrProgram as ProgramData,
+        pageUrl,
+      ));
 
     if (matchedImdbId) {
       // try to get the imdb data from omdb by querying with the
@@ -60,18 +46,8 @@ export async function fetchIMDBData(
     }
   }
 
-  let expiry: Date;
-  if (imdbData.imdbRating !== "N/F") {
-    expiry = addWeeks(new Date(), 2);
-  } else if (matchStatus === "abandoned") {
-    expiry = addWeeks(new Date(), 1);
-  } else if (matchStatus === "error") {
-    expiry = addMinutes(new Date(), 15);
-  } else {
-    throw new Error(`Unexpected: matchStatus '${matchStatus}'`);
-  }
-
-  return { imdbData, error, expiry };
+  const expiry = addWeeks(new Date(), imdbData.imdbRating === "N/F" ? 1 : 2);
+  return { imdbData, expiry };
 }
 
 async function fetchWithAddedTelemetry(
