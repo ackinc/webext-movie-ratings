@@ -58,14 +58,10 @@ export function partition<const T extends unknown[]>(
 export function pick<
   const T extends Record<string, unknown>,
   const K extends string[],
->(
-  obj: T,
-  keys: K,
-  requireAllKeys: boolean = false,
-): Pick<T, keyof T & K[number]> {
+>(obj: T, keys: K, requireAll: boolean = false): Pick<T, keyof T & K[number]> {
   const [keysInObj, keysNotInObj] = partition(keys, (k) => k in obj);
 
-  if (keysNotInObj.length > 0 && requireAllKeys) {
+  if (keysNotInObj.length > 0 && requireAll) {
     throw new Error(`Required keys are absent: ${keysNotInObj.join(", ")}`);
   }
 
@@ -90,10 +86,10 @@ export function isNullOrUndef(x: unknown) {
   return x == void 0;
 }
 
-export function omit(
-  obj: Record<string, unknown>,
-  keys: string[],
-): Record<string, unknown> {
+export function omit<T extends Record<string, unknown>, K extends string[]>(
+  obj: T,
+  keys: K,
+): Omit<T, K[number]> {
   const retval = { ...obj };
   for (const key of keys) delete retval[key];
   return retval;
