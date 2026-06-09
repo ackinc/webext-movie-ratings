@@ -72,15 +72,27 @@ async function main() {
 
     // at least one element was added that is not a sift-imdb-node,
     //   so it's worth running 'findProgramsAndAddRatings' again
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
+    schedulePageProcessing("onMutation");
+    if (APP_ENV === "development") console.debug(addedNodes);
   });
   sessionStartTime = +new Date();
-  timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
-
   addListeners();
-
   if (APP_ENV !== "production") addSidecar({ page });
+  schedulePageProcessing("onStart");
+}
+
+function schedulePageProcessing(
+  reason: string,
+  withDelayMs: number = mainFnInvocationDelayMs,
+) {
+  if (timeout) clearTimeout(timeout);
+
+  if (APP_ENV === "development") {
+    const now = new Date().toISOString();
+    console.debug(`[${now}] schedulePageProcessing ${reason}`);
+  }
+
+  timeout = setTimeout(findProgramsAndAddRatings, withDelayMs);
 }
 
 function cleanup(broadcast = true) {
@@ -318,14 +330,12 @@ function handleMessage(
 }
 
 function handleUrlChange() {
-  if (timeout) clearTimeout(timeout);
   sessionStartTime = +new Date();
-  timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
+  schedulePageProcessing("onUrlChange");
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
-  if (timeout) clearTimeout(timeout);
-  programFilterSettings = { ...programFilterSettings, ...updatedSettings };
-  updateFilteredOutProgramNodeStyles(updatedSettings);
-  timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
+  programFilterSettings = updatedSettings;
+  updateFilteredOutProgramNodeStyles(programFilterSettings);
+  schedulePageProcessing("onFiltersChange");
 }
