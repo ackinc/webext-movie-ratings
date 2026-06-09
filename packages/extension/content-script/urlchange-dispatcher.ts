@@ -5,7 +5,7 @@ declare global {
   }
 }
 
-import { waitFor } from "siftutils";
+import { retry } from "siftutils";
 import { MessageType } from "../common/constants";
 import { type Message } from "../common/types";
 
@@ -20,9 +20,16 @@ import { type Message } from "../common/types";
     data: { sourceId },
   });
 
-  await waitFor(
-    () => !(window.__origHistoryPushState || window.__origHistoryReplaceState),
-  );
+  await retry(
+    async () => {
+      if (window.__origHistoryPushState || window.__origHistoryReplaceState) {
+        throw new Error(
+          "old version of urlchange-dispatcher hasn't finished cleaning up",
+        );
+      }
+    },
+    { type: "linear", n: 0.5, maxRetries: 10 },
+  )();
 
   window.addEventListener("message", handleMessage);
   patchHistoryPushStateAndReplaceState();
