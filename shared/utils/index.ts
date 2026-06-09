@@ -22,7 +22,7 @@ export async function waitFor<T>(
   throw new Error("waitFor timed out");
 }
 
-export function invert<T extends (...args: Parameters<T>) => boolean>(
+export function invert<T extends (...args: unknown[]) => boolean>(
   fn: T,
 ): (...args: Parameters<T>) => boolean {
   return (...args) => !fn(...args);
