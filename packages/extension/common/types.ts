@@ -19,7 +19,7 @@ export type Program = {
 } & ProgramData;
 
 export type IMDBData = {
-  imdbID: string;
+  imdbId: string;
   imdbRating: string;
   expiry?: number;
 };

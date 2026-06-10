@@ -41,7 +41,7 @@ export default class RatingsCache {
     const cached = await this.db.get(storeName, this.getKey(program));
     return cached
       ? {
-          imdbData: pick(cached, ["imdbID", "imdbRating"]),
+          imdbData: pick(cached, ["imdbId", "imdbRating"]),
           expiry: new Date(cached.expiry),
         }
       : undefined;

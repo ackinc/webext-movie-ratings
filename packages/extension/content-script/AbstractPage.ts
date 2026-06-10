@@ -274,11 +274,11 @@ valid containers:\n\t${programContainers
   #createIMDBDataNode(data: IMDBData): HTMLElement {
     const node = document.createElement("a");
     node.classList.add(CssClasses.imdbDataNode);
-    node.dataset["imdbID"] = data.imdbID;
+    node.dataset["imdbId"] = data.imdbId;
     node.dataset["imdbRating"] = data.imdbRating;
     if ("expiry" in data) node.dataset["expiry"] = String(data.expiry);
     if (data.imdbRating !== "N/F") {
-      node.setAttribute("href", getIMDBLink(data.imdbID));
+      node.setAttribute("href", getIMDBLink(data.imdbId));
       node.setAttribute("target", "_blank");
     }
     if (["N/F"].includes(data.imdbRating)) {
