@@ -172,7 +172,7 @@ function handleMessage(
       }, FETCH_IMDB_RATING_TIMEOUT_MS);
 
       ratingsService
-        .fetchIMDBData(program, pageUrl)
+        .getIMDBData(program, pageUrl)
         .then((data) => {
           clearTimeout(timeout);
           sendResponse({ data });

@@ -61,7 +61,7 @@ async function fetchWithAddedTelemetry(
   return response;
 }
 
-export async function fetchIMDBData(
+export async function getIMDBData(
   program: ProgramData,
   pageUrl: string,
 ): Promise<Required<IMDBData>> {
