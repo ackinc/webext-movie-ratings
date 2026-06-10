@@ -9,6 +9,7 @@ import type {
   Selector,
   SWMessageResponse,
   UrlPath,
+  CachedIMDBData,
 } from "../common/types";
 import {
   browser,
@@ -465,7 +466,7 @@ valid containers:\n\t${programContainers
 
     const response = await browser.runtime.sendMessage<
       Message,
-      SWMessageResponse<Required<IMDBData> & { key: string }>
+      SWMessageResponse<CachedIMDBData>
     >({
       type: MessageType.fetchCachedIMDBRating,
       data: { program },
