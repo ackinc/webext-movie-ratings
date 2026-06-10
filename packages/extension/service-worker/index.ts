@@ -1,5 +1,5 @@
 import { type IDBPDatabase } from "idb";
-import { isNetworkError, pick } from "siftutils";
+import { isNetworkError } from "siftutils";
 import {
   browser,
   getSetting,
@@ -11,17 +11,11 @@ import {
   upgradeIdbAndGetConnection,
   addBadge,
 } from "../common";
-import type {
-  ProgramData,
-  IMDBData,
-  Message,
-  SWMessageResponse,
-} from "../common/types";
+import type { Message, SWMessageResponse } from "../common/types";
 import {
   captureException,
   type ExceptionMetadata,
 } from "../common/errorReporter";
-import RatingsCache, { type RatingsCacheSchema } from "../common/RatingsCache";
 import TelemetryStore, {
   type TelemetryStoreSchema,
 } from "../common/TelemetryStore";
@@ -29,7 +23,6 @@ import { FETCH_IMDB_RATING_TIMEOUT_MS } from "./constants";
 import * as notificationsService from "../common/notificationsService";
 import * as ratingsService from "./ratingsService";
 
-let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
 (async () => {
   try {
@@ -39,13 +32,10 @@ let telemetryStore: TelemetryStore;
     browser.tabs.onUpdated.addListener(handleTabUpdated);
 
     const db = await upgradeIdbAndGetConnection();
-    ratingsCache = await RatingsCache.create(
-      db as IDBPDatabase<RatingsCacheSchema>,
-    );
     telemetryStore = await TelemetryStore.create(
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
-    ratingsService.initialize(telemetryStore);
+    await ratingsService.initialize(db);
 
     // Running this on every service-worker startup instead of
     //   inside an onInstalled event listener (which is called for both
@@ -171,8 +161,6 @@ function handleMessage(
           .catch(handleError);
       }
 
-      if (!ratingsCache) throw new Error(ErrorMessage.ratingsCacheNotReady);
-
       // if the attempt to fetch imdb data from the ratingsApi takes
       //   too long, we want two things to happen:
       // - a 'timed-out' response to be send back to the content-script
@@ -183,7 +171,8 @@ function handleMessage(
         handleError(e, { context: { program, location: { href: pageUrl } } });
       }, FETCH_IMDB_RATING_TIMEOUT_MS);
 
-      getIMDBData(program, pageUrl)
+      ratingsService
+        .fetchIMDBData(program, pageUrl)
         .then((data) => {
           clearTimeout(timeout);
           sendResponse({ data });
@@ -195,7 +184,8 @@ function handleMessage(
       return true; // keeps channel open until sendReponse is called
     } else if (request.type === MessageType.fetchCachedIMDBRating) {
       const { program } = request.data;
-      getCachedIMDBData(program)
+      ratingsService
+        .getCachedIMDBData(program)
         .then((data) => sendResponse({ data }))
         .catch((e) => handleError(e, { context: { program } }));
 
@@ -304,38 +294,6 @@ function handleMessage(
     if (errorsToIgnore.includes(error.message)) return;
     captureException(error, metadata);
   }
-}
-
-async function getCachedIMDBData(
-  program: ProgramData,
-): Promise<(Required<IMDBData> & { key: string }) | undefined> {
-  const cached = await ratingsCache.get(program);
-  if (!cached) return undefined;
-  return {
-    ...cached.imdbData,
-    expiry: +cached.expiry,
-    key: ratingsCache.getKey(program),
-  };
-}
-
-async function getIMDBData(
-  program: ProgramData,
-  pageUrl: string,
-): Promise<Required<IMDBData>> {
-  const cached = await getCachedIMDBData(program);
-  if (cached && cached.expiry > +new Date()) {
-    return pick(cached, ["imdbID", "imdbRating", "expiry"]);
-  }
-
-  const imdbIdFromCache = cached?.imdbID;
-  const { imdbData, expiry } = await ratingsService.fetchIMDBData(
-    // imdbIdFromCache may be '' (cached N/F ratings), so we cannot use '??'
-    //   operator below
-    imdbIdFromCache || program,
-    pageUrl,
-  );
-  await ratingsCache.putOne({ program, imdbData, expiry });
-  return { ...imdbData, expiry: +expiry };
 }
 
 async function setMediaRequestBlockingState(value: boolean): Promise<void> {
