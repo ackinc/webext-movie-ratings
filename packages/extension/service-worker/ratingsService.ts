@@ -3,6 +3,7 @@ import { addWeeks } from "date-fns";
 import {
   ErrorMessage,
   omit,
+  programToHash,
   type CachedIMDBData,
   type IMDBData,
   type ProgramData,
@@ -66,7 +67,7 @@ export async function getIMDBData(
   pageUrl: string,
 ): Promise<Required<IMDBData>> {
   return new Promise<Required<IMDBData>>((resolve, reject) => {
-    const key = getKey();
+    const key = programToHash(program);
     if (key in inProgress) {
       inProgress[key]!.push({ resolve, reject });
     } else {
@@ -117,22 +118,18 @@ export async function getIMDBData(
         inProgress[key]!.forEach(({ reject }) => reject(error!));
         delete inProgress[key];
       } else {
-        const expiry = addWeeks(
+        const expiry = +addWeeks(
           new Date(),
           imdbData!.imdbRating === "N/F" ? 1 : 2,
         );
         inProgress[key]!.forEach(({ resolve }) =>
-          resolve({ ...imdbData!, expiry: +expiry }),
+          resolve({ ...imdbData!, expiry }),
         );
         delete inProgress[key];
 
-        await ratingsCache.putOne({ program, imdbData: imdbData!, expiry });
+        await ratingsCache.putOne({ ...imdbData!, expiry, key });
       }
     }
-  }
-
-  function getKey() {
-    return JSON.stringify(program);
   }
 }
 
@@ -140,12 +137,5 @@ export async function getCachedIMDBData(
   program: ProgramData,
 ): Promise<CachedIMDBData | undefined> {
   if (!ratingsCache) throw new Error(ErrorMessage.ratingsCacheNotReady);
-
-  const cached = await ratingsCache.get(program);
-  if (!cached) return undefined;
-  return {
-    ...cached.imdbData,
-    expiry: +cached.expiry,
-    key: ratingsCache.getKey(program),
-  };
+  return await ratingsCache.get(programToHash(program));
 }

@@ -1,16 +1,11 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
-import { type CachedIMDBData, type IMDBData, type ProgramData, pick } from ".";
+import { type CachedIMDBData } from "@common";
 
 export interface RatingsCacheSchema extends DBSchema {
   ratingsStore: {
     key: string;
     value: CachedIMDBData;
   };
-}
-interface CacheEntry {
-  program: ProgramData;
-  imdbData: IMDBData;
-  expiry: Date;
 }
 
 const storeName = "ratingsStore";
@@ -35,36 +30,18 @@ export default class RatingsCache {
     this.db = db;
   }
 
-  async get(
-    program: ProgramData,
-  ): Promise<Omit<CacheEntry, "program"> | undefined> {
-    const cached = await this.db.get(storeName, this.getKey(program));
-    return cached
-      ? {
-          imdbData: pick(cached, ["imdbId", "imdbRating"]),
-          expiry: new Date(cached.expiry),
-        }
-      : undefined;
+  async get(key: string): Promise<CachedIMDBData | undefined> {
+    return await this.db.get(storeName, key);
   }
 
-  async put(programsAndRatings: CacheEntry[]): Promise<CacheEntry[]> {
+  async put(entries: CachedIMDBData[]): Promise<CachedIMDBData[]> {
     const txn = this.db.transaction([storeName], "readwrite");
     const ratingsStore = txn.objectStore(storeName);
-
-    await Promise.all(
-      programsAndRatings.map((data) =>
-        ratingsStore.put({
-          ...data.imdbData,
-          key: this.getKey(data.program),
-          expiry: +data.expiry,
-        }),
-      ),
-    );
-
-    return programsAndRatings;
+    await Promise.all(entries.map((data) => ratingsStore.put(data)));
+    return entries;
   }
 
-  async putOne(entry: CacheEntry): Promise<CacheEntry> {
+  async putOne(entry: CachedIMDBData): Promise<CachedIMDBData> {
     return (await this.put([entry]))[0]!;
   }
 
@@ -78,19 +55,5 @@ export default class RatingsCache {
       ),
     );
     return this;
-  }
-
-  getKey(program: ProgramData): string {
-    const { title, type, year } = program;
-    // using btoa directly on a title with non-latin1 chars (without
-    //   encoding to utf-8 first) will cause an error to be thrown
-    const utf8EncodedTitle = String.fromCharCode(
-      ...new TextEncoder().encode(title),
-    );
-    return btoa(
-      [utf8EncodedTitle.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
-        .filter(Boolean)
-        .join("|"),
-    );
   }
 }
