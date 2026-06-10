@@ -1,5 +1,5 @@
 import { type IDBPDatabase } from "idb";
-import { addWeeks } from "date-fns";
+import { add } from "date-fns";
 import {
   ErrorMessage,
   omit,
@@ -22,6 +22,11 @@ let inProgress: Record<
 let omdbApiClient: OmdbApiClient;
 let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
+
+const ratingCacheDurations = {
+  onRatingNotFound: { weeks: 1 },
+  onRatingFound: { weeks: 2 },
+};
 
 export async function initialize(db: IDBPDatabase) {
   inProgress = {};
@@ -87,13 +92,11 @@ export async function getIMDBData(
         return;
       }
 
-      const cachedImdbId = cached?.imdbId;
+      // the cached imdbId may be '' (from a cached N/F rating), so we
+      //   cannot use '??' operator below
+      imdbData = await omdbApiClient.fetchIMDBData(cached?.imdbId || program);
 
-      // cachedImdbId may be '' (from a cached N/F rating), so we cannot
-      //   use '??' operator below
-      imdbData = await omdbApiClient.fetchIMDBData(cachedImdbId || program);
-
-      if (!cachedImdbId && !imdbData.imdbId) {
+      if (!cached?.imdbId && !imdbData.imdbId) {
         // we didn't have the program's imdb id, and the omdb api wasn't
         //   able to figure it out based on the program's details; let's see
         //   if sift's program-matching can do it
@@ -118,9 +121,11 @@ export async function getIMDBData(
         inProgress[key]!.forEach(({ reject }) => reject(error!));
         delete inProgress[key];
       } else {
-        const expiry = +addWeeks(
+        const expiry = +add(
           new Date(),
-          imdbData!.imdbRating === "N/F" ? 1 : 2,
+          imdbData!.imdbRating === "N/F"
+            ? ratingCacheDurations.onRatingNotFound
+            : ratingCacheDurations.onRatingFound,
         );
         inProgress[key]!.forEach(({ resolve }) =>
           resolve({ ...imdbData!, expiry }),
