@@ -1,5 +1,9 @@
 # Changelog
 
+## v9.5.1
+
+- Fixed a bug with Sift's automatic program-matching logic caused by the switch from the "process the page in a loop" mechanism to the "process the page when a mutation is detected" mechanism
+
 ## v9.3.0
 
 - Updated extension name, logo, description
