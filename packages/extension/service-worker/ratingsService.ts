@@ -136,6 +136,6 @@ export async function getIMDBData(
 export async function getCachedIMDBData(
   program: ProgramData,
 ): Promise<CachedIMDBData | undefined> {
-  if (!ratingsCache) throw new Error(ErrorMessage.ratingsCacheNotReady);
+  if (!ratingsCache) throw new Error(ErrorMessage.ratingsServiceNotInitialized);
   return await ratingsCache.get(programToHash(program));
 }
