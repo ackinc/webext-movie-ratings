@@ -1,20 +1,45 @@
-import { addWeeks } from "date-fns";
-import { type IMDBData, type ProgramData } from "@common";
-import TelemetryStore from "@common/TelemetryStore";
+import { type IDBPDatabase } from "idb";
+import { add } from "date-fns";
+import {
+  ErrorMessage,
+  omit,
+  programToHash,
+  type CachedIMDBData,
+  type IMDBData,
+  type ProgramData,
+} from "@common";
+import RatingsCache, { type RatingsCacheSchema } from "@common/RatingsCache";
+import TelemetryStore, {
+  type TelemetryStoreSchema,
+} from "@common/TelemetryStore";
 import * as siftApiService from "@common/siftApiService";
 import OmdbApiClient from "./OmdbApiClient";
 
-let telemetryStore: TelemetryStore;
-let omdbApiClient: OmdbApiClient;
 let inProgress: Record<
   string,
-  { resolve: (x: ImdbDataFetchResult) => void; reject: (e: Error) => void }[]
+  { resolve: (x: Required<IMDBData>) => void; reject: (e: Error) => void }[]
 >;
+let omdbApiClient: OmdbApiClient;
+let ratingsCache: RatingsCache;
+let telemetryStore: TelemetryStore;
 
-export function initialize(teleStore: TelemetryStore) {
-  omdbApiClient = new OmdbApiClient(fetchWithAddedTelemetry);
-  telemetryStore = teleStore;
+const ratingCacheDurations = {
+  onProgramMatchingError: { minutes: 15 },
+  onRatingNotFound: { weeks: 1 },
+  onRatingFound: { weeks: 2 },
+};
+
+export async function initialize(db: IDBPDatabase) {
   inProgress = {};
+  omdbApiClient = new OmdbApiClient(fetchWithAddedTelemetry);
+  ratingsCache = await RatingsCache.create(
+    db as IDBPDatabase<RatingsCacheSchema>,
+  );
+  if (FF_TELEMETRY_ENABLED) {
+    telemetryStore = await TelemetryStore.create(
+      db as IDBPDatabase<TelemetryStoreSchema>,
+    );
+  }
 }
 
 async function fetchWithAddedTelemetry(
@@ -43,16 +68,17 @@ async function fetchWithAddedTelemetry(
   return response;
 }
 
-interface ImdbDataFetchResult {
-  imdbData: IMDBData;
-  expiry: Date;
-}
-export async function fetchIMDBData(
-  imdbIdOrProgram: string | ProgramData,
+export async function getIMDBData(
+  program: ProgramData,
   pageUrl: string,
-): Promise<ImdbDataFetchResult> {
-  return new Promise<ImdbDataFetchResult>((resolve, reject) => {
-    const key = getKey();
+): Promise<Required<IMDBData>> {
+  const cached = await getCachedIMDBData(program);
+  if (cached && cached.expiry > +new Date()) {
+    return omit(cached, ["key"] as const);
+  }
+
+  return new Promise<Required<IMDBData>>((resolve, reject) => {
+    const key = programToHash(program);
     if (key in inProgress) {
       inProgress[key]!.push({ resolve, reject });
     } else {
@@ -62,17 +88,20 @@ export async function fetchIMDBData(
   });
 
   async function helper(key: string) {
-    let result: ImdbDataFetchResult;
-    let error: Error;
-    try {
-      let imdbData = await omdbApiClient.fetchIMDBData(imdbIdOrProgram);
+    let imdbData: IMDBData | null = null;
+    let error: Error | null = null;
 
-      if (!(typeof imdbIdOrProgram === "string" || imdbData.imdbID)) {
+    try {
+      // the cached imdbId may be '' (from a cached N/F rating), so we
+      //   cannot use '??' operator below
+      imdbData = await omdbApiClient.fetchIMDBData(cached?.imdbId || program);
+
+      if (!cached?.imdbId && !imdbData.imdbId) {
         // we didn't have the program's imdb id, and the omdb api wasn't
         //   able to figure it out based on the program's details; let's see
         //   if sift's program-matching can do it
         const { imdbId: matchedImdbId } = await siftApiService.getMatchedImdbId(
-          imdbIdOrProgram as ProgramData,
+          program,
           pageUrl,
         );
 
@@ -82,26 +111,38 @@ export async function fetchIMDBData(
           imdbData = await omdbApiClient.fetchIMDBData(matchedImdbId);
         }
       }
-
-      result = {
-        imdbData,
-        expiry: addWeeks(new Date(), imdbData.imdbRating === "N/F" ? 1 : 2),
-      };
     } catch (e) {
       error =
         e instanceof Error
           ? e
           : new Error("Error fetching imdb data", { cause: e });
     } finally {
-      inProgress[key]!.forEach(({ resolve, reject }) =>
-        error ? reject(error) : resolve(result),
-      );
-      delete inProgress[key];
+      if (error && !error.message.startsWith(ErrorMessage.siftApiServerError)) {
+        inProgress[key]!.forEach(({ reject }) => reject(error!));
+        delete inProgress[key];
+      } else {
+        const expiry = +add(
+          new Date(),
+          error
+            ? ratingCacheDurations.onProgramMatchingError
+            : imdbData!.imdbRating === "N/F"
+              ? ratingCacheDurations.onRatingNotFound
+              : ratingCacheDurations.onRatingFound,
+        );
+        inProgress[key]!.forEach(({ resolve }) =>
+          resolve({ ...imdbData!, expiry }),
+        );
+        delete inProgress[key];
+
+        await ratingsCache.putOne({ ...imdbData!, expiry, key });
+      }
     }
   }
+}
 
-  function getKey() {
-    if (typeof imdbIdOrProgram === "string") return imdbIdOrProgram;
-    return JSON.stringify(imdbIdOrProgram);
-  }
+export async function getCachedIMDBData(
+  program: ProgramData,
+): Promise<CachedIMDBData | undefined> {
+  if (!ratingsCache) throw new Error(ErrorMessage.ratingsServiceNotInitialized);
+  return await ratingsCache.get(programToHash(program));
 }

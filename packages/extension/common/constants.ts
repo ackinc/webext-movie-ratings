@@ -80,6 +80,7 @@ export const enum ErrorMessage {
   unrecognizedProgramNode = "ProgramNode does not match a recognized selector",
   potentiallyOutOfDateSelector = "Potentially out of date selector",
   ratingsCacheNotReady = "The ratings cache is not ready",
+  ratingsServiceNotInitialized = "The ratings service was not initialized",
   telemetryStoreNotReady = "The telemetry store is not ready",
   ratingsApiRequestTimedOut = "The ratings API request timed out",
   ratingsApiRequestAlreadyInFlight = "A request for this program's rating is already in-flight",
