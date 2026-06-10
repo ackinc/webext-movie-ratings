@@ -24,6 +24,7 @@ let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
 
 const ratingCacheDurations = {
+  onProgramMatchingError: { minutes: 15 },
   onRatingNotFound: { weeks: 1 },
   onRatingFound: { weeks: 2 },
 };
@@ -71,6 +72,11 @@ export async function getIMDBData(
   program: ProgramData,
   pageUrl: string,
 ): Promise<Required<IMDBData>> {
+  const cached = await getCachedIMDBData(program);
+  if (cached && cached.expiry > +new Date()) {
+    return omit(cached, ["key"] as const);
+  }
+
   return new Promise<Required<IMDBData>>((resolve, reject) => {
     const key = programToHash(program);
     if (key in inProgress) {
@@ -86,12 +92,6 @@ export async function getIMDBData(
     let error: Error | null = null;
 
     try {
-      const cached = await getCachedIMDBData(program);
-      if (cached && cached.expiry > +new Date()) {
-        imdbData = omit(cached, ["key"] as const);
-        return;
-      }
-
       // the cached imdbId may be '' (from a cached N/F rating), so we
       //   cannot use '??' operator below
       imdbData = await omdbApiClient.fetchIMDBData(cached?.imdbId || program);
@@ -117,15 +117,17 @@ export async function getIMDBData(
           ? e
           : new Error("Error fetching imdb data", { cause: e });
     } finally {
-      if (error) {
+      if (error && !error.message.startsWith(ErrorMessage.siftApiServerError)) {
         inProgress[key]!.forEach(({ reject }) => reject(error!));
         delete inProgress[key];
       } else {
         const expiry = +add(
           new Date(),
-          imdbData!.imdbRating === "N/F"
-            ? ratingCacheDurations.onRatingNotFound
-            : ratingCacheDurations.onRatingFound,
+          error
+            ? ratingCacheDurations.onProgramMatchingError
+            : imdbData!.imdbRating === "N/F"
+              ? ratingCacheDurations.onRatingNotFound
+              : ratingCacheDurations.onRatingFound,
         );
         inProgress[key]!.forEach(({ resolve }) =>
           resolve({ ...imdbData!, expiry }),
