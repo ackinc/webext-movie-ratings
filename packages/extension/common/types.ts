@@ -19,14 +19,13 @@ export type Program = {
 } & ProgramData;
 
 export type IMDBData = {
-  imdbID: string;
+  imdbId: string;
   imdbRating: string;
   expiry?: number;
 };
 
-export type CachedIMDBData = IMDBData & {
+export type CachedIMDBData = Required<IMDBData> & {
   key: string;
-  expiry: number;
 };
 
 export type SWMessageResponse<T> = { data: T } | { error: string };

@@ -3,6 +3,7 @@ import {
   defaultProgramFilterSettings,
   ErrorMessage,
   getSetting,
+  omit,
   MessageType,
   CssClasses,
   mainFnInvocationDelayMs,
@@ -72,15 +73,27 @@ async function main() {
 
     // at least one element was added that is not a sift-imdb-node,
     //   so it's worth running 'findProgramsAndAddRatings' again
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
+    schedulePageProcessing("onMutation");
+    if (APP_ENV === "development") console.debug(addedNodes);
   });
   sessionStartTime = +new Date();
-  timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
-
   addListeners();
-
   if (APP_ENV !== "production") addSidecar({ page });
+  schedulePageProcessing("onStart");
+}
+
+function schedulePageProcessing(
+  reason: string,
+  withDelayMs: number = mainFnInvocationDelayMs,
+) {
+  if (timeout) clearTimeout(timeout);
+
+  if (APP_ENV === "development") {
+    const now = new Date().toISOString();
+    console.debug(`[${now}] schedulePageProcessing ${reason}`);
+  }
+
+  timeout = setTimeout(findProgramsAndAddRatings, withDelayMs);
 }
 
 function cleanup(broadcast = true) {
@@ -162,7 +175,15 @@ async function findProgramsAndAddRatings() {
     const results = await Promise.allSettled<Program>(
       programs.map((p) => addRating(p).then(fadeIfFilteredOut)),
     );
-    processResults(programs, results);
+    const errors: Error[] = results
+      .map((r, idx) => {
+        if (r.status === "fulfilled") return null;
+        const err = r.reason instanceof Error ? r.reason : new Error(r.reason);
+        err.context = { program: omit(programs[idx]!, ["node"] as const) };
+        return r.reason;
+      })
+      .filter((x) => x);
+    handleErrors(errors);
 
     if (FF_TELEMETRY_ENABLED) {
       await browser.runtime.sendMessage({
@@ -184,58 +205,33 @@ async function findProgramsAndAddRatings() {
         type: MessageType.orphanCheck,
         data: { trigger: "extension-runtime-disappeared" },
       } satisfies Message);
-      return;
+    } else {
+      captureException(e);
     }
-
-    captureException(e);
   }
 
-  // deal with any errors that occurred; if any of them indicate it's
-  //   worthwhile to run 'findProgramsAndAddRatings' again after a
-  //   short delay, do so
-  function processResults(
-    programs: Program[],
-    results: PromiseSettledResult<Program>[],
-  ) {
-    const temporaryErrors: Error[] = [];
-    const criticalErrors: Error[] = [];
-    results.forEach((result, idx) => {
-      if (result.status === "fulfilled") return;
+  function handleErrors(errors: Error[]) {
+    let contextInvalidatedError: Error | null = null;
 
-      const e = result.reason as Error;
-
-      // SWErrors would have been captured from the SW's side; no need to call
-      //   captureException again
-      if (!(e instanceof SWError)) {
-        captureException(e, { context: { program: programs[idx]! } });
-      }
-
-      if (
-        [
-          ErrorMessage.telemetryStoreNotReady,
-          ErrorMessage.ratingsCacheNotReady,
-          ErrorMessage.ratingsApiRequestTimedOut,
-          ErrorMessage.ratingsApiRequestAlreadyInFlight,
-        ].some((msg) => e.message.startsWith(msg))
+    for (let e of errors) {
+      if (e instanceof SWError) {
+        // SWErrors would have been captured from the SW's side; no need to call
+        //   captureException again
+      } else if (
+        e.message.startsWith(ErrorMessage.extensionContextInvalidated)
       ) {
-        temporaryErrors.push(e);
+        contextInvalidatedError = e;
+      } else {
+        captureException(
+          e,
+          e.context
+            ? { context: e.context as Record<string, Record<string, unknown>> }
+            : {},
+        );
       }
-
-      if (
-        [ErrorMessage.extensionContextInvalidated].some((msg) =>
-          e.message.startsWith(msg),
-        )
-      ) {
-        criticalErrors.push(e);
-      }
-    });
-
-    if (criticalErrors.length > 0) throw criticalErrors[0]!;
-
-    if (temporaryErrors.length > 0) {
-      if (timeout) clearTimeout(timeout);
-      timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
     }
+
+    if (contextInvalidatedError) throw contextInvalidatedError;
   }
 }
 
@@ -318,14 +314,12 @@ function handleMessage(
 }
 
 function handleUrlChange() {
-  if (timeout) clearTimeout(timeout);
   sessionStartTime = +new Date();
-  timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
+  schedulePageProcessing("onUrlChange");
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
-  if (timeout) clearTimeout(timeout);
-  programFilterSettings = { ...programFilterSettings, ...updatedSettings };
-  updateFilteredOutProgramNodeStyles(updatedSettings);
-  timeout = setTimeout(findProgramsAndAddRatings, mainFnInvocationDelayMs);
+  programFilterSettings = updatedSettings;
+  updateFilteredOutProgramNodeStyles(programFilterSettings);
+  schedulePageProcessing("onFiltersChange");
 }

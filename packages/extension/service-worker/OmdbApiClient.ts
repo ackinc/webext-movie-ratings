@@ -1,6 +1,6 @@
 import { limitThroughput } from "rate-limit-utils";
 import { captureException } from "../common/errorReporter";
-import { pick, type ProgramData, type IMDBData, ErrorMessage } from "../common";
+import { type ProgramData, type IMDBData, ErrorMessage } from "../common";
 
 const MAX_REQ_PER_SECOND = 50;
 
@@ -61,9 +61,9 @@ export default class OmdbApiClient {
             context: { request: { url } },
           });
         }
-        result = { imdbRating: "N/F", imdbID: imdbId ?? "" };
+        result = { imdbRating: "N/F", imdbId: imdbId ?? "" };
       } else {
-        result = pick(respBody, ["imdbID", "imdbRating"]);
+        result = { imdbId: respBody.imdbID, imdbRating: respBody.imdbRating };
       }
       return result;
     } finally {

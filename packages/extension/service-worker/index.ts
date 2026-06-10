@@ -1,6 +1,5 @@
 import { type IDBPDatabase } from "idb";
-import { addMinutes, addWeeks } from "date-fns";
-import { isNetworkError, pick } from "siftutils";
+import { isNetworkError } from "siftutils";
 import {
   browser,
   getSetting,
@@ -12,29 +11,19 @@ import {
   upgradeIdbAndGetConnection,
   addBadge,
 } from "../common";
-import type {
-  ProgramData,
-  IMDBData,
-  Message,
-  SWMessageResponse,
-} from "../common/types";
+import type { Message, SWMessageResponse } from "../common/types";
 import {
   captureException,
   type ExceptionMetadata,
 } from "../common/errorReporter";
-import RatingsCache, { type RatingsCacheSchema } from "../common/RatingsCache";
 import TelemetryStore, {
   type TelemetryStoreSchema,
 } from "../common/TelemetryStore";
-import OmdbApiClient from "./OmdbApiClient";
-import * as siftApiService from "../common/siftApiService";
 import { FETCH_IMDB_RATING_TIMEOUT_MS } from "./constants";
 import * as notificationsService from "../common/notificationsService";
-import type { SiftApiProgramMatching } from "sifttypes";
+import * as ratingsService from "./ratingsService";
 
-let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
-let omdbApiClient: OmdbApiClient;
 (async () => {
   try {
     browser.runtime.onInstalled.addListener(onInstalled);
@@ -43,13 +32,10 @@ let omdbApiClient: OmdbApiClient;
     browser.tabs.onUpdated.addListener(handleTabUpdated);
 
     const db = await upgradeIdbAndGetConnection();
-    ratingsCache = await RatingsCache.create(
-      db as IDBPDatabase<RatingsCacheSchema>,
-    );
     telemetryStore = await TelemetryStore.create(
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
-    omdbApiClient = new OmdbApiClient(fetchWithAddedTelemetry);
+    await ratingsService.initialize(db);
 
     // Running this on every service-worker startup instead of
     //   inside an onInstalled event listener (which is called for both
@@ -175,8 +161,6 @@ function handleMessage(
           .catch(handleError);
       }
 
-      if (!ratingsCache) throw new Error(ErrorMessage.ratingsCacheNotReady);
-
       // if the attempt to fetch imdb data from the ratingsApi takes
       //   too long, we want two things to happen:
       // - a 'timed-out' response to be send back to the content-script
@@ -187,7 +171,8 @@ function handleMessage(
         handleError(e, { context: { program, location: { href: pageUrl } } });
       }, FETCH_IMDB_RATING_TIMEOUT_MS);
 
-      getIMDBData(program, pageUrl)
+      ratingsService
+        .getIMDBData(program, pageUrl)
         .then((data) => {
           clearTimeout(timeout);
           sendResponse({ data });
@@ -199,7 +184,8 @@ function handleMessage(
       return true; // keeps channel open until sendReponse is called
     } else if (request.type === MessageType.fetchCachedIMDBRating) {
       const { program } = request.data;
-      getCachedIMDBData(program)
+      ratingsService
+        .getCachedIMDBData(program)
         .then((data) => sendResponse({ data }))
         .catch((e) => handleError(e, { context: { program } }));
 
@@ -308,132 +294,6 @@ function handleMessage(
     if (errorsToIgnore.includes(error.message)) return;
     captureException(error, metadata);
   }
-}
-
-async function getCachedIMDBData(
-  program: ProgramData,
-): Promise<(Required<IMDBData> & { key: string }) | undefined> {
-  const cached = await ratingsCache.get(program);
-  if (!cached) return undefined;
-  return {
-    ...cached.imdbData,
-    expiry: +cached.expiry,
-    key: ratingsCache.getKey(program),
-  };
-}
-
-async function getIMDBData(
-  program: ProgramData,
-  pageUrl: string,
-): Promise<Required<IMDBData>> {
-  const cached = await getCachedIMDBData(program);
-  if (cached && cached.expiry > +new Date()) {
-    return pick(cached, ["imdbID", "imdbRating", "expiry"]);
-  }
-
-  const imdbIdFromCache = cached?.imdbID;
-  const { imdbData, expiry, error } = await fetchIMDBDataFromExternalApi(
-    // imdbIdFromCache may be '' (cached N/F ratings), so we cannot use '??'
-    //   operator below
-    imdbIdFromCache || program,
-  ).then(cacheFetchedImdbData);
-  if (error) throw error;
-  return { ...imdbData, expiry: +expiry };
-
-  // helpers
-
-  interface ImdbDataFetchResult {
-    imdbData: IMDBData;
-    expiry: Date;
-    error: Error | undefined;
-  }
-  async function fetchIMDBDataFromExternalApi(
-    imdbIdOrProgram: string | ProgramData,
-  ): Promise<ImdbDataFetchResult> {
-    let imdbData = await omdbApiClient.fetchIMDBData(imdbIdOrProgram);
-    // represents whether we have the imdbId for the program
-    let matchStatus:
-      | SiftApiProgramMatching.Response["status"]
-      | "error"
-      | undefined = undefined;
-    let error: Error | undefined = undefined;
-
-    if (typeof imdbIdOrProgram === "string" || imdbData.imdbID) {
-      matchStatus = "matched";
-    } else {
-      // we didn't have the program's imdb id, and the omdb api wasn't
-      //   able to figure it out based on the program's details; let's see
-      //   if sift's program-matching can do it
-      let matchedImdbId;
-      try {
-        ({ status: matchStatus, imdbId: matchedImdbId } =
-          await siftApiService.getMatchedImdbId(
-            imdbIdOrProgram as ProgramData,
-            pageUrl,
-          ));
-      } catch (e) {
-        // if there's an error here, we want to make sure we cache the N/F
-        //   rating for a short while so we give the Sift server-side some
-        //   breathing room to fix the error
-        // so instead of throwing immediately, we'll throw later downstream,
-        //   after the caching step
-        matchStatus = "error";
-        error = e as Error;
-      }
-
-      if (matchedImdbId) {
-        // try to get the imdb data from omdb by querying with the
-        //   imdb id we just matched this program to
-        imdbData = await omdbApiClient.fetchIMDBData(matchedImdbId);
-      }
-    }
-
-    let expiry: Date;
-    if (imdbData.imdbRating !== "N/F") {
-      expiry = addWeeks(new Date(), 2);
-    } else if (matchStatus === "abandoned") {
-      expiry = addWeeks(new Date(), 1);
-    } else if (matchStatus === "error") {
-      expiry = addMinutes(new Date(), 15);
-    } else {
-      throw new Error(`Unexpected: matchStatus '${matchStatus}'`);
-    }
-
-    return { imdbData, error, expiry };
-  }
-  async function cacheFetchedImdbData(
-    data: ImdbDataFetchResult,
-  ): Promise<ImdbDataFetchResult> {
-    const { imdbData, error, expiry } = data;
-    const cached = await ratingsCache.putOne({ program, imdbData, expiry });
-    return { ...cached, error };
-  }
-}
-
-async function fetchWithAddedTelemetry(
-  ...args: Parameters<typeof fetch>
-): ReturnType<typeof fetch> {
-  const startTime = +new Date();
-
-  if (FF_TELEMETRY_ENABLED) {
-    await telemetryStore.logEvent({
-      type: "RATINGS_API_REQUEST_MADE",
-      data: { startTime },
-    });
-  }
-
-  const response = await fetch(...args);
-  if (FF_TELEMETRY_ENABLED) {
-    await telemetryStore.logEvent({
-      type: "RATINGS_API_RESPONSE_RECEIVED",
-      data: {
-        startTime,
-        durationMs: +new Date() - startTime,
-      },
-    });
-  }
-
-  return response;
 }
 
 async function setMediaRequestBlockingState(value: boolean): Promise<void> {
