@@ -20,13 +20,12 @@ export function retry<Args extends unknown[], Ret>(
 ): (...args: Args) => Promise<Ret> {
   const { type, n, maxRetries } = strategy;
   if (maxRetries < 0) throw new Error(`maxRetries cannot be < 0`);
-
-  let nRetries = 0;
   const delays = new Array(maxRetries)
     .fill(0)
     .map((_v, idx) => (type === "linear" ? n : 1 * Math.pow(n, idx)));
 
   return async (...args) => {
+    let nRetries = 0;
     do {
       try {
         return await fn(...args);
