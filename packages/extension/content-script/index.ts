@@ -30,7 +30,7 @@ import MXPlayerPage from "./MXPlayer/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 import YoutubeMoviesPage from "./YoutubeMovies/Page";
 import Zee5Page from "./Zee5/Page";
-import { fetchIMDBData, updateFilteredOutProgramNodeStyles } from "./utils";
+import { requestIMDBData, updateFilteredOutProgramNodeStyles } from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
 
 let page: AbstractPage;
@@ -237,7 +237,7 @@ async function findProgramsAndAddRatings() {
 
 async function addRating(p: Program): Promise<Program> {
   if (!page.checkIMDBDataAlreadyAdded(p)) {
-    page.addIMDBData(p, await fetchIMDBData(p));
+    page.addIMDBData(p, await requestIMDBData(p));
   }
   return p;
 }

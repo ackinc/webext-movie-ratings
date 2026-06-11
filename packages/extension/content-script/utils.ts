@@ -4,7 +4,6 @@ import {
   CssClasses,
   MessageType,
   omit,
-  retry,
   selectorStatusKeyPrefix,
   storage,
   type IMDBData,
@@ -107,20 +106,17 @@ export function climbDOMUntil(
   return cur;
 }
 
-export const fetchIMDBData = retry(
-  async (program: Program): Promise<IMDBData> => {
-    const response = await browser.runtime.sendMessage<
-      Message,
-      SWMessageResponse<IMDBData>
-    >({
-      type: MessageType.fetchIMDBRating,
-      data: {
-        program: omit(program, ["node"]) as ProgramData,
-        pageUrl: location.href,
-      },
-    } satisfies Message);
-    if ("error" in response) throw new SWError(response.error);
-    return response.data;
-  },
-  { type: "exponential", n: 2, maxRetries: 5 },
-);
+export async function requestIMDBData(program: Program): Promise<IMDBData> {
+  const response = await browser.runtime.sendMessage<
+    Message,
+    SWMessageResponse<IMDBData>
+  >({
+    type: MessageType.fetchIMDBRating,
+    data: {
+      program: omit(program, ["node"]) as ProgramData,
+      pageUrl: location.href,
+    },
+  } satisfies Message);
+  if ("error" in response) throw new SWError(response.error);
+  return response.data;
+}
