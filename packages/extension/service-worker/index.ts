@@ -269,14 +269,7 @@ function handleMessage(
 
     if (isNetworkError(e) && !navigator.onLine) return;
 
-    const errorsToIgnore: string[] = [
-      ErrorMessage.ratingsCacheNotReady,
-      ErrorMessage.telemetryStoreNotReady,
-      ErrorMessage.ratingsApiRequestTimedOut,
-      ErrorMessage.ratingsApiRequestAlreadyInFlight,
-      // would've been captured from the server-side
-      ErrorMessage.siftApiServerError,
-    ];
+    const errorsToIgnore: string[] = [ErrorMessage.telemetryStoreNotReady];
     if (errorsToIgnore.includes(error.message)) return;
     captureException(error, metadata);
   }

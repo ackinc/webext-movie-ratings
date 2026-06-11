@@ -1,6 +1,6 @@
 import { retry } from "siftutils";
 import { limitThroughput } from "rate-limit-utils";
-import { type ProgramData, type IMDBData, ErrorMessage } from "../common";
+import { type ProgramData, type IMDBData } from "../common";
 import { OmdbApiError } from "@common/customErrors";
 
 // we want to behave well when dealing with OMDB
@@ -49,13 +49,11 @@ export default class OmdbApiClient {
 
     try {
       const response = await this.fetch(url);
-
       if (!response.ok) {
-        throw new OmdbApiError(
-          ErrorMessage.ratingsApiRequestFailed +
-            ` (status: ${response.status})`,
-          url,
-        );
+        const { status } = response;
+        const body = await response.text();
+        const errMsg = `Request failed. Status ${status}). Body: ${body}.`;
+        throw new OmdbApiError(errMsg, url);
       }
 
       const respBody = (await response.json()) as OmdbApiResponse;
