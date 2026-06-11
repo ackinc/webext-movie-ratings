@@ -2,6 +2,7 @@ import {
   browser,
   clampNum,
   CssClasses,
+  ErrorMessage,
   MessageType,
   omit,
   selectorStatusKeyPrefix,
@@ -106,17 +107,32 @@ export function climbDOMUntil(
   return cur;
 }
 
-export async function requestIMDBData(program: Program): Promise<IMDBData> {
-  const response = await browser.runtime.sendMessage<
-    Message,
-    SWMessageResponse<IMDBData>
-  >({
-    type: MessageType.fetchIMDBRating,
-    data: {
-      program: omit(program, ["node"]) as ProgramData,
-      pageUrl: location.href,
-    },
-  } satisfies Message);
-  if ("error" in response) throw new SWError(response.error);
-  return response.data;
+export async function requestIMDBData(
+  program: Program,
+  timeoutInSeconds: number = 30,
+): Promise<IMDBData> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(ErrorMessage.requestImdbDataTimedOut));
+    }, timeoutInSeconds * 1000);
+
+    try {
+      browser.runtime
+        .sendMessage<Message, SWMessageResponse<IMDBData>>({
+          type: MessageType.fetchIMDBRating,
+          data: {
+            program: omit(program, ["node"]) as ProgramData,
+            pageUrl: location.href,
+          },
+        } satisfies Message)
+        .then((response) => {
+          clearTimeout(timeout);
+          if ("error" in response) reject(new SWError(response.error));
+          else resolve(response.data);
+        })
+        .catch(reject);
+    } catch (e) {
+      reject(e);
+    }
+  });
 }

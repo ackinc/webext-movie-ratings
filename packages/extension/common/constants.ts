@@ -85,6 +85,7 @@ export const enum ErrorMessage {
   ratingsApiRequestTimedOut = "The ratings API request timed out",
   ratingsApiRequestAlreadyInFlight = "A request for this program's rating is already in-flight",
   ratingsApiRequestFailed = "The ratings API request failed",
+  requestImdbDataTimedOut = "The service worker took too long to respond to a requestImdbData message",
   idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",
   hostPermissionNotGranted = "A requested host permission was not granted",
   noAsyncPermissionRequestInFirefox = "permission.request must be called synchronously inside a user-gesture handler in Firefox",
