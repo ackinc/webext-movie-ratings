@@ -75,7 +75,8 @@ export const telemetryIntervalSizeInSeconds = 1;
 export const selectorStatusKeyPrefix = "selectorStatus_";
 
 export const enum ErrorMessage {
-  extensionContextInvalidated = "Extension context invalidated",
+  extensionRuntimeDisappeared = "browser.runtime is undefined",
+  unexpectedMessageChannelClosure = "The message channel was closed unexpectedly while waiting for a response",
   unrecognizedProgramContainerNode = "ProgramContainerNode does not match a recognized selector",
   unrecognizedProgramNode = "ProgramNode does not match a recognized selector",
   potentiallyOutOfDateSelector = "Potentially out of date selector",

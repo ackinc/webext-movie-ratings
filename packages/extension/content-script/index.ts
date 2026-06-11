@@ -199,7 +199,10 @@ async function findProgramsAndAddRatings() {
   } catch (e) {
     if (
       e instanceof Error &&
-      e.message.startsWith(ErrorMessage.extensionContextInvalidated)
+      [
+        ErrorMessage.extensionRuntimeDisappeared,
+        ErrorMessage.unexpectedMessageChannelClosure,
+      ].some((pfx) => e.message.startsWith(pfx))
     ) {
       window.postMessage({
         type: MessageType.orphanCheck,
@@ -211,16 +214,19 @@ async function findProgramsAndAddRatings() {
   }
 
   function handleErrors(errors: Error[]) {
-    let contextInvalidatedError: Error | null = null;
+    let majorError: Error | null = null;
 
     for (let e of errors) {
       if (e instanceof SWError) {
         // SWErrors would have been captured from the SW's side; no need to call
         //   captureException again
       } else if (
-        e.message.startsWith(ErrorMessage.extensionContextInvalidated)
+        [
+          ErrorMessage.extensionRuntimeDisappeared,
+          ErrorMessage.unexpectedMessageChannelClosure,
+        ].some((pfx) => e.message.startsWith(pfx))
       ) {
-        contextInvalidatedError = e;
+        majorError = e;
       } else {
         captureException(
           e,
@@ -231,7 +237,7 @@ async function findProgramsAndAddRatings() {
       }
     }
 
-    if (contextInvalidatedError) throw contextInvalidatedError;
+    if (majorError) throw majorError;
   }
 }
 

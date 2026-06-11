@@ -130,9 +130,28 @@ export async function requestIMDBData(
           if ("error" in response) reject(new SWError(response.error));
           else resolve(response.data);
         })
-        .catch(reject);
+        .catch(handleError);
     } catch (e) {
-      reject(e);
+      handleError(e);
+    }
+
+    function handleError(e: unknown) {
+      clearTimeout(timeout);
+
+      const err = e instanceof Error ? e : new Error("Error", { cause: e });
+      if (err instanceof TypeError && !browser.runtime) {
+        reject(
+          new Error(ErrorMessage.extensionRuntimeDisappeared, { cause: err }),
+        );
+      } else if (err.message.includes("message channel closed")) {
+        reject(
+          new Error(ErrorMessage.unexpectedMessageChannelClosure, {
+            cause: err,
+          }),
+        );
+      } else {
+        reject(e);
+      }
     }
   });
 }
