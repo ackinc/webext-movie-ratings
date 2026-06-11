@@ -285,7 +285,11 @@ valid containers:\n\t${programContainers
       node.setAttribute("href", getIMDBLink(data.imdbId));
       node.setAttribute("target", "_blank");
     }
-    node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : data.imdbRating}`;
+    const imdbRatingAsStr =
+      typeof data.imdbRating === "string"
+        ? data.imdbRating
+        : data.imdbRating.toFixed(1);
+    node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : imdbRatingAsStr}`;
     node.addEventListener("click", (e) => e.stopPropagation());
     return node;
   }
