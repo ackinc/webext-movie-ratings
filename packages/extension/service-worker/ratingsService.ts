@@ -24,7 +24,7 @@ let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
 
 const ratingCacheDurations = {
-  onProgramMatchingError: { minutes: 15 },
+  onProgramMatchingError: { minutes: -1 },
   onRatingNotFound: { weeks: 1 },
   onRatingFound: { weeks: 2 },
 };
@@ -92,18 +92,27 @@ export async function getIMDBData(
     let error: Error | null = null;
 
     try {
-      // the cached imdbId may be '' (from a cached N/F rating), so we
-      //   cannot use '??' operator below
-      imdbData = await omdbApiClient.fetchIMDBData(cached?.imdbId || program);
+      const skipOmdbSearchQuery = cached?.imdbRating === "N/M";
+      if (!skipOmdbSearchQuery) {
+        // the cached imdbId may be '' (from a cached N/F rating), so we
+        //   cannot use '??' operator below
+        imdbData = await omdbApiClient.fetchIMDBData(cached?.imdbId || program);
+      } else {
+        // if we're here, it means the last time this function was called for
+        //   this program, there was:
+        //   a) an N/F response from omdb api
+        //   b) a (temporary) error from the sift program-matching api
+        // we skipped the omdb api search request above because
+        //   because we'll just get an N/F again
+      }
 
-      if (!cached?.imdbId && !imdbData.imdbId) {
+      if (!cached?.imdbId && !imdbData?.imdbId) {
         // we didn't have the program's imdb id, and the omdb api wasn't
         //   able to figure it out based on the program's details; let's see
         //   if sift's program-matching can do it
-        const { imdbId: matchedImdbId } = await siftApiService.getMatchedImdbId(
-          program,
-          pageUrl,
-        );
+        const { imdbId: matchedImdbId } = await siftApiService
+          .getMatchedImdbId(program, pageUrl)
+          .catch(() => (imdbData = { imdbId: "", imdbRating: "N/M" }));
 
         if (matchedImdbId) {
           // try to get the imdb data from omdb by querying with the
@@ -117,13 +126,13 @@ export async function getIMDBData(
           ? e
           : new Error("Error fetching imdb data", { cause: e });
     } finally {
-      if (error && !error.message.startsWith(ErrorMessage.siftApiServerError)) {
+      if (error) {
         inProgress[key]!.forEach(({ reject }) => reject(error!));
         delete inProgress[key];
       } else {
         const expiry = +add(
           new Date(),
-          error
+          imdbData!.imdbRating === "N/M"
             ? ratingCacheDurations.onProgramMatchingError
             : imdbData!.imdbRating === "N/F"
               ? ratingCacheDurations.onRatingNotFound

@@ -267,18 +267,21 @@ function collectWebpageRatingStats(programs: Program[]): WebpageStats {
   let nProgramsWithNoRatingNode = 0;
   let nProgramsRatedNA = 0;
   let nProgramsRatedNF = 0;
+  let nProgramsRatedNM = 0;
 
   const ctor = page.constructor as typeof AbstractPage;
   programs.forEach(({ node }) => {
     const rating = ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
     if (rating === "N/A") nProgramsRatedNA++;
     if (rating === "N/F") nProgramsRatedNF++;
+    if (rating === "N/M") nProgramsRatedNM++;
     if (!rating) nProgramsWithNoRatingNode++;
   });
   return {
     nPrograms,
     nProgramsRatedNA,
     nProgramsRatedNF,
+    nProgramsRatedNM,
     nProgramsWithNoRatingNode,
   };
 }

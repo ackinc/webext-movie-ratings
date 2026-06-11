@@ -3,6 +3,7 @@ import { MessageType, supportedSites } from "./constants";
 export type ProgramContainerData = {
   title: string;
 };
+// represents a list or grid of movies/shows on a webpage
 export type ProgramContainer = {
   selector: Selector;
   node: HTMLElement;
@@ -13,14 +14,20 @@ export type ProgramData = {
   type?: "movie" | "series";
   year?: number;
 };
+// represents a movie/show identified on a webpage
 export type Program = {
   selector: Selector;
   node: HTMLElement;
 } & ProgramData;
 
+// associated with a particular Program
 export type IMDBData = {
   imdbId: string;
-  imdbRating: string;
+  imdbRating:
+    | number
+    | "N/A" /* matched program to an imdb id, but rating not available */
+    | "N/F" /* could not matched program to an imdb id */
+    | "N/M" /* (temporary) error when matching program to an imdb id */;
   expiry?: number;
 };
 
@@ -166,6 +173,7 @@ export type WebpageStats = {
   nProgramsWithNoRatingNode: number;
   nProgramsRatedNA: number;
   nProgramsRatedNF: number;
+  nProgramsRatedNM: number;
 };
 
 export type ExtensionSettings = {

@@ -276,15 +276,14 @@ valid containers:\n\t${programContainers
     const node = document.createElement("a");
     node.classList.add(CssClasses.imdbDataNode);
     node.dataset["imdbId"] = data.imdbId;
-    node.dataset["imdbRating"] = data.imdbRating;
+    node.dataset["imdbRating"] = String(data.imdbRating);
     if ("expiry" in data) node.dataset["expiry"] = String(data.expiry);
-    if (data.imdbRating !== "N/F") {
-      node.setAttribute("href", getIMDBLink(data.imdbId));
-      node.setAttribute("target", "_blank");
-    }
-    if (["N/F"].includes(data.imdbRating)) {
+    if (["N/F", "N/M"].includes(String(data.imdbRating))) {
       node.style.visibility = "hidden";
       node.style.display = "none";
+    } else {
+      node.setAttribute("href", getIMDBLink(data.imdbId));
+      node.setAttribute("target", "_blank");
     }
     node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : data.imdbRating}`;
     node.addEventListener("click", (e) => e.stopPropagation());

@@ -12,6 +12,9 @@ type OmdbApiResponse =
       imdbID: string;
       imdbRating: string;
     };
+type IMDBDataFromOMDB = Omit<IMDBData, "imdbRating"> & {
+  imdbRating: Exclude<IMDBData["imdbRating"], "N/M">;
+};
 
 export default class OmdbApiClient {
   fetch: typeof fetch;
@@ -23,7 +26,7 @@ export default class OmdbApiClient {
 
   async fetchIMDBData(
     imdbIdOrProgram: string | ProgramData,
-  ): Promise<IMDBData> {
+  ): Promise<IMDBDataFromOMDB> {
     const imdbId = typeof imdbIdOrProgram === "string" ? imdbIdOrProgram : null;
     let searchParams: URLSearchParams;
 
@@ -54,7 +57,7 @@ export default class OmdbApiClient {
 
       const respBody = (await response.json()) as OmdbApiResponse;
 
-      let result: IMDBData;
+      let result: IMDBDataFromOMDB;
       if ("Error" in respBody) {
         if (!respBody.Error.includes("not found")) {
           captureException(new Error(`omdbApi error: ${respBody.Error}`), {
@@ -63,7 +66,14 @@ export default class OmdbApiClient {
         }
         result = { imdbRating: "N/F", imdbId: imdbId ?? "" };
       } else {
-        result = { imdbId: respBody.imdbID, imdbRating: respBody.imdbRating };
+        const imdbRating =
+          respBody.imdbRating === "N/A"
+            ? "N/A"
+            : parseFloat(respBody.imdbRating);
+        if (Number.isNaN(imdbRating)) {
+          throw new Error(`Unexpected imdbRating: ${respBody.imdbRating}`);
+        }
+        result = { imdbId: respBody.imdbID, imdbRating };
       }
       return result;
     } finally {
