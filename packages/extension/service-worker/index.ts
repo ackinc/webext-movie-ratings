@@ -5,6 +5,7 @@ import {
   getSetting,
   delayMs,
   MessageType,
+  retry,
   sendMessageToAllTabs,
   supportedSites,
   ErrorMessage,
@@ -20,8 +21,12 @@ import TelemetryStore, {
   type TelemetryStoreSchema,
 } from "../common/TelemetryStore";
 import * as notificationsService from "../common/notificationsService";
-import * as ratingsService from "./ratingsService";
+import {
+  initialize as initializeRatingsService,
+  type RatingsService,
+} from "./ratingsService";
 
+let ratingsService: RatingsService;
 let telemetryStore: TelemetryStore;
 (async () => {
   try {
@@ -34,7 +39,7 @@ let telemetryStore: TelemetryStore;
     telemetryStore = await TelemetryStore.create(
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
-    await ratingsService.initialize(db);
+    ratingsService = await initializeRatingsService(db);
 
     // Running this on every service-worker startup instead of
     //   inside an onInstalled event listener (which is called for both
@@ -160,20 +165,21 @@ function handleMessage(
           .catch(handleError);
       }
 
-      ratingsService
-        .getIMDBData(program, pageUrl)
+      const context = { program, location: { href: pageUrl } };
+      waitForRatingsService()
+        .then((ratingsService) => ratingsService.getIMDBData(program, pageUrl))
         .then((data) => sendResponse({ data }))
-        .catch((e) =>
-          handleError(e, { context: { program, location: { href: pageUrl } } }),
-        );
+        .catch((e) => handleError(e, { context }));
 
       return true; // keeps channel open until sendReponse is called
     } else if (request.type === MessageType.fetchCachedIMDBRating) {
       const { program } = request.data;
-      ratingsService
-        .getCachedIMDBData(program)
+
+      const context = { program };
+      waitForRatingsService()
+        .then((ratingsService) => ratingsService.getCachedIMDBData(program))
         .then((data) => sendResponse({ data }))
-        .catch((e) => handleError(e, { context: { program } }));
+        .catch((e) => handleError(e, { context }));
 
       return true;
     } else if (request.type === MessageType.webpageRatingStats) {
@@ -272,6 +278,17 @@ function handleMessage(
     const errorsToIgnore: string[] = [ErrorMessage.telemetryStoreNotReady];
     if (errorsToIgnore.includes(error.message)) return;
     captureException(error, metadata);
+  }
+
+  function waitForRatingsService() {
+    return retry(
+      () => {
+        if (!ratingsService)
+          throw new Error(ErrorMessage.ratingsServiceNotInitialized);
+        return Promise.resolve(ratingsService);
+      },
+      { type: "linear", n: 0.2, maxRetries: 10 },
+    )();
   }
 }
 

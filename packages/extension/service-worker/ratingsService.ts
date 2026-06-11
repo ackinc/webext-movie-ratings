@@ -1,7 +1,6 @@
 import { type IDBPDatabase } from "idb";
 import { add } from "date-fns";
 import {
-  ErrorMessage,
   omit,
   programToHash,
   type CachedIMDBData,
@@ -15,6 +14,16 @@ import TelemetryStore, {
 import * as siftApiService from "@common/siftApiService";
 import OmdbApiClient from "./OmdbApiClient";
 
+/* interface */
+
+export interface RatingsService {
+  getCachedIMDBData(program: ProgramData): Promise<CachedIMDBData | undefined>;
+  getIMDBData(
+    program: ProgramData,
+    pageUrl: string,
+  ): Promise<Required<IMDBData>>;
+}
+
 let inProgress: Record<
   string,
   { resolve: (x: Required<IMDBData>) => void; reject: (e: Error) => void }[]
@@ -22,14 +31,13 @@ let inProgress: Record<
 let omdbApiClient: OmdbApiClient;
 let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
-
 const ratingCacheDurations = {
   onProgramMatchingError: { minutes: -1 },
   onRatingNotFound: { weeks: 1 },
   onRatingFound: { weeks: 2 },
 };
 
-export async function initialize(db: IDBPDatabase) {
+export async function initialize(db: IDBPDatabase): Promise<RatingsService> {
   inProgress = {};
   omdbApiClient = new OmdbApiClient(fetchWithAddedTelemetry);
   ratingsCache = await RatingsCache.create(
@@ -40,7 +48,10 @@ export async function initialize(db: IDBPDatabase) {
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
   }
+  return { getIMDBData, getCachedIMDBData };
 }
+
+/* implementation details */
 
 async function fetchWithAddedTelemetry(
   ...args: Parameters<typeof fetch>
@@ -68,7 +79,7 @@ async function fetchWithAddedTelemetry(
   return response;
 }
 
-export async function getIMDBData(
+async function getIMDBData(
   program: ProgramData,
   pageUrl: string,
 ): Promise<Required<IMDBData>> {
@@ -149,9 +160,8 @@ export async function getIMDBData(
   }
 }
 
-export async function getCachedIMDBData(
+async function getCachedIMDBData(
   program: ProgramData,
 ): Promise<CachedIMDBData | undefined> {
-  if (!ratingsCache) throw new Error(ErrorMessage.ratingsServiceNotInitialized);
   return await ratingsCache.get(programToHash(program));
 }
