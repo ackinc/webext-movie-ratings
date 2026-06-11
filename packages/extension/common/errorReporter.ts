@@ -19,7 +19,7 @@ import {
   MessageType,
   type Message,
 } from ".";
-import { DataExtractionError } from "./customErrors";
+import { DataExtractionError, OmdbApiError } from "./customErrors";
 
 // filter integrations that use the global variable
 const integrations = getDefaultIntegrations({}).filter((defaultIntegration) => {
@@ -98,6 +98,9 @@ export function captureException(
       node: e.node,
       selector: e.selector,
     });
+  }
+  if (e instanceof OmdbApiError) {
+    clonedScope.setContext("request", { url: e.url });
   }
 
   // want to make sure we have useful logs for debugging

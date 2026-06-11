@@ -1,7 +1,9 @@
+import { retry } from "siftutils";
 import { limitThroughput } from "rate-limit-utils";
-import { captureException } from "../common/errorReporter";
 import { type ProgramData, type IMDBData, ErrorMessage } from "../common";
+import { OmdbApiError } from "@common/customErrors";
 
+// we want to behave well when dealing with OMDB
 const MAX_REQ_PER_SECOND = 50;
 
 type OmdbApiResponse =
@@ -18,10 +20,14 @@ type IMDBDataFromOMDB = Omit<IMDBData, "imdbRating"> & {
 
 export default class OmdbApiClient {
   fetch: typeof fetch;
-  inFlight: Set<string> = new Set<string>();
 
   constructor(patchedFetch: typeof fetch) {
     this.fetch = limitThroughput(patchedFetch, MAX_REQ_PER_SECOND);
+    this.fetchIMDBData = retry(this.fetchIMDBData.bind(this), {
+      type: "exponential",
+      n: 2,
+      maxRetries: 5,
+    });
   }
 
   async fetchIMDBData(
@@ -40,18 +46,15 @@ export default class OmdbApiClient {
     }
 
     const url = `https://www.omdbapi.com/?${searchParams.toString()}`;
-    if (this.inFlight.has(url)) {
-      throw new Error(ErrorMessage.ratingsApiRequestAlreadyInFlight);
-    }
 
     try {
-      this.inFlight.add(url);
       const response = await this.fetch(url);
 
       if (!response.ok) {
-        throw new Error(
+        throw new OmdbApiError(
           ErrorMessage.ratingsApiRequestFailed +
             ` (status: ${response.status})`,
+          url,
         );
       }
 
@@ -59,12 +62,11 @@ export default class OmdbApiClient {
 
       let result: IMDBDataFromOMDB;
       if ("Error" in respBody) {
-        if (!respBody.Error.includes("not found")) {
-          captureException(new Error(`omdbApi error: ${respBody.Error}`), {
-            context: { request: { url } },
-          });
+        if (respBody.Error.includes("not found")) {
+          result = { imdbRating: "N/F", imdbId: imdbId ?? "" };
+        } else {
+          throw new OmdbApiError(respBody.Error, url);
         }
-        result = { imdbRating: "N/F", imdbId: imdbId ?? "" };
       } else {
         const imdbRating =
           respBody.imdbRating === "N/A"
@@ -76,8 +78,11 @@ export default class OmdbApiClient {
         result = { imdbId: respBody.imdbID, imdbRating };
       }
       return result;
-    } finally {
-      this.inFlight.delete(url);
+    } catch (e) {
+      if (e instanceof OmdbApiError) throw e;
+      throw new OmdbApiError("Error fetching data from OMDB API", url, {
+        cause: e,
+      });
     }
   }
 }
