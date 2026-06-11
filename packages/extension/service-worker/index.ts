@@ -5,6 +5,7 @@ import {
   getSetting,
   delayMs,
   MessageType,
+  retry,
   sendMessageToAllTabs,
   supportedSites,
   ErrorMessage,
@@ -19,10 +20,13 @@ import {
 import TelemetryStore, {
   type TelemetryStoreSchema,
 } from "../common/TelemetryStore";
-import { FETCH_IMDB_RATING_TIMEOUT_MS } from "./constants";
 import * as notificationsService from "../common/notificationsService";
-import * as ratingsService from "./ratingsService";
+import {
+  initialize as initializeRatingsService,
+  type RatingsService,
+} from "./ratingsService";
 
+let ratingsService: RatingsService;
 let telemetryStore: TelemetryStore;
 (async () => {
   try {
@@ -35,7 +39,7 @@ let telemetryStore: TelemetryStore;
     telemetryStore = await TelemetryStore.create(
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
-    await ratingsService.initialize(db);
+    ratingsService = await initializeRatingsService(db);
 
     // Running this on every service-worker startup instead of
     //   inside an onInstalled event listener (which is called for both
@@ -161,33 +165,21 @@ function handleMessage(
           .catch(handleError);
       }
 
-      // if the attempt to fetch imdb data from the ratingsApi takes
-      //   too long, we want two things to happen:
-      // - a 'timed-out' response to be send back to the content-script
-      // - the attempt to keep going and eventually complete, so the response
-      //     can be cached and reused the next time it's needed
-      const timeout = setTimeout(() => {
-        const e = new Error(ErrorMessage.ratingsApiRequestTimedOut);
-        handleError(e, { context: { program, location: { href: pageUrl } } });
-      }, FETCH_IMDB_RATING_TIMEOUT_MS);
-
-      ratingsService
-        .getIMDBData(program, pageUrl)
-        .then((data) => {
-          clearTimeout(timeout);
-          sendResponse({ data });
-        })
-        .catch((e) =>
-          handleError(e, { context: { program, location: { href: pageUrl } } }),
-        );
+      const context = { program, location: { href: pageUrl } };
+      waitForRatingsService()
+        .then((ratingsService) => ratingsService.getIMDBData(program, pageUrl))
+        .then((data) => sendResponse({ data }))
+        .catch((e) => handleError(e, { context }));
 
       return true; // keeps channel open until sendReponse is called
     } else if (request.type === MessageType.fetchCachedIMDBRating) {
       const { program } = request.data;
-      ratingsService
-        .getCachedIMDBData(program)
+
+      const context = { program };
+      waitForRatingsService()
+        .then((ratingsService) => ratingsService.getCachedIMDBData(program))
         .then((data) => sendResponse({ data }))
-        .catch((e) => handleError(e, { context: { program } }));
+        .catch((e) => handleError(e, { context }));
 
       return true;
     } else if (request.type === MessageType.webpageRatingStats) {
@@ -283,16 +275,20 @@ function handleMessage(
 
     if (isNetworkError(e) && !navigator.onLine) return;
 
-    const errorsToIgnore: string[] = [
-      ErrorMessage.ratingsCacheNotReady,
-      ErrorMessage.telemetryStoreNotReady,
-      ErrorMessage.ratingsApiRequestTimedOut,
-      ErrorMessage.ratingsApiRequestAlreadyInFlight,
-      // would've been captured from the server-side
-      ErrorMessage.siftApiServerError,
-    ];
+    const errorsToIgnore: string[] = [ErrorMessage.telemetryStoreNotReady];
     if (errorsToIgnore.includes(error.message)) return;
     captureException(error, metadata);
+  }
+
+  function waitForRatingsService() {
+    return retry(
+      () => {
+        if (!ratingsService)
+          throw new Error(ErrorMessage.ratingsServiceNotInitialized);
+        return Promise.resolve(ratingsService);
+      },
+      { type: "linear", n: 0.2, maxRetries: 10 },
+    )();
   }
 }
 

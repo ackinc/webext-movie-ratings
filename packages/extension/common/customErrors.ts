@@ -52,3 +52,12 @@ export class SWError extends Error {
     super(message);
   }
 }
+
+export class OmdbApiError extends Error {
+  url: string;
+
+  constructor(message: string, url: string, options?: { cause: unknown }) {
+    super(message, options);
+    this.url = url;
+  }
+}

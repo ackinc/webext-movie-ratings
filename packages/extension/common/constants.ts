@@ -75,16 +75,14 @@ export const telemetryIntervalSizeInSeconds = 1;
 export const selectorStatusKeyPrefix = "selectorStatus_";
 
 export const enum ErrorMessage {
-  extensionContextInvalidated = "Extension context invalidated",
+  extensionRuntimeDisappeared = "browser.runtime is undefined",
+  unexpectedMessageChannelClosure = "The message channel was closed unexpectedly while waiting for a response",
   unrecognizedProgramContainerNode = "ProgramContainerNode does not match a recognized selector",
   unrecognizedProgramNode = "ProgramNode does not match a recognized selector",
   potentiallyOutOfDateSelector = "Potentially out of date selector",
-  ratingsCacheNotReady = "The ratings cache is not ready",
   ratingsServiceNotInitialized = "The ratings service was not initialized",
   telemetryStoreNotReady = "The telemetry store is not ready",
-  ratingsApiRequestTimedOut = "The ratings API request timed out",
-  ratingsApiRequestAlreadyInFlight = "A request for this program's rating is already in-flight",
-  ratingsApiRequestFailed = "The ratings API request failed",
+  requestImdbDataTimedOut = "The service worker took too long to respond to a requestImdbData message",
   idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",
   hostPermissionNotGranted = "A requested host permission was not granted",
   noAsyncPermissionRequestInFirefox = "permission.request must be called synchronously inside a user-gesture handler in Firefox",

@@ -2,9 +2,9 @@ import {
   browser,
   clampNum,
   CssClasses,
+  ErrorMessage,
   MessageType,
   omit,
-  retry,
   selectorStatusKeyPrefix,
   storage,
   type IMDBData,
@@ -107,20 +107,51 @@ export function climbDOMUntil(
   return cur;
 }
 
-export const fetchIMDBData = retry(
-  async (program: Program): Promise<IMDBData> => {
-    const response = await browser.runtime.sendMessage<
-      Message,
-      SWMessageResponse<IMDBData>
-    >({
-      type: MessageType.fetchIMDBRating,
-      data: {
-        program: omit(program, ["node"]) as ProgramData,
-        pageUrl: location.href,
-      },
-    } satisfies Message);
-    if ("error" in response) throw new SWError(response.error);
-    return response.data;
-  },
-  { type: "exponential", n: 2, maxRetries: 5 },
-);
+export async function requestIMDBData(
+  program: Program,
+  timeoutInSeconds: number = 30,
+): Promise<IMDBData> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(ErrorMessage.requestImdbDataTimedOut));
+    }, timeoutInSeconds * 1000);
+
+    try {
+      browser.runtime
+        .sendMessage<Message, SWMessageResponse<IMDBData>>({
+          type: MessageType.fetchIMDBRating,
+          data: {
+            program: omit(program, ["node"]) as ProgramData,
+            pageUrl: location.href,
+          },
+        } satisfies Message)
+        .then((response) => {
+          clearTimeout(timeout);
+          if ("error" in response) reject(new SWError(response.error));
+          else resolve(response.data);
+        })
+        .catch(handleError);
+    } catch (e) {
+      handleError(e);
+    }
+
+    function handleError(e: unknown) {
+      clearTimeout(timeout);
+
+      const err = e instanceof Error ? e : new Error("Error", { cause: e });
+      if (err instanceof TypeError && !browser.runtime) {
+        reject(
+          new Error(ErrorMessage.extensionRuntimeDisappeared, { cause: err }),
+        );
+      } else if (err.message.includes("message channel closed")) {
+        reject(
+          new Error(ErrorMessage.unexpectedMessageChannelClosure, {
+            cause: err,
+          }),
+        );
+      } else {
+        reject(e);
+      }
+    }
+  });
+}

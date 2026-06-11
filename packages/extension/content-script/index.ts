@@ -30,7 +30,7 @@ import MXPlayerPage from "./MXPlayer/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 import YoutubeMoviesPage from "./YoutubeMovies/Page";
 import Zee5Page from "./Zee5/Page";
-import { fetchIMDBData, updateFilteredOutProgramNodeStyles } from "./utils";
+import { requestIMDBData, updateFilteredOutProgramNodeStyles } from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
 
 let page: AbstractPage;
@@ -199,7 +199,10 @@ async function findProgramsAndAddRatings() {
   } catch (e) {
     if (
       e instanceof Error &&
-      e.message.startsWith(ErrorMessage.extensionContextInvalidated)
+      [
+        ErrorMessage.extensionRuntimeDisappeared,
+        ErrorMessage.unexpectedMessageChannelClosure,
+      ].some((pfx) => e.message.startsWith(pfx))
     ) {
       window.postMessage({
         type: MessageType.orphanCheck,
@@ -211,16 +214,19 @@ async function findProgramsAndAddRatings() {
   }
 
   function handleErrors(errors: Error[]) {
-    let contextInvalidatedError: Error | null = null;
+    let majorError: Error | null = null;
 
     for (let e of errors) {
       if (e instanceof SWError) {
         // SWErrors would have been captured from the SW's side; no need to call
         //   captureException again
       } else if (
-        e.message.startsWith(ErrorMessage.extensionContextInvalidated)
+        [
+          ErrorMessage.extensionRuntimeDisappeared,
+          ErrorMessage.unexpectedMessageChannelClosure,
+        ].some((pfx) => e.message.startsWith(pfx))
       ) {
-        contextInvalidatedError = e;
+        majorError = e;
       } else {
         captureException(
           e,
@@ -231,13 +237,13 @@ async function findProgramsAndAddRatings() {
       }
     }
 
-    if (contextInvalidatedError) throw contextInvalidatedError;
+    if (majorError) throw majorError;
   }
 }
 
 async function addRating(p: Program): Promise<Program> {
   if (!page.checkIMDBDataAlreadyAdded(p)) {
-    page.addIMDBData(p, await fetchIMDBData(p));
+    page.addIMDBData(p, await requestIMDBData(p));
   }
   return p;
 }

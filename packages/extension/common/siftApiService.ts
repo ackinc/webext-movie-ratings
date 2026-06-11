@@ -1,9 +1,18 @@
 import type { ProgramData } from "./types";
-import { pick } from "siftutils";
+import { pick, retry } from "siftutils";
 import type { SiftApiProgramMatching, UserMessage } from "sifttypes";
 import { ErrorMessage } from ".";
 
-export async function getMatchedImdbId(
+const retryStrategy = {
+  type: "exponential",
+  n: 2,
+  maxRetries: 5,
+} as const;
+
+export const getMatchedImdbId = retry(getMatchedImdbId_, retryStrategy);
+export const sendUserFeedback = retry(sendUserFeedback_, retryStrategy);
+
+async function getMatchedImdbId_(
   programData: ProgramData,
   pageUrl: string,
 ): Promise<SiftApiProgramMatching.Response> {
@@ -25,7 +34,7 @@ export async function getMatchedImdbId(
   return (await response.json()) as SiftApiProgramMatching.Response;
 }
 
-export async function sendUserFeedback(message: string, email: string) {
+async function sendUserFeedback_(message: string, email: string) {
   const url = new URL(`${SIFT_API_URL}/messages`);
 
   const response = await fetch(url, {
