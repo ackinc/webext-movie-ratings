@@ -22,16 +22,19 @@ import {
 import baseLogger from "../logger.ts";
 
 const __filename = path.basename(fileURLToPath(import.meta.url));
-const { IMDB_DATA_DIR, MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = pick(
-  process.env,
-  ["IMDB_DATA_DIR", "MEILISEARCH_MASTER_KEY", "MEILISEARCH_URL"],
-);
+const { APP_ENV, IMDB_DATA_DIR, MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } =
+  pick(process.env, [
+    "APP_ENV",
+    "IMDB_DATA_DIR",
+    "MEILISEARCH_MASTER_KEY",
+    "MEILISEARCH_URL",
+  ]);
 
 const argv = yargs(hideBin(process.argv))
   .option("batchSize", {
     number: true,
     // https://www.meilisearch.com/docs/capabilities/indexing/how_to/import_large_datasets#choose-the-right-payload-size
-    default: 100000,
+    default: APP_ENV === "development" ? 100000 : 20000,
   })
   .parseSync();
 const { batchSize } = argv;
