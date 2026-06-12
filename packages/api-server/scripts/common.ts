@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import * as fs from "node:fs";
 import readline from "node:readline";
 import type { Logger } from "pino";
@@ -58,6 +59,24 @@ export async function processFile(
     }
   }
   if (batch.length > 0) await processFn(batch);
+}
+
+export function checkColnames(
+  filepath: string,
+  expectedColnames: (string | null)[],
+): void {
+  const colnames = execSync(`head -n1 ${filepath}`)
+    .toString()
+    .trim()
+    .split("\t");
+
+  for (let i = 0; i < expectedColnames.length; i++) {
+    if (expectedColnames[i] && colnames[i] !== expectedColnames[i]) {
+      throw new Error(
+        `Colname ${i} of ${filepath} is ${colnames[i]} but expected ${expectedColnames[i]}`,
+      );
+    }
+  }
 }
 
 export function isMovieOrSeries(line: string): boolean {

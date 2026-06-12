@@ -12,7 +12,12 @@ import { Meilisearch, type Index, type IndexObject } from "meilisearch";
 import { pick } from "siftutils";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { type Batch, processFile, isMovieOrSeries } from "./common.ts";
+import {
+  type Batch,
+  checkColnames,
+  processFile,
+  isMovieOrSeries,
+} from "./common.ts";
 import baseLogger from "../logger.ts";
 
 const __filename = path.basename(fileURLToPath(import.meta.url));
@@ -46,14 +51,25 @@ const logger = baseLogger.child({ script: __filename });
 const startTime = new Date();
 
 const canonDocumentsByImdbId = new Map<string, Document>();
+const basicsFilepath = path.join(IMDB_DATA_DIR!, "title.basics.tsv");
+checkColnames(basicsFilepath, [
+  "tconst",
+  "titleType",
+  "primaryTitle",
+  "originalTitle",
+  null,
+  "startYear",
+]);
+await processFile(basicsFilepath, processBatchFromBasicsFile, isMovieOrSeries, {
+  batchSize: batchSize,
+  logger,
+  logProgressEveryNLines: batchSize,
+});
+
+const akasFilepath = path.join(IMDB_DATA_DIR!, "title.akas.tsv");
+checkColnames(akasFilepath, ["titleId", null, "title"]);
 await processFile(
-  path.join(IMDB_DATA_DIR!, "title.basics.tsv"),
-  processBatchFromBasicsFile,
-  isMovieOrSeries,
-  { batchSize: batchSize, logger, logProgressEveryNLines: batchSize },
-);
-await processFile(
-  path.join(IMDB_DATA_DIR!, "title.akas.tsv"),
+  akasFilepath,
   processBatchFromAkasFile,
   (line: string) => canonDocumentsByImdbId.has(line.split("\t")[0]!),
   { batchSize: batchSize, logger, logProgressEveryNLines: batchSize },
