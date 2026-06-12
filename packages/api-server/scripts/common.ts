@@ -3,6 +3,8 @@ import * as fs from "node:fs";
 import readline from "node:readline";
 import type { Logger } from "pino";
 
+export type ImdbId = string;
+
 export type LineNumber = number;
 export type Line = string;
 export type Batch = [LineNumber, Line][];

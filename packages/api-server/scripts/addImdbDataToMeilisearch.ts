@@ -14,6 +14,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import {
   type Batch,
+  type ImdbId,
   checkColnames,
   processFile,
   isMovieOrSeries,
@@ -50,7 +51,7 @@ const index = await prepareIndex(client);
 const logger = baseLogger.child({ script: __filename });
 const startTime = new Date();
 
-const canonDocumentsByImdbId = new Map<string, Document>();
+const canonDocumentsByImdbId = new Map<ImdbId, Document>();
 const basicsFilepath = path.join(IMDB_DATA_DIR!, "title.basics.tsv");
 checkColnames(basicsFilepath, [
   "tconst",
@@ -82,7 +83,7 @@ logger.info(`Completed in (${durationMs}ms)`);
 
 interface Document {
   id: string;
-  imdbId: string;
+  imdbId: ImdbId;
   title: string;
   type: "movie" | "series";
   year: number | null;
@@ -136,7 +137,7 @@ function makeDocument(partialDoc: Omit<Document, "id">): Document {
   const { title, type, year } = partialDoc;
   return {
     ...partialDoc,
-    // pkeys in meilisearch indexes can't have non-alnum chars allowed in b64
+    // meilisearch index pkeys can't have the non-alnum chars allowed in b64
     id: Buffer.from([title, type, year].join("::"))
       .toString("base64")
       .replace(/[+/=]/g, "_"),
