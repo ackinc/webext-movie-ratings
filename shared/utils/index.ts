@@ -54,10 +54,11 @@ export function partition<const T extends unknown[]>(
   return [pass, fail];
 }
 
-export function pick<
-  const T extends Record<string, unknown>,
-  const K extends string[],
->(obj: T, keys: K, requireAll: boolean = false): Pick<T, keyof T & K[number]> {
+export function pick<const T extends {}, const K extends string[]>(
+  obj: T,
+  keys: K,
+  requireAll: boolean = false,
+): Pick<T, keyof T & K[number]> {
   const [keysInObj, keysNotInObj] = partition(keys, (k) => k in obj);
 
   if (keysNotInObj.length > 0 && requireAll) {
@@ -85,7 +86,7 @@ export function isNullOrUndef(x: unknown) {
   return x == void 0;
 }
 
-export function omit<T extends Record<string, unknown>, K extends string[]>(
+export function omit<T extends {}, K extends (keyof T)[]>(
   obj: T,
   keys: K,
 ): Omit<T, K[number]> {
