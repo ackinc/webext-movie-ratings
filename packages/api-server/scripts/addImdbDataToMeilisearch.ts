@@ -51,7 +51,11 @@ const index = await prepareIndex(client);
 const logger = baseLogger.child({ script: __filename });
 const startTime = new Date();
 
-const canonDocumentsByImdbId = new Map<ImdbId, Document>();
+const canonDocumentsByImdbId = new Map<
+  ImdbId,
+  // only storing the data we need to keep memory usage low
+  Pick<Document, "type" | "year">
+>();
 const basicsFilepath = path.join(IMDB_DATA_DIR!, "title.basics.tsv");
 checkColnames(basicsFilepath, [
   "tconst",
@@ -151,7 +155,8 @@ async function processBatchFromBasicsFile(batch: Batch) {
   await index.addDocuments(documents);
   documents.forEach((doc, idx) => {
     // first doc returned by getDocumentsFromBasicsFileLine is canon
-    if (idx % 2 === 0) canonDocumentsByImdbId.set(doc.imdbId, doc);
+    if (idx % 2 === 0)
+      canonDocumentsByImdbId.set(doc.imdbId, pick(doc, ["type", "year"]));
   });
 }
 
