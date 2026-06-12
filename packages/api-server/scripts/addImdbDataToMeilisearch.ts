@@ -1,23 +1,27 @@
 #!/usr/bin/env node
 
 import "dotenv/config";
+
+// initialize Sentry
+import "../instrument.ts";
+
 import * as path from "node:path";
+import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import * as fs from "fs-extra";
 import { Meilisearch, type Index, type IndexObject } from "meilisearch";
+import { pick } from "siftutils";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { type Batch, processFile, isMovieOrSeries } from "./common.ts";
 import baseLogger from "../logger.ts";
 
 const __filename = path.basename(fileURLToPath(import.meta.url));
-const { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = process.env;
+const { IMDB_DATA_DIR, MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = pick(
+  process.env,
+  ["IMDB_DATA_DIR", "MEILISEARCH_MASTER_KEY", "MEILISEARCH_URL"],
+);
 
 const argv = yargs(hideBin(process.argv))
-  .option("imdbDataDir", {
-    string: true,
-    demandOption: true,
-  })
   .option("batchSize", {
     number: true,
     // https://www.meilisearch.com/docs/capabilities/indexing/how_to/import_large_datasets#choose-the-right-payload-size
@@ -25,11 +29,10 @@ const argv = yargs(hideBin(process.argv))
   })
   .parseSync();
 const { batchSize } = argv;
-const imdbDataDir = path.resolve(argv.imdbDataDir);
 
 await Promise.all(
   ["title.basics.tsv", "title.akas.tsv"].map((filename) =>
-    fs.promises.access(path.join(imdbDataDir, filename)),
+    fs.promises.access(path.join(IMDB_DATA_DIR!, filename)),
   ),
 );
 
@@ -44,13 +47,13 @@ const startTime = new Date();
 
 const canonDocumentsByImdbId = new Map<string, Document>();
 await processFile(
-  path.join(imdbDataDir, "title.basics.tsv"),
+  path.join(IMDB_DATA_DIR!, "title.basics.tsv"),
   processBatchFromBasicsFile,
   isMovieOrSeries,
   { batchSize: batchSize, logger, logProgressEveryNLines: batchSize },
 );
 await processFile(
-  path.join(imdbDataDir, "title.akas.tsv"),
+  path.join(IMDB_DATA_DIR!, "title.akas.tsv"),
   processBatchFromAkasFile,
   (line: string) => canonDocumentsByImdbId.has(line.split("\t")[0]!),
   { batchSize: batchSize, logger, logProgressEveryNLines: batchSize },
