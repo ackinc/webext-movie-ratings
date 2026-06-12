@@ -52,9 +52,8 @@ export async function processFile(
     if (lineNum % logProgressEveryNLines === 0) {
       const now = new Date();
       const durationMs = +now - +startTime;
-      (logger ? logger.info : console.log)(
-        `Processed ${lineNum} lines (${durationMs}ms) ...`,
-      );
+      const msg = `Processed ${lineNum} lines of ${filepath} (${durationMs}ms) ...`;
+      logger ? logger.info(msg) : console.log(msg);
       startTime = now;
     }
   }

@@ -23,7 +23,7 @@ cron.schedule(
   "0 0 1,16 * *", // twice a month
   () =>
     spawn("node", [path.join(__dirname, "./scripts/refreshImdbData.ts")], {
-      // we don't want this process to be interrupted if the server is restarting
+      // we don't want this process to be interrupted if the api-server is restarting
       detached: true,
       stdio: "inherit",
     }).unref(), // we don't want the server to wait until this process is done before closing
