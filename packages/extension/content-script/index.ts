@@ -24,6 +24,7 @@ import HuluPage from "./Hulu/Page";
 import PeacockTVPage from "./PeacockTV/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
+import ParamountPlusPage from "./ParamountPlus/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
 import MXPlayerPage from "./MXPlayer/Page";
@@ -136,6 +137,8 @@ async function initializePage() {
     page = new CrunchyrollPage();
   } else if (location.hostname === "www.youtube.com") {
     page = new YoutubeMoviesPage();
+  } else if (location.hostname === "www.paramountplus.com") {
+    page = new ParamountPlusPage();
   } else if (location.hostname === "www.peacocktv.com") {
     page = new PeacockTVPage();
   } else if (location.hostname === "www.zee5.com") {
