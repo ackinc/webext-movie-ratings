@@ -178,5 +178,5 @@ export const webStoreLink =
   TARGET_BROWSER === "edge"
     ? "https://microsoftedge.microsoft.com/addons/detail/odgepppomekmdiifmjmocpjhopdmgjnl"
     : TARGET_BROWSER === "firefox"
-      ? "https://addons.mozilla.org/en-US/firefox/addon/imdb-ratings-for-various-ott/"
+      ? "https://addons.mozilla.org/en-US/firefox/addon/sift-imdb-ratings/"
       : "https://chromewebstore.google.com/detail/sift-imdb-ratings-on-vari/pfnhkljamlclkackkndllofcfhihacna";
