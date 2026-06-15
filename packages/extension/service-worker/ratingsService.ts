@@ -2,6 +2,7 @@ import { type IDBPDatabase } from "idb";
 import { add } from "date-fns";
 import {
   omit,
+  getSetting,
   programToHash,
   type CachedIMDBData,
   type IMDBData,
@@ -102,22 +103,27 @@ async function getIMDBData(
     let imdbData: IMDBData | null = null;
     let error: Error | null = null;
 
+    const siftProgramMatchingEnabled = Boolean(
+      await getSetting("errorReportingOptIn"),
+    );
+
     try {
-      const skipOmdbSearchQuery = cached?.imdbRating === "N/M";
-      if (!skipOmdbSearchQuery) {
-        // the cached imdbId may be '' (from a cached N/F rating), so we
-        //   cannot use '??' operator below
-        imdbData = await omdbApiClient.fetchIMDBData(cached?.imdbId || program);
-      } else {
+      const skipOptimisticOmdbRequest =
+        siftProgramMatchingEnabled && cached?.imdbRating === "N/M";
+      if (skipOptimisticOmdbRequest) {
         // if we're here, it means the last time this function was called for
         //   this program, there was:
         //   a) an N/F response from omdb api
         //   b) a (temporary) error from the sift program-matching api
-        // we skipped the omdb api search request above because
-        //   because we'll just get an N/F again
+        // we'll skip the optimistic omdb api request because we'll
+        //   just get an N/F again
+      } else {
+        // the cached imdbId may be '' (from a cached N/F rating), so we
+        //   cannot use '??' operator below
+        imdbData = await omdbApiClient.fetchIMDBData(cached?.imdbId || program);
       }
 
-      if (!cached?.imdbId && !imdbData?.imdbId) {
+      if (siftProgramMatchingEnabled && !cached?.imdbId && !imdbData?.imdbId) {
         // we didn't have the program's imdb id, and the omdb api wasn't
         //   able to figure it out based on the program's details; let's see
         //   if sift's program-matching can do it
