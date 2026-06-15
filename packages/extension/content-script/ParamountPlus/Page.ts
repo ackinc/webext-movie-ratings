@@ -28,6 +28,13 @@ a.${CssClasses.imdbDataNode} {
   margin-left: 4px;
 }
 
+a.ch-expanded-container .${CssClasses.imdbDataNode} {
+  font-family: Proxima Nova SemiBold,sans-serif;
+  font-size: inherit;
+  font-weight: 400;
+  line-height: 22px;
+}
+
 div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
   margin-left: 4px;
 }
@@ -43,8 +50,11 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
       return [];
 
     return [
-      // home page
+      // home page, /browse/*
       "div.carousel:has(h2.video-section-title)",
+
+      // on hover
+      "a.ch-expanded-container",
     ];
   }
 
@@ -55,6 +65,10 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
       return pContainerNode
         .querySelector("h2.video-section-title")!
         .textContent.trim();
+    }
+
+    if (pContainerNode.matches("a.ch-expanded-container")) {
+      return "Hovered program";
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
@@ -73,6 +87,10 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
   }: Pick<ProgramContainer, "selector">): string[] {
     if (selector === "div.carousel:has(h2.video-section-title)") {
       return ["a.link[aria-label]"];
+    }
+
+    if (selector === "a.ch-expanded-container") {
+      return ["div.ch-bottom-components"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

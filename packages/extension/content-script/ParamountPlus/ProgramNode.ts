@@ -11,6 +11,11 @@ export default class ProgramNode extends AbstractProgramNode {
     if (programNode.matches("a.link[aria-label]")) {
       const titleNode = programNode.querySelector("img")!;
       title = titleNode.getAttribute("alt")!;
+    } else if (programNode.matches("div.ch-bottom-components")) {
+      const titleNode = programNode
+        .closest("a.ch-expanded-container")!
+        .querySelector("div.media-manager-container img")!;
+      title = titleNode.getAttribute("alt")!;
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -26,6 +31,12 @@ export default class ProgramNode extends AbstractProgramNode {
     programNode: HTMLElement,
     imdbNode: HTMLElement,
   ) {
+    if (programNode.matches("div.ch-bottom-components")) {
+      const metadataNode = programNode.querySelector("div.ch-info-wrapper")!;
+      metadataNode.insertAdjacentElement("beforeend", imdbNode);
+      return;
+    }
+
     super.insertIMDBNode(programNode, imdbNode);
   }
 }
