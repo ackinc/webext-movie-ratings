@@ -35,18 +35,26 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
+    if (
+      ["/live-tv", "/news", "/collections/sports-hub"].some((x) =>
+        location.pathname.startsWith(x),
+      )
+    )
+      return [];
+
     return [
       // home page
-      "div.carousel",
+      "div.carousel:has(h2.video-section-title)",
     ];
   }
 
   protected override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
-    if (pContainerNode.matches("div.carousel")) {
-      return pContainerNode.querySelector("h2.video-section-title")!
-        .textContent;
+    if (pContainerNode.matches("div.carousel:has(h2.video-section-title)")) {
+      return pContainerNode
+        .querySelector("h2.video-section-title")!
+        .textContent.trim();
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
@@ -63,8 +71,8 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
-    if (selector === "div.carousel") {
-      return ['a.link[id^="originals"]', 'a.link[id^="custom"]'];
+    if (selector === "div.carousel:has(h2.video-section-title)") {
+      return ["a.link[aria-label]"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

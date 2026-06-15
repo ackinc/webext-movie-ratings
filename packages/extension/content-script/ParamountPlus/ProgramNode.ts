@@ -8,10 +8,7 @@ export default class ProgramNode extends AbstractProgramNode {
     let type: "movie" | "series" | null = null;
     let year: number | null = null;
 
-    if (programNode.matches('a.link[id^="originals"')) {
-      const titleNode = programNode.querySelector("img")!;
-      title = titleNode.getAttribute("alt")!;
-    } else if (programNode.matches('a.link[id^="custom"')) {
+    if (programNode.matches("a.link[aria-label]")) {
       const titleNode = programNode.querySelector("img")!;
       title = titleNode.getAttribute("alt")!;
     } else {
