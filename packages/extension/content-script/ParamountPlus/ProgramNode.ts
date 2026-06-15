@@ -8,7 +8,7 @@ export default class ProgramNode extends AbstractProgramNode {
     let type: "movie" | "series" | null = null;
     let year: number | null = null;
 
-    if (programNode.matches("a.link[aria-label]")) {
+    if (programNode.matches("a.link")) {
       const titleNode = programNode.querySelector("img")!;
 
       // on the /collections pages, the first card in each collection

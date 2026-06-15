@@ -35,6 +35,10 @@ a.ch-expanded-container .${CssClasses.imdbDataNode} {
   line-height: 22px;
 }
 
+div.grid .${CssClasses.imdbDataNode} {
+  margin-bottom: 12px;
+}
+
 div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
   margin-left: 4px;
 }
@@ -52,6 +56,7 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
     return [
       // home page, /browse/*
       "div.carousel:has(h2.video-section-title)",
+      "div.grid",
 
       // on hover
       "a.ch-expanded-container",
@@ -64,6 +69,12 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
     if (pContainerNode.matches("div.carousel:has(h2.video-section-title)")) {
       return pContainerNode
         .querySelector("h2.video-section-title")!
+        .textContent.trim();
+    }
+
+    if (pContainerNode.matches("div.grid")) {
+      return pContainerNode
+        .parentElement!.previousElementSibling!.querySelector("h2")!
         .textContent.trim();
     }
 
@@ -93,7 +104,11 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
     if (selector === "div.carousel:has(h2.video-section-title)") {
-      return ["a.link[aria-label]"];
+      return ["a.link"];
+    }
+
+    if (selector === "div.grid") {
+      return ["a.link"];
     }
 
     if (selector === "a.ch-expanded-container") {
