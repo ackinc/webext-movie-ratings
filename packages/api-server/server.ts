@@ -74,16 +74,18 @@ function createServer() {
     "/",
     { schema: { querystring: healthCheckRequestSchema } },
     async function (request, reply) {
-      const { delayMs: qDelayMs, error, workThroughDelay } = request.query;
-      if (qDelayMs !== undefined) {
-        if (workThroughDelay) {
-          const endTime = +new Date() + qDelayMs;
-          while (+new Date() < endTime);
-        } else {
-          await delayMs(qDelayMs);
+      if (env.APP_ENV === "development") {
+        const { delayMs: qDelayMs, error, workThroughDelay } = request.query;
+        if (qDelayMs !== undefined) {
+          if (workThroughDelay) {
+            const endTime = +new Date() + qDelayMs;
+            while (+new Date() < endTime);
+          } else {
+            await delayMs(qDelayMs);
+          }
         }
+        if (error !== undefined) throw new Error(error);
       }
-      if (error !== undefined) throw new Error(error);
 
       reply.code(200).send({ status: "ok" });
     },
