@@ -2,24 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
-
-const browsers = [
-  {
-    name: "Chrome",
-    logo: "/chrome32.png",
-    url: "https://chromewebstore.google.com/detail/sift-imdb-ratings-on-vari/pfnhkljamlclkackkndllofcfhihacna",
-  },
-  {
-    name: "Edge",
-    logo: "/edge32.png",
-    url: "https://microsoftedge.microsoft.com/addons/detail/sift-imdb-ratings-on-var/odgepppomekmdiifmjmocpjhopdmgjnl",
-  },
-  {
-    name: "Firefox",
-    logo: "/firefox32.png",
-    url: "https://addons.mozilla.org/en-US/firefox/addon/imdb-ratings-for-various-ott/",
-  },
-];
+import { supportedBrowsers as browsers } from "@/lib/constants";
 
 export function HeroSection() {
   return (

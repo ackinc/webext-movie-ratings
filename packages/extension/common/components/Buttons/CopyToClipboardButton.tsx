@@ -1,7 +1,7 @@
 import { useEffect, useState } from "preact/hooks";
 import IconButton from "./IconButton";
-import copyIcon from "@/images/copy.svg";
-import tickIcon from "@/images/tick.svg";
+import CopyIcon from "@common/components/Icons/Copy";
+import TickIcon from "@common/components/Icons/Tick";
 
 interface CopyToClipboardButtonProps {
   textToCopy: string;
@@ -27,7 +27,7 @@ function CopyToClipboardButton({
         navigator.clipboard.writeText(textToCopy).then(() => setCopied(true))
       }
     >
-      <img src={copied ? tickIcon : copyIcon} alt="Copy email" />
+      {copied ? <TickIcon /> : <CopyIcon />}
     </IconButton>
   );
 }

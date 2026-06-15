@@ -2,11 +2,7 @@ import { Type } from "typebox";
 
 export const programTypeSchema = Type.Enum(["movie", "series"]);
 
-const siftApiProgramMatchStatus = Type.Enum([
-  "pending",
-  "matched",
-  "abandoned",
-]);
+const siftApiProgramMatchStatus = Type.Enum(["matched", "abandoned"]);
 export const siftApiProgramMatchSchemas = {
   status: siftApiProgramMatchStatus,
   request: Type.Object({
@@ -20,3 +16,15 @@ export const siftApiProgramMatchSchemas = {
     imdbId: Type.Optional(Type.String()),
   }),
 };
+
+const userMessageCategory = Type.Enum([
+  "feedback",
+  "incorrect-rating-report",
+  "uninstall-reason",
+  "other",
+]);
+export const userMessageSchema = Type.Object({
+  email: Type.Optional(Type.String()),
+  category: userMessageCategory,
+  message: Type.String(),
+});

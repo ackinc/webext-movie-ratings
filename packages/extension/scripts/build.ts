@@ -33,6 +33,8 @@ const SIFT_API_URL =
   APP_ENV === "development"
     ? "http://localhost:3000"
     : "https://api.getsift.today";
+const SIFT_WEBSITE_URL =
+  APP_ENV === "development" ? "http://localhost:3001" : "https://getsift.today";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -74,9 +76,6 @@ const config: esbuild.BuildOptions = {
       ? null
       : { in: path.join(srcDir, "dashboard/main.jsx"), out: "dashboard/main" },
   ].filter((x) => x !== null),
-  alias: {
-    "@": "../..",
-  },
   bundle: true,
   define: {
     APP_ENV: `"${APP_ENV}"`,
@@ -85,14 +84,14 @@ const config: esbuild.BuildOptions = {
     MAIN_CONTENT_SCRIPT_PATH: `"./urlchange-dispatcher.js"`,
     FF_TELEMETRY_ENABLED: `${["development", "testing"].includes(APP_ENV)}`,
 
-    // in testing-env (browseOTT script), we need the loop running in backgrounded tabs
-    FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE: `${["production", "development"].includes(APP_ENV)}`,
-
     TARGET_BROWSER: `"${TARGET_BROWSER}"`,
 
     SIFT_API_URL: `"${SIFT_API_URL}"`,
+    SIFT_WEBSITE_URL: `"${SIFT_WEBSITE_URL}"`,
   },
   loader: {
+    ".page.css": "text",
+    ".css": "css",
     ".png": "dataurl",
     ".svg": "dataurl",
   },

@@ -3,6 +3,7 @@ import { MessageType, supportedSites } from "./constants";
 export type ProgramContainerData = {
   title: string;
 };
+// represents a list or grid of movies/shows on a webpage
 export type ProgramContainer = {
   selector: Selector;
   node: HTMLElement;
@@ -13,20 +14,25 @@ export type ProgramData = {
   type?: "movie" | "series";
   year?: number;
 };
+// represents a movie/show identified on a webpage
 export type Program = {
   selector: Selector;
   node: HTMLElement;
 } & ProgramData;
 
+// associated with a particular Program
 export type IMDBData = {
-  imdbID: string;
-  imdbRating: string;
+  imdbId: string;
+  imdbRating:
+    | number
+    | "N/A" /* matched program to an imdb id, but rating not available */
+    | "N/F" /* could not matched program to an imdb id */
+    | "N/M" /* (temporary) error when matching program to an imdb id */;
   expiry?: number;
 };
 
-export type CachedIMDBData = IMDBData & {
+export type CachedIMDBData = Required<IMDBData> & {
   key: string;
-  expiry: number;
 };
 
 export type SWMessageResponse<T> = { data: T } | { error: string };
@@ -53,13 +59,13 @@ export type Message =
   | {
       type: MessageType.fetchCachedIMDBRating;
       data: {
-        program: Omit<Program, "node">;
+        program: ProgramData;
       };
     }
   | {
       type: MessageType.fetchIMDBRating;
       data: {
-        program: Omit<Program, "node">;
+        program: ProgramData;
         pageUrl: string;
       };
     }
@@ -123,8 +129,6 @@ export type Message =
   | {
       // sent from popup's dev control panel to active tab's ISO content-script
       type:
-        | MessageType.getActiveTabLoopState
-        | MessageType.toggleActiveTabLoopState
         | MessageType.getSelectProgramModeState
         | MessageType.toggleSelectProgramMode;
     }
@@ -169,6 +173,7 @@ export type WebpageStats = {
   nProgramsWithNoRatingNode: number;
   nProgramsRatedNA: number;
   nProgramsRatedNF: number;
+  nProgramsRatedNM: number;
 };
 
 export type ExtensionSettings = {
@@ -195,3 +200,20 @@ export type ExtensionContext =
 export type Sitename = keyof typeof supportedSites;
 export type PermString =
   (typeof supportedSites)[Sitename]["permStrings"][number];
+
+export type PopupPage =
+  | "onboarding"
+  | "filters"
+  | "settings"
+  | "pitchErrorReporting"
+  | "pitchMissingRatingReporting"
+  | "feedbackForm";
+
+export type InAppNotificationStatus = "unseen" | "seen" | "dismissed";
+export interface InAppNotification {
+  id: string;
+  message: string;
+  targetPopupPage: PopupPage;
+  status: InAppNotificationStatus;
+  timestamp: number;
+}

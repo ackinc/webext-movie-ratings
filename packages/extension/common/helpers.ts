@@ -8,7 +8,12 @@ import {
   DB_NAME,
   DB_VERSION,
 } from "./constants";
-import type { ExtensionContext, ExtensionSettings, Message } from "./types";
+import type {
+  ExtensionContext,
+  ExtensionSettings,
+  Message,
+  ProgramData,
+} from "./types";
 import TelemetryStore from "./TelemetryStore";
 import RatingsCache from "./RatingsCache";
 import { captureException } from "./errorReporter";
@@ -89,13 +94,16 @@ export function extractProgramTitle(str: string): string {
     ...languages.map((l) => `${l} Movie`),
     ...languages.map((l) => `(${l} Dub)`),
     ...languages.map((l) => `(${l})`),
+    ...languages.map((l) => new RegExp(`${l} movie$`, "i")),
+    ...languages.map((l) => new RegExp(`${l} dubbed$`, "i")),
+    ...languages.map((l) => new RegExp(`${l} dubbed movie$`, "i")),
     "(Dub)",
     "(Dubs)",
     /\sS\d+$/, // suffixes like "S09"; see https://github.com/ackinc/webext-movie-ratings/issues/1
     /\(\d{4}\)/, // year
     // REVIEW: are there many programs whose titles legitimately
     //   end with these words?
-    /Movie|Series$/,
+    /Movie|Series$/i,
     /: Restored Version$/i,
     /\(Extended Version\)$/i,
     /\(Extended Edition\)$/i,
@@ -147,4 +155,18 @@ export async function addBadge(text: string) {
 
 export async function removeBadge() {
   await addBadge("");
+}
+
+export function programToHash(program: ProgramData): string {
+  const { title, type, year } = program;
+  // using btoa directly on a title with non-latin1 chars (without
+  //   encoding to utf-8 first) will cause an error to be thrown
+  const utf8EncodedTitle = String.fromCharCode(
+    ...new TextEncoder().encode(title),
+  );
+  return btoa(
+    [utf8EncodedTitle.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
+      .filter(Boolean)
+      .join("|"),
+  );
 }

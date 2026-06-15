@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
+import pageStyles from "./styles.page.css";
 
 export default class YoutubeMoviesPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -14,28 +15,7 @@ export default class YoutubeMoviesPage extends AbstractPage {
     await super.injectStyles();
 
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-.${CssClasses.imdbDataNode} {
-    margin-left: 4px;
-    padding: 0 4px;
-
-    background-color: rgba(0, 0, 0, 0.05);
-    border-radius: 2px;
-    color: #606060;
-    text-decoration: none;
-
-    font-family: Roboto, Arial, sans-serif;
-    font-size: 1.2rem;
-    font-weight: 500;
-    line-height: 1.8rem;
-}
-
-ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode} {
-    background-color: transparent;
-    outline: 1px solid rgba(0, 0, 0, 0.1);
-    outline-offset: -1px;
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
@@ -44,7 +24,10 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
     }
 
     if (location.pathname === "/watch") {
-      return ["ytd-watch-next-secondary-results-renderer > div#items"];
+      return [
+        "ytd-watch-next-secondary-results-renderer > div#items",
+        "ytd-watch-metadata",
+      ];
     }
 
     return [];
@@ -83,6 +66,10 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
       return "More like this";
     }
 
+    if (pContainerNode.matches("ytd-watch-metadata")) {
+      return "Currently watching";
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -101,6 +88,10 @@ ytd-watch-next-secondary-results-renderer > div#items .${CssClasses.imdbDataNode
 
     if (selector === "ytd-watch-next-secondary-results-renderer > div#items") {
       return ["yt-lockup-view-model"];
+    }
+
+    if (selector === "ytd-watch-metadata") {
+      return ["div#above-the-fold.ytd-watch-metadata"];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

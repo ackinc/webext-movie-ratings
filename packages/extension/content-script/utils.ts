@@ -1,10 +1,21 @@
 import {
+  browser,
   clampNum,
   CssClasses,
+  ErrorMessage,
+  MessageType,
+  omit,
   selectorStatusKeyPrefix,
   storage,
+  type IMDBData,
+  type Message,
+  type Program,
+  type ProgramData,
+  type ProgramFilterSettings,
+  type SelectorStatusForSite,
+  type SWMessageResponse,
 } from "../common";
-import type { ProgramFilterSettings, SelectorStatusForSite } from "../common";
+import { SWError } from "../common/customErrors";
 
 export function getFopnCssRules(
   filterSettings: ProgramFilterSettings,
@@ -94,4 +105,53 @@ export function climbDOMUntil(
   } while (cur);
 
   return cur;
+}
+
+export async function requestIMDBData(
+  program: Program,
+  timeoutInSeconds: number = 30,
+): Promise<IMDBData> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(ErrorMessage.requestImdbDataTimedOut));
+    }, timeoutInSeconds * 1000);
+
+    try {
+      browser.runtime
+        .sendMessage<Message, SWMessageResponse<IMDBData>>({
+          type: MessageType.fetchIMDBRating,
+          data: {
+            program: omit(program, ["node"]) as ProgramData,
+            pageUrl: location.href,
+          },
+        } satisfies Message)
+        .then((response) => {
+          clearTimeout(timeout);
+          if ("error" in response) reject(new SWError(response.error));
+          else resolve(response.data);
+        })
+        .catch(handleError);
+    } catch (e) {
+      handleError(e);
+    }
+
+    function handleError(e: unknown) {
+      clearTimeout(timeout);
+
+      const err = e instanceof Error ? e : new Error("Error", { cause: e });
+      if (err instanceof TypeError && !browser.runtime) {
+        reject(
+          new Error(ErrorMessage.extensionRuntimeDisappeared, { cause: err }),
+        );
+      } else if (err.message.includes("message channel closed")) {
+        reject(
+          new Error(ErrorMessage.unexpectedMessageChannelClosure, {
+            cause: err,
+          }),
+        );
+      } else {
+        reject(e);
+      }
+    }
+  });
 }

@@ -3,28 +3,25 @@ import "dotenv/config";
 // initialize Sentry
 import Sentry from "./instrument.ts";
 
-import type { Database } from "better-sqlite3";
 import { parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
 import cors from "@fastify/cors";
+import { Type, type Static } from "typebox";
 import {
   type SiftApiProgramMatching,
   siftApiProgramMatchSchemas,
+  type UserMessage,
+  userMessageSchema,
 } from "sifttypes";
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
-import {
-  createProgramMatchRecord,
-  getProgramMatchRecord,
-  updateProgramMatchRecord,
-} from "./helpers.ts";
-import db from "./db.ts";
+import * as dbService from "./dbService.ts";
 import logger from "./logger.ts";
 import { querySearchEngine, getIndexLastUpdatedTime } from "./searchEngine.ts";
 
-const env = pick(process.env, ["APP_ENV", "PORT"], true);
+const env = pick(process.env, ["APP_ENV", "PORT", "WEBSITE_URL"], true);
 
-const server = createServer(db);
+const server = createServer();
 server.listen({ port: +env.PORT! }, function (err, _address) {
   if (err) {
     server.log.error(err);
@@ -34,7 +31,7 @@ server.listen({ port: +env.PORT! }, function (err, _address) {
 process.on("SIGINT", cleanup);
 process.on("SIGTERM", cleanup);
 
-function createServer(db: Database) {
+function createServer() {
   const fastify = Fastify({ loggerInstance: logger });
   fastify.register(cors, {
     origin:
@@ -43,6 +40,7 @@ function createServer(db: Database) {
             extensionIds.chrome.map((id) => `chrome-extension://${id}`),
             extensionIds.edge.map((id) => `chrome-extension://${id}`),
             extensionIds.firefox.map((id) => `moz-extension://${id}`),
+            env.WEBSITE_URL!,
           ].flat()
         : true,
   });
@@ -64,39 +62,30 @@ function createServer(db: Database) {
   });
 
   // health check route
+  const healthCheckRequestSchema = Type.Object({
+    delayMs: Type.Optional(Type.Number()),
+    error: Type.Optional(Type.String()),
+    workThroughDelay: Type.Optional(Type.Boolean()),
+  });
   fastify.get<{
-    Querystring: {
-      delayMs?: number;
-      error?: string;
-      workThroughDelay?: boolean;
-    };
+    Querystring: Static<typeof healthCheckRequestSchema>;
     Reply: { 200: { status: string } };
   }>(
     "/",
-    {
-      schema: {
-        querystring: {
-          type: "object",
-          properties: {
-            delayMs: { type: "number" },
-            error: { type: "string" },
-            workThroughDelay: { type: "boolean" },
-          },
-          additionalProperties: false,
-        },
-      },
-    },
+    { schema: { querystring: healthCheckRequestSchema } },
     async function (request, reply) {
-      const { delayMs: qDelayMs, error, workThroughDelay } = request.query;
-      if (qDelayMs !== undefined) {
-        if (workThroughDelay) {
-          const endTime = +new Date() + qDelayMs;
-          while (+new Date() < endTime);
-        } else {
-          await delayMs(qDelayMs);
+      if (env.APP_ENV === "development") {
+        const { delayMs: qDelayMs, error, workThroughDelay } = request.query;
+        if (qDelayMs !== undefined) {
+          if (workThroughDelay) {
+            const endTime = +new Date() + qDelayMs;
+            while (+new Date() < endTime);
+          } else {
+            await delayMs(qDelayMs);
+          }
         }
+        if (error !== undefined) throw new Error(error);
       }
-      if (error !== undefined) throw new Error(error);
 
       reply.code(200).send({ status: "ok" });
     },
@@ -120,53 +109,51 @@ function createServer(db: Database) {
       },
     } satisfies RouteShorthandOptions,
     async function (request, reply) {
-      const seIndexLastUpdatedAt = await getIndexLastUpdatedTime();
-
       const program = { ...request.query };
-      let row = getProgramMatchRecord(db, program);
+
+      let row = dbService.createProgramMatchRecord(
+        {
+          ...pick(program, ["title", "type", "year"]),
+          meta: JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
+        },
+        "ON CONFLICT DO NOTHING",
+      );
 
       if (
-        !row ||
+        row.status === "pending" ||
         (row.status === "abandoned" &&
-          parseISO(row.updatedAt) < seIndexLastUpdatedAt)
+          parseISO(row.updatedAt) < (await getIndexLastUpdatedTime()))
       ) {
-        if (!row) {
-          createProgramMatchRecord(db, {
-            ...pick(program, ["title", "type", "year"]),
-            meta: JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
-          });
-
-          // If multiple instances of the server are running, a race condition
-          //   may cause the createProgramMatchRecord call above above to no-op
-          //   even if the previous getProgramMatchRecord call returned nothing
-          // Because of this, we cannot rely on the lastInsertRowId attr of the
-          //   return value of the createProgramMatchRecord call above; the
-          //   seemingly unnecessary getProgramMatchRecord below is actually
-          //   required
-          row = getProgramMatchRecord(db, program);
-        }
-
         const [bestMatch] = await querySearchEngine(program);
-        updateProgramMatchRecord(db, row!.id, {
+        row = dbService.updateProgramMatchRecord(row.id, {
           status: bestMatch ? "matched" : "abandoned",
           imdbId: bestMatch ? bestMatch.imdbId : null,
         });
-
-        row = getProgramMatchRecord(db, row!.id)!;
-      }
-
-      if (row.status === "pending") {
-        reply.code(200).send({ status: "pending" });
-        return;
       }
 
       if (row.status === "matched") {
-        reply.code(200).send({ status: "matched", imdbId: row.imdbId! });
-        return;
+        return reply.code(200).send({ status: "matched", imdbId: row.imdbId! });
       }
 
-      // row.status === 'abandoned'
-      reply.code(200).send({ status: "abandoned" });
+      if (row.status === "abandoned") {
+        return reply.code(200).send({ status: "abandoned" });
+      }
+
+      /* row.status === 'pending' */
+      throw new Error(`Unexpected status '${row.status}' for row id ${row.id}`);
+    },
+  );
+
+  // receive user messages
+  fastify.post<{
+    Body: UserMessage;
+    Reply: { 200: { status: string } };
+  }>(
+    "/messages",
+    { schema: { body: userMessageSchema } } satisfies RouteShorthandOptions,
+    async function (request, reply) {
+      dbService.createMessageRecord(request.body);
+      reply.code(200).send({ status: "ok" });
     },
   );
 
@@ -176,7 +163,7 @@ function createServer(db: Database) {
 async function cleanup(signal: "SIGINT" | "SIGTERM") {
   logger.info(`Received ${signal}. Exiting ...`);
   await server.close();
-  db.close();
+  dbService.closeConnection();
   await Sentry.close();
   process.exit(0);
 }

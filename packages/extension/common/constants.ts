@@ -3,6 +3,10 @@ import type { PermString, ProgramFilterSettings, Sitename } from "./types";
 export const DB_NAME = "siftDb";
 export const DB_VERSION = 2;
 
+// how long to wait before invoking the 'findProgramsAndAddRatings'
+//   workhorse function after a reason to invoke it is detected
+export const mainFnInvocationDelayMs = 100;
+
 export const enum CssClasses {
   styleNode = "sift-style",
   imdbDataNode = "sift-imdb-data",
@@ -54,8 +58,6 @@ export const enum MessageType {
   placeholder = "sift:placeholderForTestingAndDebugging",
   sitesEnabled = "sift:sitesEnabled",
   sitesDisabled = "sift:sitesDisabled",
-  getActiveTabLoopState = "sift:getActiveTabLoopState",
-  toggleActiveTabLoopState = "sift:toggleActiveTabLoopState",
   getSelectProgramModeState = "sift:getSelectProgramModeState",
   toggleSelectProgramMode = "sift:toggleSelectProgramMode",
   setMediaRequestBlockingState = "sift:setMediaRequestBlockingState",
@@ -73,14 +75,14 @@ export const telemetryIntervalSizeInSeconds = 1;
 export const selectorStatusKeyPrefix = "selectorStatus_";
 
 export const enum ErrorMessage {
+  extensionRuntimeDisappeared = "browser.runtime is undefined",
+  unexpectedMessageChannelClosure = "The message channel was closed unexpectedly while waiting for a response",
   unrecognizedProgramContainerNode = "ProgramContainerNode does not match a recognized selector",
   unrecognizedProgramNode = "ProgramNode does not match a recognized selector",
   potentiallyOutOfDateSelector = "Potentially out of date selector",
-  ratingsCacheNotReady = "The ratings cache is not ready",
+  ratingsServiceNotInitialized = "The ratings service was not initialized",
   telemetryStoreNotReady = "The telemetry store is not ready",
-  ratingsApiRequestTimedOut = "The ratings API request timed out",
-  ratingsApiRequestAlreadyInFlight = "A request for this program's rating is already in-flight",
-  ratingsApiRequestFailed = "The ratings API request failed",
+  requestImdbDataTimedOut = "The service worker took too long to respond to a requestImdbData message",
   idbUpgradeCalledUnexpectedly = "IDB upgrade should be handled elsewhere",
   hostPermissionNotGranted = "A requested host permission was not granted",
   noAsyncPermissionRequestInFirefox = "permission.request must be called synchronously inside a user-gesture handler in Firefox",
@@ -98,13 +100,13 @@ export const supportedSites = {
     displayName: "Crunchyroll",
     permStrings: ["https://www.crunchyroll.com/*"],
   },
-  disneyplus: {
-    displayName: "Disney Plus",
-    permStrings: ["https://www.disneyplus.com/*"],
-  },
+  // disneyplus: {
+  //   displayName: "Disney Plus",
+  //   permStrings: ["https://www.disneyplus.com/*"],
+  // },
   hbomax: {
     displayName: "HBO Max",
-    permStrings: ["https://www.hbomax.com/*"],
+    permStrings: ["https://www.hbomax.com/*", "https://play.hbomax.com/*"],
   },
   hotstar: {
     displayName: "Hotstar",
@@ -114,6 +116,10 @@ export const supportedSites = {
     displayName: "Hulu",
     permStrings: ["https://www.hulu.com/*"],
   },
+  mxplayer: {
+    displayName: "MX Player",
+    permStrings: ["https://www.mxplayer.in/*"],
+  },
   netflix: {
     displayName: "Netflix",
     permStrings: ["https://www.netflix.com/*"],
@@ -121,6 +127,10 @@ export const supportedSites = {
   paramountplus: {
     displayName: "Paramount Plus",
     permStrings: ["https://www.paramountplus.com/*"],
+  },
+  peacocktv: {
+    displayName: "Peacock TV",
+    permStrings: ["https://www.peacocktv.com/*"],
   },
   primevideo: {
     displayName: "Prime Video (primevideo.com)",
@@ -137,6 +147,10 @@ export const supportedSites = {
   youtubemovies: {
     displayName: "Youtube Movies",
     permStrings: ["https://www.youtube.com/*"],
+  },
+  zee5: {
+    displayName: "Zee5",
+    permStrings: ["https://www.zee5.com/*"],
   },
 } as const;
 
@@ -168,5 +182,5 @@ export const webStoreLink =
   TARGET_BROWSER === "edge"
     ? "https://microsoftedge.microsoft.com/addons/detail/odgepppomekmdiifmjmocpjhopdmgjnl"
     : TARGET_BROWSER === "firefox"
-      ? "https://addons.mozilla.org/en-US/firefox/addon/imdb-ratings-for-various-ott/"
+      ? "https://addons.mozilla.org/en-US/firefox/addon/sift-imdb-ratings/"
       : "https://chromewebstore.google.com/detail/sift-imdb-ratings-on-vari/pfnhkljamlclkackkndllofcfhihacna";

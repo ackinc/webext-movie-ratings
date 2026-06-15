@@ -1,40 +1,4 @@
-const platforms = [
-  {
-    name: "Netflix",
-    logo: "/logos/netflix_wordmark.svg",
-    url: "https://www.netflix.com",
-  },
-  {
-    name: "Amazon Prime Video",
-    logo: "/logos/amazonprimevideo_wordmark.svg",
-    url: "https://www.primevideo.com",
-  },
-  {
-    name: "YouTube Movies",
-    logo: "/logos/youtube_wordmark.png",
-    url: "https://www.youtube.com/movies",
-  },
-  {
-    name: "Apple TV+",
-    logo: "/logos/appletv_wordmark.svg",
-    url: "https://tv.apple.com",
-  },
-  {
-    name: "Hotstar",
-    logo: "/logos/hotstar_wordmark.png",
-    url: "https://www.hotstar.com",
-  },
-  {
-    name: "SonyLIV",
-    logo: "/logos/sonyliv_wordmark.png",
-    url: "https://www.sonyliv.com",
-  },
-  {
-    name: "Crunchyroll",
-    logo: "/logos/crunchyroll_wordmark.svg",
-    url: "https://www.crunchyroll.com",
-  },
-];
+import { supportedPlatforms as platforms } from "@/lib/constants";
 
 export function PlatformsSection() {
   return (

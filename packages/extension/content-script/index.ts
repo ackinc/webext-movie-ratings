@@ -1,19 +1,19 @@
 import {
   browser,
   defaultProgramFilterSettings,
-  omit,
+  ErrorMessage,
   getSetting,
+  omit,
   MessageType,
   CssClasses,
+  mainFnInvocationDelayMs,
 } from "../common";
 import { SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import type AbstractPage from "./AbstractPage";
 import type {
-  IMDBData,
   Message,
   Program,
-  SWMessageResponse,
   ProgramFilterSettings,
   WebpageStats,
 } from "../common/types";
@@ -21,71 +21,101 @@ import DisneyPlusPage from "./DisneyPlus/Page";
 import HBOMaxPage from "./HBOMax/Page";
 import HotstarPage from "./Hotstar/Page";
 import HuluPage from "./Hulu/Page";
+import PeacockTVPage from "./PeacockTV/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 import ParamountPlusPage from "./ParamountPlus/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
+import MXPlayerPage from "./MXPlayer/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 import YoutubeMoviesPage from "./YoutubeMovies/Page";
-import { updateFilteredOutProgramNodeStyles } from "./utils";
+import Zee5Page from "./Zee5/Page";
+import { requestIMDBData, updateFilteredOutProgramNodeStyles } from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
 
 let page: AbstractPage;
 let programFilterSettings: ProgramFilterSettings;
-
-// This var is defined a little differently than most would expect, because
-//   its main utility is for webpage-ratings-stats
-// When tracking webpage-ratings-stats for telemetry:
-// - the session starts when the user lands on an OTT website
-// - stats from when a user is scrolling the first page (pg 1) should be
-//     logged in the same entry
-// - stats from when a user goes to pg 2 should go into a new entry
-// - stats from when a user goes back to pg 1 should also go into a new entry
-// In other words, a session is tied to a visit to a particular OTT webpage;
-//   it ends when the user leaves that webpage
+let mutationObserver: MutationObserver;
+// updated whenever a user navigates to a different page on the website
 let sessionStartTime: number;
+// we schedule calls to findProgramsAndAddRatings with a small
+//   delay instead of synchronously to prevent wasteful computation
+//   when the page is updating rapidly, and the mutation observer's
+//   callback is invoked multiple times in quick succession
+let timeout: ReturnType<typeof setTimeout> | null = null;
 
-interface LoopState {
-  timeout: ReturnType<typeof setTimeout> | undefined;
-  abortController: AbortController | undefined;
-  haltReason:
-    | "filterSettingsChanged"
-    | "urlChanged"
-    | "pageHidden"
-    | "error"
-    | "cleanup"
-    | "userRequest"
-    | undefined;
+main().catch(captureException);
+
+// fn defs
+
+async function main() {
+  // so content scripts belonging to prev. ext. version can cleanup
+  window.postMessage({
+    type: MessageType.orphanCheck,
+    data: { trigger: "new-content-script-injection" },
+  } satisfies Message);
+
+  // initialize state vars
+  page = await initializePage();
+  programFilterSettings = {
+    ...defaultProgramFilterSettings,
+    ...(await getSetting("programFiltersSettings")),
+  };
+  mutationObserver = new MutationObserver((mutationRecords) => {
+    const addedNodes = mutationRecords
+      .flatMap((r) => Array.from(r.addedNodes))
+      .filter(
+        (node) =>
+          node instanceof HTMLElement &&
+          !node.classList.contains(CssClasses.imdbDataNode),
+      );
+    if (addedNodes.length === 0) return;
+
+    // at least one element was added that is not a sift-imdb-node,
+    //   so it's worth running 'findProgramsAndAddRatings' again
+    schedulePageProcessing("onMutation");
+    if (APP_ENV === "development") console.debug(addedNodes);
+  });
+  sessionStartTime = +new Date();
+  addListeners();
+  if (APP_ENV !== "production") addSidecar({ page });
+  schedulePageProcessing("onStart");
 }
-const loopState: LoopState = {
-  timeout: undefined,
-  abortController: undefined,
-  haltReason: undefined,
-};
 
-(async () => {
-  try {
-    // so content scripts belonging to prev. ext. version can cleanup
-    window.postMessage({
-      type: MessageType.orphanCheck,
-      data: { trigger: "new-content-script-injection" },
-    } satisfies Message);
+function schedulePageProcessing(
+  reason: string,
+  withDelayMs: number = mainFnInvocationDelayMs,
+) {
+  if (timeout) clearTimeout(timeout);
 
-    page = await initializePage();
-    addListeners();
-    startLoop();
-
-    if (APP_ENV !== "production") addSidecar({ page });
-  } catch (e) {
-    captureException(e);
+  if (APP_ENV === "development") {
+    const now = new Date().toISOString();
+    console.debug(`[${now}] schedulePageProcessing ${reason}`);
   }
-})();
+
+  timeout = setTimeout(findProgramsAndAddRatings, withDelayMs);
+}
+
+function cleanup(broadcast = true) {
+  if (broadcast) {
+    window.postMessage({ type: MessageType.cleanup } satisfies Message);
+  }
+
+  removeSidecar();
+  removeListeners();
+  if (timeout) clearTimeout(timeout);
+  page.cleanup();
+
+  console.log("sift: content script cleanup complete");
+}
 
 async function initializePage() {
   if (location.hostname === "www.disneyplus.com") {
     page = new DisneyPlusPage();
-  } else if (location.hostname === "www.hbomax.com") {
+  } else if (
+    ["www.hbomax.com", "play.hbomax.com"].includes(location.hostname)
+  ) {
     page = new HBOMaxPage();
   } else if (location.hostname === "www.hotstar.com") {
     page = new HotstarPage();
@@ -109,81 +139,54 @@ async function initializePage() {
     page = new YoutubeMoviesPage();
   } else if (location.hostname === "www.paramountplus.com") {
     page = new ParamountPlusPage();
+  } else if (location.hostname === "www.peacocktv.com") {
+    page = new PeacockTVPage();
+  } else if (location.hostname === "www.zee5.com") {
+    page = new Zee5Page();
+  } else if (location.hostname === "www.mxplayer.in") {
+    page = new MXPlayerPage();
   } else {
     throw new Error("Page not recognized");
   }
 
-  sessionStartTime = +new Date();
-  await page.initialize();
-
-  return page;
+  return await page.initialize();
 }
 
 function addListeners() {
+  mutationObserver.observe(document.body, { subtree: true, childList: true });
   window.addEventListener("message", handleMessage);
   browser.runtime.onMessage.addListener(handleMessage);
-  document.addEventListener("visibilitychange", handlePageVisibilityChange);
 }
 
 function removeListeners() {
+  mutationObserver.disconnect();
   window.removeEventListener("message", handleMessage);
 
-  // when extension is turned off, browser.runtime is sometimes
-  //   undefined by the time this line is reached
-  // if we don't preempt the error, it will interfere with subsequent
-  //   parts of the cleanup operation
+  // if cleanup is happening because the user disabled the extension,
+  //   browser.runtime will be undefined
   browser.runtime?.onMessage.removeListener(handleMessage);
-
-  document.removeEventListener("visibilitychange", handlePageVisibilityChange);
 }
 
-function startLoop(reason?: LoopState["haltReason"]) {
-  if (loopState.timeout || (reason && loopState.haltReason !== reason)) {
-    return;
-  }
-
-  loopState.abortController = new AbortController();
-  loopState.timeout = setTimeout(() => loopFn(loopState.abortController!), 0);
-  loopState.haltReason = undefined;
-}
-
-function stopLoop(reason: LoopState["haltReason"]) {
-  if (loopState.haltReason) return; // no-op if already halted
-
-  // Prevent running loopFn from scheduling another invocation
-  // WARN: If tab was backgrounded before first invocation of loop,
-  //   loopState.abortController will be undefined; the use of optional-
-  //   chaining below prevents stopLoop from erroring out in this case
-  loopState.abortController?.abort();
-  loopState.abortController = undefined;
-
-  // clear any scheduled loop
-  clearTimeout(loopState.timeout);
-  loopState.timeout = undefined;
-  loopState.haltReason = reason;
-}
-
-async function loopFn(abortController: AbortController) {
-  if (
-    FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE &&
-    document.visibilityState === "hidden"
-  ) {
-    stopLoop("pageHidden");
-    return;
-  }
-
-  const msDelayBeforeNextInvocation = 2000;
-
+async function findProgramsAndAddRatings() {
   try {
-    programFilterSettings = {
-      ...defaultProgramFilterSettings,
-      ...(await getSetting("programFiltersSettings")),
-    };
+    const programs = page.findPrograms({
+      // in prod, we don't want an error during data-extraction for
+      //   one pc- or p-node to affect processing of other nodes
+      swallowDataExtractionErrors: APP_ENV === "production",
+    });
 
-    const programs = page.findPrograms();
-    await Promise.all(
+    const results = await Promise.allSettled<Program>(
       programs.map((p) => addRating(p).then(fadeIfFilteredOut)),
     );
+    const errors: Error[] = results
+      .map((r, idx) => {
+        if (r.status === "fulfilled") return null;
+        const err = r.reason instanceof Error ? r.reason : new Error(r.reason);
+        err.context = { program: omit(programs[idx]!, ["node"] as const) };
+        return r.reason;
+      })
+      .filter((x) => x);
+    handleErrors(errors);
 
     if (FF_TELEMETRY_ENABLED) {
       await browser.runtime.sendMessage({
@@ -196,62 +199,56 @@ async function loopFn(abortController: AbortController) {
         },
       } satisfies Message);
     }
-
-    if (!abortController.signal.aborted) {
-      loopState.timeout = setTimeout(
-        () => loopFn(abortController),
-        msDelayBeforeNextInvocation,
-      );
-    }
   } catch (e) {
-    stopLoop("error");
-
     if (
       e instanceof Error &&
-      e.message.startsWith("Extension context invalidated")
+      [
+        ErrorMessage.extensionRuntimeDisappeared,
+        ErrorMessage.unexpectedMessageChannelClosure,
+      ].some((pfx) => e.message.startsWith(pfx))
     ) {
       window.postMessage({
         type: MessageType.orphanCheck,
         data: { trigger: "extension-runtime-disappeared" },
       } satisfies Message);
-      return;
+    } else {
+      captureException(e);
+    }
+  }
+
+  function handleErrors(errors: Error[]) {
+    let majorError: Error | null = null;
+
+    for (let e of errors) {
+      if (e instanceof SWError) {
+        // SWErrors would have been captured from the SW's side; no need to call
+        //   captureException again
+      } else if (
+        [
+          ErrorMessage.extensionRuntimeDisappeared,
+          ErrorMessage.unexpectedMessageChannelClosure,
+        ].some((pfx) => e.message.startsWith(pfx))
+      ) {
+        majorError = e;
+      } else {
+        captureException(
+          e,
+          e.context
+            ? { context: e.context as Record<string, Record<string, unknown>> }
+            : {},
+        );
+      }
     }
 
-    captureException(e);
+    if (majorError) throw majorError;
   }
 }
 
 async function addRating(p: Program): Promise<Program> {
-  if (page.checkIMDBDataAlreadyAdded(p)) return p;
-
-  try {
-    const result = await fetchIMDBData(p);
-    page.addIMDBData(p, result);
-  } catch (e) {
-    if (e instanceof SWError) {
-      // do nothing; the error would already have been logged
-      //   and captured from the SW-side
-    } else {
-      captureException(e, { context: { program: p } });
-    }
+  if (!page.checkIMDBDataAlreadyAdded(p)) {
+    page.addIMDBData(p, await requestIMDBData(p));
   }
-
   return p;
-}
-
-async function fetchIMDBData(program: Program): Promise<IMDBData> {
-  const response = await browser.runtime.sendMessage<
-    Message,
-    SWMessageResponse<IMDBData>
-  >({
-    type: MessageType.fetchIMDBRating,
-    data: {
-      program: omit(program, ["node"]) as Omit<Program, "node">,
-      pageUrl: location.href,
-    },
-  } satisfies Message);
-  if ("error" in response) throw new SWError(response.error);
-  return response.data;
 }
 
 function fadeIfFilteredOut(p: Program): Program {
@@ -279,18 +276,21 @@ function collectWebpageRatingStats(programs: Program[]): WebpageStats {
   let nProgramsWithNoRatingNode = 0;
   let nProgramsRatedNA = 0;
   let nProgramsRatedNF = 0;
+  let nProgramsRatedNM = 0;
 
   const ctor = page.constructor as typeof AbstractPage;
   programs.forEach(({ node }) => {
     const rating = ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
     if (rating === "N/A") nProgramsRatedNA++;
     if (rating === "N/F") nProgramsRatedNF++;
+    if (rating === "N/M") nProgramsRatedNM++;
     if (!rating) nProgramsWithNoRatingNode++;
   });
   return {
     nPrograms,
     nProgramsRatedNA,
     nProgramsRatedNF,
+    nProgramsRatedNM,
     nProgramsWithNoRatingNode,
   };
 }
@@ -307,7 +307,7 @@ function handleMessage(
     cleanup();
   } else if (type === MessageType.orphanCheck) {
     if (!browser.runtime.id) {
-      // if the trigger was that new content scripts were injected, the
+      // if the trigger was new-content-script-injection, the
       //   outdated MWCS will be informed of the need to cleanup by
       //   the new MWCS, not by this ISOCS
       cleanup(msg.data.trigger === "extension-runtime-disappeared");
@@ -318,16 +318,6 @@ function handleMessage(
     handleFilterSettingsChange(msg.data);
   } else if (type === MessageType.healthCheck) {
     if (sendResponse) sendResponse("ok");
-  } else if (type === MessageType.getActiveTabLoopState) {
-    if (sendResponse) sendResponse(loopState.timeout ? "started" : "stopped");
-  } else if (type === MessageType.toggleActiveTabLoopState) {
-    if (loopState.timeout) {
-      stopLoop("userRequest");
-      console.log("stopped loop on user request");
-    } else {
-      startLoop("userRequest");
-      console.log("started loop on user request");
-    }
   } else if (type === MessageType.getSelectProgramModeState) {
     if (sendResponse) sendResponse(page.inSelectProgramMode ? "on" : "off");
   } else if (type === MessageType.toggleSelectProgramMode) {
@@ -336,33 +326,12 @@ function handleMessage(
 }
 
 function handleUrlChange() {
-  stopLoop("urlChanged");
   sessionStartTime = +new Date();
-  startLoop("urlChanged");
+  schedulePageProcessing("onUrlChange");
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
-  stopLoop("filterSettingsChanged");
-  updateFilteredOutProgramNodeStyles(updatedSettings);
-  startLoop("filterSettingsChanged");
-}
-
-function cleanup(broadcast = true) {
-  if (broadcast) {
-    window.postMessage({ type: MessageType.cleanup } satisfies Message);
-  }
-
-  removeSidecar();
-  stopLoop("cleanup");
-  removeListeners();
-  page.cleanup();
-  console.log("sift: orphaned content script cleanup complete");
-}
-
-function handlePageVisibilityChange() {
-  if (FF_HALT_LOOP_WHEN_PAGE_NOT_VISIBLE) {
-    document.visibilityState === "hidden"
-      ? stopLoop("pageHidden")
-      : startLoop("pageHidden");
-  }
+  programFilterSettings = updatedSettings;
+  updateFilteredOutProgramNodeStyles(programFilterSettings);
+  schedulePageProcessing("onFiltersChange");
 }

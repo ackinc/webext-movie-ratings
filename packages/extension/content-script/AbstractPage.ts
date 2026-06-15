@@ -9,6 +9,7 @@ import type {
   Selector,
   SWMessageResponse,
   UrlPath,
+  CachedIMDBData,
 } from "../common/types";
 import {
   browser,
@@ -36,45 +37,50 @@ export default class AbstractPage {
 
   inSelectProgramMode: boolean = false;
 
-  // Caching these allows us to avoid a `findPrograms` call inside `cleanup`
-  // Decided this was worth doing because of the annoying data extraction
-  //   errors I was seeing during old-content-script `cleanup` after deploying
-  //   a new-content-script with a fix for those very same data extraction
-  //   errors
-  #foundPrograms: Program[] = [];
+  #ctor = this.constructor as typeof AbstractPage;
+
+  // Caching these allows us to avoid a `findPrograms` call inside `cleanup`,
+  //   which has the following benefits:
+  // 1. It makes the cleanup operation faster, which is valuable because when
+  //   the extension is updated, there is a race between the cleanup operation
+  //   of the now-outdated ISOCS and the initialization of the new ISOCS
+  // 2. During development, if cleanup calls findPrograms without the
+  //   'swallowDataExtractionErrors' option set, deploying an update to fix
+  //   a DataExtractionError will cause that very same DataExtractionError to be
+  //   logged (spuriously) during the old ISOCS' cleanup operation, which can be
+  //   confusing
+  foundPrograms: Program[] = [];
 
   constructor() {
     this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
     this.isValidProgramContainer = this.isValidProgramContainer.bind(this);
     this.isValidProgram = this.isValidProgram.bind(this);
-
-    this.#foundPrograms = [];
-    this.inSelectProgramMode = false;
   }
 
   async initialize() {
     await Promise.all([this.injectStyles(), this.#pruneOutdatedSelectors()]);
+    return this;
   }
 
   cleanup() {
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`);
     styleNode?.parentElement?.removeChild(styleNode);
 
-    while (this.#foundPrograms.length > 0) {
-      const p = this.#foundPrograms.pop()!;
+    while (this.foundPrograms.length > 0) {
+      const p = this.foundPrograms.pop()!;
       p.node.classList.remove(CssClasses.filteredOutProgramNode);
-      (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
-        p.node,
-      );
+      this.#ctor.ProgramNode.removeIMDBNode(p.node);
     }
 
     if (this.inSelectProgramMode) this.toggleSelectProgramMode();
   }
 
-  findPrograms(): Program[] {
+  findPrograms({
+    swallowDataExtractionErrors = false,
+  }: { swallowDataExtractionErrors?: boolean } = {}): Program[] {
     const programContainerNodes = this.#findProgramContainerNodes();
     const programContainers = programContainerNodes
-      .map(this.#safeCreateProgramContainer)
+      .map(dataExtractionErrorHandlingWrapper(this.#createProgramContainer))
       .filter((x) => !!x)
       .filter(this.isValidProgramContainer);
 
@@ -83,7 +89,7 @@ export default class AbstractPage {
     );
     const programsPerPC = programNodesPerPC.map((nodes) =>
       nodes
-        .map(this.#safeCreateProgram)
+        .map(dataExtractionErrorHandlingWrapper(this.#createProgram))
         .filter((x) => !!x)
         .filter(this.isValidProgram),
     );
@@ -99,8 +105,8 @@ valid containers:\n\t${programContainers
       );
     }
 
-    this.#foundPrograms = programsPerPC.flat();
-    return this.#foundPrograms;
+    this.foundPrograms = programsPerPC.flat();
+    return this.foundPrograms;
 
     function logPC(pc: ProgramContainer, programsInPc: Program[]) {
       const maxProgramTitles = 5;
@@ -111,76 +117,56 @@ valid containers:\n\t${programContainers
           .join(", ") + (programsInPc.length > maxProgramTitles ? " ..." : "")
       }`;
     }
+
+    function dataExtractionErrorHandlingWrapper(
+      fn:
+        | ((
+            arg: Omit<ProgramContainer, keyof ProgramContainerData>,
+          ) => ProgramContainer | null)
+        | ((arg: Omit<Program, keyof ProgramData>) => Program | null),
+    ) {
+      return ({
+        node,
+        selector,
+      }:
+        | Omit<ProgramContainer, keyof ProgramContainerData>
+        | Omit<Program, keyof ProgramData>) => {
+        try {
+          return fn({ node, selector });
+        } catch (e) {
+          ensureError(e);
+
+          const err = DataExtractionError.from(e, node, selector);
+          if (!err.__fromCache) captureException(err);
+
+          if (swallowDataExtractionErrors) return null;
+
+          throw err;
+        }
+      };
+    }
   }
 
-  // The #safeCreateX methods below encapsulate the handling of the different
-  //   kinds of errors that can occur when we try to create a ProgramContainer
-  //   or Program from a likely element found on the webpage
-  // Some errors - like ErrorMessage.unrecognizedProgramContainerNode - are
-  //   "showstoppers" - they need to be identified and fixed at build-time.
-  // This method throws these errors so the extension can be brought to an
-  //   immediate halt.
-  // Other errors - like those caused by a failure to extract PC title data
-  //   due to a website markup change - are not showstoppers. If extraction
-  //   for a particular PC/Program fails, it shouldn't affect the processing
-  //   of some other PC/Program.
-  // These methods ensure non-showstopper errors are caught and logged/captured,
-  //   but does not rethrow them up the call stack
-
-  #safeCreateProgramContainer = ({
+  #createProgramContainer = ({
     node,
     selector,
-  }: Omit<
-    ProgramContainer,
-    keyof ProgramContainerData
-  >): ProgramContainer | null => {
-    try {
-      return {
-        selector,
-        node,
-        title: this.getTitleFromProgramContainerNode(node),
-      };
-    } catch (e) {
-      ensureError(e);
+  }: Omit<ProgramContainer, keyof ProgramContainerData>): ProgramContainer => ({
+    selector,
+    node,
+    title: this.getTitleFromProgramContainerNode(node),
+  });
 
-      if (e.message === ErrorMessage.unrecognizedProgramContainerNode) {
-        throw e;
-      }
-
-      const err = DataExtractionError.from(e, node, selector);
-      if (!err.__fromCache) captureException(err);
-      return null;
-    }
-  };
-
-  #safeCreateProgram = ({
+  #createProgram = ({
     node,
     selector,
-  }: Omit<Program, keyof ProgramData>): Program | null => {
-    try {
-      const ctor = this.constructor as typeof AbstractPage;
-      return {
-        selector,
-        node,
-        ...ctor.ProgramNode.extractProgramData(node),
-      };
-    } catch (e) {
-      ensureError(e);
-
-      if (e.message === ErrorMessage.unrecognizedProgramNode) {
-        throw e;
-      }
-
-      const err = DataExtractionError.from(e, node, selector);
-      if (!err.__fromCache) captureException(err);
-      return null;
-    }
-  };
+  }: Omit<Program, keyof ProgramData>): Program => ({
+    selector,
+    node,
+    ...this.#ctor.ProgramNode.extractProgramData(node),
+  });
 
   checkIMDBDataAlreadyAdded(program: Program): boolean {
-    const imdbNode = (
-      this.constructor as typeof AbstractPage
-    ).ProgramNode.getIMDBNode(program.node);
+    const imdbNode = this.#ctor.ProgramNode.getIMDBNode(program.node);
 
     return Boolean(
       imdbNode &&
@@ -193,15 +179,10 @@ valid containers:\n\t${programContainers
 
   addIMDBData(program: Program, data: IMDBData) {
     // remove existing node (no-op if doesn't exist)
-    (this.constructor as typeof AbstractPage).ProgramNode.removeIMDBNode(
-      program.node,
-    );
+    this.#ctor.ProgramNode.removeIMDBNode(program.node);
 
     const ratingNode = this.#createIMDBDataNode(data);
-    (this.constructor as typeof AbstractPage).ProgramNode.insertIMDBNode(
-      program.node,
-      ratingNode,
-    );
+    this.#ctor.ProgramNode.insertIMDBNode(program.node, ratingNode);
   }
 
   protected async injectStyles() {
@@ -211,7 +192,7 @@ valid containers:\n\t${programContainers
 
     const styleNode = document.createElement("style");
     styleNode.classList.add(CssClasses.styleNode);
-    styleNode.textContent = getFopnCssRules(filterSettings).join("\n");
+    styleNode.textContent = getFopnCssRules(filterSettings).join("\n") + "\n";
     document.head.appendChild(styleNode);
   }
 
@@ -269,7 +250,7 @@ valid containers:\n\t${programContainers
     const selectors = this.getProgramNodeSelectors(pContainer);
     const results = selectors.map((sel) =>
       Array.from(pContainer.node.querySelectorAll<HTMLElement>(sel)).filter(
-        (this.constructor as typeof AbstractPage).ProgramNode.isMovieOrSeries,
+        this.#ctor.ProgramNode.isMovieOrSeries,
       ),
     );
 
@@ -294,21 +275,26 @@ valid containers:\n\t${programContainers
   #createIMDBDataNode(data: IMDBData): HTMLElement {
     const node = document.createElement("a");
     node.classList.add(CssClasses.imdbDataNode);
-    node.dataset["imdbID"] = data.imdbID;
-    node.dataset["imdbRating"] = data.imdbRating;
+    node.dataset["imdbId"] = data.imdbId;
+    node.dataset["imdbRating"] = String(data.imdbRating);
     if ("expiry" in data) node.dataset["expiry"] = String(data.expiry);
-    if (data.imdbRating !== "N/F") {
-      node.setAttribute("href", getIMDBLink(data.imdbID));
-      node.setAttribute("target", "_blank");
-    }
-    if (["N/F"].includes(data.imdbRating)) {
+    if (["N/F", "N/M"].includes(String(data.imdbRating))) {
       node.style.visibility = "hidden";
       node.style.display = "none";
+    } else {
+      node.setAttribute("href", getIMDBLink(data.imdbId));
+      node.setAttribute("target", "_blank");
     }
-    node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : data.imdbRating}`;
+    const imdbRatingAsStr =
+      typeof data.imdbRating === "string"
+        ? data.imdbRating
+        : data.imdbRating.toFixed(1);
+    node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : imdbRatingAsStr}`;
     node.addEventListener("click", (e) => e.stopPropagation());
     return node;
   }
+
+  /* methods dealing with outdated-selector-detection */
 
   // this async method is called many times in the hot path of findPrograms
   //   without being awaited; concurrent executions will interfere with
@@ -359,7 +345,7 @@ valid containers:\n\t${programContainers
     1,
   );
 
-  // selectors should only ever be abandoned for a particular pathname,
+  // selectors should only ever be abandoned for a particular location.pathname,
   //   not site-wide, since a selector that stops working for one page
   //   may still be active on another page of the same site
   protected getAbandonedSelectors(): Record<UrlPath, Selector[]> {
@@ -378,6 +364,8 @@ valid containers:\n\t${programContainers
   protected getGeneralizedUrlPath(href: string): string {
     return getGeneralizedUrlPath(href);
   }
+
+  /* methods dealing with the "select-program-mode" debugging tool */
 
   toggleSelectProgramMode() {
     if (this.inSelectProgramMode) {
@@ -473,16 +461,15 @@ valid containers:\n\t${programContainers
 
     const programNode = cur as HTMLElement;
 
-    const program = this.#safeCreateProgram({
+    const program = this.#createProgram({
       node: programNode,
       selector: matchingSelector!,
     });
-    if (!program) return;
     console.log(program);
 
     const response = await browser.runtime.sendMessage<
       Message,
-      SWMessageResponse<Required<IMDBData> & { key: string }>
+      SWMessageResponse<CachedIMDBData>
     >({
       type: MessageType.fetchCachedIMDBRating,
       data: { program },

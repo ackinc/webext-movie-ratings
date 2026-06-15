@@ -57,3 +57,7 @@
   cursor: pointer;
   user-select: none;
 }
+
+.inline-icon {
+  height: 14px;
+}

@@ -1,12 +1,10 @@
-export type PopupPage =
-  | "onboarding"
-  | "filters"
-  | "settings"
-  | "pitchErrorReporting"
-  | "pitchMissingRatingReporting";
-
-export type { PermString, Sitename } from "../common/types";
-export { supportedSites, permStringToSitename } from "../common/constants";
+export {
+  permStringToSitename,
+  supportedSites,
+  type PermString,
+  type PopupPage,
+  type Sitename,
+} from "@common";
 
 export type SiteStatus = "enabled" | "toEnable" | "disabled" | "toDisable";
 export function getSiteStatusOnUserToggle(curStatus: SiteStatus): SiteStatus {

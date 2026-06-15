@@ -1,0 +1,43 @@
+.sift-imdb-data {
+  color: #999999;
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: normal;
+  text-decoration: none;
+}
+
+div.banner-card .sift-imdb-data {
+  position: relative;
+  top: -24px;
+}
+
+div.see-more div.portrait-container .sift-imdb-data {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  background-color: #2a2a2aca;
+  border-radius: 4px;
+  color: white;
+  padding: 4px 8px;
+}
+
+div.browse-header-section div.portrait-container .sift-imdb-data {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  background-color: #2a2a2aca;
+  border-radius: 4px;
+  color: white;
+  padding: 4px 8px;
+}
+
+div.landscape-container .sift-imdb-data {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  background-color: #2a2a2aca;
+  border-radius: 4px;
+  color: white;
+  padding: 4px 8px;
+}

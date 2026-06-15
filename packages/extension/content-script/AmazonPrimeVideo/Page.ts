@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 import ProgramNode from "./ProgramNode";
+import pageStyles from "./styles.page.css";
 
 export default class AmazonPrimeVideoPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -13,44 +14,8 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
   protected override async injectStyles() {
     await super.injectStyles();
 
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-.${CssClasses.imdbDataNode} {
-  color: #999999 !important;
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 15px;
-}
-
-article[data-card-title] .${CssClasses.imdbDataNode} {
-  margin: 4px 0 0 4px;
-}
-
-div[data-testid="standard-mini-details"] a.${CssClasses.imdbDataNode} {
-  margin-left: 0;
-}
-
-article[data-testid="super-carousel-card"] .${CssClasses.imdbDataNode} {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 3;
-    margin: 0;
-    border-radius: 0;
-    border-bottom-right-radius: 3px;
-    padding: 3px 7px;
-    background-color: white;
-    color: black !important;
-    opacity: 1;
-    font-size: 13px;
-    font-weight: bold;
-    line-height: var(--fable-typography-label-90-line-height);
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

@@ -1,7 +1,12 @@
 import "dotenv/config";
 import * as path from "node:path";
 import Database, { type Database as TDatabase } from "better-sqlite3";
-import { type Batch, processFile, isMovieOrSeries } from "./common.ts";
+import {
+  type Batch,
+  checkColnames,
+  processFile,
+  isMovieOrSeries,
+} from "./common.ts";
 
 const { DB_PATH, IMDB_DATA_DIR } = process.env;
 const BATCH_SIZE = 10000;
@@ -27,8 +32,17 @@ const insertIntoImdbTitleAliasesTxn = db.transaction((records) => {
 });
 
 const imdbIds = new Set<string>();
+const basicsFilepath = path.join(IMDB_DATA_DIR!, "title.basics.tsv");
+checkColnames(basicsFilepath, [
+  "tconst",
+  "titleType",
+  "primaryTitle",
+  "originalTitle",
+  null,
+  "startYear",
+]);
 await processFile(
-  path.join(IMDB_DATA_DIR!, "title.basics.tsv"),
+  basicsFilepath,
   async (batch: Batch) => {
     const imdbTitles = batch.map(([, line]) =>
       getImdbTitleFromBasicsFileLine(line),
@@ -44,8 +58,11 @@ await processFile(
   isMovieOrSeries,
   { batchSize: BATCH_SIZE },
 );
+
+const akasFilepath = path.join(IMDB_DATA_DIR!, "title.akas.tsv");
+checkColnames(akasFilepath, ["titleId", null, "title", "region", "language"]);
 await processFile(
-  path.join(IMDB_DATA_DIR!, "title.akas.tsv"),
+  akasFilepath,
   async (batch: Batch) => {
     const imdbTitleAliases = batch.map(([, line]) =>
       getImdbTitleAliasFromAkasFileLine(line),

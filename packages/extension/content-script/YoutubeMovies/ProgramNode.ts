@@ -6,12 +6,25 @@ import { DataExtractionError } from "../../common/customErrors";
 
 export default class ProgramNode extends AbstractProgramNode {
   static override isMovieOrSeries(programNode: HTMLElement): boolean {
-    const hasBuyOrRentBadge = Array.from(
-      programNode.querySelectorAll(
-        "div.ytLockupMetadataViewModelMetadata yt-badge-view-model",
-      ),
-    ).some((badgeNode) => badgeNode.textContent === "Buy or rent");
-    return hasBuyOrRentBadge;
+    if (programNode.matches("ytd-grid-movie-renderer")) return true;
+
+    if (programNode.matches("yt-lockup-view-model")) {
+      const hasBuyOrRentBadge = Array.from(
+        programNode.querySelectorAll(
+          "div.ytLockupMetadataViewModelMetadata yt-badge-view-model",
+        ),
+      ).some((badgeNode) => badgeNode.textContent === "Buy or rent");
+      return hasBuyOrRentBadge;
+    }
+
+    if (programNode.matches("div#above-the-fold.ytd-watch-metadata")) {
+      const channelName = programNode
+        .querySelector("ytd-channel-name yt-formatted-string.ytd-channel-name")!
+        .textContent.trim();
+      return channelName === "YouTube Movies";
+    }
+
+    throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 
   static override extractProgramData(programNode: HTMLElement): ProgramData {
@@ -47,6 +60,28 @@ export default class ProgramNode extends AbstractProgramNode {
       return { title, ...(year ? { year } : {}) };
     }
 
+    if (programNode.matches("div#above-the-fold.ytd-watch-metadata")) {
+      const titleNode = programNode.querySelector("div#title h1")!;
+      const title = titleNode.textContent;
+
+      const yearNode = Array.from(
+        programNode.querySelectorAll(
+          "ytd-metadata-row-container-renderer ytd-metadata-row-renderer",
+        ),
+      )
+        .find(
+          (node) =>
+            node.querySelector("#title")!.textContent === "Release date",
+        )
+        ?.querySelector("#content")?.firstElementChild;
+      const year =
+        yearNode && /^\d{4}$/.test(yearNode.textContent)
+          ? +yearNode.textContent
+          : NaN;
+
+      return { title, ...(Number.isInteger(year) ? { year } : {}) };
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 
@@ -67,6 +102,12 @@ export default class ProgramNode extends AbstractProgramNode {
         "yt-content-metadata-view-model > div:nth-child(2)",
       )!;
       badgesContainer.appendChild(imdbNode);
+      return;
+    }
+
+    if (programNode.matches("div#above-the-fold.ytd-watch-metadata")) {
+      const titleNode = programNode.querySelector("div#title h1")!;
+      titleNode.nextElementSibling!.appendChild(imdbNode);
       return;
     }
 

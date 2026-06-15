@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 import ProgramNode from "./ProgramNode";
+import pageStyles from "./styles.page.css";
 
 export default class CrunchyrollPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -13,84 +14,8 @@ export default class CrunchyrollPage extends AbstractPage {
   protected override async injectStyles() {
     await super.injectStyles();
 
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  color: #999999 !important;
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 0.875rem;
-}
-
-section[data-testid="super-carousel"] li {
-  position: relative;
-  margin-bottom: 1.25em;
-}
-
-section[data-testid="super-carousel"] li a.${CssClasses.imdbDataNode} {
-  position: absolute;
-  bottom: -2em;
-}
-
-div[data-t="series-card"] h2 {
-  display: flex;
-  gap: 1rem;
-}
-
-div[data-t^="watch-list-card"] h3 {
-  height: auto !important
-}
-
-div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-t="series-title"]) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-div.erc-episodes-results div[data-t="search-episode-card"] div:has(> small[data-t="series-title"]) .${CssClasses.imdbDataNode} {
-  flex-shrink: 0;
-  font-size: 0.625rem;
-  font-weight: bold;
-  line-height: 16px;
-}
-
-div.erc-episodes-results div[class^="search-episode-card-hover"][data-t="hover-component"] a[data-t="series-title"] {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-div.erc-episodes-results div[class^="search-episode-card-hover"][data-t="hover-component"] a[data-t="series-title"] .${CssClasses.imdbDataNode} {
-  flex-shrink: 0;
-  font-size: 0.625rem;
-  font-weight: bold;
-  line-height: 16px;
-}
-
-div[data-t="release-episode-card-stack-hover"] .${CssClasses.imdbDataNode} {
-  padding-top: 4px;
-  padding-left: 12px;
-}
-
-/* the 'div.' prefix to the selector below might look unnecessary, but it is
-in fact what will prevent this clause from disappearing when the filtered-out
-nodes' styles are overwritten due to a filter settings change */
-div.${CssClasses.filteredOutProgramNode} {
-  transition: opacity 0.5s ease-out;
-}
-
-.${CssClasses.filteredOutProgramNode}[data-t="hover-component"] {
-  opacity: 0;
-}
-
-.${CssClasses.filteredOutProgramNode}[data-t="hover-component"]:hover {
-  opacity: 1;
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

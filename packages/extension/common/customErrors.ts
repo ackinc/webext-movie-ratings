@@ -1,9 +1,9 @@
 import type { Selector } from "./types";
 
 export class DataExtractionError extends Error {
-  // Because the extension's main data-extraction loop runs every x seconds,
-  //   and the same data-extraction errors will occur on every loop invocation,
-  //   we risk flooding Sentry with redundant error captures
+  // Because the extension's main data-extraction function runs on every
+  //   page mutation, and the same data-extraction errors will occur on every
+  //   invocation, we risk flooding Sentry with redundant error captures
   // The DataExtractionError caching logic below mitigates this
   static Cache: Map<string, DataExtractionError> = new Map();
 
@@ -50,5 +50,14 @@ export class DataExtractionError extends Error {
 export class SWError extends Error {
   constructor(message: string) {
     super(message);
+  }
+}
+
+export class OmdbApiError extends Error {
+  url: string;
+
+  constructor(message: string, url: string, options?: { cause: unknown }) {
+    super(message, options);
+    this.url = url;
   }
 }

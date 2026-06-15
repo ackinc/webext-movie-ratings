@@ -1,10 +1,9 @@
 import { useState } from "preact/hooks";
-import Button from "@components/Buttons/Button";
-import IconButton from "@components/Buttons/IconButton";
-import { MessageType } from "../../common";
+import Button from "@common/components/Buttons/Button";
+import IconButton from "@common/components/Buttons/IconButton";
 import type AbstractPage from "../AbstractPage";
-import siftLogoIcon from "@/images/logo48.png";
-import closeIcon from "@/images/close.svg";
+import CloseIcon from "@common/components/Icons/Close";
+import siftLogoIcon from "@images/logo48.png";
 
 interface PageControlPanelProps {
   className?: string;
@@ -54,25 +53,6 @@ export default function PageControlPanel({
         {inSelectProgramMode ? "Exit" : "Turn on"} select program mode
       </Button>
 
-      <Button
-        variant="primary"
-        onClick={() =>
-          window.postMessage({ type: MessageType.toggleActiveTabLoopState })
-        }
-        style={{
-          opacity: expanded ? "1" : "0",
-          pointerEvents: expanded ? "all" : "none",
-          minHeight: "unset",
-          margin: "0",
-          padding: "8px 8px",
-          backgroundColor: "#f5c618",
-          backgroundImage: "unset",
-          transition: "all 0.2s ease-out",
-        }}
-      >
-        Toggle loop state
-      </Button>
-
       <IconButton
         variant="primary"
         onMouseEnter={() => {
@@ -91,10 +71,14 @@ export default function PageControlPanel({
           transition: "all 0.2s ease-out",
         }}
       >
-        <img
-          src={expanded ? closeIcon : siftLogoIcon}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
+        {expanded ? (
+          <CloseIcon />
+        ) : (
+          <img
+            src={siftLogoIcon}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        )}
       </IconButton>
     </div>
   );

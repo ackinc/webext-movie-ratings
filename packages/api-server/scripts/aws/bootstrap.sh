@@ -9,6 +9,7 @@ apt-get install -y curl sqlite3 tree
 # vars
 MEILISEARCH_MASTER_KEY=8lNc7cEcH5QK7BDLkoKxgFx0kbGB8Ij0yPGLlalAl934KQpJ
 GIT_REPO_URL="https://github.com/ackinc/webext-movie-ratings"
+WEBSITE_URL="https://getsift.today"
 
 runuser -u ubuntu bash << EOF
   cd ~
@@ -84,6 +85,7 @@ IMDB_DATA_DIR=/home/ubuntu/imdbData
 PORT=3000
 MEILISEARCH_URL="http://localhost:7700"
 MEILISEARCH_MASTER_KEY=$MEILISEARCH_MASTER_KEY
+WEBSITE_URL=$WEBSITE_URL
 EOF1
 
   # starts the server and ensures pm2 will resurrect it on system reboot

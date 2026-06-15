@@ -44,7 +44,7 @@ assert_env DB_PATH
 DB_BACKUP_PATH="$(dirname $DB_PATH)"/db-prod-bak.sqlite
 DB_BACKUP_DATE=$( stat -c %y $DB_BACKUP_PATH | cut -d" " -f1 )
 RUN_CHECKS=$([[ " $@ " == *" --skip-checks "* ]] && echo 0 || echo 1)
-TABLES_TO_RESTORE=("titles")
+TABLES_TO_RESTORE=("titles" "messages")
 TODAY=$( date --iso-8601 )
 
 if [[ $DB_BACKUP_DATE < $TODAY ]]; then
@@ -57,3 +57,5 @@ fi;
 for table_name in "${TABLES_TO_RESTORE[@]}"; do
     restore_table "$DB_BACKUP_PATH" "$DB_PATH" "$table_name"
 done
+
+notify-send -t 5000 -i dialog-information "Sift" "pullProdDataFromBackup.sh completed"

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Sift: IMDB ratings on various OTT platforms. Free & Open Source.",
-  "description": "Sift adds IMDB ratings next to programs on various OTT platforms to help you choose what to watch faster.",
-  "version": "9.0.6",
+  "name": "Sift: IMDB ratings on various streaming websites. Free & Open Source.",
+  "description": "Sift adds IMDB ratings next to program tiles on various streaming websites.",
+  "version": "9.5.3",
   "icons": {
     "16": "images/logo16.png",
     "32": "images/logo32.png",
@@ -27,11 +27,15 @@
     "https://www.crunchyroll.com/*",
     "https://www.disneyplus.com/*",
     "https://www.hbomax.com/*",
+    "https://play.hbomax.com/*",
     "https://www.hotstar.com/*",
     "https://www.hulu.com/*",
+    "https://www.mxplayer.in/*",
     "https://www.netflix.com/*",
     "https://www.paramountplus.com/*",
+    "https://www.peacocktv.com/*",
     "https://www.sonyliv.com/*",
-    "https://www.youtube.com/*"
+    "https://www.youtube.com/*",
+    "https://www.zee5.com/*"
   ]
 }

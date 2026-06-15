@@ -1,0 +1,92 @@
+.sift-imdb-data {
+  color: #999999;
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 4px 0 0 4px;
+}
+
+div.billboard div.info.meta-layer .sift-imdb-data {
+  margin: 0;
+}
+
+div.title-card-container .sift-imdb-data {
+  margin: 0;
+  padding-top: 4px;
+}
+
+div.title-card-container:has(> div.progress) .sift-imdb-data {
+  padding-top: 16px;
+}
+
+div.title-card-container:has(svg.top-10-rank) .sift-imdb-data {
+  margin-left: 50%;
+}
+
+div.titleGroup--wrapper div.titleCard--container .sift-imdb-data {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin: 0;
+  padding: 0 4px;
+  background-color: #0000007f;
+  border-radius: 0;
+  color: white;
+}
+
+div.moreLikeThis--container div.titleCard--container .sift-imdb-data {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin: 0;
+  padding: 0 4px;
+  background-color: #0000007f;
+  border-radius: 0;
+  color: white;
+}
+
+.titleCard--metadataWrapper .sift-imdb-data {
+  margin: 0 0 0.5em 1em;
+}
+
+section[data-uia="search-gallery"] .sift-imdb-data {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin: 0;
+  padding: 0 4px;
+  background-color: #0000007f;
+  border-radius: 0;
+  color: white;
+}
+
+section[data-uia="billboard"] .sift-imdb-data {
+  margin-left: 0;
+  color: white;
+}
+
+div[data-uia="carousel-scroller"]
+  div:has(> a[data-uia="progress-card"])
+  .sift-imdb-data {
+  margin-top: 12px;
+}
+
+div.previewModal--container .sift-imdb-data {
+  margin: 0;
+  font-size: unset;
+  font-weight: unset;
+  color: unset;
+}
+
+div[data-uia="carousel-scroller"]
+  div:has(> a[data-uia="ranked-card"])
+  .sift-imdb-data {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  margin: 0;
+  padding: 0 4px;
+  background-color: #0000007f;
+  border-radius: 0;
+  color: white;
+}

@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
+import pageStyles from "./styles.page.css";
 
 export default class NetflixPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -13,88 +14,8 @@ export default class NetflixPage extends AbstractPage {
   protected override async injectStyles() {
     await super.injectStyles();
 
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  color: #999999;
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 14px;
-  font-weight: bold;
-  margin: 4px 0 0 4px;
-}
-
-div.billboard div.info.meta-layer .${CssClasses.imdbDataNode} {
-  margin: 0;
-}
-
-div.title-card-container .${CssClasses.imdbDataNode} {
-  margin: 0;
-  padding-top: 4px;
-}
-
-div.title-card-container:has(> div.progress) .${CssClasses.imdbDataNode} {
-  padding-top: 16px;
-}
-
-div.title-card-container:has(svg.top-10-rank) .${CssClasses.imdbDataNode} {
-  margin-left: 50%;
-}
-
-div.titleGroup--wrapper div.titleCard--container .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  margin: 0;
-  padding: 0 4px;
-  background-color: #0000007f;
-  border-radius: 0;
-  color: white;
-}
-
-div.moreLikeThis--container div.titleCard--container .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  margin: 0;
-  padding: 0 4px;
-  background-color: #0000007f;
-  border-radius: 0;
-  color: white;
-}
-
-.titleCard--metadataWrapper a.${CssClasses.imdbDataNode} {
-  margin: 0 0 0.5em 1em;
-}
-
-section[data-uia="search-gallery"] .${CssClasses.imdbDataNode} {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  margin: 0;
-  padding: 0 4px;
-  background-color: #0000007f;
-  border-radius: 0;
-  color: white;
-}
-
-section[data-uia="billboard"] .${CssClasses.imdbDataNode} {
-  margin-left: 0;
-  color: white;
-}
-
-div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"]) .${CssClasses.imdbDataNode} {
-  margin-top: 12px;
-}
-
-div.previewModal--container .${CssClasses.imdbDataNode} {
-  margin: 4px 0;
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
@@ -108,7 +29,7 @@ div.previewModal--container .${CssClasses.imdbDataNode} {
 
       // 2026-05-14
       'div:has(> section[data-uia="billboard"])',
-      "section.carousel-row",
+      "section.carousel-row:not(#place-holder-carousel)",
       "div.previewModal--wrapper.mini-modal:has(> div.previewModal--container)",
       "div.previewModal--wrapper:not(.mini-modal):has(> div.previewModal--container)",
     ];
@@ -144,18 +65,23 @@ div.previewModal--container .${CssClasses.imdbDataNode} {
       if (pContainerParent.matches('div[data-uia="modal-content-wrapper"]')) {
         return pContainerNode.previousElementSibling!.textContent;
       } else if (location.href.includes("/browse/person")) {
-        return pContainerNode.parentElement!.previousElementSibling!.querySelector(
-          "div.sub-header div.personHeader span.title",
-        )!.textContent;
-      } else {
+        // netflix sometimes takes a while to add the title node to the DOM,
+        //   and not using optional-chaining below was resulting in
+        //   DataExtractionErrors
         return (
-          /* My List page */
-          pContainerParent.previousElementSibling!.querySelector("div.title")
-            ?.textContent ||
-          pContainerParent.previousElementSibling!.querySelector(
-            "div.aro-genre-details > span.genreTitle",
-          )!.textContent
+          pContainerNode.parentElement!.previousElementSibling!.querySelector(
+            "div.sub-header div.personHeader span.title",
+          )?.textContent ?? ""
         );
+      } else if (location.href.includes("/browse/my-list")) {
+        return (
+          pContainerParent.previousElementSibling!.querySelector("div.title")
+            ?.textContent ?? ""
+        );
+      } else {
+        return pContainerParent.previousElementSibling!.querySelector(
+          "div.aro-genre-details > span.genreTitle",
+        )!.textContent;
       }
     }
 
@@ -167,7 +93,9 @@ div.previewModal--container .${CssClasses.imdbDataNode} {
       return "Billboard";
     }
 
-    if (pContainerNode.matches("section.carousel-row")) {
+    if (
+      pContainerNode.matches("section.carousel-row:not(#place-holder-carousel)")
+    ) {
       return (pContainerNode.firstChild as HTMLElement).querySelector("p")!
         .textContent;
     }
@@ -226,10 +154,11 @@ div.previewModal--container .${CssClasses.imdbDataNode} {
       return ['section[data-uia="billboard"]'];
     }
 
-    if (selector === "section.carousel-row") {
+    if (selector === "section.carousel-row:not(#place-holder-carousel)") {
       return [
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="standard-card"])',
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"])',
+        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"])',
       ];
     }
 

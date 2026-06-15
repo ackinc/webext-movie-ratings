@@ -1,0 +1,80 @@
+.sift-imdb-data {
+  color: #999999 !important;
+  display: block;
+  font-size: 0.875rem;
+}
+
+section[data-testid="super-carousel"] li {
+  position: relative;
+  margin-bottom: 1.25em;
+}
+
+section[data-testid="super-carousel"] li .sift-imdb-data {
+  position: absolute;
+  bottom: -2em;
+}
+
+div[data-t="series-card"] h2 {
+  display: flex;
+  gap: 1rem;
+}
+
+div[data-t^="watch-list-card"] h3 {
+  height: auto !important;
+}
+
+div.erc-episodes-results
+  div[data-t="search-episode-card"]
+  div:has(> small[data-t="series-title"]) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+div.erc-episodes-results
+  div[data-t="search-episode-card"]
+  div:has(> small[data-t="series-title"])
+  .sift-imdb-data {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  font-weight: bold;
+  line-height: 16px;
+}
+
+div.erc-episodes-results
+  div[class^="search-episode-card-hover"][data-t="hover-component"]
+  a[data-t="series-title"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+div.erc-episodes-results
+  div[class^="search-episode-card-hover"][data-t="hover-component"]
+  a[data-t="series-title"]
+  .sift-imdb-data {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  font-weight: bold;
+  line-height: 16px;
+}
+
+div[data-t="release-episode-card-stack-hover"] .sift-imdb-data {
+  padding-top: 4px;
+  padding-left: 12px;
+}
+
+/* the 'div.' prefix to the selector below might look unnecessary, but it is
+ in fact what will prevent this clause from disappearing when the filtered-out
+ nodes' styles are overwritten due to a filter settings change */
+div.sift-filtered-out-program {
+  transition: opacity 0.5s ease-out;
+}
+
+.sift-filtered-out-program[data-t="hover-component"] {
+  opacity: 0;
+}
+
+.sift-filtered-out-program[data-t="hover-component"]:hover {
+  opacity: 1;
+}

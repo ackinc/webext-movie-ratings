@@ -1,35 +1,47 @@
 #!/usr/bin/env node
 
 import "dotenv/config";
+
+// initialize Sentry
+import "../instrument.ts";
+
 import * as path from "node:path";
+import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import * as fs from "fs-extra";
 import { Meilisearch, type Index, type IndexObject } from "meilisearch";
+import { pick } from "siftutils";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { type Batch, processFile, isMovieOrSeries } from "./common.ts";
+import {
+  type Batch,
+  type ImdbId,
+  checkColnames,
+  processFile,
+  isMovieOrSeries,
+} from "./common.ts";
 import baseLogger from "../logger.ts";
 
 const __filename = path.basename(fileURLToPath(import.meta.url));
-const { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = process.env;
+const { APP_ENV, IMDB_DATA_DIR, MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } =
+  pick(process.env, [
+    "APP_ENV",
+    "IMDB_DATA_DIR",
+    "MEILISEARCH_MASTER_KEY",
+    "MEILISEARCH_URL",
+  ]);
 
 const argv = yargs(hideBin(process.argv))
-  .option("imdbDataDir", {
-    string: true,
-    demandOption: true,
-  })
   .option("batchSize", {
     number: true,
     // https://www.meilisearch.com/docs/capabilities/indexing/how_to/import_large_datasets#choose-the-right-payload-size
-    default: 100000,
+    default: APP_ENV === "development" ? 100000 : 20000,
   })
   .parseSync();
 const { batchSize } = argv;
-const imdbDataDir = path.resolve(argv.imdbDataDir);
 
 await Promise.all(
   ["title.basics.tsv", "title.akas.tsv"].map((filename) =>
-    fs.promises.access(path.join(imdbDataDir, filename)),
+    fs.promises.access(path.join(IMDB_DATA_DIR!, filename)),
   ),
 );
 
@@ -42,15 +54,30 @@ const index = await prepareIndex(client);
 const logger = baseLogger.child({ script: __filename });
 const startTime = new Date();
 
-const canonDocumentsByImdbId = new Map<string, Document>();
+const canonDocumentsByImdbId = new Map<
+  ImdbId,
+  // only storing the data we need to keep memory usage low
+  Pick<Document, "type" | "year">
+>();
+const basicsFilepath = path.join(IMDB_DATA_DIR!, "title.basics.tsv");
+checkColnames(basicsFilepath, [
+  "tconst",
+  "titleType",
+  "primaryTitle",
+  "originalTitle",
+  null,
+  "startYear",
+]);
+await processFile(basicsFilepath, processBatchFromBasicsFile, isMovieOrSeries, {
+  batchSize: batchSize,
+  logger,
+  logProgressEveryNLines: batchSize,
+});
+
+const akasFilepath = path.join(IMDB_DATA_DIR!, "title.akas.tsv");
+checkColnames(akasFilepath, ["titleId", null, "title"]);
 await processFile(
-  path.join(imdbDataDir, "title.basics.tsv"),
-  processBatchFromBasicsFile,
-  isMovieOrSeries,
-  { batchSize: batchSize, logger, logProgressEveryNLines: batchSize },
-);
-await processFile(
-  path.join(imdbDataDir, "title.akas.tsv"),
+  akasFilepath,
   processBatchFromAkasFile,
   (line: string) => canonDocumentsByImdbId.has(line.split("\t")[0]!),
   { batchSize: batchSize, logger, logProgressEveryNLines: batchSize },
@@ -63,7 +90,7 @@ logger.info(`Completed in (${durationMs}ms)`);
 
 interface Document {
   id: string;
-  imdbId: string;
+  imdbId: ImdbId;
   title: string;
   type: "movie" | "series";
   year: number | null;
@@ -117,7 +144,7 @@ function makeDocument(partialDoc: Omit<Document, "id">): Document {
   const { title, type, year } = partialDoc;
   return {
     ...partialDoc,
-    // pkeys in meilisearch indexes can't have non-alnum chars allowed in b64
+    // meilisearch index pkeys can't have the non-alnum chars allowed in b64
     id: Buffer.from([title, type, year].join("::"))
       .toString("base64")
       .replace(/[+/=]/g, "_"),
@@ -131,7 +158,8 @@ async function processBatchFromBasicsFile(batch: Batch) {
   await index.addDocuments(documents);
   documents.forEach((doc, idx) => {
     // first doc returned by getDocumentsFromBasicsFileLine is canon
-    if (idx % 2 === 0) canonDocumentsByImdbId.set(doc.imdbId, doc);
+    if (idx % 2 === 0)
+      canonDocumentsByImdbId.set(doc.imdbId, pick(doc, ["type", "year"]));
   });
 }
 

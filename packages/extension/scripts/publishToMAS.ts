@@ -69,12 +69,14 @@ async function uploadPackage(): Promise<string> {
     body: formData,
   });
   const { ok, status } = response;
-  const body = await response.json();
   if (!ok) {
+    const body = await response.text();
     throw new Error(
-      `MAS: request to upload new package failed with status ${status}. Details: ${JSON.stringify(body)}`,
+      `MAS: package upload failed. Status ${status}. Details: ${body}`,
     );
   }
+
+  const body = await response.json();
   const { uuid, processed, valid } = body;
   let { validation } = body;
 
@@ -111,12 +113,14 @@ async function fetchUploadStatus(uuid: string) {
     },
   });
   const { ok, status } = response;
-  const body = await response.json();
   if (!ok) {
+    const body = await response.text();
     throw new Error(
-      `MAS: request to fetch upload status of new package failed with status ${status}. Details: ${JSON.stringify(body)}`,
+      `MAS: fetch upload status failed. Status ${status}. Details: ${body}`,
     );
   }
+
+  const body = await response.json();
   const { processed, valid, validation } = body;
 
   return {
@@ -154,12 +158,13 @@ async function uploadSource() {
     },
   );
   const { ok, status } = response;
-  const body = await response.json();
   if (!ok) {
+    const body = await response.text();
     throw new Error(
-      `MAS: request to upload source package failed with status ${status}. Details: ${JSON.stringify(body)}`,
+      `MAS: src upload failed. Status ${status}. Details: ${body}`,
     );
   }
+  const body = await response.json();
 
   return body.uuid;
 }

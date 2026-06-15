@@ -1,12 +1,5 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
-import { addMilliseconds } from "date-fns";
-import {
-  ONE_WEEK_IN_MS,
-  type CachedIMDBData,
-  type IMDBData,
-  type ProgramData,
-  pick,
-} from ".";
+import { type CachedIMDBData } from "@common";
 
 export interface RatingsCacheSchema extends DBSchema {
   ratingsStore: {
@@ -14,15 +7,8 @@ export interface RatingsCacheSchema extends DBSchema {
     value: CachedIMDBData;
   };
 }
-interface CacheEntry {
-  program: ProgramData;
-  imdbData: IMDBData;
-  expiry?: Date;
-}
 
 const storeName = "ratingsStore";
-const nfRatingCacheTime = ONE_WEEK_IN_MS;
-const imdbRatingCacheTime = ONE_WEEK_IN_MS * 2;
 
 export default class RatingsCache {
   db: IDBPDatabase<RatingsCacheSchema>;
@@ -44,48 +30,18 @@ export default class RatingsCache {
     this.db = db;
   }
 
-  async get(
-    program: ProgramData,
-  ): Promise<Omit<Required<CacheEntry>, "program"> | undefined> {
-    const cached = await this.db.get(storeName, this.getKey(program));
-    return cached
-      ? {
-          imdbData: pick(cached, ["imdbID", "imdbRating"]),
-          expiry: new Date(cached.expiry),
-        }
-      : undefined;
+  async get(key: string): Promise<CachedIMDBData | undefined> {
+    return await this.db.get(storeName, key);
   }
 
-  async put(programsAndRatings: CacheEntry[]): Promise<Required<CacheEntry>[]> {
+  async put(entries: CachedIMDBData[]): Promise<CachedIMDBData[]> {
     const txn = this.db.transaction([storeName], "readwrite");
     const ratingsStore = txn.objectStore(storeName);
-
-    const entriesToPut = programsAndRatings.map((data) => ({
-      ...data,
-      expiry:
-        data.expiry ??
-        addMilliseconds(
-          new Date(),
-          data.imdbData.imdbRating === "N/F"
-            ? nfRatingCacheTime
-            : imdbRatingCacheTime,
-        ),
-    }));
-
-    await Promise.all(
-      entriesToPut.map((data) =>
-        ratingsStore.put({
-          ...data.imdbData,
-          key: this.getKey(data.program),
-          expiry: +data.expiry,
-        }),
-      ),
-    );
-
-    return entriesToPut;
+    await Promise.all(entries.map((data) => ratingsStore.put(data)));
+    return entries;
   }
 
-  async putOne(entry: CacheEntry): Promise<Required<CacheEntry>> {
+  async putOne(entry: CachedIMDBData): Promise<CachedIMDBData> {
     return (await this.put([entry]))[0]!;
   }
 
@@ -99,19 +55,5 @@ export default class RatingsCache {
       ),
     );
     return this;
-  }
-
-  getKey(program: ProgramData): string {
-    const { title, type, year } = program;
-    // using btoa directly on a title with non-latin1 chars (without
-    //   encoding to utf-8 first) will cause an error to be thrown
-    const utf8EncodedTitle = String.fromCharCode(
-      ...new TextEncoder().encode(title),
-    );
-    return btoa(
-      [utf8EncodedTitle.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
-        .filter(Boolean)
-        .join("|"),
-    );
   }
 }

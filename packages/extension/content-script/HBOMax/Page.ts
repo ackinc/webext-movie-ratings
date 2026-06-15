@@ -2,6 +2,8 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
+import { climbDOMUntil } from "../utils";
+import pageStyles from "./styles.page.css";
 
 export default class HBOMaxPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -13,43 +15,8 @@ export default class HBOMaxPage extends AbstractPage {
   protected override async injectStyles() {
     await super.injectStyles();
 
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  color: #999999;
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 14px;
-  font-weight: bold;
-}
-
-div.image-grid-item a.${CssClasses.imdbDataNode} {
-  cursor: pointer;
-  pointer-events: unset;
-}
-
-li.react-multi-carousel-item a:has(div.item-container) h6 {
-  margin-top: 0;
-  margin-bottom: 0
-}
-
-li.react-multi-carousel-item a:has(div.item-container) a.${CssClasses.imdbDataNode} {
-  margin-left: 2px;
-}
-
-a.ymal-content-item h6 {
-  margin-top: 0;
-  margin-bottom: 0
-}
-
-a.ymal-content-item a.${CssClasses.imdbDataNode} {
-  margin-left: 2px;
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
@@ -72,6 +39,22 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
 
       // single series page
       "div.max-section-ymal",
+
+      // search results page
+      'section[data-sonic-id="search-page-rail-results"]',
+
+      // (post login) home page, movies page
+      'section[data-appearance="ImmersiveHero"]',
+      'section[data-sonic-id*="page-rail"]',
+
+      // (post login) single series page
+      'div[data-testid="tileList"]',
+
+      // (post login) movies page, series page, hbo page, ...
+      'section[data-sonic-id*="page-featured-tab-rail"]',
+      'section[data-sonic-id*="featured-rail"]',
+      'section[data-sonic-id*="page-featured-tab"]',
+      'section[data-testid*="-page-"][data-testid$="_rail"]',
     ];
   }
 
@@ -114,6 +97,64 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
       return "You may also like:";
     }
 
+    if (
+      pContainerNode.matches(
+        'section[data-sonic-id="search-page-rail-results"]',
+      )
+    ) {
+      return "Search results";
+    }
+
+    if (pContainerNode.matches('section[data-appearance="ImmersiveHero"]')) {
+      return "Billboard";
+    }
+
+    if (pContainerNode.matches('section[data-sonic-id*="page-rail"]')) {
+      if (
+        pContainerNode.matches(
+          'section[data-sonic-id^="my-stuff-page-rail-my-list"]',
+        )
+      ) {
+        return (
+          climbDOMUntil(pContainerNode, (node) =>
+            node.matches('div[aria-label="My List"]'),
+          )?.previousElementSibling?.querySelector(
+            'button[data-selected="true"]',
+          )?.textContent ?? ""
+        );
+      } else {
+        return (
+          pContainerNode.querySelector("h2")?.getAttribute("aria-label") ?? ""
+        );
+      }
+    }
+
+    if (pContainerNode.matches('div[data-testid="tileList"]')) {
+      return (
+        pContainerNode.parentElement!.querySelector(
+          'h2 span[data-testid$="gridTitle"]',
+        )?.textContent ?? ""
+      );
+    }
+
+    if (
+      [
+        'section[data-sonic-id*="page-featured-tab-rail"]',
+        'section[data-sonic-id*="featured-rail"]',
+        'section[data-sonic-id*="page-featured-tab"]',
+        'section[data-testid*="-page-"][data-testid$="_rail"]',
+      ].some((sel) => pContainerNode.matches(sel))
+    ) {
+      if (pContainerNode.firstElementChild?.matches("picture")) {
+        // "turner classic movies"
+        return pContainerNode
+          .querySelector('div#tileList div[role="heading"][aria-label]')!
+          .getAttribute("aria-label")!;
+      } else {
+        return pContainerNode.querySelector("h2")!.getAttribute("aria-label")!;
+      }
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -123,7 +164,15 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
     if (!Boolean(pContainer.title)) return false;
 
     if (location.pathname.startsWith("/sports")) {
-      if (["Upcoming Games"].includes(pContainer.title)) return false;
+      if (
+        [
+          "Browse by Genre",
+          "Channels",
+          "Discover Our Collections",
+          "Upcoming Games",
+        ].includes(pContainer.title)
+      )
+        return false;
     }
 
     return true;
@@ -161,6 +210,33 @@ a.ymal-content-item a.${CssClasses.imdbDataNode} {
 
     if (selector === "div.max-section-ymal") {
       return ["a.ymal-content-item"];
+    }
+
+    if (selector === 'section[data-sonic-id="search-page-rail-results"]') {
+      return ['a[data-sonic-type="show"]'];
+    }
+
+    if (selector === 'section[data-appearance="ImmersiveHero"]') {
+      return ['div[data-id="hero-info-block-wrapper"]'];
+    }
+
+    if (selector === 'section[data-sonic-id*="page-rail"]') {
+      return ['a[data-sonic-type="show"]', 'a[data-sonic-type="video"]'];
+    }
+
+    if (selector === 'div[data-testid="tileList"]') {
+      return ['a[data-sonic-type="show"]'];
+    }
+
+    if (
+      [
+        'section[data-sonic-id*="page-featured-tab-rail"]',
+        'section[data-sonic-id*="featured-rail"]',
+        'section[data-sonic-id*="page-featured-tab"]',
+        'section[data-testid*="-page-"][data-testid$="_rail"]',
+      ].includes(selector)
+    ) {
+      return ['a[data-sonic-type="show"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

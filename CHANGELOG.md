@@ -1,5 +1,30 @@
 # Changelog
 
+## v9.5.1
+
+- Fixed a bug with Sift's automatic program-matching logic caused by the switch from the "process the page in a loop" mechanism to the "process the page when a mutation is detected" mechanism
+
+## v9.3.0
+
+- Updated extension name, logo, description
+
+## v9.2.5
+
+- Added a proper feedback form
+
+## v9.2.4
+
+- Extension now takes user to uninstall-reason page on uninstall
+
+## v9.2.0
+
+- Added support for Hulu
+
+## v9.1.0
+
+- Added support for HBOMax, PeacockTV, Zee5, and MXPlayer
+- Popup can now display in-apps notifications; on extension update, the service-worker will attempt to open the popup if it detects one is available
+
 ## v9.0.5
 
 - Ratings now show up on streaming websites' "preview" tiles, which show up when hovering over program tiles

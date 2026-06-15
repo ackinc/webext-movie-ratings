@@ -1,0 +1,24 @@
+.sift-imdb-data {
+  margin-left: 4px;
+  padding: 0 4px;
+
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
+  color: #606060;
+  text-decoration: none;
+
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.8rem;
+}
+
+ytd-watch-next-secondary-results-renderer > div#items .sift-imdb-data {
+  background-color: transparent;
+  outline: 1px solid rgba(0, 0, 0, 0.1);
+  outline-offset: -1px;
+}
+
+div#above-the-fold.ytd-watch-metadata.sift-filtered-out-program {
+  opacity: 1;
+}
