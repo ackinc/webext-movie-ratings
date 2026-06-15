@@ -36,6 +36,7 @@ a.ch-expanded-container .${CssClasses.imdbDataNode} {
 }
 
 div.grid .${CssClasses.imdbDataNode} {
+  margin-top: -8px;
   margin-bottom: 12px;
 }
 
@@ -80,9 +81,17 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
     if (
       pContainerNode.matches('div.grid:not(div[data-id="search_results_grid"])')
     ) {
-      return pContainerNode
-        .parentElement!.previousElementSibling!.querySelector("h2")!
-        .textContent.trim();
+      if (pContainerNode.dataset["title"])
+        return pContainerNode.dataset["title"];
+
+      if (pContainerNode.previousElementSibling?.matches("h1"))
+        return pContainerNode.previousElementSibling.textContent.trim();
+
+      return (
+        pContainerNode
+          .parentElement!.previousElementSibling?.querySelector("h2")
+          ?.textContent?.trim() ?? "Grid"
+      );
     }
 
     if (pContainerNode.matches("a.ch-expanded-container")) {
@@ -119,7 +128,11 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
     }
 
     if (selector === 'div.grid:not(div[data-id="search_results_grid"])') {
-      return ["a.link"];
+      return [
+        "a.link",
+        'article[role="listitem"]',
+        "article.movie-browse-item",
+      ];
     }
 
     if (selector === "a.ch-expanded-container") {

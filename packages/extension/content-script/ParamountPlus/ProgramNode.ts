@@ -17,6 +17,12 @@ export default class ProgramNode extends AbstractProgramNode {
       title = titleNode.getAttribute("alt")! ?? "";
     } else if (programNode.matches('a[role="listitem"]')) {
       title = programNode.getAttribute("title")!;
+    } else if (programNode.matches('article[role="listitem"]')) {
+      const titleNode = programNode.querySelector("img")!;
+      title = titleNode.getAttribute("alt")!;
+    } else if (programNode.matches("article.movie-browse-item")) {
+      const titleNode = programNode.querySelector("img")!;
+      title = titleNode.getAttribute("alt")!;
     } else if (programNode.matches("div.ch-bottom-components")) {
       const titleNode = programNode
         .closest("a.ch-expanded-container")!
