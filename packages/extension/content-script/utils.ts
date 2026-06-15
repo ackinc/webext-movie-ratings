@@ -94,19 +94,6 @@ export async function resetSelectorStatusForCurrentSite(): Promise<void> {
   await setSelectorStatusForCurrentSite({});
 }
 
-export function climbDOMUntil(
-  startElem: HTMLElement,
-  predFn: (node: HTMLElement) => boolean,
-): HTMLElement | null {
-  let cur: HTMLElement | null = startElem;
-  do {
-    if (predFn(cur)) break;
-    cur = cur.parentElement;
-  } while (cur);
-
-  return cur;
-}
-
 export async function requestIMDBData(
   program: Program,
   timeoutInSeconds: number = 30,

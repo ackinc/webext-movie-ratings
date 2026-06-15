@@ -2,7 +2,6 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
-import { climbDOMUntil } from "../utils";
 import pageStyles from "./styles.page.css";
 
 export default class HuluPage extends AbstractPage {
@@ -80,9 +79,9 @@ export default class HuluPage extends AbstractPage {
         const curTabNum = tabs.indexOf(pContainerNode.parentElement!);
 
         const candidates = Array.from(
-          climbDOMUntil(pContainerNode, (node) =>
-            node.matches("div.tabs"),
-          )?.querySelectorAll(".nav .nav-item") ?? [],
+          pContainerNode
+            .closest("div.tabs")
+            ?.querySelectorAll(".nav .nav-item") ?? [],
         ).map((node) => node.textContent);
 
         return candidates[curTabNum] ?? "";
@@ -124,9 +123,7 @@ export default class HuluPage extends AbstractPage {
     }
 
     if (pContainerNode.matches("div.AllUpGrid")) {
-      const apexNode = climbDOMUntil(pContainerNode, (node) =>
-        node.matches('div[data-testid="l2-content"]'),
-      )!;
+      const apexNode = pContainerNode.closest('div[data-testid="l2-content"]')!;
 
       // single-program page
       const activeSubnavButton = apexNode.querySelector(

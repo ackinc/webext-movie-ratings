@@ -2,7 +2,6 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
-import { climbDOMUntil } from "../utils";
 import pageStyles from "./styles.page.css";
 
 export default class HBOMaxPage extends AbstractPage {
@@ -116,11 +115,11 @@ export default class HBOMaxPage extends AbstractPage {
         )
       ) {
         return (
-          climbDOMUntil(pContainerNode, (node) =>
-            node.matches('div[aria-label="My List"]'),
-          )?.previousElementSibling?.querySelector(
-            'button[data-selected="true"]',
-          )?.textContent ?? ""
+          pContainerNode
+            .closest('div[aria-label="My List"]')
+            ?.previousElementSibling?.querySelector(
+              'button[data-selected="true"]',
+            )?.textContent ?? ""
         );
       } else {
         return (
