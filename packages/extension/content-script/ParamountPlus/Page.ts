@@ -79,6 +79,13 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
   ): boolean {
     if (!Boolean(pContainer.title)) return false;
 
+    if (
+      ["ufc", "explore more collections"].some(
+        (x) => pContainer.title.toLowerCase() === x,
+      )
+    )
+      return false;
+
     return true;
   }
 

@@ -10,7 +10,11 @@ export default class ProgramNode extends AbstractProgramNode {
 
     if (programNode.matches("a.link[aria-label]")) {
       const titleNode = programNode.querySelector("img")!;
-      title = titleNode.getAttribute("alt")!;
+
+      // on the /collections pages, the first card in each collection
+      //   is an "explore the collection" link; it's preview img doesn't
+      //   have an alt attr
+      title = titleNode.getAttribute("alt")! ?? "";
     } else if (programNode.matches("div.ch-bottom-components")) {
       const titleNode = programNode
         .closest("a.ch-expanded-container")!
