@@ -54,7 +54,7 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
       return [];
 
     return [
-      // home page, /browse/*
+      // home page, /browse/*, ...
       "div.carousel:has(h2.video-section-title)",
       'div.grid[data-id="search_results_grid"]',
       'div.grid:not(div[data-id="search_results_grid"])',
@@ -123,6 +123,9 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
     }
 
     if (selector === "a.ch-expanded-container") {
+      // NOTE: ratings cannot be shown on hovered programs of
+      //   search-results page because the card does not contain
+      //   the title of the program
       return ["div.ch-bottom-components"];
     }
 
