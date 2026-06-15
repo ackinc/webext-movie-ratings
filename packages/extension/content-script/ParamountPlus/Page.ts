@@ -56,7 +56,8 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
     return [
       // home page, /browse/*
       "div.carousel:has(h2.video-section-title)",
-      "div.grid",
+      'div.grid[data-id="search_results_grid"]',
+      'div.grid:not(div[data-id="search_results_grid"])',
 
       // on hover
       "a.ch-expanded-container",
@@ -72,7 +73,13 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
         .textContent.trim();
     }
 
-    if (pContainerNode.matches("div.grid")) {
+    if (pContainerNode.matches('div.grid[data-id="search_results_grid"]')) {
+      return pContainerNode.previousElementSibling!.textContent;
+    }
+
+    if (
+      pContainerNode.matches('div.grid:not(div[data-id="search_results_grid"])')
+    ) {
       return pContainerNode
         .parentElement!.previousElementSibling!.querySelector("h2")!
         .textContent.trim();
@@ -107,7 +114,11 @@ div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
       return ["a.link"];
     }
 
-    if (selector === "div.grid") {
+    if (selector === 'div.grid[data-id="search_results_grid"]') {
+      return ['a[role="listitem"]'];
+    }
+
+    if (selector === 'div.grid:not(div[data-id="search_results_grid"])') {
       return ["a.link"];
     }
 

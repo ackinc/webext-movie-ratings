@@ -15,6 +15,8 @@ export default class ProgramNode extends AbstractProgramNode {
       //   is an "explore the collection" link; it's preview img doesn't
       //   have an alt attr
       title = titleNode.getAttribute("alt")! ?? "";
+    } else if (programNode.matches('a[role="listitem"]')) {
+      title = programNode.getAttribute("title")!;
     } else if (programNode.matches("div.ch-bottom-components")) {
       const titleNode = programNode
         .closest("a.ch-expanded-container")!
