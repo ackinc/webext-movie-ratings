@@ -287,17 +287,12 @@ valid containers:\n\t${programContainers
 
   #createIMDBDataNode(data: IMDBData): HTMLElement {
     const node = document.createElement("div");
+
     node.classList.add(CssClasses.imdbDataNode);
+
     node.dataset["imdbId"] = data.imdbId;
     node.dataset["imdbRating"] = String(data.imdbRating);
     if ("expiry" in data) node.dataset["expiry"] = String(data.expiry);
-
-    // TODO: revisit whether hiding the sift-node is appropriate
-    //   for this case
-    if (["N/F", "N/M"].includes(String(data.imdbRating))) {
-      node.style.visibility = "hidden";
-      node.style.display = "none";
-    }
 
     const shadowRoot = node.attachShadow({ mode: "open" });
     shadowRoot.adoptedStyleSheets = [
