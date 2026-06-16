@@ -1,7 +1,6 @@
 import AbstractPage from "../AbstractPage";
 import { ErrorMessage } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
-import { cssStyleSheetFromText } from "../utils";
 import ProgramNode from "./ProgramNode";
 import pageStyles from "./page.styles.css";
 
@@ -11,7 +10,7 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
   constructor() {
     super();
 
-    this.stylesheet = cssStyleSheetFromText(pageStyles);
+    this.stylesheets.page.replaceSync(pageStyles);
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

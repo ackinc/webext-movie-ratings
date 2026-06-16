@@ -40,7 +40,11 @@ export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
 
   inSelectProgramMode: boolean = false;
-  stylesheet: CSSStyleSheet | null = null;
+  stylesheets: Record<"page" | "imdbNode" | "reset", CSSStyleSheet> = {
+    reset: cssStyleSheetFromText(resetStyles),
+    imdbNode: cssStyleSheetFromText(imdbNodeStyles),
+    page: new CSSStyleSheet(),
+  };
 
   #ctor = this.constructor as typeof AbstractPage;
 
@@ -200,7 +204,7 @@ valid containers:\n\t${programContainers
     styleNode.textContent =
       [
         ...getFopnCssRules(filterSettings),
-        ...Array.from(this.stylesheet!.cssRules).map((r) => r.cssText),
+        ...Array.from(this.stylesheets.page.cssRules).map((r) => r.cssText),
       ].join("\n") + "\n";
     document.head.appendChild(styleNode);
   }
@@ -297,9 +301,9 @@ valid containers:\n\t${programContainers
 
     const shadowRoot = node.attachShadow({ mode: "open" });
     shadowRoot.adoptedStyleSheets = [
-      cssStyleSheetFromText(resetStyles),
-      cssStyleSheetFromText(imdbNodeStyles),
-      this.stylesheet!,
+      this.stylesheets.reset,
+      this.stylesheets.imdbNode,
+      this.stylesheets.page,
     ];
     render(h(ImdbDataNode, { imdbData: data }), shadowRoot);
 

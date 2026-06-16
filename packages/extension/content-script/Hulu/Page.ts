@@ -3,7 +3,6 @@ import ProgramNode from "./ProgramNode";
 import { ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
 import pageStyles from "./page.styles.css";
-import { cssStyleSheetFromText } from "../utils";
 
 export default class HuluPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -11,7 +10,7 @@ export default class HuluPage extends AbstractPage {
   constructor() {
     super();
 
-    this.stylesheet = cssStyleSheetFromText(pageStyles);
+    this.stylesheets.page.replaceSync(pageStyles);
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

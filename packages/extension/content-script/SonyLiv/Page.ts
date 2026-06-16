@@ -3,7 +3,6 @@ import { ErrorMessage } from "../../common";
 import ProgramNode from "./ProgramNode";
 import type { ProgramContainer } from "../../common/types";
 import pageStyles from "./page.styles.css";
-import { cssStyleSheetFromText } from "../utils";
 
 class SonyLivPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -11,7 +10,7 @@ class SonyLivPage extends AbstractPage {
   constructor() {
     super();
 
-    this.stylesheet = cssStyleSheetFromText(pageStyles);
+    this.stylesheets.page.replaceSync(pageStyles);
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
