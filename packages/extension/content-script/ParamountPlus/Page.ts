@@ -2,6 +2,7 @@ import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
 import { CssClasses, ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
+import pageStyles from "./page.styles.css";
 
 export default class ParamountPlusPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
@@ -13,37 +14,8 @@ export default class ParamountPlusPage extends AbstractPage {
   protected override async injectStyles() {
     await super.injectStyles();
 
-    const pageFontFamily = window
-      .getComputedStyle(document.body)
-      .getPropertyValue("font-family");
-
     const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += `
-a.${CssClasses.imdbDataNode} {
-  display: block;
-  font-family: ${pageFontFamily};
-  font-size: 14px;
-  font-weight: bold;
-  text-align: left;
-  margin-left: 4px;
-}
-
-a.ch-expanded-container .${CssClasses.imdbDataNode} {
-  font-family: Proxima Nova SemiBold,sans-serif;
-  font-size: inherit;
-  font-weight: 400;
-  line-height: 22px;
-}
-
-div.grid .${CssClasses.imdbDataNode} {
-  margin-top: -8px;
-  margin-bottom: 12px;
-}
-
-div.carousel a.link[id^="originals"] a.${CssClasses.imdbDataNode} {
-  margin-left: 4px;
-}
-    `;
+    styleNode.textContent += pageStyles;
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
