@@ -81,6 +81,7 @@ APP_ENV=production
 AWS_REGION=ap-south-1
 AWS_S3_BUCKET_NAME=sift-db-backups-458735596401-ap-south-1-an
 DB_PATH=/home/ubuntu/db.sqlite
+DEV_EMAIL=anirudh.nimmagadda@gmail.com
 IMDB_DATA_DIR=/home/ubuntu/imdbData
 PORT=3000
 MEILISEARCH_URL="http://localhost:7700"
