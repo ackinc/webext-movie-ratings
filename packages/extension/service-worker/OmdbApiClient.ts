@@ -40,7 +40,12 @@ export default class OmdbApiClient {
       searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, i: imdbId! });
     } else {
       const { title, type, year } = imdbIdOrProgram;
-      searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, t: title });
+      // omdb hates html tags in title strings, even if url-encoded - they
+      //   500-server-error out
+      searchParams = new URLSearchParams({
+        apiKey: OMDB_API_KEY,
+        t: title.replace(/[<>]/g, ""),
+      });
       if (type) searchParams.set("type", type);
       if (year) searchParams.set("y", String(year));
     }
@@ -52,7 +57,7 @@ export default class OmdbApiClient {
       if (!response.ok) {
         const { status } = response;
         const body = await response.text();
-        const errMsg = `Request failed. Status ${status}). Body: ${body}.`;
+        const errMsg = `Request failed. Status ${status}. Body: ${body}.`;
         throw new OmdbApiError(errMsg, url);
       }
 
