@@ -1,6 +1,7 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses, ErrorMessage } from "../../common";
+import { ErrorMessage } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
+import { cssStyleSheetFromText } from "../utils";
 import ProgramNode from "./ProgramNode";
 import pageStyles from "./page.styles.css";
 
@@ -9,13 +10,8 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
 
   constructor() {
     super();
-  }
 
-  protected override async injectStyles() {
-    await super.injectStyles();
-
-    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += pageStyles;
+    this.stylesheet = cssStyleSheetFromText(pageStyles);
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

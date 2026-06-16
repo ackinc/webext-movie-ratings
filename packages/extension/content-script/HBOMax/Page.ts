@@ -1,21 +1,17 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { CssClasses, ErrorMessage } from "../../common";
+import { ErrorMessage } from "../../common";
 import type { ProgramContainer, Program } from "../../common/types";
 import pageStyles from "./page.styles.css";
+import { cssStyleSheetFromText } from "../utils";
 
 export default class HBOMaxPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
 
   constructor() {
     super();
-  }
 
-  protected override async injectStyles() {
-    await super.injectStyles();
-
-    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += pageStyles;
+    this.stylesheet = cssStyleSheetFromText(pageStyles);
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

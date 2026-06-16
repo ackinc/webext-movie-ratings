@@ -142,3 +142,9 @@ export async function requestIMDBData(
     }
   });
 }
+
+export function cssStyleSheetFromText(text: string) {
+  const ss = new CSSStyleSheet();
+  ss.replaceSync(text);
+  return ss;
+}

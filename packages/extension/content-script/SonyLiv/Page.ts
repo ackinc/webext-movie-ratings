@@ -1,21 +1,17 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses, ErrorMessage } from "../../common";
+import { ErrorMessage } from "../../common";
 import ProgramNode from "./ProgramNode";
 import type { ProgramContainer } from "../../common/types";
 import pageStyles from "./page.styles.css";
+import { cssStyleSheetFromText } from "../utils";
 
 class SonyLivPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
 
   constructor() {
     super();
-  }
 
-  protected override async injectStyles() {
-    await super.injectStyles();
-
-    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += pageStyles;
+    this.stylesheet = cssStyleSheetFromText(pageStyles);
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

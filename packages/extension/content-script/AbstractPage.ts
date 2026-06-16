@@ -23,6 +23,7 @@ import {
   MessageType,
 } from "../common";
 import {
+  cssStyleSheetFromText,
   getSelectorStatusForCurrentSite,
   getFopnCssRules,
   setSelectorStatusForCurrentSite,
@@ -38,6 +39,7 @@ export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
 
   inSelectProgramMode: boolean = false;
+  stylesheet: CSSStyleSheet | null = null;
 
   #ctor = this.constructor as typeof AbstractPage;
 
@@ -194,7 +196,11 @@ valid containers:\n\t${programContainers
 
     const styleNode = document.createElement("style");
     styleNode.classList.add(CssClasses.styleNode);
-    styleNode.textContent = getFopnCssRules(filterSettings).join("\n") + "\n";
+    styleNode.textContent =
+      [
+        ...getFopnCssRules(filterSettings),
+        ...Array.from(this.stylesheet!.cssRules).map((r) => r.cssText),
+      ].join("\n") + "\n";
     document.head.appendChild(styleNode);
   }
 
@@ -289,18 +295,13 @@ valid containers:\n\t${programContainers
     }
 
     const shadowRoot = node.attachShadow({ mode: "open" });
-    const cssStyleSheet = new CSSStyleSheet();
-    cssStyleSheet.replaceSync(cssReset);
-    shadowRoot.adoptedStyleSheets = [cssStyleSheet];
-
+    shadowRoot.adoptedStyleSheets = [
+      cssStyleSheetFromText(cssReset),
+      cssStyleSheetFromText(imdbNodeStyles),
+      this.stylesheet!,
+    ];
     render(h(ImdbDataNode, { imdbData: data }), shadowRoot);
 
-    const imdbRatingAsStr =
-      typeof data.imdbRating === "string"
-        ? data.imdbRating
-        : data.imdbRating.toFixed(1);
-    node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : imdbRatingAsStr}`;
-    node.addEventListener("click", (e) => e.stopPropagation());
     return node;
   }
 
