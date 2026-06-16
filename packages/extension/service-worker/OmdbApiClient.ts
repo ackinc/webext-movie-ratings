@@ -1,7 +1,9 @@
+import { retry } from "siftutils";
 import { limitThroughput } from "rate-limit-utils";
-import { captureException } from "../common/errorReporter";
-import { pick, type Program, type IMDBData, ErrorMessage } from "../common";
+import { type ProgramData, type IMDBData } from "../common";
+import { OmdbApiError } from "@common/customErrors";
 
+// we want to behave well when dealing with OMDB
 const MAX_REQ_PER_SECOND = 50;
 
 type OmdbApiResponse =
@@ -12,18 +14,25 @@ type OmdbApiResponse =
       imdbID: string;
       imdbRating: string;
     };
+type IMDBDataFromOMDB = Omit<IMDBData, "imdbRating"> & {
+  imdbRating: Exclude<IMDBData["imdbRating"], "N/M">;
+};
 
 export default class OmdbApiClient {
   fetch: typeof fetch;
-  inFlight: Set<string> = new Set<string>();
 
   constructor(patchedFetch: typeof fetch) {
     this.fetch = limitThroughput(patchedFetch, MAX_REQ_PER_SECOND);
+    this.fetchIMDBData = retry(this.fetchIMDBData.bind(this), {
+      type: "exponential",
+      n: 2,
+      maxRetries: 5,
+    });
   }
 
   async fetchIMDBData(
-    imdbIdOrProgram: string | Omit<Program, "node">,
-  ): Promise<IMDBData> {
+    imdbIdOrProgram: string | ProgramData,
+  ): Promise<IMDBDataFromOMDB> {
     const imdbId = typeof imdbIdOrProgram === "string" ? imdbIdOrProgram : null;
     let searchParams: URLSearchParams;
 
@@ -31,43 +40,52 @@ export default class OmdbApiClient {
       searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, i: imdbId! });
     } else {
       const { title, type, year } = imdbIdOrProgram;
-      searchParams = new URLSearchParams({ apiKey: OMDB_API_KEY, t: title });
+      // omdb hates html tags in title strings, even if url-encoded - they
+      //   500-server-error out
+      searchParams = new URLSearchParams({
+        apiKey: OMDB_API_KEY,
+        t: title.replace(/[<>]/g, ""),
+      });
       if (type) searchParams.set("type", type);
       if (year) searchParams.set("y", String(year));
     }
 
     const url = `https://www.omdbapi.com/?${searchParams.toString()}`;
-    if (this.inFlight.has(url)) {
-      throw new Error(ErrorMessage.ratingsApiRequestAlreadyInFlight);
-    }
 
     try {
-      this.inFlight.add(url);
       const response = await this.fetch(url);
-
       if (!response.ok) {
-        throw new Error(
-          ErrorMessage.ratingsApiRequestFailed +
-            ` (status: ${response.status})`,
-        );
+        const { status } = response;
+        const body = await response.text();
+        const errMsg = `Request failed. Status ${status}. Body: ${body}.`;
+        throw new OmdbApiError(errMsg, url);
       }
 
       const respBody = (await response.json()) as OmdbApiResponse;
 
-      let result: IMDBData;
+      let result: IMDBDataFromOMDB;
       if ("Error" in respBody) {
-        if (!respBody.Error.includes("not found")) {
-          captureException(new Error(`omdbApi error: ${respBody.Error}`), {
-            context: { request: { url } },
-          });
+        if (respBody.Error.includes("not found")) {
+          result = { imdbRating: "N/F", imdbId: imdbId ?? "" };
+        } else {
+          throw new OmdbApiError(respBody.Error, url);
         }
-        result = { imdbRating: "N/F", imdbID: imdbId ?? "" };
       } else {
-        result = pick(respBody, ["imdbID", "imdbRating"]);
+        const imdbRating =
+          respBody.imdbRating === "N/A"
+            ? "N/A"
+            : parseFloat(respBody.imdbRating);
+        if (Number.isNaN(imdbRating)) {
+          throw new Error(`Unexpected imdbRating: ${respBody.imdbRating}`);
+        }
+        result = { imdbId: respBody.imdbID, imdbRating };
       }
       return result;
-    } finally {
-      this.inFlight.delete(url);
+    } catch (e) {
+      if (e instanceof OmdbApiError) throw e;
+      throw new OmdbApiError("Error fetching data from OMDB API", url, {
+        cause: e,
+      });
     }
   }
 }

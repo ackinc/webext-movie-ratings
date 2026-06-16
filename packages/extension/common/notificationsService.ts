@@ -18,6 +18,13 @@ export async function checkForNewNotifications(): Promise<InAppNotification[]> {
       status: "unseen",
       timestamp: 1779304615085,
     },
+    {
+      id: "ADDED_PARAMOUNT_PLUS",
+      message: "Sift now supports ParamountPlus!",
+      targetPopupPage: "settings",
+      status: "unseen",
+      timestamp: 1781525467940,
+    },
   ];
 
   if (newNotifications.length > 0) {

@@ -2,6 +2,7 @@ import {
   browser,
   clampNum,
   CssClasses,
+  ErrorMessage,
   MessageType,
   omit,
   selectorStatusKeyPrefix,
@@ -9,6 +10,7 @@ import {
   type IMDBData,
   type Message,
   type Program,
+  type ProgramData,
   type ProgramFilterSettings,
   type SelectorStatusForSite,
   type SWMessageResponse,
@@ -92,30 +94,51 @@ export async function resetSelectorStatusForCurrentSite(): Promise<void> {
   await setSelectorStatusForCurrentSite({});
 }
 
-export function climbDOMUntil(
-  startElem: HTMLElement,
-  predFn: (node: HTMLElement) => boolean,
-): HTMLElement | null {
-  let cur: HTMLElement | null = startElem;
-  do {
-    if (predFn(cur)) break;
-    cur = cur.parentElement;
-  } while (cur);
+export async function requestIMDBData(
+  program: Program,
+  timeoutInSeconds: number = 30,
+): Promise<IMDBData> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(ErrorMessage.requestImdbDataTimedOut));
+    }, timeoutInSeconds * 1000);
 
-  return cur;
-}
+    try {
+      browser.runtime
+        .sendMessage<Message, SWMessageResponse<IMDBData>>({
+          type: MessageType.fetchIMDBRating,
+          data: {
+            program: omit(program, ["node"]) as ProgramData,
+            pageUrl: location.href,
+          },
+        } satisfies Message)
+        .then((response) => {
+          clearTimeout(timeout);
+          if ("error" in response) reject(new SWError(response.error));
+          else resolve(response.data);
+        })
+        .catch(handleError);
+    } catch (e) {
+      handleError(e);
+    }
 
-export async function fetchIMDBData(program: Program): Promise<IMDBData> {
-  const response = await browser.runtime.sendMessage<
-    Message,
-    SWMessageResponse<IMDBData>
-  >({
-    type: MessageType.fetchIMDBRating,
-    data: {
-      program: omit(program, ["node"]) as Omit<Program, "node">,
-      pageUrl: location.href,
-    },
-  } satisfies Message);
-  if ("error" in response) throw new SWError(response.error);
-  return response.data;
+    function handleError(e: unknown) {
+      clearTimeout(timeout);
+
+      const err = e instanceof Error ? e : new Error("Error", { cause: e });
+      if (err instanceof TypeError && !browser.runtime) {
+        reject(
+          new Error(ErrorMessage.extensionRuntimeDisappeared, { cause: err }),
+        );
+      } else if (err.message.includes("message channel closed")) {
+        reject(
+          new Error(ErrorMessage.unexpectedMessageChannelClosure, {
+            cause: err,
+          }),
+        );
+      } else {
+        reject(e);
+      }
+    }
+  });
 }

@@ -10,6 +10,7 @@ import type {
   Selector,
   SWMessageResponse,
   UrlPath,
+  CachedIMDBData,
 } from "../common/types";
 import {
   browser,
@@ -276,9 +277,16 @@ valid containers:\n\t${programContainers
   #createIMDBDataNode(data: IMDBData): HTMLElement {
     const node = document.createElement("div");
     node.classList.add(CssClasses.imdbDataNode);
-    node.dataset["imdbID"] = data.imdbID;
-    node.dataset["imdbRating"] = data.imdbRating;
+    node.dataset["imdbId"] = data.imdbId;
+    node.dataset["imdbRating"] = String(data.imdbRating);
     if ("expiry" in data) node.dataset["expiry"] = String(data.expiry);
+
+    // TODO: revisit whether hiding the sift-node is appropriate
+    //   for this case
+    if (["N/F", "N/M"].includes(String(data.imdbRating))) {
+      node.style.visibility = "hidden";
+      node.style.display = "none";
+    }
 
     const shadowRoot = node.attachShadow({ mode: "open" });
     const cssStyleSheet = new CSSStyleSheet();
@@ -286,6 +294,13 @@ valid containers:\n\t${programContainers
     shadowRoot.adoptedStyleSheets = [cssStyleSheet];
 
     render(h(ImdbDataNode, { imdbData: data }), shadowRoot);
+
+    const imdbRatingAsStr =
+      typeof data.imdbRating === "string"
+        ? data.imdbRating
+        : data.imdbRating.toFixed(1);
+    node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : imdbRatingAsStr}`;
+    node.addEventListener("click", (e) => e.stopPropagation());
     return node;
   }
 
@@ -464,7 +479,7 @@ valid containers:\n\t${programContainers
 
     const response = await browser.runtime.sendMessage<
       Message,
-      SWMessageResponse<Required<IMDBData> & { key: string }>
+      SWMessageResponse<CachedIMDBData>
     >({
       type: MessageType.fetchCachedIMDBRating,
       data: { program },

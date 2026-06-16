@@ -1,0 +1,58 @@
+.sift-imdb-data-content {
+  width: 180px;
+  border-radius: 8px;
+
+  display: block;
+
+  color: #999999;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.5;
+
+  .headline {
+    display: flex;
+    justify-content: space-between;
+
+    .rating-page-link {
+      color: inherit;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .rating-page-link svg {
+      display: none;
+
+      height: 14px;
+      stroke: #999999;
+      stroke-width: 4px;
+    }
+
+    .maybe-wrong-button {
+      display: none;
+
+      margin-left: auto;
+      background-color: transparent;
+      color: inherit;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: inherit;
+
+      &:hover {
+        font-weight: bold;
+      }
+    }
+  }
+
+  &:hover {
+    .headline {
+      .rating-page-link svg {
+        display: inline;
+      }
+
+      .maybe-wrong-button {
+        display: inline;
+      }
+    }
+  }
+}

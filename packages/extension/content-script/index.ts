@@ -1,9 +1,12 @@
 import {
   browser,
   defaultProgramFilterSettings,
+  ErrorMessage,
   getSetting,
+  omit,
   MessageType,
   CssClasses,
+  mainFnInvocationDelayMs,
 } from "../common";
 import { SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
@@ -21,13 +24,14 @@ import HuluPage from "./Hulu/Page";
 import PeacockTVPage from "./PeacockTV/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
+import ParamountPlusPage from "./ParamountPlus/Page";
 import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
 import MXPlayerPage from "./MXPlayer/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 import YoutubeMoviesPage from "./YoutubeMovies/Page";
 import Zee5Page from "./Zee5/Page";
-import { fetchIMDBData, updateFilteredOutProgramNodeStyles } from "./utils";
+import { requestIMDBData, updateFilteredOutProgramNodeStyles } from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
 
 let page: AbstractPage;
@@ -58,16 +62,39 @@ async function main() {
     ...defaultProgramFilterSettings,
     ...(await getSetting("programFiltersSettings")),
   };
-  mutationObserver = new MutationObserver((_mutationList) => {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(findProgramsAndAddRatings, 100);
+  mutationObserver = new MutationObserver((mutationRecords) => {
+    const addedNodes = mutationRecords
+      .flatMap((r) => Array.from(r.addedNodes))
+      .filter(
+        (node) =>
+          node instanceof HTMLElement &&
+          !node.classList.contains(CssClasses.imdbDataNode),
+      );
+    if (addedNodes.length === 0) return;
+
+    // at least one element was added that is not a sift-imdb-node,
+    //   so it's worth running 'findProgramsAndAddRatings' again
+    schedulePageProcessing("onMutation");
+    if (APP_ENV === "development") console.debug(addedNodes);
   });
   sessionStartTime = +new Date();
-  timeout = setTimeout(findProgramsAndAddRatings, 100);
-
   addListeners();
-
   if (APP_ENV !== "production") addSidecar({ page });
+  schedulePageProcessing("onStart");
+}
+
+function schedulePageProcessing(
+  reason: string,
+  withDelayMs: number = mainFnInvocationDelayMs,
+) {
+  if (timeout) clearTimeout(timeout);
+
+  if (APP_ENV === "development") {
+    const now = new Date().toISOString();
+    console.debug(`[${now}] schedulePageProcessing ${reason}`);
+  }
+
+  timeout = setTimeout(findProgramsAndAddRatings, withDelayMs);
 }
 
 function cleanup(broadcast = true) {
@@ -110,6 +137,8 @@ async function initializePage() {
     page = new CrunchyrollPage();
   } else if (location.hostname === "www.youtube.com") {
     page = new YoutubeMoviesPage();
+  } else if (location.hostname === "www.paramountplus.com") {
+    page = new ParamountPlusPage();
   } else if (location.hostname === "www.peacocktv.com") {
     page = new PeacockTVPage();
   } else if (location.hostname === "www.zee5.com") {
@@ -146,18 +175,18 @@ async function findProgramsAndAddRatings() {
       swallowDataExtractionErrors: APP_ENV === "production",
     });
 
-    await Promise.all(
-      programs.map((p) =>
-        addRating(p)
-          .then(fadeIfFilteredOut)
-          .catch((e) => {
-            // SWErrors would have been captured from the SW's side
-            if (!(e instanceof SWError)) {
-              captureException(e, { context: { program: p } });
-            }
-          }),
-      ),
+    const results = await Promise.allSettled<Program>(
+      programs.map((p) => addRating(p).then(fadeIfFilteredOut)),
     );
+    const errors: Error[] = results
+      .map((r, idx) => {
+        if (r.status === "fulfilled") return null;
+        const err = r.reason instanceof Error ? r.reason : new Error(r.reason);
+        err.context = { program: omit(programs[idx]!, ["node"] as const) };
+        return r.reason;
+      })
+      .filter((x) => x);
+    handleErrors(errors);
 
     if (FF_TELEMETRY_ENABLED) {
       await browser.runtime.sendMessage({
@@ -173,22 +202,51 @@ async function findProgramsAndAddRatings() {
   } catch (e) {
     if (
       e instanceof Error &&
-      e.message.startsWith("Extension context invalidated")
+      [
+        ErrorMessage.extensionRuntimeDisappeared,
+        ErrorMessage.unexpectedMessageChannelClosure,
+      ].some((pfx) => e.message.startsWith(pfx))
     ) {
       window.postMessage({
         type: MessageType.orphanCheck,
         data: { trigger: "extension-runtime-disappeared" },
       } satisfies Message);
-      return;
+    } else {
+      captureException(e);
+    }
+  }
+
+  function handleErrors(errors: Error[]) {
+    let majorError: Error | null = null;
+
+    for (let e of errors) {
+      if (e instanceof SWError) {
+        // SWErrors would have been captured from the SW's side; no need to call
+        //   captureException again
+      } else if (
+        [
+          ErrorMessage.extensionRuntimeDisappeared,
+          ErrorMessage.unexpectedMessageChannelClosure,
+        ].some((pfx) => e.message.startsWith(pfx))
+      ) {
+        majorError = e;
+      } else {
+        captureException(
+          e,
+          e.context
+            ? { context: e.context as Record<string, Record<string, unknown>> }
+            : {},
+        );
+      }
     }
 
-    captureException(e);
+    if (majorError) throw majorError;
   }
 }
 
 async function addRating(p: Program): Promise<Program> {
   if (!page.checkIMDBDataAlreadyAdded(p)) {
-    page.addIMDBData(p, await fetchIMDBData(p));
+    page.addIMDBData(p, await requestIMDBData(p));
   }
   return p;
 }
@@ -218,18 +276,21 @@ function collectWebpageRatingStats(programs: Program[]): WebpageStats {
   let nProgramsWithNoRatingNode = 0;
   let nProgramsRatedNA = 0;
   let nProgramsRatedNF = 0;
+  let nProgramsRatedNM = 0;
 
   const ctor = page.constructor as typeof AbstractPage;
   programs.forEach(({ node }) => {
     const rating = ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
     if (rating === "N/A") nProgramsRatedNA++;
     if (rating === "N/F") nProgramsRatedNF++;
+    if (rating === "N/M") nProgramsRatedNM++;
     if (!rating) nProgramsWithNoRatingNode++;
   });
   return {
     nPrograms,
     nProgramsRatedNA,
     nProgramsRatedNF,
+    nProgramsRatedNM,
     nProgramsWithNoRatingNode,
   };
 }
@@ -265,14 +326,12 @@ function handleMessage(
 }
 
 function handleUrlChange() {
-  if (timeout) clearTimeout(timeout);
   sessionStartTime = +new Date();
-  timeout = setTimeout(findProgramsAndAddRatings, 100);
+  schedulePageProcessing("onUrlChange");
 }
 
 function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
-  if (timeout) clearTimeout(timeout);
-  programFilterSettings = { ...programFilterSettings, ...updatedSettings };
-  updateFilteredOutProgramNodeStyles(updatedSettings);
-  timeout = setTimeout(findProgramsAndAddRatings, 100);
+  programFilterSettings = updatedSettings;
+  updateFilteredOutProgramNodeStyles(programFilterSettings);
+  schedulePageProcessing("onFiltersChange");
 }

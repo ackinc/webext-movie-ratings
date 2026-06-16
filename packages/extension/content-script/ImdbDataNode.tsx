@@ -22,7 +22,7 @@ export default function ImdbDataNode({ imdbData: data }: ImdbDataNodeProps) {
       }}
     >
       <a
-        href={getIMDBLink(data.imdbID)}
+        href={getIMDBLink(data.imdbId)}
         target="_blank"
         onClick={(e) => e.stopPropagation()}
       >

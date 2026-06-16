@@ -8,21 +8,37 @@ export function clampNum(val: number, min: number, max: number) {
   return val < min ? min : val > max ? max : val;
 }
 
-export async function waitFor<T>(
-  fn: () => T,
-  maxTries = 10,
-  intervalBetweenTriesMs = 500,
-) {
-  let nTries = 0;
-  let val;
-  while (++nTries <= maxTries) {
-    if ((val = await fn())) return val;
-    await delayMs(intervalBetweenTriesMs);
-  }
-  throw new Error("waitFor timed out");
+type BackoffStrategy = {
+  // if exponential, delays will be 1, n, n^2, ...
+  type: "linear" | "exponential";
+  n: number;
+  maxRetries: number;
+};
+export function retry<Args extends unknown[], Ret>(
+  fn: (...args: Args) => Promise<Ret>,
+  strategy: BackoffStrategy,
+): (...args: Args) => Promise<Ret> {
+  const { type, n, maxRetries } = strategy;
+  if (maxRetries < 0) throw new Error(`maxRetries cannot be < 0`);
+  const delays = new Array(maxRetries)
+    .fill(0)
+    .map((_v, idx) => (type === "linear" ? n : 1 * Math.pow(n, idx)));
+
+  return async (...args) => {
+    let nRetries = 0;
+    do {
+      try {
+        return await fn(...args);
+      } catch (e) {
+        if (nRetries === maxRetries) throw e;
+        await delayMs(delays[nRetries]! * 1000);
+        nRetries += 1;
+      }
+    } while (true);
+  };
 }
 
-export function invert<T extends (...args: Parameters<T>) => boolean>(
+export function invert<T extends (...args: unknown[]) => boolean>(
   fn: T,
 ): (...args: Parameters<T>) => boolean {
   return (...args) => !fn(...args);
@@ -38,17 +54,14 @@ export function partition<const T extends unknown[]>(
   return [pass, fail];
 }
 
-export function pick<
-  const T extends Record<string, unknown>,
-  const K extends string[],
->(
+export function pick<const T extends {}, const K extends string[]>(
   obj: T,
   keys: K,
-  requireAllKeys: boolean = false,
+  requireAll: boolean = false,
 ): Pick<T, keyof T & K[number]> {
   const [keysInObj, keysNotInObj] = partition(keys, (k) => k in obj);
 
-  if (keysNotInObj.length > 0 && requireAllKeys) {
+  if (keysNotInObj.length > 0 && requireAll) {
     throw new Error(`Required keys are absent: ${keysNotInObj.join(", ")}`);
   }
 
@@ -73,10 +86,10 @@ export function isNullOrUndef(x: unknown) {
   return x == void 0;
 }
 
-export function omit(
-  obj: Record<string, unknown>,
-  keys: string[],
-): Record<string, unknown> {
+export function omit<T extends {}, K extends (keyof T)[]>(
+  obj: T,
+  keys: K,
+): Omit<T, K[number]> {
   const retval = { ...obj };
   for (const key of keys) delete retval[key];
   return retval;
