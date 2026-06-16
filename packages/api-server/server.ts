@@ -16,6 +16,7 @@ import {
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
 import * as dbService from "./dbService.ts";
+import * as emailService from "./emailService.ts";
 import logger from "./logger.ts";
 import { querySearchEngine, getIndexLastUpdatedTime } from "./searchEngine.ts";
 
@@ -154,6 +155,15 @@ function createServer() {
     async function (request, reply) {
       dbService.createMessageRecord(request.body);
       reply.code(200).send({ status: "ok" });
+
+      if (env.APP_ENV === "production") {
+        emailService
+          .sendToDev({
+            subject: "Sift: message from user",
+            body: JSON.stringify(request.body, null, 2),
+          })
+          .catch((error) => Sentry.captureException(error));
+      }
     },
   );
 
