@@ -33,7 +33,8 @@ import { captureException } from "../common/errorReporter";
 import { addSidecar, removeSidecar } from "./sidecar";
 import ImdbDataNode from "./ImdbDataNode";
 import { limitConcurrency } from "rate-limit-utils";
-import cssReset from "./reset.styles.css";
+import resetStyles from "./reset.styles.css";
+import imdbNodeStyles from "./imdbDataNode.styles.css";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
@@ -296,7 +297,7 @@ valid containers:\n\t${programContainers
 
     const shadowRoot = node.attachShadow({ mode: "open" });
     shadowRoot.adoptedStyleSheets = [
-      cssStyleSheetFromText(cssReset),
+      cssStyleSheetFromText(resetStyles),
       cssStyleSheetFromText(imdbNodeStyles),
       this.stylesheet!,
     ];
