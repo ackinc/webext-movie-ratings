@@ -43,6 +43,7 @@ export default class AbstractPage {
   stylesheets: Record<"page" | "imdbNode" | "reset", CSSStyleSheet> = {
     reset: cssStyleSheetFromText(resetStyles),
     imdbNode: cssStyleSheetFromText(imdbNodeStyles),
+    // should be overridden/replaced in constructor of concrete subclasses
     page: new CSSStyleSheet(),
   };
 
