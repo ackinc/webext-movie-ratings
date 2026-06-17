@@ -16,6 +16,7 @@ export type ProgramData = {
 };
 // represents a movie/show identified on a webpage
 export type Program = {
+  container: ProgramContainer;
   selector: Selector;
   node: HTMLElement;
 } & ProgramData;

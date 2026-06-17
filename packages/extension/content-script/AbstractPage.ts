@@ -128,25 +128,17 @@ valid containers:\n\t${programContainers
       }`;
     }
 
-    function dataExtractionErrorHandlingWrapper(
-      fn:
-        | ((
-            arg: Omit<ProgramContainer, keyof ProgramContainerData>,
-          ) => ProgramContainer | null)
-        | ((arg: Omit<Program, keyof ProgramData>) => Program | null),
-    ) {
-      return ({
-        node,
-        selector,
-      }:
-        | Omit<ProgramContainer, keyof ProgramContainerData>
-        | Omit<Program, keyof ProgramData>) => {
+    function dataExtractionErrorHandlingWrapper<
+      T extends { node: HTMLElement; selector: string },
+      R extends T,
+    >(fn: (arg: T) => R) {
+      return (arg: T) => {
         try {
-          return fn({ node, selector });
+          return fn(arg);
         } catch (e) {
           ensureError(e);
 
-          const err = DataExtractionError.from(e, node, selector);
+          const err = DataExtractionError.from(e, arg.node, arg.selector);
           if (!err.__fromCache) captureException(err);
 
           if (swallowDataExtractionErrors) return null;
@@ -157,22 +149,16 @@ valid containers:\n\t${programContainers
     }
   }
 
-  #createProgramContainer = ({
-    node,
-    selector,
-  }: Omit<ProgramContainer, keyof ProgramContainerData>): ProgramContainer => ({
-    selector,
-    node,
-    title: this.getTitleFromProgramContainerNode(node),
+  #createProgramContainer = (
+    arg: Omit<ProgramContainer, keyof ProgramContainerData>,
+  ): ProgramContainer => ({
+    ...arg,
+    title: this.getTitleFromProgramContainerNode(arg.node),
   });
 
-  #createProgram = ({
-    node,
-    selector,
-  }: Omit<Program, keyof ProgramData>): Program => ({
-    selector,
-    node,
-    ...this.#ctor.ProgramNode.extractProgramData(node),
+  #createProgram = (arg: Omit<Program, keyof ProgramData>): Program => ({
+    ...arg,
+    ...this.#ctor.ProgramNode.extractProgramData(arg.node),
   });
 
   checkIMDBDataAlreadyAdded(program: Program): boolean {
@@ -281,6 +267,7 @@ valid containers:\n\t${programContainers
         nodes.map((node) => ({
           node,
           selector: `${pContainer.selector} ${selectors[idx]}`,
+          container: pContainer,
         })),
       )
       .flat();
@@ -450,30 +437,26 @@ valid containers:\n\t${programContainers
     e.preventDefault();
     e.stopPropagation();
 
-    const allProgramNodeSelectors =
-      this.getProgramContainerNodeSelectors().flatMap((pcNodeSel) =>
+    const allProgramContainerSelectors =
+      this.getProgramContainerNodeSelectors();
+    const allProgramNodeSelectors = allProgramContainerSelectors.flatMap(
+      (pcNodeSel) =>
         this.getProgramNodeSelectors({ selector: pcNodeSel }).map(
           (pNodeSel) => `${pcNodeSel} ${pNodeSel}`,
         ),
-      );
+    );
 
-    let cur: Element | null = e.target as Element;
-    let matchingSelector: string | undefined;
-    do {
-      matchingSelector = allProgramNodeSelectors.find((sel) =>
-        cur!.matches(sel),
-      );
-      if (matchingSelector) break;
-      cur = cur.parentElement;
-    } while (cur);
-    if (!cur) {
+    const { node: programNode, selector: matchingSelector } =
+      findAncestor(e.target as Element, allProgramNodeSelectors) ?? {};
+    if (!programNode) {
       console.log(`No program node found at that location`);
       return;
     }
 
-    const programNode = cur as HTMLElement;
-
     const program = this.#createProgram({
+      container: this.#createProgramContainer(
+        findAncestor(programNode, allProgramContainerSelectors)!,
+      ),
       node: programNode,
       selector: matchingSelector!,
     });
@@ -489,5 +472,12 @@ valid containers:\n\t${programContainers
 
     if ("error" in response) throw new SWError(response.error);
     console.log(response.data);
+
+    function findAncestor(startEl: Element, selectors: string[]) {
+      const node = startEl.closest<HTMLElement>(selectors.join(","));
+      return node
+        ? { node, selector: selectors.find((sel) => node.matches(sel))! }
+        : null;
+    }
   };
 }
