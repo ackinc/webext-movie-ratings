@@ -1,7 +1,7 @@
-import { useEffect, useState } from "preact/hooks";
 import IconButton from "./IconButton";
 import CopyIcon from "@common/components/Icons/Copy";
 import TickIcon from "@common/components/Icons/Tick";
+import useSticky from "@common/hooks/useSticky";
 
 interface CopyToClipboardButtonProps {
   textToCopy: string;
@@ -12,11 +12,7 @@ function CopyToClipboardButton({
   textToCopy,
   copyTimeout = 1000,
 }: CopyToClipboardButtonProps) {
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (copied) setTimeout(() => setCopied(false), copyTimeout);
-  }, [copied]);
+  const [copied, setCopied] = useSticky(false, new Map([[true, copyTimeout]]));
 
   return (
     <IconButton
