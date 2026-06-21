@@ -26,7 +26,7 @@
     "fs-extra": "^11.3.4",
     "meilisearch": "^0.57.0",
     "node-cron": "^4.2.1",
-    "nodemailer": "^9.0.0",
+    "nodemailer": "^9.0.1",
     "pino": "^10.3.1",
     "siftnodeutils": "workspace:nodeutils@*",
     "sifttypes": "workspace:types@*",
