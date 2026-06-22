@@ -23,12 +23,11 @@ import baseLogger from "../logger.ts";
 
 const __filename = path.basename(fileURLToPath(import.meta.url));
 const { APP_ENV, IMDB_DATA_DIR, MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } =
-  pick(process.env, [
-    "APP_ENV",
-    "IMDB_DATA_DIR",
-    "MEILISEARCH_MASTER_KEY",
-    "MEILISEARCH_URL",
-  ]);
+  pick(
+    process.env,
+    ["APP_ENV", "IMDB_DATA_DIR", "MEILISEARCH_MASTER_KEY", "MEILISEARCH_URL"],
+    true,
+  );
 
 const argv = yargs(hideBin(process.argv))
   .option("batchSize", {

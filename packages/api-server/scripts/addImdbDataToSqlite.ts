@@ -1,6 +1,7 @@
 import "dotenv/config";
 import * as path from "node:path";
 import Database, { type Database as TDatabase } from "better-sqlite3";
+import { pick } from "siftutils";
 import {
   type Batch,
   checkColnames,
@@ -8,7 +9,11 @@ import {
   isMovieOrSeries,
 } from "./common.ts";
 
-const { DB_PATH, IMDB_DATA_DIR } = process.env;
+const { DB_PATH, IMDB_DATA_DIR } = pick(
+  process.env,
+  ["DB_PATH", "IMDB_DATA_DIR"],
+  true,
+);
 const BATCH_SIZE = 10000;
 
 const db = new Database(DB_PATH!);
