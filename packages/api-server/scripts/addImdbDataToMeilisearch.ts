@@ -121,15 +121,17 @@ async function prepareIndex(client: Meilisearch): Promise<Index<Document>> {
   return index;
 }
 
-function getDocumentsFromBasicsFileLine(line: string): [Document, Document] {
+function getDocumentsFromBasicsFileLine(line: string): Document[] {
   const parts = line.split("\t");
   const imdbId = parts[0]!;
   const type = ["movie", "tvMovie"].includes(parts[1]!) ? "movie" : "series";
   const year = parts[5] === "\\N" ? null : +parts[5]!;
   return [
     makeDocument({ imdbId, title: parts[2]!, type, year }),
-    makeDocument({ imdbId, title: parts[3]!, type, year }),
-  ];
+    parts[2] === parts[3]
+      ? null
+      : makeDocument({ imdbId, title: parts[3]!, type, year }),
+  ].filter((x) => x !== null);
 }
 
 function getDocumentsFromAkasFileLine(line: string): [Document] {
@@ -158,7 +160,7 @@ async function processBatchFromBasicsFile(batch: Batch) {
   await index.addDocuments(documents);
   documents.forEach((doc, idx) => {
     // first doc returned by getDocumentsFromBasicsFileLine is canon
-    if (idx % 2 === 0)
+    if (idx === 0)
       canonDocumentsByImdbId.set(doc.imdbId, pick(doc, ["type", "year"]));
   });
 }
