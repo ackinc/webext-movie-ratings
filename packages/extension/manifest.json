@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Sift: IMDB ratings on Netflix, Prime, and other streaming websites",
   "description": "Sift adds IMDB ratings next to program tiles on various streaming websites.",
-  "version": "9.5.6",
+  "version": "9.5.7",
   "icons": {
     "16": "images/logo16.png",
     "32": "images/logo32.png",
