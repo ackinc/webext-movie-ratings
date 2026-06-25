@@ -18,4 +18,6 @@ execFileSync(path.join(__dirname, "downloadImdbData.ts"), { stdio: "inherit" });
 execFileSync(path.join(__dirname, "addImdbDataToMeilisearch.ts"), {
   stdio: "inherit",
 });
-fs.readdirSync(IMDB_DATA_DIR!).map(fs.unlinkSync);
+fs.readdirSync(IMDB_DATA_DIR!).map((filename) =>
+  fs.unlinkSync(path.join(IMDB_DATA_DIR!, filename)),
+);
