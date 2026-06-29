@@ -190,8 +190,7 @@ function handleMessage(
       siftApiService
         .sendUserFeedback(
           JSON.stringify({
-            ...pick(program, ["title", "type", "year"]),
-            selector: `${program.container.selector} ${program.selector}`,
+            ...pick(program, ["title", "type", "year", "selector"]),
             pageUrl,
             incorrectImdbId: imdbData.imdbId,
           }),

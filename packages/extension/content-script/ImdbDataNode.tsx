@@ -35,16 +35,19 @@ export default function ImdbDataNode({
         </a>
         <button
           className="maybe-wrong-button"
-          onClick={() =>
-            browser.runtime.sendMessage({
-              type: MessageType.reportIncorrectProgramMatch,
-              data: { program, imdbData: data, pageUrl: location.href },
-            } satisfies Message)
-          }
+          onClick={handleMaybeWrongButtonClick}
         >
           Wrong?
         </button>
       </div>
     </div>
   );
+
+  function handleMaybeWrongButtonClick() {
+    console.log("Maybe wrong button clicked for", program, data, location.href);
+    browser.runtime.sendMessage({
+      type: MessageType.reportIncorrectProgramMatch,
+      data: { program, imdbData: data, pageUrl: location.href },
+    } satisfies Message);
+  }
 }
