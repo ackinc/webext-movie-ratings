@@ -148,3 +148,27 @@ export function cssStyleSheetFromText(text: string) {
   ss.replaceSync(text);
   return ss;
 }
+
+export function isVoidElement(elem: HTMLElement, except: string[] = []) {
+  const voidElements = new Set([
+    "area",
+    "base",
+    "br",
+    "col",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "link",
+    "meta",
+    "param",
+    "source",
+    "track",
+    "wbr",
+  ]);
+  const tagName = elem.tagName.toLowerCase();
+  return (
+    voidElements.has(tagName) &&
+    !except.map((x) => x.toLowerCase()).includes(tagName)
+  );
+}
