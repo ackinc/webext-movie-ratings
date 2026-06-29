@@ -31,7 +31,11 @@ import MXPlayerPage from "./MXPlayer/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
 import YoutubeMoviesPage from "./YoutubeMovies/Page";
 import Zee5Page from "./Zee5/Page";
-import { requestIMDBData, updateFilteredOutProgramNodeStyles } from "./utils";
+import {
+  isVoidElement,
+  requestIMDBData,
+  updateFilteredOutProgramNodeStyles,
+} from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
 
 let page: AbstractPage;
@@ -68,6 +72,7 @@ async function main() {
       .filter(
         (node) =>
           node instanceof HTMLElement &&
+          !isVoidElement(node, ["img"]) &&
           !node.classList.contains(CssClasses.imdbDataNode),
       );
     if (addedNodes.length === 0) return;
