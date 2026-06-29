@@ -467,7 +467,7 @@ valid containers:\n\t${programContainers
       SWMessageResponse<CachedIMDBData>
     >({
       type: MessageType.fetchCachedIMDBRating,
-      data: { program },
+      data: { program, pageUrl: location.href },
     });
 
     if ("error" in response) throw new SWError(response.error);

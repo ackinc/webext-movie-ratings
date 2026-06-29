@@ -48,6 +48,7 @@ export const enum MessageType {
   fetchIMDBRating = "sift:fetchIMDBRating",
   fetchCachedIMDBRating = "sift:fetchCachedIMDBRating",
   reportIncorrectProgramMatch = "sift:reportIncorrectProgramMatch",
+  undoReportIncorrectProgramMatch = "sift:undoReportIncorrectProgramMatch",
   urlChange = "sift:urlchange",
   filterSettingsChange = "sift:filterSettingsChange",
   orphanCheck = "sift:orphanCheck",

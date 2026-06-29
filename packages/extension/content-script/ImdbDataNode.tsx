@@ -1,3 +1,4 @@
+import { useState } from "preact/hooks";
 import {
   browser,
   CssClasses,
@@ -19,11 +20,15 @@ export default function ImdbDataNode({
   program,
   imdbData: data,
 }: ImdbDataNodeProps) {
+  const [wasReportedIncorrect, setWasReportedIncorrect] = useState(
+    Boolean(data.wasReportedIncorrect),
+  );
+
   return (
     <div className={CssClasses.imdbDataNodeContent}>
       <div className="headline">
         <a
-          className="rating-page-link"
+          className={`rating-page-link ${wasReportedIncorrect ? "rating-reported-incorrect" : ""}`}
           href={getIMDBLink(data.imdbId)}
           target="_blank"
           onClick={(e) => e.stopPropagation()}
@@ -38,21 +43,23 @@ export default function ImdbDataNode({
           className="maybe-wrong-button"
           onClick={handleMaybeWrongButtonClick}
         >
-          Wrong?
+          {wasReportedIncorrect ? "Undo" : "Wrong?"}
         </button>
       </div>
     </div>
   );
 
-  function handleMaybeWrongButtonClick() {
-    console.log("Maybe wrong button clicked for", program, data, location.href);
-    browser.runtime.sendMessage({
-      type: MessageType.reportIncorrectProgramMatch,
+  async function handleMaybeWrongButtonClick() {
+    await browser.runtime.sendMessage({
+      type: wasReportedIncorrect
+        ? MessageType.undoReportIncorrectProgramMatch
+        : MessageType.reportIncorrectProgramMatch,
       data: {
         program: pick(program, ["title", "type", "year", "selector"]),
         imdbData: data,
         pageUrl: location.href,
       },
     } satisfies Message);
+    setWasReportedIncorrect((x) => !x);
   }
 }

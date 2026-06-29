@@ -173,11 +173,13 @@ function handleMessage(
 
       return true; // keeps channel open until sendReponse is called
     } else if (request.type === MessageType.fetchCachedIMDBRating) {
-      const { program } = request.data;
+      const { program, pageUrl } = request.data;
 
       const context = { program };
       waitForRatingsService()
-        .then((ratingsService) => ratingsService.getCachedIMDBData(program))
+        .then((ratingsService) =>
+          ratingsService.getCachedIMDBData(program, pageUrl),
+        )
         .then((data) => sendResponse({ data }))
         .catch((e) => handleError(e, { context }));
 
@@ -187,6 +189,16 @@ function handleMessage(
 
       ratingsService
         .markRatingAsIncorrect(program, imdbData, pageUrl)
+        .then(() => sendResponse({ data: {} }))
+        .catch(captureException);
+
+      return true;
+    } else if (request.type === MessageType.undoReportIncorrectProgramMatch) {
+      const { program, imdbData, pageUrl } = request.data;
+
+      ratingsService
+        .undoMarkRatingAsIncorrect(program, imdbData, pageUrl)
+        .then(() => sendResponse({ data: {} }))
         .catch(captureException);
 
       return true;

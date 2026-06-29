@@ -20,12 +20,17 @@ import OmdbApiClient from "./OmdbApiClient";
 /* interface */
 
 export interface RatingsService {
-  getCachedIMDBData(program: ProgramData): Promise<CachedIMDBData | undefined>;
-  getIMDBData(
+  getCachedIMDBData(
     program: ProgramData,
     pageUrl: string,
-  ): Promise<Required<IMDBData>>;
+  ): Promise<CachedIMDBData | undefined>;
+  getIMDBData(program: ProgramData, pageUrl: string): Promise<IMDBData>;
   markRatingAsIncorrect(
+    program: Omit<Program, "node" | "container">,
+    imdbData: IMDBData,
+    pageUrl: string,
+  ): Promise<void>;
+  undoMarkRatingAsIncorrect(
     program: Omit<Program, "node" | "container">,
     imdbData: IMDBData,
     pageUrl: string,
@@ -34,7 +39,7 @@ export interface RatingsService {
 
 let inProgress: Record<
   string,
-  { resolve: (x: Required<IMDBData>) => void; reject: (e: Error) => void }[]
+  { resolve: (x: IMDBData) => void; reject: (e: Error) => void }[]
 >;
 let omdbApiClient: OmdbApiClient;
 let ratingsCache: RatingsCache;
@@ -61,7 +66,12 @@ export async function initialize(db: IDBPDatabase): Promise<RatingsService> {
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
   }
-  return { getIMDBData, getCachedIMDBData, markRatingAsIncorrect };
+  return {
+    getIMDBData,
+    getCachedIMDBData,
+    markRatingAsIncorrect,
+    undoMarkRatingAsIncorrect,
+  };
 }
 
 /* implementation details */
@@ -93,15 +103,15 @@ async function fetchWithAddedTelemetry(
 }
 
 async function getIMDBData(
-  program: ProgramData,
+  program: Omit<Program, "node" | "container">,
   pageUrl: string,
-): Promise<Required<IMDBData>> {
-  const cached = await getCachedIMDBData(program);
+): Promise<IMDBData> {
+  const cached = await getCachedIMDBData(program, pageUrl);
   if (cached && cached.expiry > +new Date()) {
     return omit(cached, ["key"] as const);
   }
 
-  return new Promise<Required<IMDBData>>((resolve, reject) => {
+  return new Promise<IMDBData>((resolve, reject) => {
     const key = programToHash(program);
     if (key in inProgress) {
       inProgress[key]!.push({ resolve, reject });
@@ -180,9 +190,20 @@ async function getIMDBData(
 }
 
 async function getCachedIMDBData(
-  program: ProgramData,
+  program: Omit<Program, "node" | "container">,
+  pageUrl: string,
 ): Promise<CachedIMDBData | undefined> {
-  return await ratingsCache.get(programToHash(program));
+  const cached = await ratingsCache.get(programToHash(program));
+
+  const incorrectRatingReportKey = getIncorrectRatingReportKey(
+    program,
+    pageUrl,
+  );
+  const wasReportedIncorrect = Boolean(
+    await ratingsCache.getIncorrectRatingReport(incorrectRatingReportKey),
+  );
+
+  return cached ? Object.assign(cached, { wasReportedIncorrect }) : cached;
 }
 
 async function markRatingAsIncorrect(
@@ -190,15 +211,18 @@ async function markRatingAsIncorrect(
   imdbData: IMDBData,
   pageUrl: string,
 ) {
-  const key = [programToHash(program), program.selector, pageUrl].join("|");
+  const key = getIncorrectRatingReportKey(program, pageUrl);
   await ratingsCache.putIncorrectRatingReport({
     key,
     ...program,
     ...imdbData,
+    wasReportedIncorrect: true,
     pageUrl,
     reportedAt: +new Date(),
   });
 
+  // TODO: send after a delay, and make it cancelable, so the user has time to
+  //   undo a misclick
   await siftApiService.sendUserFeedback(
     JSON.stringify({
       ...program,
@@ -208,4 +232,20 @@ async function markRatingAsIncorrect(
     undefined,
     "incorrect-rating-report",
   );
+}
+
+export async function undoMarkRatingAsIncorrect(
+  program: Omit<Program, "node" | "container">,
+  _imdbData: IMDBData,
+  pageUrl: string,
+) {
+  const key = getIncorrectRatingReportKey(program, pageUrl);
+  await ratingsCache.removeIncorrectRatingReport(key);
+}
+
+function getIncorrectRatingReportKey(
+  program: Omit<Program, "node" | "container">,
+  pageUrl: string,
+) {
+  return [programToHash(program), program.selector, pageUrl].join("|");
 }

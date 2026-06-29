@@ -20,6 +20,10 @@
       gap: 4px;
     }
 
+    .rating-page-link.rating-reported-incorrect {
+      text-decoration: line-through;
+    }
+
     .rating-page-link svg {
       display: none;
 

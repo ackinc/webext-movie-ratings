@@ -30,10 +30,12 @@ export type IMDBData = {
     | "N/F" /* could not matched program to an imdb id */
     | "N/M" /* (temporary) error when matching program to an imdb id */;
   expiry?: number;
+  wasReportedIncorrect?: boolean;
 };
 
-export type CachedIMDBData = Required<IMDBData> & {
+export type CachedIMDBData = IMDBData & {
   key: string;
+  expiry: number;
 };
 
 export type SWMessageResponse<T> = { data: T } | { error: string };
@@ -60,18 +62,27 @@ export type Message =
   | {
       type: MessageType.fetchCachedIMDBRating;
       data: {
-        program: ProgramData;
+        program: Omit<Program, "node" | "container">;
+        pageUrl: string;
       };
     }
   | {
       type: MessageType.fetchIMDBRating;
       data: {
-        program: ProgramData;
+        program: Omit<Program, "node" | "container">;
         pageUrl: string;
       };
     }
   | {
       type: MessageType.reportIncorrectProgramMatch;
+      data: {
+        program: Omit<Program, "node" | "container">;
+        imdbData: IMDBData;
+        pageUrl: string;
+      };
+    }
+  | {
+      type: MessageType.undoReportIncorrectProgramMatch;
       data: {
         program: Omit<Program, "node" | "container">;
         imdbData: IMDBData;
