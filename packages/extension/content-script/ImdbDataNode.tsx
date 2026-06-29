@@ -1,11 +1,23 @@
 import { useState } from "preact/hooks";
-import { CssClasses, getIMDBLink, type IMDBData } from "@common";
+import {
+  browser,
+  CssClasses,
+  getIMDBLink,
+  MessageType,
+  type IMDBData,
+  type Message,
+  type Program,
+} from "@common";
 
 interface ImdbDataNodeProps {
   imdbData: IMDBData;
+  program: Program;
 }
 
-export default function ImdbDataNode({ imdbData: data }: ImdbDataNodeProps) {
+export default function ImdbDataNode({
+  program,
+  imdbData: data,
+}: ImdbDataNodeProps) {
   const [expanded, setExpanded] = useState(false);
 
   const showNode = data.imdbRating !== "N/F";
@@ -29,7 +41,12 @@ export default function ImdbDataNode({ imdbData: data }: ImdbDataNodeProps) {
         IMDb {data.imdbRating === "N/A" ? "" : data.imdbRating}
       </a>
       <button
-        onClick={() => console.log("wut")}
+        onClick={() =>
+          browser.runtime.sendMessage({
+            type: MessageType.reportIncorrectProgramMatch,
+            data: { program, imdbData: data, pageUrl: location.href },
+          } satisfies Message)
+        }
         style={{
           margin: 0,
           border: 0,

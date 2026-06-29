@@ -47,6 +47,7 @@ export const languages = [
 export const enum MessageType {
   fetchIMDBRating = "sift:fetchIMDBRating",
   fetchCachedIMDBRating = "sift:fetchCachedIMDBRating",
+  reportIncorrectProgramMatch = "sift:reportIncorrectProgramMatch",
   urlChange = "sift:urlchange",
   filterSettingsChange = "sift:filterSettingsChange",
   orphanCheck = "sift:orphanCheck",

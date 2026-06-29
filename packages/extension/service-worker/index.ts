@@ -1,5 +1,5 @@
 import { type IDBPDatabase } from "idb";
-import { isNetworkError } from "siftutils";
+import { isNetworkError, pick } from "siftutils";
 import {
   browser,
   getSetting,
@@ -25,6 +25,7 @@ import {
   initialize as initializeRatingsService,
   type RatingsService,
 } from "./ratingsService";
+import * as siftApiService from "@common/siftApiService";
 
 let ratingsService: RatingsService;
 let telemetryStore: TelemetryStore;
@@ -180,6 +181,30 @@ function handleMessage(
         .then((ratingsService) => ratingsService.getCachedIMDBData(program))
         .then((data) => sendResponse({ data }))
         .catch((e) => handleError(e, { context }));
+
+      return true;
+    } else if (request.type === MessageType.reportIncorrectProgramMatch) {
+      const { program, imdbData, pageUrl } = request.data;
+
+      // send the sad news server-side
+      siftApiService
+        .sendUserFeedback(
+          JSON.stringify({
+            ...pick(program, ["title", "type", "year"]),
+            selector: `${program.container.selector} ${program.selector}`,
+            pageUrl,
+            incorrectImdbId: imdbData.imdbId,
+          }),
+          undefined,
+          "incorrect-rating-report",
+        )
+        .catch(captureException);
+
+      // TODO
+      // update in storage
+      // ensure the fact that an incorrect rating was reported will
+      //   surface the next time the cached rating for this program
+      //   is sent to ISOCS
 
       return true;
     } else if (request.type === MessageType.webpageRatingStats) {

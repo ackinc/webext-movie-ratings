@@ -71,6 +71,14 @@ export type Message =
       };
     }
   | {
+      type: MessageType.reportIncorrectProgramMatch;
+      data: {
+        program: Omit<Program, "node">;
+        imdbData: IMDBData;
+        pageUrl: string;
+      };
+    }
+  | {
       // Sent via window.postMessage from MAIN world content script to
       //   paired ISOLATED world content script in same tab
       type: MessageType.urlChange;
