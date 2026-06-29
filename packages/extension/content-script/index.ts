@@ -73,7 +73,7 @@ async function main() {
         (node) =>
           node instanceof HTMLElement &&
           !isVoidElement(node, ["img"]) &&
-          !node.classList.contains(CssClasses.imdbDataNode),
+          !Array.from(node.classList).some((cname) => cname.startsWith("sift")),
       );
     if (addedNodes.length === 0) return;
 
