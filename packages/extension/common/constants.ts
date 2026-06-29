@@ -136,9 +136,13 @@ export const supportedSites = {
     displayName: "Prime Video (primevideo.com)",
     permStrings: ["https://www.primevideo.com/*"],
   },
-  primevideoalt: {
+  primevideoamazondotcom: {
     displayName: "Prime Video (amazon.com/gp/video)",
     permStrings: ["https://www.amazon.com/*"],
+  },
+  primevideoamazondotde: {
+    displayName: "Prime Video (amazon.de/gp/video)",
+    permStrings: ["https://www.amazon.de/*"],
   },
   sonyliv: {
     displayName: "SonyLIV",

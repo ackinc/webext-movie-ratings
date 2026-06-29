@@ -22,6 +22,7 @@
   "permissions": ["scripting", "storage"],
   "optional_host_permissions": [
     "https://www.amazon.com/*",
+    "https://www.amazon.de/*",
     "https://www.primevideo.com/*",
     "https://tv.apple.com/*",
     "https://www.crunchyroll.com/*",
