@@ -81,4 +81,8 @@ export default class RatingsCache {
   async getIncorrectRatingReport(key: string) {
     return await this.db.get(incorrectRatingReportsStoreName, key);
   }
+
+  async removeIncorrectRatingReport(key: string) {
+    return await this.db.delete(incorrectRatingReportsStoreName, key);
+  }
 }
