@@ -126,7 +126,7 @@ async function initializePage() {
   } else if (location.hostname === "www.netflix.com") {
     page = new NetflixPage();
   } else if (
-    ["www.primevideo.com", "www.amazon.com"].some(
+    ["www.primevideo.com", "www.amazon.com", "www.amazon.de"].some(
       (x) => x === location.hostname,
     )
   ) {
