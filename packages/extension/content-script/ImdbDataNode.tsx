@@ -38,7 +38,10 @@ export default function ImdbDataNode({
         target="_blank"
         onClick={(e) => e.stopPropagation()}
       >
-        IMDb {data.imdbRating === "N/A" ? "" : data.imdbRating}
+        IMDb{" "}
+        {typeof data.imdbRating === "number"
+          ? data.imdbRating.toFixed(1)
+          : data.imdbRating}
       </a>
       <button
         onClick={() =>
