@@ -3,6 +3,7 @@ import {
   CssClasses,
   getIMDBLink,
   MessageType,
+  pick,
   type IMDBData,
   type Message,
   type Program,
@@ -47,7 +48,11 @@ export default function ImdbDataNode({
     console.log("Maybe wrong button clicked for", program, data, location.href);
     browser.runtime.sendMessage({
       type: MessageType.reportIncorrectProgramMatch,
-      data: { program, imdbData: data, pageUrl: location.href },
+      data: {
+        program: pick(program, ["title", "type", "year", "selector"]),
+        imdbData: data,
+        pageUrl: location.href,
+      },
     } satisfies Message);
   }
 }

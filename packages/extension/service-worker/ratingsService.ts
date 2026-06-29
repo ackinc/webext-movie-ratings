@@ -1,12 +1,14 @@
 import { type IDBPDatabase } from "idb";
 import { add } from "date-fns";
 import {
+  pick,
   omit,
   getSetting,
   programToHash,
   type CachedIMDBData,
   type IMDBData,
   type ProgramData,
+  type Program,
 } from "@common";
 import RatingsCache, { type RatingsCacheSchema } from "@common/RatingsCache";
 import TelemetryStore, {
@@ -23,6 +25,11 @@ export interface RatingsService {
     program: ProgramData,
     pageUrl: string,
   ): Promise<Required<IMDBData>>;
+  markRatingAsIncorrect(
+    program: Omit<Program, "node" | "container">,
+    imdbData: IMDBData,
+    pageUrl: string,
+  ): Promise<void>;
 }
 
 let inProgress: Record<
@@ -54,7 +61,7 @@ export async function initialize(db: IDBPDatabase): Promise<RatingsService> {
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
   }
-  return { getIMDBData, getCachedIMDBData };
+  return { getIMDBData, getCachedIMDBData, markRatingAsIncorrect };
 }
 
 /* implementation details */
@@ -176,4 +183,29 @@ async function getCachedIMDBData(
   program: ProgramData,
 ): Promise<CachedIMDBData | undefined> {
   return await ratingsCache.get(programToHash(program));
+}
+
+async function markRatingAsIncorrect(
+  program: Omit<Program, "node" | "container">,
+  imdbData: IMDBData,
+  pageUrl: string,
+) {
+  const key = [programToHash(program), program.selector, pageUrl].join("|");
+  await ratingsCache.putIncorrectRatingReport({
+    key,
+    ...program,
+    ...imdbData,
+    pageUrl,
+    reportedAt: +new Date(),
+  });
+
+  await siftApiService.sendUserFeedback(
+    JSON.stringify({
+      ...program,
+      ...pick(imdbData, ["imdbId", "imdbRating"]),
+      pageUrl,
+    }),
+    undefined,
+    "incorrect-rating-report",
+  );
 }

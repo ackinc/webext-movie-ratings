@@ -1,7 +1,7 @@
 import type { PermString, ProgramFilterSettings, Sitename } from "./types";
 
 export const DB_NAME = "siftDb";
-export const DB_VERSION = 2;
+export const DB_VERSION = 3;
 
 // how long to wait before invoking the 'findProgramsAndAddRatings'
 //   workhorse function after a reason to invoke it is detected

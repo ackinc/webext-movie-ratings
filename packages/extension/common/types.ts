@@ -73,7 +73,7 @@ export type Message =
   | {
       type: MessageType.reportIncorrectProgramMatch;
       data: {
-        program: Omit<Program, "node">;
+        program: Omit<Program, "node" | "container">;
         imdbData: IMDBData;
         pageUrl: string;
       };
