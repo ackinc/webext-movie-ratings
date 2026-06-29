@@ -33,6 +33,11 @@ let omdbApiClient: OmdbApiClient;
 let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
 const ratingCacheDurations = {
+  // NOTE: WHY_CACHE_ON_PROGRAM_MATCHING_ERROR
+  // Q: Why cache the result on a program-matching error, instead
+  //      of just throwing like we would for a regular error?
+  // A: So we have a 'breadcrumb' we can use to detect this state
+  //      the next time we need to get the rating for this program
   onProgramMatchingError: { minutes: -1 },
   onRatingNotFound: { weeks: 1 },
   onRatingFound: { weeks: 2 },
@@ -150,7 +155,8 @@ async function getIMDBData(
         const expiry = +add(
           new Date(),
           imdbData!.imdbRating === "N/M"
-            ? ratingCacheDurations.onProgramMatchingError
+            ? // See NOTE: WHY_CACHE_ON_PROGRAM_MATCHING_ERROR
+              ratingCacheDurations.onProgramMatchingError
             : imdbData!.imdbRating === "N/F"
               ? ratingCacheDurations.onRatingNotFound
               : ratingCacheDurations.onRatingFound,
