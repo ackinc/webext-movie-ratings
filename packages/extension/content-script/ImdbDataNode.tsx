@@ -7,6 +7,7 @@ import {
   type Message,
   type Program,
 } from "@common";
+import ExternalLinkIcon from "@common/components/Icons/ExternalLink";
 
 interface ImdbDataNodeProps {
   imdbData: IMDBData;
@@ -30,6 +31,7 @@ export default function ImdbDataNode({
           {typeof data.imdbRating === "number"
             ? data.imdbRating.toFixed(1)
             : data.imdbRating}
+          <ExternalLinkIcon />
         </a>
         <button
           className="maybe-wrong-button"
