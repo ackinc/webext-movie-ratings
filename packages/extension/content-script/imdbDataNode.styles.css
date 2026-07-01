@@ -1,7 +1,13 @@
-.sift-imdb-data-content {
-  width: 180px;
-  border-radius: 8px;
+/* reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  text-decoration: none;
+}
 
+.sift-imdb-data-content {
   display: block;
 
   color: #999999;

@@ -33,15 +33,13 @@ import { captureException } from "../common/errorReporter";
 import { addSidecar, removeSidecar } from "./sidecar";
 import ImdbDataNode from "./ImdbDataNode";
 import { limitConcurrency } from "rate-limit-utils";
-import resetStyles from "./reset.styles.css";
 import imdbNodeStyles from "./imdbDataNode.styles.css";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
 
   inSelectProgramMode: boolean = false;
-  stylesheets: Record<"page" | "imdbNode" | "reset", CSSStyleSheet> = {
-    reset: cssStyleSheetFromText(resetStyles),
+  stylesheets: Record<"page" | "imdbNode", CSSStyleSheet> = {
     imdbNode: cssStyleSheetFromText(imdbNodeStyles),
     // should be overridden/replaced in constructor of concrete subclasses
     page: new CSSStyleSheet(),
@@ -284,7 +282,6 @@ valid containers:\n\t${programContainers
 
     const shadowRoot = node.attachShadow({ mode: "open" });
     shadowRoot.adoptedStyleSheets = [
-      this.stylesheets.reset,
       this.stylesheets.imdbNode,
       this.stylesheets.page,
     ];
