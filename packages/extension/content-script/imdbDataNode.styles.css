@@ -20,6 +20,7 @@
     gap: 16px;
 
     .rating-page-link {
+      /* color would default to the usual 'a' blue if we didn't specify */
       color: inherit;
       display: flex;
       align-items: center;
