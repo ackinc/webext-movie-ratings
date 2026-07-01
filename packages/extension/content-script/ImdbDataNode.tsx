@@ -26,7 +26,17 @@ export default function ImdbDataNode({
 
   return (
     <div className={CssClasses.imdbDataNodeContent}>
-      <div className="headline">
+      <div
+        className="headline"
+        style={{
+          visibility:
+            APP_ENV === "production" &&
+            typeof data.imdbRating === "string" &&
+            ["N/F", "N/M"].includes(data.imdbRating)
+              ? "hidden"
+              : "visible",
+        }}
+      >
         <a
           className={`rating-page-link ${wasReportedIncorrect ? "rating-reported-incorrect" : ""}`}
           href={getIMDBLink(data.imdbId)}
