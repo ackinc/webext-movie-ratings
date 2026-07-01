@@ -5,6 +5,7 @@ import {
   omit,
   getSetting,
   programToHash,
+  hostToSitename,
   type CachedIMDBData,
   type IMDBData,
   type ProgramData,
@@ -247,5 +248,6 @@ function getIncorrectRatingReportKey(
   program: Omit<Program, "node" | "container">,
   pageUrl: string,
 ) {
-  return [programToHash(program), program.selector, pageUrl].join("|");
+  const site = hostToSitename[new URL(pageUrl).hostname]!;
+  return [programToHash(program), site].join("|");
 }
