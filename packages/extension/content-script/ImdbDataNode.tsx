@@ -59,7 +59,10 @@ export default function ImdbDataNode({
     </div>
   );
 
-  async function handleMaybeWrongButtonClick() {
+  async function handleMaybeWrongButtonClick(e: MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
     await browser.runtime.sendMessage({
       type: wasReportedIncorrect
         ? MessageType.undoReportIncorrectProgramMatch
