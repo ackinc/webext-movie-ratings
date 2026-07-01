@@ -12,16 +12,8 @@ ul > li button.epic-showcase-item .sift-imdb-data {
   color: white;
 }
 
-div.search-hint-lockup div[data-testid="search-hint-lockup-title"] {
-  width: 100%;
-  justify-content: space-between;
-  align-items: center;
-}
-
-div.search-hint-lockup
-  div[data-testid="search-hint-lockup-title"]
-  .sift-imdb-data {
-  flex-shrink: 0;
+div.search-hint-lockup .sift-imdb-data {
+  margin-left: 0;
 }
 
 a.search-card.lockup .sift-imdb-data {

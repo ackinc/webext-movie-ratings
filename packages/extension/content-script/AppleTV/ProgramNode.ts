@@ -69,12 +69,13 @@ export default class ProgramNode extends AbstractProgramNode {
   ): void {
     if (programNode.matches("div.search-hint-lockup")) {
       const titleNode = programNode.querySelector(
-        'div[data-testid="search-hint-lockup-title"] > span',
+        'div[data-testid="search-hint-lockup-title"]',
       );
       titleNode?.insertAdjacentElement("afterend", imdbNode);
       return;
     }
 
+    // top-results section of search-results page
     if (programNode.matches("a.search-card.lockup")) {
       const titleNode = programNode.querySelector("p.search-card-title");
       titleNode?.insertAdjacentElement("afterend", imdbNode);
