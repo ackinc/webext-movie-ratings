@@ -1,4 +1,5 @@
 import { useState } from "preact/hooks";
+import cx from "classnames";
 import {
   browser,
   CssClasses,
@@ -12,11 +13,13 @@ import {
 import ExternalLinkIcon from "@common/components/Icons/ExternalLink";
 
 interface ImdbDataNodeProps {
+  className?: string;
   imdbData: IMDBData;
   program: Program;
 }
 
 export default function ImdbDataNode({
+  className,
   program,
   imdbData: data,
 }: ImdbDataNodeProps) {
@@ -25,7 +28,7 @@ export default function ImdbDataNode({
   );
 
   return (
-    <div className={CssClasses.imdbDataNodeContent}>
+    <div className={cx(CssClasses.imdbDataNodeContent, className)}>
       <div
         className="headline"
         style={{

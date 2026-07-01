@@ -175,7 +175,7 @@ valid containers:\n\t${programContainers
     // remove existing node (no-op if doesn't exist)
     this.#ctor.ProgramNode.removeIMDBNode(program.node);
 
-    const ratingNode = this.#createIMDBDataNode(program, data);
+    const ratingNode = this.createIMDBDataNode(program, data);
     this.#ctor.ProgramNode.insertIMDBNode(program.node, ratingNode);
   }
 
@@ -271,7 +271,11 @@ valid containers:\n\t${programContainers
       .flat();
   };
 
-  #createIMDBDataNode(program: Program, data: IMDBData): HTMLElement {
+  protected createIMDBDataNode(
+    program: Program,
+    data: IMDBData,
+    className: string = "",
+  ): HTMLElement {
     const node = document.createElement("div");
 
     node.classList.add(CssClasses.imdbDataNode);
@@ -285,7 +289,7 @@ valid containers:\n\t${programContainers
       this.stylesheets.imdbNode,
       this.stylesheets.page,
     ];
-    render(h(ImdbDataNode, { program, imdbData: data }), shadowRoot);
+    render(h(ImdbDataNode, { className, program, imdbData: data }), shadowRoot);
 
     return node;
   }
