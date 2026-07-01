@@ -187,8 +187,8 @@ function handleMessage(
     } else if (request.type === MessageType.reportIncorrectProgramMatch) {
       const { program, imdbData, pageUrl } = request.data;
 
-      ratingsService
-        .markRatingAsIncorrect(program, imdbData, pageUrl)
+      waitForRatingsService()
+        .then((rs) => rs.markRatingAsIncorrect(program, imdbData, pageUrl))
         .then(() => sendResponse({ data: {} }))
         .catch(captureException);
 
@@ -196,8 +196,8 @@ function handleMessage(
     } else if (request.type === MessageType.undoReportIncorrectProgramMatch) {
       const { program, imdbData, pageUrl } = request.data;
 
-      ratingsService
-        .undoMarkRatingAsIncorrect(program, imdbData, pageUrl)
+      waitForRatingsService()
+        .then((rs) => rs.undoMarkRatingAsIncorrect(program, imdbData, pageUrl))
         .then(() => sendResponse({ data: {} }))
         .catch(captureException);
 
