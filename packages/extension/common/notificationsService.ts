@@ -1,3 +1,4 @@
+import { addWeeks } from "date-fns";
 import type { Notification as SiftNotification } from "sifttypes";
 import * as siftApiService from "./siftApiService";
 import * as storage from "./storage";
@@ -7,7 +8,9 @@ export async function checkForNewNotifications(): Promise<InAppNotification[]> {
   const lastReceivedNotif = await getLatestNotification();
   const newNotifications: Required<SiftNotification>[] =
     await siftApiService.getNotifications(
-      lastReceivedNotif ? new Date(lastReceivedNotif.timestamp) : new Date(),
+      lastReceivedNotif
+        ? new Date(lastReceivedNotif.timestamp)
+        : addWeeks(new Date(), -1),
     );
 
   if (newNotifications.length > 0) {
