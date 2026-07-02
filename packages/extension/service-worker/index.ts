@@ -48,6 +48,10 @@ let telemetryStore: TelemetryStore;
     //   disables, then re-enables the extension, and that is not a
     //   situation the onInstalled event listener runs for
     await injectUpdatedContentScripts();
+
+    if ((await notificationsService.checkForNewNotifications()).length > 0) {
+      addBadge("!");
+    }
   } catch (e) {
     captureException(e);
   }
@@ -65,13 +69,11 @@ async function onInstalled() {
     errorReportingOptIn,
     pitchMissingRatingReportingPageSeen,
     mediaRequestBlockingEnabled,
-    newNotifications,
   ] = await Promise.all([
     getSetting("onboardingStatus"),
     getSetting("errorReportingOptIn"),
     getSetting("pitchMissingRatingReportingPageSeen"),
     getSetting("mediaRequestBlockingEnabled"),
-    notificationsService.checkForNewNotifications(),
   ]);
 
   if (APP_ENV === "development") {
@@ -80,8 +82,7 @@ async function onInstalled() {
 
   if (
     onboardingStatus !== "finished" ||
-    (!errorReportingOptIn && !pitchMissingRatingReportingPageSeen) ||
-    newNotifications.length > 0
+    (!errorReportingOptIn && !pitchMissingRatingReportingPageSeen)
   ) {
     addBadge("!");
   }

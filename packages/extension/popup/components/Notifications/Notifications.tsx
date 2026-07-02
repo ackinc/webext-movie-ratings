@@ -14,11 +14,12 @@ export default function Notifications({
   return (
     <div className="notifications-container">
       {notifications.map((n) => (
-        <div key={n.id} className="notification">
-          <p>{n.message}</p>
+        <div key={n.notificationId} className="notification">
+          {/* TODO: markdown support (embedded links) */}
+          <p>{n.content}</p>
           <CloseIconButton
             style={{ width: "20px", height: "20px", flexShrink: "0" }}
-            onClick={() => onDismissNotification(n.id)}
+            onClick={() => onDismissNotification(n.notificationId)}
           />
         </div>
       ))}
