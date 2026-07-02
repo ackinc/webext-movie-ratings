@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import * as assert from "node:assert";
-import { getGeneralizedUrlPath, percentile } from "./index.ts";
+import { getGeneralizedUrlPath, percentile, renderTemplate } from "./index.ts";
 
 test("getGeneralizeUrlPath", (t) => {
   t.test("should replace numbers in path segments with :n", () => {
@@ -35,6 +35,57 @@ test("getGeneralizeUrlPath", (t) => {
       getGeneralizedUrlPath("/genres/123/movies/456?w=7a8b9c&h=0a1b2c"),
     );
   });
+});
+
+test("renderTemplate", (t) => {
+  t.test("passes strings without placeholders through unchanged", () => {
+    assert.equal(renderTemplate("", {}), "");
+    assert.equal(renderTemplate("hello world", {}), "hello world");
+  });
+
+  t.test(
+    "placeholders for which a value is not provided are replaced with blanks",
+    () => {
+      assert.equal(renderTemplate("hello {{name}}", {}), "hello ");
+      assert.equal(renderTemplate("{{greeting}} world", {}), " world");
+    },
+  );
+
+  t.test("replaces placeholders with provided values", () => {
+    assert.equal(
+      renderTemplate("hello {{name}}", { name: "world" }),
+      "hello world",
+    );
+    assert.equal(
+      renderTemplate("{{greeting}} world", { greeting: "hello" }),
+      "hello world",
+    );
+  });
+
+  t.test("whitespace inside placeholder delimiters does not matter", () => {
+    assert.equal(
+      renderTemplate("hello {{ name}}", { name: "world" }),
+      "hello world",
+    );
+    assert.equal(
+      renderTemplate("hello {{name }}", { name: "world" }),
+      "hello world",
+    );
+    assert.equal(
+      renderTemplate("hello {{ name }}", { name: "world" }),
+      "hello world",
+    );
+  });
+
+  t.test(
+    "placeholder names can be alphanumeric, and can also contain underscores",
+    () => {
+      assert.equal(
+        renderTemplate("hello {{ _someName1 }}", { _someName1: "world" }),
+        "hello world",
+      );
+    },
+  );
 });
 
 test("percentile", (t) => {
