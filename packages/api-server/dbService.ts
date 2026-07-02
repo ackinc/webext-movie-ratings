@@ -63,6 +63,28 @@ db.exec(`
   END
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS "notifications" (
+    "id" INTEGER NOT NULL,
+    "notificationId" TEXT NOT NULL,
+    "targetPage" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "createdAt" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "meta" TEXT,
+    PRIMARY KEY("id")
+  );
+`);
+
+db.exec(`
+  CREATE TRIGGER IF NOT EXISTS update_notifications_updatedAt
+  AFTER UPDATE ON "notifications"
+  FOR EACH ROW
+  BEGIN
+    UPDATE "notifications" SET "updatedAt" = CURRENT_TIMESTAMP WHERE "id" = OLD."id";
+  END
+`);
+
 export function closeConnection() {
   db.close();
 }
