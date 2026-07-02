@@ -1,5 +1,6 @@
 import Database, { type Database as TDatabase } from "better-sqlite3";
 import { formatISO9075 } from "date-fns";
+import { UTCDate } from "@date-fns/utc";
 import {
   type SiftApiProgramMatching,
   type UserMessage,
@@ -185,14 +186,14 @@ export function createNotification(
       notificationId,
       targetPage,
       content,
-      formatISO9075(timestamp ? new Date(timestamp) : new Date()),
+      formatISO9075(timestamp ? new UTCDate(timestamp) : new UTCDate()),
     );
   if (!lastInsertRowid) throw new Error(`Record creation failed`);
   return getRecordById<NotificationRecord>(lastInsertRowid, "notifications");
 }
 
 export function getNotificationsSince(fromMs: number): NotificationRecord[] {
-  const fromTimestamp = formatISO9075(new Date(fromMs));
+  const fromTimestamp = formatISO9075(new UTCDate(fromMs));
   const rows = db
     .prepare<
       [string],

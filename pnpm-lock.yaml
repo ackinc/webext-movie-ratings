@@ -75,6 +75,9 @@ importers:
         specifier: ^18.0.0
         version: 18.0.0
     devDependencies:
+      '@date-fns/utc':
+        specifier: ^2.1.1
+        version: 2.1.1
       '@types/async':
         specifier: ^3.2.25
         version: 3.2.25
@@ -528,6 +531,9 @@ packages:
   '@babel/types@7.28.5':
     resolution: {integrity: sha512-qQ5m48eI/MFLQ5PxQj4PFaprjyCTLI37ElWMmNs0K8Lk3dVeOdNpB3ks8jc7yM5CDmVC73eMVk/trk3fgmrUpA==}
     engines: {node: '>=6.9.0'}
+
+  '@date-fns/utc@2.1.1':
+    resolution: {integrity: sha512-SlJDfG6RPeEX8wEVv6ZB3kak4MmbtyiI2qX/5zuKdordbrhB/iaJ58GVMZgJ6P1sJaM1gMgENFYYeg1JWrCFrA==}
 
   '@emnapi/runtime@1.10.0':
     resolution: {integrity: sha512-ewvYlk86xUoGI0zQRNq/mC+16R1QeDlKQy21Ki3oSYXNgLb45GV1P6A0M+/s6nyCuNDqe5VpaY84BzXGwVbwFA==}
@@ -3448,6 +3454,8 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
+
+  '@date-fns/utc@2.1.1': {}
 
   '@emnapi/runtime@1.10.0':
     dependencies:
