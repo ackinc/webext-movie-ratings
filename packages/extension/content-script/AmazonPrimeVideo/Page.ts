@@ -153,13 +153,13 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
 
   protected override createIMDBDataNode(
     program: Program,
-    data: IMDBData,
+    imdbData: IMDBData,
   ): HTMLElement {
     const additionalClasses = program.node.matches(
       'article[data-testid="super-carousel-card"]',
     )
       ? "inside-super-carousel-card"
       : "";
-    return super.createIMDBDataNode(program, data, additionalClasses);
+    return super.createIMDBDataNode(program, imdbData, additionalClasses);
   }
 }

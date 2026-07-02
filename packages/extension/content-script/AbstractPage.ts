@@ -273,23 +273,23 @@ valid containers:\n\t${programContainers
 
   protected createIMDBDataNode(
     program: Program,
-    data: IMDBData,
+    imdbData: IMDBData,
     className: string = "",
   ): HTMLElement {
     const node = document.createElement("div");
 
     node.classList.add(CssClasses.imdbDataNode);
 
-    node.dataset["imdbId"] = data.imdbId;
-    node.dataset["imdbRating"] = String(data.imdbRating);
-    if ("expiry" in data) node.dataset["expiry"] = String(data.expiry);
+    node.dataset["imdbId"] = imdbData.imdbId;
+    node.dataset["imdbRating"] = String(imdbData.imdbRating);
+    if ("expiry" in imdbData) node.dataset["expiry"] = String(imdbData.expiry);
 
     const shadowRoot = node.attachShadow({ mode: "open" });
     shadowRoot.adoptedStyleSheets = [
       this.stylesheets.imdbNode,
       this.stylesheets.page,
     ];
-    render(h(ImdbDataNode, { className, program, imdbData: data }), shadowRoot);
+    render(h(ImdbDataNode, { className, program, imdbData }), shadowRoot);
 
     return node;
   }
