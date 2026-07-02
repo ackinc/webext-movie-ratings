@@ -1,6 +1,6 @@
 import AbstractPage from "../AbstractPage";
-import { ErrorMessage } from "../../common";
-import type { ProgramContainer } from "../../common/types";
+import { ErrorMessage } from "@common";
+import type { ProgramContainer, Program, IMDBData } from "@common/types";
 import ProgramNode from "./ProgramNode";
 import pageStyles from "./page.styles.css";
 
@@ -186,5 +186,13 @@ export default class CrunchyrollPage extends AbstractPage {
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
+  }
+
+  protected override createIMDBDataNode(
+    program: Program,
+    data: IMDBData,
+  ): HTMLElement {
+    const additionalClasses = "";
+    return super.createIMDBDataNode(program, data, additionalClasses);
   }
 }
