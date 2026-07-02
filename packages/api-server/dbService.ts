@@ -1,11 +1,17 @@
 import Database, { type Database as TDatabase } from "better-sqlite3";
-import { type SiftApiProgramMatching, type UserMessage } from "sifttypes";
+import { formatISO9075 } from "date-fns";
+import {
+  type SiftApiProgramMatching,
+  type UserMessage,
+  type Notification,
+} from "sifttypes";
 import { pick } from "siftutils";
 import type {
   DbRecord,
   ProgramMatchRecord,
   RawProgramMatchRecord,
   UserMessageRecord,
+  NotificationRecord,
 } from "./types.ts";
 
 const env = pick(process.env, ["DB_PATH"], true);
@@ -164,6 +170,43 @@ export function createMessageRecord(userMessage: UserMessage) {
     .run(email ?? null, category, message);
   if (!lastInsertRowid) throw new Error(`Record creation failed`);
   return getRecordById<UserMessageRecord>(lastInsertRowid, "messages");
+}
+
+export function createNotification(
+  notification: Notification,
+): NotificationRecord {
+  const { notificationId, targetPage, content, timestamp } = notification;
+  const { lastInsertRowid } = db
+    .prepare(
+      "INSERT INTO notifications (notificationId, targetPage, content, createdAt) VALUES (?, ?, ?, ?)",
+    )
+    .run(
+      notificationId,
+      targetPage,
+      content,
+      formatISO9075(timestamp ? new Date(timestamp) : new Date()),
+    );
+  if (!lastInsertRowid) throw new Error(`Record creation failed`);
+  return getRecordById<NotificationRecord>(lastInsertRowid, "notifications");
+}
+
+export function getNotificationsSince(fromMs: number): NotificationRecord[] {
+  const fromTimestamp = formatISO9075(new Date(fromMs));
+  const rows = db
+    .prepare<
+      [string],
+      NotificationRecord
+    >("SELECT * FROM notifications WHERE createdAt >= ? ORDER BY createdAt DESC")
+    .all(fromTimestamp);
+
+  for (const row of rows) {
+    // makes future parseISO calls treat the string as representing
+    //   a UTC date, instead of a date in the current system timezone
+    row.createdAt = row.createdAt.replace(" ", "T") + "Z";
+    row.updatedAt = row.updatedAt.replace(" ", "T") + "Z";
+  }
+
+  return rows;
 }
 
 function getRecordById<T extends DbRecord>(

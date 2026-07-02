@@ -2,6 +2,7 @@ import type {
   ProgramType,
   SiftApiProgramMatching,
   UserMessage,
+  Notification,
 } from "sifttypes";
 
 export interface DbRecord {
@@ -31,6 +32,8 @@ export interface UserMessageRecord
   extends DbRecord, Omit<UserMessage, "email"> {
   email: string | null;
 }
+
+export interface NotificationRecord extends DbRecord, Notification {}
 
 export interface IndexedImdbTitle {
   id: string;

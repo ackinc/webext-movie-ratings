@@ -28,3 +28,10 @@ export const userMessageSchema = Type.Object({
   category: userMessageCategory,
   message: Type.String(),
 });
+
+export const notificationSchema = Type.Object({
+  notificationId: Type.String(),
+  targetPage: Type.String(),
+  content: Type.String(),
+  timestamp: Type.Optional(Type.Number()),
+});
