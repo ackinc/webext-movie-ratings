@@ -78,7 +78,8 @@ db.exec(`
     "createdAt" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "meta" TEXT,
-    PRIMARY KEY("id")
+    PRIMARY KEY("id"),
+    UNIQUE("notificationId")
   );
 `);
 

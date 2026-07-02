@@ -177,7 +177,7 @@ function createServer() {
   fastify.post<{
     Headers: { authorization: string };
     Body: Notification;
-    Reply: { 200: { status: string }; 403: { status: "UNAUTHORIZED" } };
+    Reply: { 200: { status: string }; 400: { error: string } };
   }>(
     "/notifications",
     {
@@ -192,7 +192,21 @@ function createServer() {
       preHandler: ensureAuthorized,
     } satisfies RouteShorthandOptions,
     async function (request, reply) {
-      dbService.createNotification(request.body);
+      try {
+        dbService.createNotification(request.body);
+      } catch (e) {
+        if (
+          e instanceof Error &&
+          e.message.startsWith("UNIQUE constraint failed")
+        ) {
+          reply.code(400).send({
+            error: `notificationId '${request.body.notificationId}' already exists`,
+          });
+          return;
+        }
+        throw e;
+      }
+
       reply.code(200).send({ status: "ok" });
     },
   );
