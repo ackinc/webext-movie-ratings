@@ -1,0 +1,25 @@
+info:
+  name: Create notification
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{API_URL}}/notifications"
+  body:
+    type: json
+    data: |-
+      {
+        "notificationId": "TEST_NOTIFICATION",
+        "targetPage": "filters",
+        "content": "This is a test notification"
+      }
+  auth:
+    type: bearer
+    token: "{{SIFT_API_KEY}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
