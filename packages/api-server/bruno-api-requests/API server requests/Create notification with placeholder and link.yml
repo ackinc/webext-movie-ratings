@@ -1,0 +1,25 @@
+info:
+  name: Create notification with placeholder and link
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{API_URL}}/notifications"
+  body:
+    type: json
+    data: |-
+      {
+        "notificationId": "TEST_NOTIFICATION_WITH_PLACEHOLDER_LINK",
+        "targetPage": "filters",
+        "content": "This is a test notification with a [link]({{webStoreLink}})!"
+      }
+  auth:
+    type: bearer
+    token: "{{SIFT_API_KEY}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

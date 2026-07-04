@@ -1,7 +1,7 @@
 info:
-  name: Create notification
+  name: Create notification with link
   type: http
-  seq: 5
+  seq: 6
 
 http:
   method: POST
@@ -10,9 +10,9 @@ http:
     type: json
     data: |-
       {
-        "notificationId": "TEST_NOTIFICATION",
+        "notificationId": "TEST_NOTIFICATION_WITH_LINK",
         "targetPage": "filters",
-        "content": "This is a test notification"
+        "content": "This is a test notification with a [link](https://example.com/)!"
       }
   auth:
     type: bearer
