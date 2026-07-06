@@ -18,12 +18,15 @@ export default class ProgramNode extends AbstractProgramNode {
     ) {
       title = programNode.querySelector("a")!.getAttribute("aria-label")!;
     } else if (
-      [
-        "div.titleCard--container",
-        'a[data-uia="search-gallery-video-card"][aria-label]',
-      ].some((s) => programNode.matches(s))
+      ["div.titleCard--container"].some((s) => programNode.matches(s))
     ) {
       title = programNode.getAttribute("aria-label")!;
+    } else if (
+      programNode.matches('div:has(> a[data-uia="standard-card"][aria-label])')
+    ) {
+      title = programNode
+        .querySelector('a[data-uia="standard-card"][aria-label]')!
+        .getAttribute("aria-label")!;
     } else if (programNode.matches('section[data-uia="billboard"]')) {
       title = programNode
         .getAttribute("aria-label")!
