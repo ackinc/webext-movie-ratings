@@ -77,6 +77,18 @@ const config: esbuild.BuildOptions = {
       : { in: path.join(srcDir, "dashboard/main.jsx"), out: "dashboard/main" },
   ].filter((x) => x !== null),
   bundle: true,
+  // NOTE_WHY_ESBUILD_CHARSET_UTF8
+  // the showdown library uses non-ascii chars (specifically, the
+  //   trema ¨ - \xC2\xA8) in strings and regexps
+  // by default, esbuild converts non-ascii to backslash-escaped
+  //   ascii sequences; this conversion affects strings but not regexes
+  //   (behavior documented here: https://esbuild.github.io/api/#charset)
+  // when esbuild in charset ascii mode encounters the trema, it converts
+  //   it to \xA8 which is the trema char's code point in ascii
+  // since showdown's regexes use \xC2\xA8 to identify the trema char,
+  //   which strings only contain \xA8 due to esbuild's substitution,
+  //   showdown's md2html conversion fails due to a regex matching failure
+  charset: "utf8",
   define: {
     APP_ENV: `"${APP_ENV}"`,
     OMDB_API_KEY: `"${OMDB_API_KEY}"`,

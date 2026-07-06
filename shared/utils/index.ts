@@ -192,3 +192,14 @@ export function isSorted(nums: number[]) {
   }
   return true;
 }
+
+export function renderTemplate(
+  templateString: string,
+  vars: Record<string, unknown>,
+) {
+  const matches = templateString.match(/{{[^}]+}}/g) ?? [];
+  return matches.reduce((acc, m) => {
+    acc = acc.replaceAll(m, String(vars[m.replace(/\W/g, "")] ?? ""));
+    return acc;
+  }, templateString);
+}

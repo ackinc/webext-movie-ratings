@@ -1,6 +1,10 @@
 import type { ProgramData } from "./types";
 import { pick, retry } from "siftutils";
-import type { SiftApiProgramMatching, UserMessage } from "sifttypes";
+import type {
+  Notification,
+  SiftApiProgramMatching,
+  UserMessage,
+} from "sifttypes";
 import { ErrorMessage } from ".";
 
 const retryStrategy = {
@@ -11,6 +15,7 @@ const retryStrategy = {
 
 export const getMatchedImdbId = retry(getMatchedImdbId_, retryStrategy);
 export const sendUserFeedback = retry(sendUserFeedback_, retryStrategy);
+export const getNotifications = retry(getNotifications_, retryStrategy);
 
 async function getMatchedImdbId_(
   programData: ProgramData,
@@ -51,4 +56,15 @@ async function sendUserFeedback_(
     } satisfies UserMessage),
   });
   if (!response.ok) throw new Error(ErrorMessage.siftApiServerError);
+}
+
+async function getNotifications_(
+  from: Date,
+): Promise<Required<Notification>[]> {
+  const url = new URL(`${SIFT_API_URL}/notifications`);
+  url.searchParams.append("from", String(+from));
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(ErrorMessage.siftApiServerError);
+  const { notifications } = await response.json();
+  return notifications;
 }

@@ -1,5 +1,5 @@
 {
-  "name": "Sift: IMDB ratings on Netflix, Prime, etc.",
+  "name": "Sift: IMDB on Netflix, IMDB on Prime, etc.",
   "background": {
     "scripts": ["service-worker.js"]
   },

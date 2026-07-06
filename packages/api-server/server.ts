@@ -12,6 +12,8 @@ import {
   siftApiProgramMatchSchemas,
   type UserMessage,
   userMessageSchema,
+  type Notification,
+  notificationSchema,
 } from "sifttypes";
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
@@ -20,7 +22,11 @@ import * as emailService from "./emailService.ts";
 import logger from "./logger.ts";
 import { querySearchEngine, getIndexLastUpdatedTime } from "./searchEngine.ts";
 
-const env = pick(process.env, ["APP_ENV", "PORT", "WEBSITE_URL"], true);
+const env = pick(
+  process.env,
+  ["APP_ENV", "PORT", "SIFT_API_KEY", "WEBSITE_URL"],
+  true,
+);
 
 const server = createServer();
 server.listen({ port: +env.PORT! }, function (err, _address) {
@@ -167,7 +173,87 @@ function createServer() {
     },
   );
 
+  // post a notification
+  fastify.post<{
+    Headers: { authorization: string };
+    Body: Notification;
+    Reply: { 200: { status: string }; 400: { error: string } };
+  }>(
+    "/notifications",
+    {
+      schema: {
+        headers: {
+          type: "object",
+          properties: { authorization: { type: "string" } },
+          required: ["authorization"],
+        },
+        body: notificationSchema,
+      },
+      preHandler: ensureAuthorized,
+    } satisfies RouteShorthandOptions,
+    async function (request, reply) {
+      try {
+        dbService.createNotification(request.body);
+      } catch (e) {
+        if (
+          e instanceof Error &&
+          e.message.startsWith("UNIQUE constraint failed")
+        ) {
+          reply.code(400).send({
+            error: `notificationId '${request.body.notificationId}' already exists`,
+          });
+          return;
+        }
+        throw e;
+      }
+
+      reply.code(200).send({ status: "ok" });
+    },
+  );
+
+  // get latest notifications
+  // TODO: limit results and paginate
+  const getNotificationsRequestSchema = Type.Object({
+    from: Type.Number(),
+  });
+  fastify.get<{
+    Querystring: Static<typeof getNotificationsRequestSchema>;
+    Reply: { 200: { notifications: Required<Notification>[] } };
+  }>(
+    "/notifications",
+    {
+      schema: {
+        querystring: getNotificationsRequestSchema,
+        response: {
+          200: Type.Object({ notifications: Type.Array(notificationSchema) }),
+        },
+      },
+    } satisfies RouteShorthandOptions,
+    async function (request, reply) {
+      const notificationRecords = dbService.getNotificationsSince(
+        request.query.from,
+      );
+      reply.code(200).send({
+        notifications: notificationRecords.map((nr) => ({
+          ...pick(nr, ["notificationId", "targetPage", "content"]),
+          timestamp: +parseISO(nr.createdAt),
+        })),
+      });
+    },
+  );
+
   return fastify;
+}
+
+async function ensureAuthorized(
+  request: Fastify.FastifyRequest,
+  reply: Fastify.FastifyReply,
+) {
+  if (
+    request.headers.authorization?.replace(/^Bearer /, "") !== env.SIFT_API_KEY!
+  ) {
+    reply.code(403).send({ status: "UNAUTHORIZED" });
+  }
 }
 
 async function cleanup(signal: "SIGINT" | "SIGTERM") {

@@ -1,3 +1,4 @@
+import type { Notification as SiftNotification } from "sifttypes";
 import { MessageType, supportedSites } from "./constants";
 
 export type ProgramContainerData = {
@@ -197,6 +198,8 @@ export type WebpageStats = {
 };
 
 export type ExtensionSettings = {
+  extensionInstallTime: number;
+  extensionLastUpdateTime: number;
   errorReportingOptIn: boolean;
   programFiltersSettings: ProgramFilterSettings;
   outdatedSelectorDetectionEnabled: boolean;
@@ -230,10 +233,7 @@ export type PopupPage =
   | "feedbackForm";
 
 export type InAppNotificationStatus = "unseen" | "seen" | "dismissed";
-export interface InAppNotification {
-  id: string;
-  message: string;
-  targetPopupPage: PopupPage;
+export interface InAppNotification extends SiftNotification {
   status: InAppNotificationStatus;
   timestamp: number;
 }
