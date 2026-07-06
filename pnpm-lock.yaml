@@ -23,6 +23,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.1044.0
         version: 3.1044.0
+      '@date-fns/utc':
+        specifier: ^2.1.1
+        version: 2.1.1
       '@fastify/cors':
         specifier: ^11.2.0
         version: 11.2.0
@@ -75,9 +78,6 @@ importers:
         specifier: ^18.0.0
         version: 18.0.0
     devDependencies:
-      '@date-fns/utc':
-        specifier: ^2.1.1
-        version: 2.1.1
       '@types/async':
         specifier: ^3.2.25
         version: 3.2.25
