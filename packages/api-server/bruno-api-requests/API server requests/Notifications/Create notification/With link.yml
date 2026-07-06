@@ -1,0 +1,23 @@
+info:
+  name: With link
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{API_URL}}/notifications"
+  body:
+    type: json
+    data: |-
+      {
+        "notificationId": "TEST_NOTIFICATION_WITH_LINK",
+        "targetPage": "filters",
+        "content": "This is a test notification with a [link](https://example.com/)!"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

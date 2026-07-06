@@ -50,15 +50,22 @@ function App() {
       // show whichever page the user has unseen notifications for
       const [latestNotification, ...restNotifications] =
         await notificationsService.getNotificationsBy(
-          { status: ["unseen", "seen"] },
-          notificationsService.cmpNotifications,
+          {
+            status: ["unseen", "seen"],
+            targetPage: [
+              "filters",
+              "settings",
+              "pitchErrorReporting",
+            ] satisfies PopupPage[],
+          },
+          notificationsService.cmpNotificationsByStatusAndTimestamp,
           { limitPerPage: 3 },
         );
       if (!latestNotification) return;
 
       setNotifications([latestNotification, ...restNotifications]);
       if (latestNotification.status === "unseen") {
-        setCurPage(latestNotification.targetPopupPage);
+        setCurPage(latestNotification.targetPage as PopupPage);
         removeBadge();
       }
       return;
@@ -75,8 +82,8 @@ function App() {
   useEffect(() => {
     (async () => {
       const idsOfNotifsToUpdate = notifications
-        .filter((n) => n.targetPopupPage === curPage && n.status === "unseen")
-        .map((n) => n.id);
+        .filter((n) => n.targetPage === curPage && n.status === "unseen")
+        .map((n) => n.notificationId);
       if (idsOfNotifsToUpdate.length === 0) return;
       await notificationsService.updateNotificationStatus(
         idsOfNotifsToUpdate,
@@ -85,14 +92,16 @@ function App() {
       setNotifications(
         notifications.map((n) => ({
           ...n,
-          status: idsOfNotifsToUpdate.includes(n.id) ? "seen" : n.status,
+          status: idsOfNotifsToUpdate.includes(n.notificationId)
+            ? "seen"
+            : n.status,
         })),
       );
     })();
   }, [curPage, notifications]);
 
   const curPageNotifs = notifications.filter(
-    (notification) => curPage === notification.targetPopupPage,
+    (notification) => curPage === notification.targetPage,
   );
 
   return (
@@ -142,7 +151,7 @@ function App() {
 
   async function handleNotificationDismissed(nId: string) {
     await notificationsService.updateNotificationStatus([nId], "dismissed");
-    setNotifications((ns) => ns.filter(({ id }) => id !== nId));
+    setNotifications((ns) => ns.filter((n) => n.notificationId !== nId));
   }
 }
 

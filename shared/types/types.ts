@@ -3,6 +3,7 @@ import {
   programTypeSchema,
   siftApiProgramMatchSchemas,
   userMessageSchema,
+  notificationSchema,
 } from "./schemas.ts";
 
 export type ProgramType = Static<typeof programTypeSchema>;
@@ -14,3 +15,5 @@ export namespace SiftApiProgramMatching {
 }
 
 export type UserMessage = Static<typeof userMessageSchema>;
+
+export type Notification = Static<typeof notificationSchema>;

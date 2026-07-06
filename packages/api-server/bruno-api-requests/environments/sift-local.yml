@@ -6,3 +6,5 @@ variables:
     value: http://localhost:7700
   - secret: true
     name: MEILISEARCH_MASTER_KEY
+  - secret: true
+    name: SIFT_API_KEY

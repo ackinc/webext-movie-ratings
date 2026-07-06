@@ -1,0 +1,23 @@
+info:
+  name: Basic
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{API_URL}}/notifications"
+  body:
+    type: json
+    data: |-
+      {
+        "notificationId": "TEST_NOTIFICATION",
+        "targetPage": "filters",
+        "content": "This is a test notification."
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

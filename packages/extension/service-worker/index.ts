@@ -3,6 +3,7 @@ import { isNetworkError } from "siftutils";
 import {
   browser,
   getSetting,
+  setSetting,
   delayMs,
   MessageType,
   retry,
@@ -48,6 +49,10 @@ let telemetryStore: TelemetryStore;
     //   disables, then re-enables the extension, and that is not a
     //   situation the onInstalled event listener runs for
     await injectUpdatedContentScripts();
+
+    if ((await notificationsService.checkForNewNotifications()).length > 0) {
+      addBadge("!");
+    }
   } catch (e) {
     captureException(e);
   }
@@ -60,18 +65,22 @@ let telemetryStore: TelemetryStore;
 async function onInstalled() {
   browser.runtime.setUninstallURL(SIFT_WEBSITE_URL + "/uninstall");
 
+  const now = +new Date();
+  if (!(await getSetting("extensionInstallTime"))) {
+    await setSetting("extensionInstallTime", now);
+  }
+  await setSetting("extensionLastUpdateTime", now);
+
   const [
     onboardingStatus,
     errorReportingOptIn,
     pitchMissingRatingReportingPageSeen,
     mediaRequestBlockingEnabled,
-    newNotifications,
   ] = await Promise.all([
     getSetting("onboardingStatus"),
     getSetting("errorReportingOptIn"),
     getSetting("pitchMissingRatingReportingPageSeen"),
     getSetting("mediaRequestBlockingEnabled"),
-    notificationsService.checkForNewNotifications(),
   ]);
 
   if (APP_ENV === "development") {
@@ -80,8 +89,7 @@ async function onInstalled() {
 
   if (
     onboardingStatus !== "finished" ||
-    (!errorReportingOptIn && !pitchMissingRatingReportingPageSeen) ||
-    newNotifications.length > 0
+    (!errorReportingOptIn && !pitchMissingRatingReportingPageSeen)
   ) {
     addBadge("!");
   }
