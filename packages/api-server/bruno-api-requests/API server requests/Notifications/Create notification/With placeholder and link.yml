@@ -1,7 +1,7 @@
 info:
-  name: Create notification with placeholder and link
+  name: With placeholder and link
   type: http
-  seq: 8
+  seq: 4
 
 http:
   method: POST
@@ -14,9 +14,7 @@ http:
         "targetPage": "filters",
         "content": "This is a test notification with a [link]({{webStoreLink}})!"
       }
-  auth:
-    type: bearer
-    token: "{{SIFT_API_KEY}}"
+  auth: inherit
 
 settings:
   encodeUrl: true

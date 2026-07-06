@@ -1,7 +1,7 @@
 info:
-  name: Create notification with link
+  name: With placeholder
   type: http
-  seq: 6
+  seq: 3
 
 http:
   method: POST
@@ -10,13 +10,11 @@ http:
     type: json
     data: |-
       {
-        "notificationId": "TEST_NOTIFICATION_WITH_LINK",
+        "notificationId": "TEST_NOTIFICATION_WITH_PLACEHOLDER",
         "targetPage": "filters",
-        "content": "This is a test notification with a [link](https://example.com/)!"
+        "content": "This is a test notification with a {{placeholderName}}!"
       }
-  auth:
-    type: bearer
-    token: "{{SIFT_API_KEY}}"
+  auth: inherit
 
 settings:
   encodeUrl: true

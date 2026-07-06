@@ -1,0 +1,9 @@
+info:
+  name: Create notification
+  type: folder
+  seq: 2
+
+request:
+  auth:
+    type: bearer
+    token: "{{SIFT_API_KEY}}"

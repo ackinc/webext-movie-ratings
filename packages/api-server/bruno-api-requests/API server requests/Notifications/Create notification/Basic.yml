@@ -1,7 +1,7 @@
 info:
-  name: Create simple notification
+  name: Basic
   type: http
-  seq: 5
+  seq: 1
 
 http:
   method: POST
@@ -14,9 +14,7 @@ http:
         "targetPage": "filters",
         "content": "This is a test notification."
       }
-  auth:
-    type: bearer
-    token: "{{SIFT_API_KEY}}"
+  auth: inherit
 
 settings:
   encodeUrl: true
