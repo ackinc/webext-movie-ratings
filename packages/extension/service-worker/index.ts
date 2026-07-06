@@ -3,6 +3,7 @@ import { isNetworkError } from "siftutils";
 import {
   browser,
   getSetting,
+  setSetting,
   delayMs,
   MessageType,
   retry,
@@ -63,6 +64,12 @@ let telemetryStore: TelemetryStore;
 
 async function onInstalled() {
   browser.runtime.setUninstallURL(SIFT_WEBSITE_URL + "/uninstall");
+
+  const now = +new Date();
+  if (!(await getSetting("extensionInstallTime"))) {
+    await setSetting("extensionInstallTime", now);
+  }
+  await setSetting("extensionLastUpdateTime", now);
 
   const [
     onboardingStatus,

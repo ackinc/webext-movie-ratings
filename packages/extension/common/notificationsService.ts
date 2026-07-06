@@ -1,17 +1,33 @@
-import { addWeeks } from "date-fns";
+import { addWeeks, differenceInDays } from "date-fns";
 import type { Notification as SiftNotification } from "sifttypes";
+import { getSetting } from "@common";
 import * as siftApiService from "./siftApiService";
 import * as storage from "./storage";
 import type { InAppNotification, InAppNotificationStatus } from "./types";
+import { webStoreLink } from "./constants";
 
 export async function checkForNewNotifications(): Promise<InAppNotification[]> {
+  const extensionInstallTime =
+    (await getSetting("extensionInstallTime")) ?? +new Date();
+  const clientSideNotifications: Required<SiftNotification>[] = [
+    differenceInDays(new Date(), new Date(extensionInstallTime)) > 5
+      ? {
+          notificationId: "RATE_AND_REVIEW_SIFT",
+          content: `Enjoying Sift? Please rate and review us in the [web store](${webStoreLink}).`,
+          targetPage: "filters",
+          timestamp: 1783331877794,
+        }
+      : null,
+  ].filter((x) => x !== null);
+
   const lastReceivedNotif = await getLatestNotification();
-  const newNotifications: Required<SiftNotification>[] =
+  const newNotifications: Required<SiftNotification>[] = (
     await siftApiService.getNotifications(
       lastReceivedNotif
         ? new Date(lastReceivedNotif.timestamp)
         : addWeeks(new Date(), -1),
-    );
+    )
+  ).concat(clientSideNotifications);
 
   if (newNotifications.length > 0) {
     await storeNotifications(newNotifications);

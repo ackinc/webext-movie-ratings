@@ -178,6 +178,8 @@ export type WebpageStats = {
 };
 
 export type ExtensionSettings = {
+  extensionInstallTime: number;
+  extensionLastUpdateTime: number;
   errorReportingOptIn: boolean;
   programFiltersSettings: ProgramFilterSettings;
   outdatedSelectorDetectionEnabled: boolean;
