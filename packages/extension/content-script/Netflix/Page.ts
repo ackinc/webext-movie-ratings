@@ -25,7 +25,10 @@ export default class NetflixPage extends AbstractPage {
       "div.titleGroup--wrapper",
       "div.moreLikeThis--wrapper",
       "div.gallery",
-      'section[data-uia="search-gallery"]',
+
+      // 2026-07-06
+      // 'section[data-uia="search-gallery"]',
+      'div[data-uia="search-page"] section[data-uia="gallery"]',
 
       // 2026-05-14
       'div:has(> section[data-uia="billboard"])',
@@ -85,7 +88,11 @@ export default class NetflixPage extends AbstractPage {
       }
     }
 
-    if (pContainerNode.matches('section[data-uia="search-gallery"]')) {
+    if (
+      pContainerNode.matches(
+        'div[data-uia="search-page"] section[data-uia="gallery"]',
+      )
+    ) {
       return "Search results";
     }
 
@@ -146,8 +153,10 @@ export default class NetflixPage extends AbstractPage {
       return ["div.titleCard--container"];
     }
 
-    if (selector === 'section[data-uia="search-gallery"]') {
-      return ['a[data-uia="search-gallery-video-card"][aria-label]'];
+    if (
+      selector === 'div[data-uia="search-page"] section[data-uia="gallery"]'
+    ) {
+      return ['div:has(> a[data-uia="standard-card"][aria-label])'];
     }
 
     if (selector === 'div:has(> section[data-uia="billboard"])') {
