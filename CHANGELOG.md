@@ -1,5 +1,9 @@
 # Changelog
 
+## v9.5.10
+
+- Service worker now polls API server for notifications on start
+
 ## v9.5.4
 
 - Added support for ParamountPlus
