@@ -20,6 +20,7 @@
     .rating-page-link {
       /* color would default to the usual 'a' blue if we didn't specify */
       color: inherit;
+      flex-shrink: 0;
 
       display: flex;
       align-items: center;

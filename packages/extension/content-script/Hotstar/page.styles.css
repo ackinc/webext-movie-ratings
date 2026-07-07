@@ -34,3 +34,20 @@ div[data-testid="tray-card-default"]:has(
 div[data-testid="tray-card-hover"] div[data-scale-down="true"] .sift-imdb-data {
   margin-left: 0;
 }
+
+.sift-imdb-data-content {
+  @media (max-width: 1280px) {
+    font-size: 12px;
+
+    .headline .rating-page-link svg {
+      height: 12px;
+    }
+  }
+  @media (max-width: 840px) {
+    font-size: 11px;
+
+    .headline .rating-page-link svg {
+      height: 11px;
+    }
+  }
+}
