@@ -19,3 +19,24 @@ div.search-hint-lockup .sift-imdb-data {
 a.search-card.lockup .sift-imdb-data {
   margin-left: 0;
 }
+
+.sift-imdb-data-content {
+  font-weight: normal;
+
+  @media (max-width: 1440px) {
+    font-size: 12px;
+  }
+
+  .rating-page-link {
+    flex-shrink: 0;
+  }
+}
+
+.sift-imdb-data-content[data-program-selector="ul.search-suggestions div.search-hint-lockup"] {
+  color: var(--systemSecondary);
+  font-size: 13px;
+}
+
+.sift-imdb-data-content[data-program-selector='div.section[data-testid="section-container"]:has(div.header) ul > li a.lockup'] {
+  color: black;
+}
