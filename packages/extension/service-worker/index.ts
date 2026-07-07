@@ -390,6 +390,16 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
       },
       action: { type: "block" },
     },
+    {
+      id: 7,
+      priority: 2,
+      condition: {
+        initiatorDomains: ["zee5.com"],
+        requestMethods: ["get"],
+        regexFilter: "^https://.+\\.zee5\\.com/image/.+\\.(jpg)$",
+      },
+      action: { type: "block" },
+    },
   ];
 
   const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
