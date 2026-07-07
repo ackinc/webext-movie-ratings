@@ -101,6 +101,10 @@ div.card_container .sift-imdb-data {
   }
 }
 
+.sift-imdb-data-content {
+  color: rgba(255, 255, 255, 0.85);
+}
+
 .sift-imdb-data-content[data-program-selector="div.PopularSearchContainer a[id]"] {
   color: rgba(255, 255, 255, 0.85);
   font-size: 12px;
