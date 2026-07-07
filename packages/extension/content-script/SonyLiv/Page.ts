@@ -1,7 +1,7 @@
 import AbstractPage from "../AbstractPage";
 import { ErrorMessage } from "../../common";
 import ProgramNode from "./ProgramNode";
-import type { ProgramContainer } from "../../common/types";
+import type { ProgramContainer, Program } from "../../common/types";
 import pageStyles from "./page.styles.css";
 
 class SonyLivPage extends AbstractPage {
@@ -121,6 +121,14 @@ class SonyLivPage extends AbstractPage {
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
+  }
+
+  override checkIMDBDataAlreadyAdded(program: Program): boolean {
+    if (program.container.node.matches("div.PopularSearchContainer")) {
+      return false;
+    }
+
+    return super.checkIMDBDataAlreadyAdded(program);
   }
 }
 
