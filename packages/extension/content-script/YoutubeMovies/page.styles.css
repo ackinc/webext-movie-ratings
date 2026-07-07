@@ -6,11 +6,6 @@
   border-radius: 2px;
   color: #606060;
   text-decoration: none;
-
-  font-family: Roboto, Arial, sans-serif;
-  font-size: 1.2rem;
-  font-weight: 500;
-  line-height: 1.8rem;
 }
 
 ytd-watch-next-secondary-results-renderer > div#items .sift-imdb-data {
@@ -21,4 +16,17 @@ ytd-watch-next-secondary-results-renderer > div#items .sift-imdb-data {
 
 div#above-the-fold.ytd-watch-metadata.sift-filtered-out-program {
   opacity: 1;
+}
+
+.sift-imdb-data-content {
+  color: #606060;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.8rem;
+  text-decoration: none;
+
+  .headline {
+    gap: 4px;
+  }
 }
