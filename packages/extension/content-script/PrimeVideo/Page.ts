@@ -1,10 +1,10 @@
 import AbstractPage from "../AbstractPage";
 import { ErrorMessage } from "@common";
-import type { IMDBData, ProgramContainer, Program } from "@common/types";
+import type { ProgramContainer, Program } from "@common/types";
 import ProgramNode from "./ProgramNode";
 import pageStyles from "./page.styles.css";
 
-export default class AmazonPrimeVideoPage extends AbstractPage {
+export default class PrimeVideoPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
 
   constructor() {
@@ -149,17 +149,5 @@ export default class AmazonPrimeVideoPage extends AbstractPage {
     }
 
     return retval;
-  }
-
-  protected override createIMDBDataNode(
-    program: Program,
-    imdbData: IMDBData,
-  ): HTMLElement {
-    const additionalClasses = program.node.matches(
-      'article[data-testid="super-carousel-card"]',
-    )
-      ? "inside-super-carousel-card"
-      : "";
-    return super.createIMDBDataNode(program, imdbData, additionalClasses);
   }
 }

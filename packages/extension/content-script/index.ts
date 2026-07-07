@@ -25,7 +25,7 @@ import PeacockTVPage from "./PeacockTV/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 import ParamountPlusPage from "./ParamountPlus/Page";
-import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
+import PrimeVideoPage from "./PrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
 import MXPlayerPage from "./MXPlayer/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
@@ -135,7 +135,7 @@ async function initializePage() {
       (x) => x === location.hostname,
     )
   ) {
-    page = new AmazonPrimeVideoPage();
+    page = new PrimeVideoPage();
   } else if (location.hostname === "tv.apple.com") {
     page = new AppleTVPage();
   } else if (location.hostname === "www.crunchyroll.com") {

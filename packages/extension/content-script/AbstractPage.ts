@@ -274,7 +274,6 @@ valid containers:\n\t${programContainers
   protected createIMDBDataNode(
     program: Program,
     imdbData: IMDBData,
-    className: string = "",
   ): HTMLElement {
     const node = document.createElement("div");
 
@@ -289,7 +288,7 @@ valid containers:\n\t${programContainers
       this.stylesheets.imdbNode,
       this.stylesheets.page,
     ];
-    render(h(ImdbDataNode, { className, program, imdbData }), shadowRoot);
+    render(h(ImdbDataNode, { program, imdbData }), shadowRoot);
 
     return node;
   }

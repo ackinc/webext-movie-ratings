@@ -13,13 +13,11 @@ import {
 import ExternalLinkIcon from "@common/components/Icons/ExternalLink";
 
 interface ImdbDataNodeProps {
-  className?: string;
   imdbData: IMDBData;
   program: Program;
 }
 
 export default function ImdbDataNode({
-  className,
   program,
   imdbData: data,
 }: ImdbDataNodeProps) {
@@ -28,7 +26,12 @@ export default function ImdbDataNode({
   );
 
   return (
-    <div className={cx(CssClasses.imdbDataNodeContent, className)}>
+    <div
+      className={cx(CssClasses.imdbDataNodeContent)}
+      // acts as a hook for page- and location-specific styling
+      // of these nodes
+      data-program-selector={program.selector}
+    >
       <div
         className="headline"
         style={{
