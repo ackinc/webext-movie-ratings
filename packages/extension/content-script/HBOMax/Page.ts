@@ -41,8 +41,8 @@ export default class HBOMaxPage extends AbstractPage {
       'section[data-appearance="ImmersiveHero"]',
       'section[data-sonic-id*="page-rail"]',
 
-      // (post login) single series page
-      'div[data-testid="tileList"]',
+      // (post login) single movie/series page
+      'div[aria-label="You May Also Like"] div[data-testid="tileList"]',
 
       // (post login) movies page, series page, hbo page, ...
       'section[data-sonic-id*="page-featured-tab-rail"]',
@@ -123,12 +123,12 @@ export default class HBOMaxPage extends AbstractPage {
       }
     }
 
-    if (pContainerNode.matches('div[data-testid="tileList"]')) {
-      return (
-        pContainerNode.parentElement!.querySelector(
-          'h2 span[data-testid$="gridTitle"]',
-        )?.textContent ?? ""
-      );
+    if (
+      pContainerNode.matches(
+        'div[aria-label="You May Also Like"] div[data-testid="tileList"]',
+      )
+    ) {
+      return "You may also like";
     }
 
     if (
@@ -218,7 +218,10 @@ export default class HBOMaxPage extends AbstractPage {
       return ['a[data-sonic-type="show"]', 'a[data-sonic-type="video"]'];
     }
 
-    if (selector === 'div[data-testid="tileList"]') {
+    if (
+      selector ===
+      'div[aria-label="You May Also Like"] div[data-testid="tileList"]'
+    ) {
       return ['a[data-sonic-type="show"]'];
     }
 
