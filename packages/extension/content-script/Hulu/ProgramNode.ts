@@ -209,7 +209,7 @@ export default class ProgramNode extends AbstractProgramNode {
           'div[data-testid="preview-panel-info-panel"] > div',
         ),
       ).find((node) => node.textContent.includes("•"));
-      typeAndYearNode?.insertAdjacentElement("afterbegin", imdbNode);
+      typeAndYearNode?.insertAdjacentElement("beforebegin", imdbNode);
       return;
     }
 

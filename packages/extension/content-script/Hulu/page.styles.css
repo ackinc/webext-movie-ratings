@@ -1,42 +1,17 @@
 .sift-imdb-data {
-  margin: 4px 0;
-  color: #999999;
-  display: block;
-  font-size: 14px;
+  margin-top: -6px;
 }
 
 div.PortraitTile .sift-imdb-data {
   margin-top: 8px;
-  color: white;
-  font-weight: 400;
 }
 
 div.DetailEntityMasthead .sift-filtered-out-program {
   opacity: 1;
 }
 
-div.DetailEntityMasthead .sift-imdb-data {
-  color: white;
-}
-
-div[data-testid="high-emphasis-tile"] .sift-imdb-data {
-  color: white;
-  font-size: 18px;
-}
-
 div[data-testid="medium-emphasis-vertical-tile"] .sift-imdb-data {
-  color: white;
   margin: 0;
-  font-size: 12px;
-}
-
-div[data-testid="preview-panel"] .sift-imdb-data {
-  color: white;
-  display: inline;
-}
-
-div[data-testid="preview-panel"] .sift-imdb-data::after {
-  content: " • ";
 }
 
 div.MastheadAndBanner .sift-imdb-data {
@@ -47,4 +22,40 @@ div.MastheadAndBanner .sift-imdb-data {
 
 div.MastheadAndBanner .sift-imdb-data::after {
   content: " • ";
+}
+
+div[data-testid="preview-panel"] .sift-imdb-data {
+  margin: 0 20px;
+}
+
+.sift-imdb-data-content {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sift-imdb-data-content[data-program-selector='div.StandardSliderCollectionSimple div[data-testid="medium-emphasis-vertical-tile"]'] {
+  color: white;
+
+  .rating-page-link svg {
+    stroke: white;
+    stroke-width: 2px;
+  }
+}
+
+.sift-imdb-data-content[data-program-selector='div[data-testid="preview-panel-container"] div[data-testid="preview-panel"]'] {
+  color: white;
+  font-size: 14px;
+  font-weight: 400;
+
+  .rating-page-link svg {
+    position: relative;
+    top: -2px;
+
+    stroke: white;
+    stroke-width: 2px;
+  }
+
+  .maybe-wrong-button {
+    line-height: 1.5;
+  }
 }
