@@ -14,6 +14,7 @@ pnpm --filter "./shared/**" install --ignore-scripts --prod
 pnpm --filter "./packages/api-server" install --ignore-scripts --prod
 
 cd ~/sift/packages/api-server
+aws ssm get-parameter --name "/sift/env.production" --query "Parameter.Value" --output text > .env
 
 X=$(git diff --name-only $HEAD_OLD HEAD | grep packages/api-server/ecosystem.config.cjs | wc -l)
 if [ $X -gt 0 ]; then
