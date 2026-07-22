@@ -9,7 +9,6 @@ apt-get install -y curl sqlite3 tree
 # vars
 MEILISEARCH_MASTER_KEY=8lNc7cEcH5QK7BDLkoKxgFx0kbGB8Ij0yPGLlalAl934KQpJ
 GIT_REPO_URL="https://github.com/ackinc/webext-movie-ratings"
-WEBSITE_URL="https://getsift.today"
 
 runuser -u ubuntu bash << EOF
   cd ~
@@ -74,20 +73,7 @@ runuser -u ubuntu bash << EOF
 
   cd ~/sift/packages/api-server
 
-  # normally we pull secrets from a secure vault, but in this case, none
-  #   of these env vars are sensitive
-  cat << EOF1 > .env
-APP_ENV=production
-AWS_REGION=ap-south-1
-AWS_S3_BUCKET_NAME=sift-db-backups-458735596401-ap-south-1-an
-DB_PATH=/home/ubuntu/db.sqlite
-DEV_EMAIL=anirudh.nimmagadda@gmail.com
-IMDB_DATA_DIR=/home/ubuntu/imdbData
-PORT=3000
-MEILISEARCH_URL="http://localhost:7700"
-MEILISEARCH_MASTER_KEY=$MEILISEARCH_MASTER_KEY
-WEBSITE_URL=$WEBSITE_URL
-EOF1
+  aws ssm get-parameter --name "/sift/env.production" --query "Parameter.Value" --output text > .env
 
   # starts the server and ensures pm2 will resurrect it on system reboot
   pm2 start ecosystem.config.js
