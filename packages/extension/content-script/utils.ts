@@ -10,7 +10,6 @@ import {
   type IMDBData,
   type Message,
   type Program,
-  type ProgramData,
   type ProgramFilterSettings,
   type SelectorStatusForSite,
   type SWMessageResponse,
@@ -108,7 +107,7 @@ export async function requestIMDBData(
         .sendMessage<Message, SWMessageResponse<IMDBData>>({
           type: MessageType.fetchIMDBRating,
           data: {
-            program: omit(program, ["node"]) as ProgramData,
+            program: omit(program, ["node", "container"]),
             pageUrl: location.href,
           },
         } satisfies Message)

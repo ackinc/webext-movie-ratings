@@ -1,21 +1,16 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { CssClasses, ErrorMessage } from "../../common";
+import { ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
-import pageStyles from "./styles.page.css";
+import pageStyles from "./page.styles.css";
 
 export default class PeacockTVPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
 
   constructor() {
     super();
-  }
 
-  protected override async injectStyles() {
-    await super.injectStyles();
-
-    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += pageStyles;
+    this.stylesheets.page.replaceSync(pageStyles);
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
@@ -194,15 +189,15 @@ export default class PeacockTVPage extends AbstractPage {
     }
 
     if (selector === "div.rootPortraitRail") {
-      return ['li[data-testid="rail-tile"]'];
+      return ['li[data-testid="rail-tile"][data-in-view="true"]'];
     }
 
     if (selector === 'ul[data-testid="numbered-rail-slider"]') {
-      return ['li[data-testid="rail-tile"]'];
+      return ['li[data-testid="rail-tile"][data-in-view="true"]'];
     }
 
     if (selector === "div#collection") {
-      return ['li[data-testid="collection-tile"]'];
+      return ['li[data-testid="collection-tile"]:not([class*="placeholder"])'];
     }
 
     if (selector === 'section[data-testid="recommendations-section"]') {
@@ -210,11 +205,11 @@ export default class PeacockTVPage extends AbstractPage {
     }
 
     if (selector === 'ul[data-testid="popular-searches-grid"]') {
-      return ['li[data-testid="collection-tile"]'];
+      return ['li[data-testid="collection-tile"]:not([class*="placeholder"])'];
     }
 
     if (selector === 'ul[data-testid="search-results-grid"]') {
-      return ['li[data-testid="collection-tile"]'];
+      return ['li[data-testid="collection-tile"]:not([class*="placeholder"])'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

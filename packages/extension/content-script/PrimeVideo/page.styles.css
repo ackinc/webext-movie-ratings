@@ -1,9 +1,3 @@
-.sift-imdb-data {
-  color: #999999 !important;
-  display: block;
-  font-size: 15px;
-}
-
 article[data-card-title] .sift-imdb-data {
   margin-top: 4px;
   margin-left: 4px;
@@ -19,12 +13,15 @@ article[data-testid="super-carousel-card"] .sift-imdb-data {
   left: 0;
   z-index: 3;
   margin: 0;
+}
+
+.sift-imdb-data-content.inside-super-carousel-card {
   border-radius: 0;
   border-bottom-right-radius: 3px;
   padding: 3px 7px;
   background-color: white;
-  color: black !important;
-  opacity: 1;
+
+  color: black;
   font-size: 13px;
   font-weight: bold;
   line-height: var(--fable-typography-label-90-line-height);

@@ -1,0 +1,68 @@
+/* reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  text-decoration: none;
+}
+
+.sift-imdb-data-content {
+  color: #999999;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1.5;
+
+  .headline {
+    display: flex;
+    gap: 16px;
+
+    .rating-page-link {
+      /* color would default to the usual 'a' blue if we didn't specify */
+      color: inherit;
+      flex-shrink: 0;
+
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .rating-page-link.rating-reported-incorrect {
+      text-decoration: line-through;
+    }
+
+    .rating-page-link svg {
+      display: none;
+
+      height: 14px;
+      stroke: #999999;
+      stroke-width: 4px;
+    }
+
+    .maybe-wrong-button {
+      display: none;
+
+      background-color: transparent;
+      color: inherit;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: inherit;
+
+      &:hover {
+        font-weight: bold;
+      }
+    }
+  }
+
+  &:hover {
+    .headline {
+      .rating-page-link svg {
+        display: inline;
+      }
+
+      .maybe-wrong-button {
+        display: inline;
+      }
+    }
+  }
+}

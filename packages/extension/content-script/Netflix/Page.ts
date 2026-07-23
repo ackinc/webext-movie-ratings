@@ -1,21 +1,16 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { CssClasses, ErrorMessage } from "../../common";
+import { ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
-import pageStyles from "./styles.page.css";
+import pageStyles from "./page.styles.css";
 
 export default class NetflixPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
 
   constructor() {
     super();
-  }
 
-  protected override async injectStyles() {
-    await super.injectStyles();
-
-    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += pageStyles;
+    this.stylesheets.page.replaceSync(pageStyles);
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {

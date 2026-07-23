@@ -25,7 +25,7 @@ import PeacockTVPage from "./PeacockTV/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 import ParamountPlusPage from "./ParamountPlus/Page";
-import AmazonPrimeVideoPage from "./AmazonPrimeVideo/Page";
+import PrimeVideoPage from "./PrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
 import MXPlayerPage from "./MXPlayer/Page";
 import CrunchyrollPage from "./Crunchyroll/Page";
@@ -73,7 +73,8 @@ async function main() {
         (node) =>
           node instanceof HTMLElement &&
           !isVoidElement(node, ["img"]) &&
-          !node.classList.contains(CssClasses.imdbDataNode),
+          ["script"].indexOf(node.tagName.toLowerCase()) === -1 &&
+          !Array.from(node.classList).some((cname) => cname.startsWith("sift")),
       );
     if (addedNodes.length === 0) return;
 
@@ -135,7 +136,7 @@ async function initializePage() {
       (x) => x === location.hostname,
     )
   ) {
-    page = new AmazonPrimeVideoPage();
+    page = new PrimeVideoPage();
   } else if (location.hostname === "tv.apple.com") {
     page = new AppleTVPage();
   } else if (location.hostname === "www.crunchyroll.com") {
@@ -175,9 +176,9 @@ function removeListeners() {
 async function findProgramsAndAddRatings() {
   try {
     const programs = page.findPrograms({
-      // in prod, we don't want an error during data-extraction for
-      //   one pc- or p-node to affect processing of other nodes
-      swallowDataExtractionErrors: APP_ENV === "production",
+      swallowDataExtractionErrors: !(await getSetting(
+        "throwDataExtractionErrors",
+      )),
     });
 
     const results = await Promise.allSettled<Program>(
@@ -311,7 +312,7 @@ function handleMessage(
   if (type === MessageType.cleanup) {
     cleanup();
   } else if (type === MessageType.orphanCheck) {
-    if (!browser.runtime.id) {
+    if (!browser.runtime?.id) {
       // if the trigger was new-content-script-injection, the
       //   outdated MWCS will be informed of the need to cleanup by
       //   the new MWCS, not by this ISOCS

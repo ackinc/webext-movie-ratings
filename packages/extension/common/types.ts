@@ -17,6 +17,7 @@ export type ProgramData = {
 };
 // represents a movie/show identified on a webpage
 export type Program = {
+  container: ProgramContainer;
   selector: Selector;
   node: HTMLElement;
 } & ProgramData;
@@ -30,10 +31,12 @@ export type IMDBData = {
     | "N/F" /* could not matched program to an imdb id */
     | "N/M" /* (temporary) error when matching program to an imdb id */;
   expiry?: number;
+  wasReportedIncorrect?: boolean;
 };
 
-export type CachedIMDBData = Required<IMDBData> & {
+export type CachedIMDBData = IMDBData & {
   key: string;
+  expiry: number;
 };
 
 export type SWMessageResponse<T> = { data: T } | { error: string };
@@ -60,13 +63,30 @@ export type Message =
   | {
       type: MessageType.fetchCachedIMDBRating;
       data: {
-        program: ProgramData;
+        program: Omit<Program, "node" | "container">;
+        pageUrl: string;
       };
     }
   | {
       type: MessageType.fetchIMDBRating;
       data: {
-        program: ProgramData;
+        program: Omit<Program, "node" | "container">;
+        pageUrl: string;
+      };
+    }
+  | {
+      type: MessageType.reportIncorrectProgramMatch;
+      data: {
+        program: Omit<Program, "node" | "container">;
+        imdbData: IMDBData;
+        pageUrl: string;
+      };
+    }
+  | {
+      type: MessageType.undoReportIncorrectProgramMatch;
+      data: {
+        program: Omit<Program, "node" | "container">;
+        imdbData: IMDBData;
         pageUrl: string;
       };
     }
@@ -182,7 +202,6 @@ export type ExtensionSettings = {
   extensionLastUpdateTime: number;
   errorReportingOptIn: boolean;
   programFiltersSettings: ProgramFilterSettings;
-  outdatedSelectorDetectionEnabled: boolean;
   updatedDbVersion: number;
   onboardingStatus:
     | "started"
@@ -191,7 +210,12 @@ export type ExtensionSettings = {
     | "pitchedErrorReporting"
     | "finished";
   pitchMissingRatingReportingPageSeen: boolean;
+} & ExtensionDeveloperSettings;
+
+type ExtensionDeveloperSettings = {
+  outdatedSelectorDetectionEnabled: boolean;
   mediaRequestBlockingEnabled: boolean;
+  throwDataExtractionErrors: boolean;
 };
 
 export type ExtensionContext =

@@ -1,7 +1,7 @@
 import type { PermString, ProgramFilterSettings, Sitename } from "./types";
 
 export const DB_NAME = "siftDb";
-export const DB_VERSION = 2;
+export const DB_VERSION = 3;
 
 // how long to wait before invoking the 'findProgramsAndAddRatings'
 //   workhorse function after a reason to invoke it is detected
@@ -10,6 +10,7 @@ export const mainFnInvocationDelayMs = 100;
 export const enum CssClasses {
   styleNode = "sift-style",
   imdbDataNode = "sift-imdb-data",
+  imdbDataNodeContent = "sift-imdb-data-content",
   filteredOutProgramNode = "sift-filtered-out-program",
 }
 export const enum CssColors {
@@ -46,6 +47,8 @@ export const languages = [
 export const enum MessageType {
   fetchIMDBRating = "sift:fetchIMDBRating",
   fetchCachedIMDBRating = "sift:fetchCachedIMDBRating",
+  reportIncorrectProgramMatch = "sift:reportIncorrectProgramMatch",
+  undoReportIncorrectProgramMatch = "sift:undoReportIncorrectProgramMatch",
   urlChange = "sift:urlchange",
   filterSettingsChange = "sift:filterSettingsChange",
   orphanCheck = "sift:orphanCheck",

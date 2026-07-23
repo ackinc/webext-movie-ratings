@@ -1,21 +1,16 @@
 import AbstractPage from "../AbstractPage";
-import { CssClasses, ErrorMessage } from "../../common";
+import { ErrorMessage } from "../../common";
 import ProgramNode from "./ProgramNode";
-import type { ProgramContainer } from "../../common/types";
-import pageStyles from "./styles.page.css";
+import type { ProgramContainer, Program } from "../../common/types";
+import pageStyles from "./page.styles.css";
 
 class SonyLivPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
 
   constructor() {
     super();
-  }
 
-  protected override async injectStyles() {
-    await super.injectStyles();
-
-    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += pageStyles;
+    this.stylesheets.page.replaceSync(pageStyles);
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
@@ -126,6 +121,14 @@ class SonyLivPage extends AbstractPage {
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
+  }
+
+  override checkIMDBDataAlreadyAdded(program: Program): boolean {
+    if (program.container.node.matches("div.PopularSearchContainer")) {
+      return false;
+    }
+
+    return super.checkIMDBDataAlreadyAdded(program);
   }
 }
 

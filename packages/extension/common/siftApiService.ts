@@ -39,14 +39,18 @@ async function getMatchedImdbId_(
   return (await response.json()) as SiftApiProgramMatching.Response;
 }
 
-async function sendUserFeedback_(message: string, email: string) {
+async function sendUserFeedback_(
+  message: string,
+  email: string = "",
+  category: UserMessage["category"] = "feedback",
+) {
   const url = new URL(`${SIFT_API_URL}/messages`);
 
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      category: "feedback",
+      category,
       message,
       ...(email ? { email } : {}),
     } satisfies UserMessage),

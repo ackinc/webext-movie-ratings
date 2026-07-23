@@ -1,12 +1,15 @@
 import { type IDBPDatabase } from "idb";
 import { add } from "date-fns";
 import {
+  pick,
   omit,
   getSetting,
   programToHash,
+  hostToSitename,
   type CachedIMDBData,
   type IMDBData,
   type ProgramData,
+  type Program,
 } from "@common";
 import RatingsCache, { type RatingsCacheSchema } from "@common/RatingsCache";
 import TelemetryStore, {
@@ -18,21 +21,36 @@ import OmdbApiClient from "./OmdbApiClient";
 /* interface */
 
 export interface RatingsService {
-  getCachedIMDBData(program: ProgramData): Promise<CachedIMDBData | undefined>;
-  getIMDBData(
+  getCachedIMDBData(
     program: ProgramData,
     pageUrl: string,
-  ): Promise<Required<IMDBData>>;
+  ): Promise<CachedIMDBData | undefined>;
+  getIMDBData(program: ProgramData, pageUrl: string): Promise<IMDBData>;
+  markRatingAsIncorrect(
+    program: Omit<Program, "node" | "container">,
+    imdbData: IMDBData,
+    pageUrl: string,
+  ): Promise<void>;
+  undoMarkRatingAsIncorrect(
+    program: Omit<Program, "node" | "container">,
+    imdbData: IMDBData,
+    pageUrl: string,
+  ): Promise<void>;
 }
 
 let inProgress: Record<
   string,
-  { resolve: (x: Required<IMDBData>) => void; reject: (e: Error) => void }[]
+  { resolve: (x: IMDBData) => void; reject: (e: Error) => void }[]
 >;
 let omdbApiClient: OmdbApiClient;
 let ratingsCache: RatingsCache;
 let telemetryStore: TelemetryStore;
 const ratingCacheDurations = {
+  // NOTE: WHY_CACHE_ON_PROGRAM_MATCHING_ERROR
+  // Q: Why cache the result on a program-matching error, instead
+  //      of just throwing like we would for a regular error?
+  // A: So we have a 'breadcrumb' we can use to detect this state
+  //      the next time we need to get the rating for this program
   onProgramMatchingError: { minutes: -1 },
   onRatingNotFound: { weeks: 1 },
   onRatingFound: { weeks: 2 },
@@ -49,7 +67,12 @@ export async function initialize(db: IDBPDatabase): Promise<RatingsService> {
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
   }
-  return { getIMDBData, getCachedIMDBData };
+  return {
+    getIMDBData,
+    getCachedIMDBData,
+    markRatingAsIncorrect,
+    undoMarkRatingAsIncorrect,
+  };
 }
 
 /* implementation details */
@@ -81,15 +104,15 @@ async function fetchWithAddedTelemetry(
 }
 
 async function getIMDBData(
-  program: ProgramData,
+  program: Omit<Program, "node" | "container">,
   pageUrl: string,
-): Promise<Required<IMDBData>> {
-  const cached = await getCachedIMDBData(program);
+): Promise<IMDBData> {
+  const cached = await getCachedIMDBData(program, pageUrl);
   if (cached && cached.expiry > +new Date()) {
     return omit(cached, ["key"] as const);
   }
 
-  return new Promise<Required<IMDBData>>((resolve, reject) => {
+  return new Promise<IMDBData>((resolve, reject) => {
     const key = programToHash(program);
     if (key in inProgress) {
       inProgress[key]!.push({ resolve, reject });
@@ -150,7 +173,8 @@ async function getIMDBData(
         const expiry = +add(
           new Date(),
           imdbData!.imdbRating === "N/M"
-            ? ratingCacheDurations.onProgramMatchingError
+            ? // See NOTE: WHY_CACHE_ON_PROGRAM_MATCHING_ERROR
+              ratingCacheDurations.onProgramMatchingError
             : imdbData!.imdbRating === "N/F"
               ? ratingCacheDurations.onRatingNotFound
               : ratingCacheDurations.onRatingFound,
@@ -167,7 +191,63 @@ async function getIMDBData(
 }
 
 async function getCachedIMDBData(
-  program: ProgramData,
+  program: Omit<Program, "node" | "container">,
+  pageUrl: string,
 ): Promise<CachedIMDBData | undefined> {
-  return await ratingsCache.get(programToHash(program));
+  const cached = await ratingsCache.get(programToHash(program));
+
+  const incorrectRatingReportKey = getIncorrectRatingReportKey(
+    program,
+    pageUrl,
+  );
+  const wasReportedIncorrect = Boolean(
+    await ratingsCache.getIncorrectRatingReport(incorrectRatingReportKey),
+  );
+
+  return cached ? Object.assign(cached, { wasReportedIncorrect }) : cached;
+}
+
+async function markRatingAsIncorrect(
+  program: Omit<Program, "node" | "container">,
+  imdbData: IMDBData,
+  pageUrl: string,
+) {
+  const key = getIncorrectRatingReportKey(program, pageUrl);
+  await ratingsCache.putIncorrectRatingReport({
+    key,
+    ...program,
+    ...imdbData,
+    wasReportedIncorrect: true,
+    pageUrl,
+    reportedAt: +new Date(),
+  });
+
+  // TODO: send after a delay, and make it cancelable, so the user has time to
+  //   undo a misclick
+  await siftApiService.sendUserFeedback(
+    JSON.stringify({
+      ...program,
+      ...pick(imdbData, ["imdbId", "imdbRating"]),
+      pageUrl,
+    }),
+    undefined,
+    "incorrect-rating-report",
+  );
+}
+
+export async function undoMarkRatingAsIncorrect(
+  program: Omit<Program, "node" | "container">,
+  _imdbData: IMDBData,
+  pageUrl: string,
+) {
+  const key = getIncorrectRatingReportKey(program, pageUrl);
+  await ratingsCache.removeIncorrectRatingReport(key);
+}
+
+function getIncorrectRatingReportKey(
+  program: Omit<Program, "node" | "container">,
+  pageUrl: string,
+) {
+  const site = hostToSitename[new URL(pageUrl).hostname]!;
+  return [programToHash(program), site].join("|");
 }

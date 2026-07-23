@@ -1,0 +1,24 @@
+.sift-imdb-data {
+  display: block;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: left;
+  margin-left: 4px;
+}
+
+a.ch-expanded-container .sift-imdb-data {
+  font-family:
+    Proxima Nova SemiBold,
+    sans-serif;
+  font-size: inherit;
+  font-weight: 400;
+  line-height: 22px;
+}
+
+div.grid .sift-imdb-data {
+  margin-bottom: 12px;
+}
+
+div.carousel a.link[id^="originals"] a.sift-imdb-data {
+  margin-left: 4px;
+}

@@ -1,21 +1,16 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { CssClasses, ErrorMessage } from "../../common";
+import { ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
-import pageStyles from "./styles.page.css";
+import pageStyles from "./page.styles.css";
 
 export default class Zee5Page extends AbstractPage {
   static override ProgramNode = ProgramNode;
 
   constructor() {
     super();
-  }
 
-  protected override async injectStyles() {
-    await super.injectStyles();
-
-    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += pageStyles;
+    this.stylesheets.page.replaceSync(pageStyles);
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
@@ -93,6 +88,7 @@ export default class Zee5Page extends AbstractPage {
         /^Live News/i,
         "Explore on FREE5",
         /^Browse by/,
+        /^FIFA/,
         "Related Videos",
       ].some((x) =>
         x instanceof RegExp ? x.test(pContainer.title) : x === pContainer.title,

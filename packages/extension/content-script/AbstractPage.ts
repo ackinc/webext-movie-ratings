@@ -1,3 +1,4 @@
+import { h, render } from "preact";
 import AbstractProgramNode from "./AbstractProgramNode";
 import type {
   ProgramContainer,
@@ -16,13 +17,13 @@ import {
   CssClasses,
   defaultProgramFilterSettings,
   getGeneralizedUrlPath,
-  getIMDBLink,
   getSetting,
   ErrorMessage,
   ensureError,
   MessageType,
 } from "../common";
 import {
+  cssStyleSheetFromText,
   getSelectorStatusForCurrentSite,
   getFopnCssRules,
   setSelectorStatusForCurrentSite,
@@ -30,12 +31,19 @@ import {
 import { DataExtractionError, SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import { addSidecar, removeSidecar } from "./sidecar";
+import ImdbDataNode from "./ImdbDataNode";
 import { limitConcurrency } from "rate-limit-utils";
+import imdbNodeStyles from "./imdbDataNode.styles.css";
 
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
 
   inSelectProgramMode: boolean = false;
+  stylesheets: Record<"page" | "imdbNode", CSSStyleSheet> = {
+    imdbNode: cssStyleSheetFromText(imdbNodeStyles),
+    // should be overridden/replaced in constructor of concrete subclasses
+    page: new CSSStyleSheet(),
+  };
 
   #ctor = this.constructor as typeof AbstractPage;
 
@@ -118,25 +126,17 @@ valid containers:\n\t${programContainers
       }`;
     }
 
-    function dataExtractionErrorHandlingWrapper(
-      fn:
-        | ((
-            arg: Omit<ProgramContainer, keyof ProgramContainerData>,
-          ) => ProgramContainer | null)
-        | ((arg: Omit<Program, keyof ProgramData>) => Program | null),
-    ) {
-      return ({
-        node,
-        selector,
-      }:
-        | Omit<ProgramContainer, keyof ProgramContainerData>
-        | Omit<Program, keyof ProgramData>) => {
+    function dataExtractionErrorHandlingWrapper<
+      T extends { node: HTMLElement; selector: string },
+      R extends T,
+    >(fn: (arg: T) => R) {
+      return (arg: T) => {
         try {
-          return fn({ node, selector });
+          return fn(arg);
         } catch (e) {
           ensureError(e);
 
-          const err = DataExtractionError.from(e, node, selector);
+          const err = DataExtractionError.from(e, arg.node, arg.selector);
           if (!err.__fromCache) captureException(err);
 
           if (swallowDataExtractionErrors) return null;
@@ -147,22 +147,16 @@ valid containers:\n\t${programContainers
     }
   }
 
-  #createProgramContainer = ({
-    node,
-    selector,
-  }: Omit<ProgramContainer, keyof ProgramContainerData>): ProgramContainer => ({
-    selector,
-    node,
-    title: this.getTitleFromProgramContainerNode(node),
+  #createProgramContainer = (
+    arg: Omit<ProgramContainer, keyof ProgramContainerData>,
+  ): ProgramContainer => ({
+    ...arg,
+    title: this.getTitleFromProgramContainerNode(arg.node),
   });
 
-  #createProgram = ({
-    node,
-    selector,
-  }: Omit<Program, keyof ProgramData>): Program => ({
-    selector,
-    node,
-    ...this.#ctor.ProgramNode.extractProgramData(node),
+  #createProgram = (arg: Omit<Program, keyof ProgramData>): Program => ({
+    ...arg,
+    ...this.#ctor.ProgramNode.extractProgramData(arg.node),
   });
 
   checkIMDBDataAlreadyAdded(program: Program): boolean {
@@ -181,7 +175,7 @@ valid containers:\n\t${programContainers
     // remove existing node (no-op if doesn't exist)
     this.#ctor.ProgramNode.removeIMDBNode(program.node);
 
-    const ratingNode = this.#createIMDBDataNode(data);
+    const ratingNode = this.createIMDBDataNode(program, data);
     this.#ctor.ProgramNode.insertIMDBNode(program.node, ratingNode);
   }
 
@@ -192,7 +186,11 @@ valid containers:\n\t${programContainers
 
     const styleNode = document.createElement("style");
     styleNode.classList.add(CssClasses.styleNode);
-    styleNode.textContent = getFopnCssRules(filterSettings).join("\n") + "\n";
+    styleNode.textContent =
+      [
+        ...getFopnCssRules(filterSettings),
+        ...Array.from(this.stylesheets.page.cssRules).map((r) => r.cssText),
+      ].join("\n") + "\n";
     document.head.appendChild(styleNode);
   }
 
@@ -267,30 +265,31 @@ valid containers:\n\t${programContainers
         nodes.map((node) => ({
           node,
           selector: `${pContainer.selector} ${selectors[idx]}`,
+          container: pContainer,
         })),
       )
       .flat();
   };
 
-  #createIMDBDataNode(data: IMDBData): HTMLElement {
-    const node = document.createElement("a");
+  protected createIMDBDataNode(
+    program: Program,
+    imdbData: IMDBData,
+  ): HTMLElement {
+    const node = document.createElement("div");
+
     node.classList.add(CssClasses.imdbDataNode);
-    node.dataset["imdbId"] = data.imdbId;
-    node.dataset["imdbRating"] = String(data.imdbRating);
-    if ("expiry" in data) node.dataset["expiry"] = String(data.expiry);
-    if (["N/F", "N/M"].includes(String(data.imdbRating))) {
-      node.style.visibility = "hidden";
-      node.style.display = "none";
-    } else {
-      node.setAttribute("href", getIMDBLink(data.imdbId));
-      node.setAttribute("target", "_blank");
-    }
-    const imdbRatingAsStr =
-      typeof data.imdbRating === "string"
-        ? data.imdbRating
-        : data.imdbRating.toFixed(1);
-    node.innerText = `IMDb ${data.imdbRating === "N/A" ? "" : imdbRatingAsStr}`;
-    node.addEventListener("click", (e) => e.stopPropagation());
+
+    node.dataset["imdbId"] = imdbData.imdbId;
+    node.dataset["imdbRating"] = String(imdbData.imdbRating);
+    if ("expiry" in imdbData) node.dataset["expiry"] = String(imdbData.expiry);
+
+    const shadowRoot = node.attachShadow({ mode: "open" });
+    shadowRoot.adoptedStyleSheets = [
+      this.stylesheets.imdbNode,
+      this.stylesheets.page,
+    ];
+    render(h(ImdbDataNode, { program, imdbData }), shadowRoot);
+
     return node;
   }
 
@@ -438,30 +437,26 @@ valid containers:\n\t${programContainers
     e.preventDefault();
     e.stopPropagation();
 
-    const allProgramNodeSelectors =
-      this.getProgramContainerNodeSelectors().flatMap((pcNodeSel) =>
+    const allProgramContainerSelectors =
+      this.getProgramContainerNodeSelectors();
+    const allProgramNodeSelectors = allProgramContainerSelectors.flatMap(
+      (pcNodeSel) =>
         this.getProgramNodeSelectors({ selector: pcNodeSel }).map(
           (pNodeSel) => `${pcNodeSel} ${pNodeSel}`,
         ),
-      );
+    );
 
-    let cur: Element | null = e.target as Element;
-    let matchingSelector: string | undefined;
-    do {
-      matchingSelector = allProgramNodeSelectors.find((sel) =>
-        cur!.matches(sel),
-      );
-      if (matchingSelector) break;
-      cur = cur.parentElement;
-    } while (cur);
-    if (!cur) {
+    const { node: programNode, selector: matchingSelector } =
+      findAncestor(e.target as Element, allProgramNodeSelectors) ?? {};
+    if (!programNode) {
       console.log(`No program node found at that location`);
       return;
     }
 
-    const programNode = cur as HTMLElement;
-
     const program = this.#createProgram({
+      container: this.#createProgramContainer(
+        findAncestor(programNode, allProgramContainerSelectors)!,
+      ),
       node: programNode,
       selector: matchingSelector!,
     });
@@ -472,10 +467,17 @@ valid containers:\n\t${programContainers
       SWMessageResponse<CachedIMDBData>
     >({
       type: MessageType.fetchCachedIMDBRating,
-      data: { program },
+      data: { program, pageUrl: location.href },
     });
 
     if ("error" in response) throw new SWError(response.error);
     console.log(response.data);
+
+    function findAncestor(startEl: Element, selectors: string[]) {
+      const node = startEl.closest<HTMLElement>(selectors.join(","));
+      return node
+        ? { node, selector: selectors.find((sel) => node.matches(sel))! }
+        : null;
+    }
   };
 }

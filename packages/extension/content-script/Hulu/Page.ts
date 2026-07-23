@@ -1,21 +1,16 @@
 import AbstractPage from "../AbstractPage";
 import ProgramNode from "./ProgramNode";
-import { CssClasses, ErrorMessage } from "../../common";
+import { ErrorMessage } from "../../common";
 import type { ProgramContainer } from "../../common/types";
-import pageStyles from "./styles.page.css";
+import pageStyles from "./page.styles.css";
 
 export default class HuluPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
 
   constructor() {
     super();
-  }
 
-  protected override async injectStyles() {
-    await super.injectStyles();
-
-    const styleNode = document.querySelector(`style.${CssClasses.styleNode}`)!;
-    styleNode.textContent += pageStyles;
+    this.stylesheets.page.replaceSync(pageStyles);
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
@@ -27,7 +22,7 @@ export default class HuluPage extends AbstractPage {
 
     return [
       // home page
-      "div.SimpleCollection",
+      "div.StandardSliderCollectionSimple",
 
       // tv shows page
       "div.PortraitCollection",
@@ -56,15 +51,19 @@ export default class HuluPage extends AbstractPage {
 
       // single program page
       "div.MastheadAndBanner",
+
+      // search page
+      'div[data-testid="search-results-tray"]',
     ];
   }
 
   protected override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
-    if (pContainerNode.matches("div.SimpleCollection")) {
-      return pContainerNode.querySelector(".SimpleCollection__title")!
-        .textContent;
+    if (pContainerNode.matches("div.StandardSliderCollectionSimple")) {
+      return pContainerNode.querySelector(
+        'h2[data-testid="CollectionHeader__title"]',
+      )!.textContent;
     }
 
     if (pContainerNode.matches("div.PortraitCollection")) {
@@ -151,6 +150,12 @@ export default class HuluPage extends AbstractPage {
       return "Single-program page Masthead";
     }
 
+    if (pContainerNode.matches('div[data-testid="search-results-tray"]')) {
+      return pContainerNode.querySelector(
+        'h2[data-testid="CollectionHeader__title"]',
+      )!.textContent;
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -177,8 +182,11 @@ export default class HuluPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
-    if (selector === "div.SimpleCollection") {
-      return ['div.Tile[data-automationid^="tile"]'];
+    if (selector === "div.StandardSliderCollectionSimple") {
+      return [
+        'div[data-testid="seh-tile-container"]',
+        'div[data-testid="medium-emphasis-vertical-tile"]',
+      ];
     }
 
     if (selector === "div.PortraitCollection") {
@@ -233,6 +241,13 @@ export default class HuluPage extends AbstractPage {
 
     if (selector === "div.MastheadAndBanner") {
       return ['div[data-testid="masthead-content"]'];
+    }
+
+    if (selector === 'div[data-testid="search-results-tray"]') {
+      return [
+        'div[data-testid="seh-tile-container"]',
+        'figure[data-testid$="-standard-tile"]',
+      ];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

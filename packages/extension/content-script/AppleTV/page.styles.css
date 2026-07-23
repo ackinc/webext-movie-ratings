@@ -1,0 +1,42 @@
+.sift-imdb-data {
+  color: var(--systemSecondary);
+  margin-left: 4px;
+}
+
+ul > li button.epic-showcase-item .sift-imdb-data {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  z-index: 1;
+  margin: 0;
+  color: white;
+}
+
+div.search-hint-lockup .sift-imdb-data {
+  margin-left: 0;
+}
+
+a.search-card.lockup .sift-imdb-data {
+  margin-left: 0;
+}
+
+.sift-imdb-data-content {
+  font-weight: normal;
+
+  @media (max-width: 1440px) {
+    font-size: 12px;
+  }
+
+  .rating-page-link {
+    flex-shrink: 0;
+  }
+}
+
+.sift-imdb-data-content[data-program-selector="ul.search-suggestions div.search-hint-lockup"] {
+  color: var(--systemSecondary);
+  font-size: 13px;
+}
+
+.sift-imdb-data-content[data-program-selector='div.section[data-testid="section-container"]:has(div.header) ul > li a.lockup'] {
+  color: black;
+}

@@ -41,7 +41,7 @@ ul[data-testid="numbered-rail-slider"] .sift-imdb-data {
   padding: 4px 8px;
 }
 
-li[data-testid="collection-tile"] .sift-imdb-data {
+li[data-testid="collection-tile"]:not([class*="placeholder"]) .sift-imdb-data {
   position: absolute;
   top: 4px;
   right: unset;

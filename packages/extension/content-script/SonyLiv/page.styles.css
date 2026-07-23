@@ -12,7 +12,7 @@
 a.trending-tray-link .sift-imdb-data {
   position: absolute;
   top: 6px;
-  right: 6px;
+  left: 6px;
   margin: 0;
   padding: 2px 4px;
   background-color: #0000007f;
@@ -23,7 +23,7 @@ a.trending-tray-link .sift-imdb-data {
 a.portrait-link .sift-imdb-data {
   position: absolute;
   top: 6px;
-  right: 6px;
+  left: 6px;
   margin: 0;
   padding: 2px 4px;
   background-color: #0000007f;
@@ -87,7 +87,7 @@ div.card_container .sift-imdb-data {
   .sift-imdb-data {
     position: absolute;
     top: 2px;
-    right: 10px;
+    left: 10px;
     margin: 0;
     width: 48px;
     height: 20px;
@@ -98,5 +98,18 @@ div.card_container .sift-imdb-data {
     align-items: center;
     color: white;
     font-size: 9px;
+  }
+}
+
+.sift-imdb-data-content {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.sift-imdb-data-content[data-program-selector="div.PopularSearchContainer a[id]"] {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+
+  .rating-page-link svg {
+    stroke: rgba(255, 255, 255, 0.85);
   }
 }

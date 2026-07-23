@@ -1,14 +1,22 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
-import { type CachedIMDBData } from "@common";
+import { type CachedIMDBData, type IMDBData, type Program } from "@common";
+
+type CachedIncorrectRatingReport = Omit<Program, "container" | "node"> &
+  IMDBData & { pageUrl: string } & { key: string; reportedAt: number };
 
 export interface RatingsCacheSchema extends DBSchema {
   ratingsStore: {
     key: string;
     value: CachedIMDBData;
   };
+  incorrectRatingReportsStore: {
+    key: string;
+    value: CachedIncorrectRatingReport;
+  };
 }
 
 const storeName = "ratingsStore";
+const incorrectRatingReportsStoreName = "incorrectRatingReportsStore";
 
 export default class RatingsCache {
   db: IDBPDatabase<RatingsCacheSchema>;
@@ -16,6 +24,9 @@ export default class RatingsCache {
   static upgradeDb(db: IDBPDatabase, oldVersion: number) {
     if (oldVersion < 1) {
       db.createObjectStore(storeName, { keyPath: "key" });
+    }
+    if (oldVersion < 3) {
+      db.createObjectStore(incorrectRatingReportsStoreName, { keyPath: "key" });
     }
   }
 
@@ -55,5 +66,23 @@ export default class RatingsCache {
       ),
     );
     return this;
+  }
+
+  async putIncorrectRatingReport(value: CachedIncorrectRatingReport) {
+    const txn = this.db.transaction(
+      [incorrectRatingReportsStoreName],
+      "readwrite",
+    );
+    const store = txn.objectStore(incorrectRatingReportsStoreName);
+    await store.put(value);
+    return value;
+  }
+
+  async getIncorrectRatingReport(key: string) {
+    return await this.db.get(incorrectRatingReportsStoreName, key);
+  }
+
+  async removeIncorrectRatingReport(key: string) {
+    return await this.db.delete(incorrectRatingReportsStoreName, key);
   }
 }

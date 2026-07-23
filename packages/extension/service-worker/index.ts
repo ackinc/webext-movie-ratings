@@ -181,13 +181,33 @@ function handleMessage(
 
       return true; // keeps channel open until sendReponse is called
     } else if (request.type === MessageType.fetchCachedIMDBRating) {
-      const { program } = request.data;
+      const { program, pageUrl } = request.data;
 
       const context = { program };
       waitForRatingsService()
-        .then((ratingsService) => ratingsService.getCachedIMDBData(program))
+        .then((ratingsService) =>
+          ratingsService.getCachedIMDBData(program, pageUrl),
+        )
         .then((data) => sendResponse({ data }))
         .catch((e) => handleError(e, { context }));
+
+      return true;
+    } else if (request.type === MessageType.reportIncorrectProgramMatch) {
+      const { program, imdbData, pageUrl } = request.data;
+
+      waitForRatingsService()
+        .then((rs) => rs.markRatingAsIncorrect(program, imdbData, pageUrl))
+        .then(() => sendResponse({ data: {} }))
+        .catch(captureException);
+
+      return true;
+    } else if (request.type === MessageType.undoReportIncorrectProgramMatch) {
+      const { program, imdbData, pageUrl } = request.data;
+
+      waitForRatingsService()
+        .then((rs) => rs.undoMarkRatingAsIncorrect(program, imdbData, pageUrl))
+        .then(() => sendResponse({ data: {} }))
+        .catch(captureException);
 
       return true;
     } else if (request.type === MessageType.webpageRatingStats) {
@@ -367,6 +387,16 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
         initiatorDomains: ["mxplayer.in"],
         requestMethods: ["get"],
         regexFilter: "^https://.+\\.cloudfront\\.net/video",
+      },
+      action: { type: "block" },
+    },
+    {
+      id: 7,
+      priority: 2,
+      condition: {
+        initiatorDomains: ["zee5.com"],
+        requestMethods: ["get"],
+        regexFilter: "^https://.+\\.zee5\\.com/image/.+\\.(jpg)$",
       },
       action: { type: "block" },
     },
