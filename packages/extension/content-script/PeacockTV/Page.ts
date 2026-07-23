@@ -189,11 +189,11 @@ export default class PeacockTVPage extends AbstractPage {
     }
 
     if (selector === "div.rootPortraitRail") {
-      return ['li[data-testid="rail-tile"]'];
+      return ['li[data-testid="rail-tile"][data-in-view="true"]'];
     }
 
     if (selector === 'ul[data-testid="numbered-rail-slider"]') {
-      return ['li[data-testid="rail-tile"]'];
+      return ['li[data-testid="rail-tile"][data-in-view="true"]'];
     }
 
     if (selector === "div#collection") {
