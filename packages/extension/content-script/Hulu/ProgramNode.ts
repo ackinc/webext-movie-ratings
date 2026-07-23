@@ -130,6 +130,12 @@ export default class ProgramNode extends AbstractProgramNode {
         /^\d{4}$/.test(node.textContent),
       );
       year = !yearNode ? null : +yearNode.textContent;
+    } else if (programNode.matches('figure[data-testid$="-standard-tile"]')) {
+      const titleNode = programNode.querySelector(
+        'figcaption h3[data-testid="seh-tile-content-title"]',
+      )!;
+      title = titleNode.textContent.split(" ").slice(0, -1).join(" ");
+      year = +titleNode.textContent.split(" ").at(-1)!.replace(/\D/g, "");
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
@@ -224,6 +230,14 @@ export default class ProgramNode extends AbstractProgramNode {
         'ul[data-testid="masthead-metadata"]',
       )!;
       typeAndYearNode.insertAdjacentElement("afterbegin", imdbNode);
+      return;
+    }
+
+    if (programNode.matches('figure[data-testid$="-standard-tile"]')) {
+      const titleNode = programNode.querySelector(
+        'figcaption h3[data-testid="seh-tile-content-title"]',
+      )!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
       return;
     }
 

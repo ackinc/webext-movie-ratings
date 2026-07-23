@@ -312,7 +312,7 @@ function handleMessage(
   if (type === MessageType.cleanup) {
     cleanup();
   } else if (type === MessageType.orphanCheck) {
-    if (!browser.runtime.id) {
+    if (!browser.runtime?.id) {
       // if the trigger was new-content-script-injection, the
       //   outdated MWCS will be informed of the need to cleanup by
       //   the new MWCS, not by this ISOCS

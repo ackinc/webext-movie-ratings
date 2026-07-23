@@ -51,6 +51,9 @@ export default class HuluPage extends AbstractPage {
 
       // single program page
       "div.MastheadAndBanner",
+
+      // search page
+      'div[data-testid="search-results-tray"]',
     ];
   }
 
@@ -147,6 +150,12 @@ export default class HuluPage extends AbstractPage {
       return "Single-program page Masthead";
     }
 
+    if (pContainerNode.matches('div[data-testid="search-results-tray"]')) {
+      return pContainerNode.querySelector(
+        'h2[data-testid="CollectionHeader__title"]',
+      )!.textContent;
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -232,6 +241,13 @@ export default class HuluPage extends AbstractPage {
 
     if (selector === "div.MastheadAndBanner") {
       return ['div[data-testid="masthead-content"]'];
+    }
+
+    if (selector === 'div[data-testid="search-results-tray"]') {
+      return [
+        'div[data-testid="seh-tile-container"]',
+        'figure[data-testid$="-standard-tile"]',
+      ];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
