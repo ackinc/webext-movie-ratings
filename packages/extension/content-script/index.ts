@@ -176,9 +176,9 @@ function removeListeners() {
 async function findProgramsAndAddRatings() {
   try {
     const programs = page.findPrograms({
-      // in prod, we don't want an error during data-extraction for
-      //   one pc- or p-node to affect processing of other nodes
-      swallowDataExtractionErrors: APP_ENV === "production",
+      swallowDataExtractionErrors: !(await getSetting(
+        "throwDataExtractionErrors",
+      )),
     });
 
     const results = await Promise.allSettled<Program>(

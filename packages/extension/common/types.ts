@@ -202,7 +202,6 @@ export type ExtensionSettings = {
   extensionLastUpdateTime: number;
   errorReportingOptIn: boolean;
   programFiltersSettings: ProgramFilterSettings;
-  outdatedSelectorDetectionEnabled: boolean;
   updatedDbVersion: number;
   onboardingStatus:
     | "started"
@@ -211,7 +210,12 @@ export type ExtensionSettings = {
     | "pitchedErrorReporting"
     | "finished";
   pitchMissingRatingReportingPageSeen: boolean;
+} & ExtensionDeveloperSettings;
+
+type ExtensionDeveloperSettings = {
+  outdatedSelectorDetectionEnabled: boolean;
   mediaRequestBlockingEnabled: boolean;
+  throwDataExtractionErrors: boolean;
 };
 
 export type ExtensionContext =

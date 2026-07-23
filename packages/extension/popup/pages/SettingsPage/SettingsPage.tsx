@@ -4,6 +4,7 @@ import ErrorReportingOptIn from "@popup/components/ErrorReportingOptIn/ErrorRepo
 import SiteChooserForm from "@popup/components/SiteChooserForm/SiteChooserForm";
 import Separator from "@popup/components/Separator";
 import ToggleMediaRequestBlocking from "@popup/components/ToggleMediaRequestBlocking";
+import SettingToggle from "@popup/components/SettingToggle";
 import "./SettingsPage.css";
 
 export default function SettingsPage() {
@@ -17,6 +18,12 @@ export default function SettingsPage() {
         onClickShowDetails={() => setCurPage("pitchErrorReporting")}
       />
       {APP_ENV === "development" ? <ToggleMediaRequestBlocking /> : null}
+      {APP_ENV === "development" ? (
+        <SettingToggle
+          name="throwDataExtractionErrors"
+          label="Throw data extraction errors?"
+        />
+      ) : null}
     </div>
   );
 }
