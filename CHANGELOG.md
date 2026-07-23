@@ -1,5 +1,9 @@
 # Changelog
 
+## v9.6.0
+
+- Users can now report a rating as incorrect
+
 ## v9.5.10
 
 - Service worker now polls API server for notifications on start
