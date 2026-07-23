@@ -39,7 +39,11 @@ export default class ProgramNode extends AbstractProgramNode {
       programNode.matches('li[data-testid="rail-tile"][data-in-view="true"]')
     ) {
       title = programNode.querySelector("img")!.getAttribute("alt")!;
-    } else if (programNode.matches('li[data-testid="collection-tile"]')) {
+    } else if (
+      programNode.matches(
+        'li[data-testid="collection-tile"]:not([class*="placeholder"])',
+      )
+    ) {
       title = programNode.querySelector('h4[data-testid="title"]')!.textContent;
     } else if (programNode.matches('ul[data-grid="recommendations"] > li')) {
       title = programNode.querySelector('h4[data-testid="title"]')!.textContent;
@@ -121,6 +125,18 @@ export default class ProgramNode extends AbstractProgramNode {
       } else {
         throw new Error(ErrorMessage.unrecognizedProgramNode);
       }
+      return;
+    }
+
+    if (
+      programNode.matches(
+        'li[data-testid="collection-tile"]:not([class*="placeholder"])',
+      )
+    ) {
+      programNode.firstElementChild!.insertAdjacentElement(
+        "beforeend",
+        imdbNode,
+      );
       return;
     }
 

@@ -197,7 +197,7 @@ export default class PeacockTVPage extends AbstractPage {
     }
 
     if (selector === "div#collection") {
-      return ['li[data-testid="collection-tile"]'];
+      return ['li[data-testid="collection-tile"]:not([class*="placeholder"])'];
     }
 
     if (selector === 'section[data-testid="recommendations-section"]') {
@@ -205,11 +205,11 @@ export default class PeacockTVPage extends AbstractPage {
     }
 
     if (selector === 'ul[data-testid="popular-searches-grid"]') {
-      return ['li[data-testid="collection-tile"]'];
+      return ['li[data-testid="collection-tile"]:not([class*="placeholder"])'];
     }
 
     if (selector === 'ul[data-testid="search-results-grid"]') {
-      return ['li[data-testid="collection-tile"]'];
+      return ['li[data-testid="collection-tile"]:not([class*="placeholder"])'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
