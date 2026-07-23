@@ -140,6 +140,14 @@ export default class ProgramNode extends AbstractProgramNode {
       return;
     }
 
+    if (programNode.matches('ul[data-grid="recommendations"] > li')) {
+      programNode.firstElementChild!.insertAdjacentElement(
+        "beforeend",
+        imdbNode,
+      );
+      return;
+    }
+
     super.insertIMDBNode(programNode, imdbNode);
   }
 }
