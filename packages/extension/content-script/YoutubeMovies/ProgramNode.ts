@@ -93,7 +93,7 @@ export default class ProgramNode extends AbstractProgramNode {
       const badgesContainer = programNode.querySelector(
         ":scope > ytd-badge-supported-renderer",
       );
-      badgesContainer?.appendChild(imdbNode);
+      badgesContainer?.insertAdjacentElement("afterend", imdbNode);
       return;
     }
 
@@ -101,7 +101,7 @@ export default class ProgramNode extends AbstractProgramNode {
       const badgesContainer = programNode.querySelector(
         "yt-content-metadata-view-model > div:nth-child(2)",
       )!;
-      badgesContainer.appendChild(imdbNode);
+      badgesContainer?.insertAdjacentElement("afterend", imdbNode);
       return;
     }
 

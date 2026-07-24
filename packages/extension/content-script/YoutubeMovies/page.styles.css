@@ -1,17 +1,12 @@
 .sift-imdb-data {
-  margin-left: 4px;
+  margin-top: 4px;
+  width: fit-content;
   padding: 0 4px;
 
   background-color: rgba(0, 0, 0, 0.05);
   border-radius: 2px;
   color: #606060;
   text-decoration: none;
-}
-
-ytd-watch-next-secondary-results-renderer > div#items .sift-imdb-data {
-  background-color: transparent;
-  outline: 1px solid rgba(0, 0, 0, 0.1);
-  outline-offset: -1px;
 }
 
 div#above-the-fold.ytd-watch-metadata.sift-filtered-out-program {
@@ -25,8 +20,4 @@ div#above-the-fold.ytd-watch-metadata.sift-filtered-out-program {
   font-weight: 500;
   line-height: 1.8rem;
   text-decoration: none;
-
-  .headline {
-    gap: 4px;
-  }
 }
