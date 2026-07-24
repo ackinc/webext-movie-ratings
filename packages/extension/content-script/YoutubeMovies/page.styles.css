@@ -9,6 +9,14 @@
   text-decoration: none;
 }
 
+div#above-the-fold.ytd-watch-metadata .sift-imdb-data {
+  margin-top: 0px;
+  margin-left: 2px;
+  background-color: transparent;
+  outline: 1px solid rgba(0, 0, 0, 0.2);
+  outline-offset: -1px;
+}
+
 div#above-the-fold.ytd-watch-metadata.sift-filtered-out-program {
   opacity: 1;
 }

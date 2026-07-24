@@ -21,7 +21,7 @@ export default class ProgramNode extends AbstractProgramNode {
       const channelName = programNode
         .querySelector("ytd-channel-name yt-formatted-string.ytd-channel-name")!
         .textContent.trim();
-      return channelName === "YouTube Movies";
+      return channelName.startsWith("YouTube Movies");
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramNode);
