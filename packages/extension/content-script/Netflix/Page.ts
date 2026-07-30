@@ -7,6 +7,10 @@ import pageStyles from "./page.styles.css";
 export default class NetflixPage extends AbstractPage {
   static override ProgramNode = ProgramNode;
 
+  override ignorableNodeAdditions: string[] = [
+    "div.player-timedtext-text-container",
+  ];
+
   constructor() {
     super();
 
