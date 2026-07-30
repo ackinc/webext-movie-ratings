@@ -74,6 +74,7 @@ async function main() {
           node instanceof HTMLElement &&
           !isVoidElement(node, ["img"]) &&
           ["script"].indexOf(node.tagName.toLowerCase()) === -1 &&
+          !page.ignorableNodeAdditions.some((sel) => node.matches(sel)) &&
           !Array.from(node.classList).some((cname) => cname.startsWith("sift")),
       );
     if (addedNodes.length === 0) return;

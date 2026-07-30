@@ -59,6 +59,9 @@ export default class AbstractPage {
   //   confusing
   foundPrograms: Program[] = [];
 
+  // don't need to reprocess the page if these were the only nodes added
+  ignorableNodeAdditions: string[] = [];
+
   constructor() {
     this.checkIMDBDataAlreadyAdded = this.checkIMDBDataAlreadyAdded.bind(this);
     this.isValidProgramContainer = this.isValidProgramContainer.bind(this);

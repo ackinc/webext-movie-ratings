@@ -86,3 +86,27 @@ div[data-uia="carousel-scroller"]
   border-radius: 0;
   color: white;
 }
+
+.sift-imdb-data-content[data-program-selector='div:has(> section[data-uia="billboard"]) section[data-uia="billboard"]'] {
+  color: white;
+  font-size: 16px;
+
+  .headline {
+    .rating-page-link svg {
+      height: 16px;
+      stroke: white;
+    }
+  }
+}
+
+.sift-imdb-data-content[data-program-selector="div.billboard div.info.meta-layer"] {
+  color: white;
+  font-size: 16px;
+
+  .headline {
+    .rating-page-link svg {
+      height: 16px;
+      stroke: white;
+    }
+  }
+}
