@@ -1,57 +1,194 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Check, ChevronDown, Info } from "lucide-react";
 import type { UserMessage } from "sifttypes";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
-import { API_URL } from "../../lib/constants";
+import { API_URL, supportedPlatforms } from "../../lib/constants";
+
+const platformOptions = supportedPlatforms.map((p) => p.name);
+
+const privacyNote =
+  "Sift doesn't collect or sell your data, it only sends movie titles to a ratings API.";
 
 const reasons = [
   {
     reason: "Found a better alternative",
-    detailsPlaceholder: "What was the extension you ended up going with?",
+    extra: {
+      id: "went-with",
+      question: "What was the extension you ended up going with?",
+      payloadLabel: "Went with",
+    },
   },
   {
     reason: "Too slow / performance issues",
-    detailsPlaceholder: "Which website did Sift give you trouble on?",
+    extra: {
+      id: "website",
+      question: "Which website(s) did Sift give you trouble on?",
+      payloadLabel: "Website(s)",
+      options: platformOptions,
+    },
+  },
+  {
+    reason: "Too many incorrect ratings",
+    extra: {
+      id: "incorrect-ratings",
+      question: "Which site and title(s) did this happen on?",
+      payloadLabel: "Site/title(s)",
+    },
   },
   {
     reason: "Doesn't work on my streaming platform",
-    detailsPlaceholder: "Tell us which one and we'll try to support it ASAP!",
+    extra: {
+      id: "platform",
+      question: "Which platform? We'll try to support it soon.",
+      payloadLabel: "Platform",
+    },
   },
-  { reason: "Privacy concerns" },
+  {
+    reason: "Privacy concerns",
+    extra: {
+      id: "privacy-concern",
+      question: "What data are you worried about?",
+      payloadLabel: "Concern",
+    },
+    note: privacyNote,
+  },
   { reason: "No longer need it" },
-  { reason: "Other" },
+  {
+    reason: "Other",
+    extra: {
+      id: "other-details",
+      question: "Anything else you want to tell us ...",
+      payloadLabel: "",
+    },
+  },
 ];
-const defaultDetailsPlaceholder = "Anything else you want to tell us ...";
+
+function MultiSelectDropdown({
+  value,
+  onChange,
+  options,
+  placeholder,
+}: {
+  value: string[];
+  onChange: (value: string[]) => void;
+  options: string[];
+  placeholder: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  function toggleOption(option: string) {
+    onChange(
+      value.includes(option)
+        ? value.filter((v) => v !== option)
+        : [...value, option],
+    );
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between gap-2 rounded-md border bg-background py-2 pl-3 pr-2 text-left text-sm focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      >
+        <span
+          className={`truncate ${value.length === 0 ? "text-muted-foreground" : "text-foreground"}`}
+        >
+          {value.length === 0 ? placeholder : value.join(", ")}
+        </span>
+        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </button>
+      {open && (
+        <ul className="absolute top-full z-30 mt-1 max-h-56 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md">
+          {options.map((option) => {
+            const checked = value.includes(option);
+            return (
+              <li key={option}>
+                <button
+                  type="button"
+                  onClick={() => toggleOption(option)}
+                  className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-foreground hover:bg-accent hover:text-accent-foreground"
+                >
+                  <span
+                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+                      checked
+                        ? "border-primary bg-primary"
+                        : "border-input"
+                    }`}
+                  >
+                    {checked && (
+                      <Check className="h-3 w-3 text-primary-foreground" />
+                    )}
+                  </span>
+                  {option}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 export default function UninstallPage() {
-  const [selectedReason, setSelectedReason] = useState("");
-  const [details, setDetails] = useState("");
+  const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
+  const [textValues, setTextValues] = useState<Record<string, string>>({});
+  const [multiValues, setMultiValues] = useState<Record<string, string[]>>(
+    {},
+  );
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  function toggleReason(reason: string, extraId?: string) {
+    setSelectedReasons((prev) =>
+      prev.includes(reason)
+        ? prev.filter((r) => r !== reason)
+        : [...prev, reason],
+    );
+    if (extraId) {
+      setTextValues((prev) => ({ ...prev, [extraId]: "" }));
+      setMultiValues((prev) => ({ ...prev, [extraId]: [] }));
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1">
-        <div className="container mx-auto max-w-xl px-4 py-16">
+        <div className="container mx-auto px-4 pt-8">
           <Link
             href="/"
-            className="mb-8 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
           >
             &larr; Back to home
           </Link>
-
+        </div>
+        <div className="container mx-auto max-w-3xl px-4 pb-16 pt-8">
           <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">
-            Sorry to see you go
+            Sorry to see you go!
           </h1>
           <p className="mb-8 text-muted-foreground">
-            Help us improve by sharing why you're uninstalling Sift.
+            Mind sharing why? It helps us fix things.
           </p>
 
           {submitted ? (
@@ -65,33 +202,73 @@ export default function UninstallPage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-3">
-                {reasons.map(({ reason }) => (
-                  <label
-                    key={reason}
-                    className="flex items-center gap-3 rounded-lg border p-3 cursor-pointer hover:bg-accent/50 has-[:checked]:border-primary has-[:checked]:bg-accent/50"
-                  >
-                    <input
-                      type="radio"
-                      name="reason"
-                      value={reason}
-                      checked={selectedReason === reason}
-                      onChange={() => setSelectedReason(reason)}
-                      className="h-4 w-4 accent-primary"
-                    />
-                    <span className="text-sm text-foreground">{reason}</span>
-                  </label>
-                ))}
-                <textarea
-                  value={details}
-                  onChange={(e) => setDetails(e.target.value)}
-                  placeholder={
-                    reasons.find(({ reason }) => reason === selectedReason)
-                      ?.detailsPlaceholder ?? defaultDetailsPlaceholder
-                  }
-                  rows={3}
-                  className="mt-2 w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
-                />
+              <div className="grid grid-cols-2 items-start gap-x-8 gap-y-3">
+                {reasons.map(({ reason, extra, note }) => {
+                  const checked = selectedReasons.includes(reason);
+                  return (
+                    <Fragment key={reason}>
+                      <div className="flex items-center gap-2 rounded-lg border px-3 py-[9px] has-[:checked]:border-primary has-[:checked]:bg-accent/50">
+                        <label className="flex flex-1 items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleReason(reason, extra?.id)}
+                            className="h-4 w-4 accent-primary"
+                          />
+                          <span className="text-sm text-foreground">
+                            {reason}
+                          </span>
+                        </label>
+                        {note && (
+                          <Link
+                            href="/privacy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Read our privacy policy"
+                            className="group relative shrink-0 text-muted-foreground hover:text-foreground"
+                          >
+                            <Info className="h-3.5 w-3.5" />
+                            <span className="pointer-events-none absolute right-0 top-full z-30 mt-1 w-64 rounded-md border bg-popover p-2 text-xs font-normal text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100">
+                              {note} Click for our full privacy policy.
+                            </span>
+                          </Link>
+                        )}
+                      </div>
+                      <div>
+                        {extra && checked && (
+                          <div className="animate-in fade-in duration-200">
+                            {extra.options ? (
+                              <MultiSelectDropdown
+                                value={multiValues[extra.id] ?? []}
+                                onChange={(value) =>
+                                  setMultiValues((prev) => ({
+                                    ...prev,
+                                    [extra.id]: value,
+                                  }))
+                                }
+                                options={extra.options}
+                                placeholder={extra.question}
+                              />
+                            ) : (
+                              <input
+                                type="text"
+                                value={textValues[extra.id] ?? ""}
+                                onChange={(e) =>
+                                  setTextValues((prev) => ({
+                                    ...prev,
+                                    [extra.id]: e.target.value,
+                                  }))
+                                }
+                                placeholder={extra.question}
+                                className="w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </Fragment>
+                  );
+                })}
               </div>
 
               <div>
@@ -101,7 +278,7 @@ export default function UninstallPage() {
                 >
                   Email{" "}
                   <span className="font-normal text-muted-foreground">
-                    (optional - so we can inform you when we fix the issues
+                    (optional, so we can inform you when we fix the issues
                     you've raised!)
                   </span>
                 </label>
@@ -111,13 +288,17 @@ export default function UninstallPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                 />
               </div>
 
               {error && <p className="text-sm text-destructive">{error}</p>}
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-primary"
+                disabled={loading || selectedReasons.length === 0}
+              >
                 {loading ? "Submitting..." : "Submit"}
               </Button>
             </form>
@@ -132,7 +313,21 @@ export default function UninstallPage() {
     e.preventDefault();
     setError("");
 
-    const reason = [selectedReason, details].filter((x) => x).join(": ");
+    const reasonSegments = selectedReasons.map((r) => {
+      const extra = reasons.find((x) => x.reason === r)?.extra;
+      const value = extra
+        ? extra.options
+          ? (multiValues[extra.id] ?? []).join(", ")
+          : (textValues[extra.id] ?? "")
+        : "";
+      const detail = !value
+        ? ""
+        : extra!.payloadLabel
+          ? `${extra!.payloadLabel}: ${value}`
+          : value;
+      return [r, detail].filter(Boolean).join(" - ");
+    });
+    const reason = reasonSegments.join(" | ");
 
     if (!reason) {
       setError("Please select or enter a reason");
