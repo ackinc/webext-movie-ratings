@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+// if the publish API key expires, get a new one from
+//   https://partner.microsoft.com/en-us/dashboard/microsoftedge/publishapi
+
 import "dotenv/config";
 import * as fs from "node:fs";
 import { delayMs, pick } from "siftutils";
