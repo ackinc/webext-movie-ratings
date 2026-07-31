@@ -33,6 +33,9 @@ export default class PrimeVideoPage extends AbstractPage {
 
       // search results preview pane
       'div[data-testid="navigation-bar-content-cards-below"]',
+
+      // billboard
+      'div[data-testid="top-hero-wrapper"]',
     ];
   }
 
@@ -73,6 +76,8 @@ export default class PrimeVideoPage extends AbstractPage {
       )
     ) {
       title = "Search results preview";
+    } else if (pContainerNode.matches('div[data-testid="top-hero-wrapper"]')) {
+      return "Billboard";
     } else {
       throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
     }
@@ -119,6 +124,10 @@ export default class PrimeVideoPage extends AbstractPage {
       )
     ) {
       return ["article > a"];
+    }
+
+    if (['div[data-testid="top-hero-wrapper"]'].includes(selector)) {
+      return ['article[data-testid="top-hero-card"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

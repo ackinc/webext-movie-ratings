@@ -15,7 +15,7 @@ article[data-testid="super-carousel-card"] .sift-imdb-data {
   margin: 0;
 }
 
-.sift-imdb-data-content.inside-super-carousel-card {
+.sift-imdb-data-content[data-program-selector='section[data-testid="super-carousel"] article[data-testid="super-carousel-card"]'] {
   border-radius: 0;
   border-bottom-right-radius: 3px;
   padding: 3px 7px;
@@ -25,4 +25,16 @@ article[data-testid="super-carousel-card"] .sift-imdb-data {
   font-size: 13px;
   font-weight: bold;
   line-height: var(--fable-typography-label-90-line-height);
+}
+
+.sift-imdb-data-content[data-program-selector='div[data-testid="top-hero-wrapper"] article[data-testid="top-hero-card"]'] {
+  color: white;
+  font-size: 16px;
+
+  .headline {
+    .rating-page-link svg {
+      height: 16px;
+      stroke: white;
+    }
+  }
 }
