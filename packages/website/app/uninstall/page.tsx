@@ -135,8 +135,8 @@ export default function UninstallPage() {
                   const checked = selectedReasons.has(id);
                   return (
                     <Fragment key={id}>
-                      <div className="flex items-center gap-2 rounded-lg border px-3 py-2.25 has-checked:border-primary has-checked:bg-accent/50">
-                        <label className="flex flex-1 items-center gap-3 cursor-pointer">
+                      <div className="flex items-center gap-2 rounded-lg border has-checked:border-primary has-checked:bg-accent/50">
+                        <label className="px-3 py-2.25 flex flex-1 items-center gap-3 cursor-pointer">
                           <input
                             name={`reason-${id}`}
                             type="checkbox"
@@ -153,21 +153,21 @@ export default function UninstallPage() {
                           <span className="text-sm text-foreground">
                             {desc}
                           </span>
+                          {note && (
+                            <Link
+                              href={note.href ?? "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="Read our privacy policy"
+                              className="ml-auto group relative shrink-0 text-muted-foreground hover:text-foreground"
+                            >
+                              <Info className="h-3.5 w-3.5" />
+                              <span className="pointer-events-none absolute right-0 top-full z-30 mt-1 w-64 rounded-md border bg-popover p-2 text-xs font-normal text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100">
+                                {note.text}
+                              </span>
+                            </Link>
+                          )}
                         </label>
-                        {note && (
-                          <Link
-                            href={note.href ?? "#"}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Read our privacy policy"
-                            className="group relative shrink-0 text-muted-foreground hover:text-foreground"
-                          >
-                            <Info className="h-3.5 w-3.5" />
-                            <span className="pointer-events-none absolute right-0 top-full z-30 mt-1 w-64 rounded-md border bg-popover p-2 text-xs font-normal text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100">
-                              {note.text}
-                            </span>
-                          </Link>
-                        )}
                       </div>
                       <div>
                         {checked && question && (
