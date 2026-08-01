@@ -57,7 +57,7 @@ export function MultiSelectDropdown({
                 <button
                   type="button"
                   onClick={() => toggleOption(option)}
-                  className="cursor-pointer flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-foreground hover:bg-accent hover:text-accent-foreground"
+                  className="cursor-pointer flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-foreground hover:bg-accent/50 hover:text-accent-foreground"
                 >
                   <span
                     className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${

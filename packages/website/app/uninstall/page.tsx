@@ -31,14 +31,14 @@ const reasons: UninstallReason[] = [
     id: "found-better-alternative",
     desc: "Found a better alternative",
     question: {
-      text: "Unbelievable. What was the extension you ended up going with?",
+      text: "Unbelievable. What tool did you like more?",
     },
   },
   {
     id: "too-slow-perf-issues",
     desc: "Too slow / performance issues",
     question: {
-      text: "Argh. Which website(s) did Sift give you trouble on?",
+      text: "Argh. Which site(s) did you have trouble on?",
       options: platformOptions,
     },
   },
@@ -46,7 +46,7 @@ const reasons: UninstallReason[] = [
     id: "incorrect-ratings",
     desc: "Too many incorrect ratings",
     question: {
-      text: "Uh oh. Which website(s) did you experience this on?",
+      text: "Ergh. Which site(s) was this on?",
       options: platformOptions,
     },
   },
@@ -54,14 +54,14 @@ const reasons: UninstallReason[] = [
     id: "doesnt-work-on-desired-website",
     desc: "Doesn't support my desired streaming website",
     question: {
-      text: "Huh. Which website(s) should we add support for?",
+      text: "Ugh. What site(s) should we add support for?",
     },
   },
   {
     id: "privacy-concerns",
     desc: "Privacy concerns",
     question: {
-      text: "Any data in particular you're concerned about?",
+      text: "Huh. Any data in particular you're concerned about?",
     },
     note: {
       text: "Sift doesn't collect or sell your data, it only sends movie titles to a ratings API. Click for our full privacy policy.",
@@ -72,7 +72,7 @@ const reasons: UninstallReason[] = [
     id: "no-longer-need-it",
     desc: "No longer need it",
     question: {
-      text: "But that's impossible. Everyone needs Sift! Everyone!",
+      text: "Impossible. Everyone needs Sift! Everyone!",
       readOnly: true,
     },
   },
@@ -80,7 +80,7 @@ const reasons: UninstallReason[] = [
     id: "other",
     desc: "Some other reason",
     question: {
-      text: "What did we miss?",
+      text: "Hmm. What did we miss?",
     },
   },
 ];
