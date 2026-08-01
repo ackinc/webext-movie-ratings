@@ -174,6 +174,7 @@ export default function UninstallPage() {
                           <div className="animate-in fade-in duration-200">
                             {question.options ? (
                               <MultiSelectDropdown
+                                defaultOpen={true}
                                 value={multiValues[id] ?? []}
                                 onChange={(value) =>
                                   setMultiValues((prev) => ({
@@ -186,6 +187,7 @@ export default function UninstallPage() {
                               />
                             ) : (
                               <input
+                                autoFocus={!question.readOnly}
                                 name={`reason-${id}-details`}
                                 type="text"
                                 value={textValues[id] ?? ""}

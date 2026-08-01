@@ -2,17 +2,19 @@ import { useState, useEffect, useRef } from "react";
 import { Check, ChevronDown } from "lucide-react";
 
 export function MultiSelectDropdown({
+  defaultOpen,
   value,
   onChange,
   options,
   placeholder,
 }: {
+  defaultOpen?: boolean;
   value: string[];
   onChange: (value: string[]) => void;
   options: string[];
   placeholder: string;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen ?? false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
