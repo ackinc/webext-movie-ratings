@@ -1,175 +1,103 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useState } from "react";
 import Link from "next/link";
-import { Check, ChevronDown, Info } from "lucide-react";
+import { Set as ImmutableSet } from "immutable";
+import { Info } from "lucide-react";
 import type { UserMessage } from "sifttypes";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
+import { MultiSelectDropdown } from "@/components/multi-select-dropdown";
 import { API_URL, supportedPlatforms } from "../../lib/constants";
 
-const platformOptions = supportedPlatforms.map((p) => p.name);
+const platformOptions = supportedPlatforms.map((p) => p.name).sort();
 
-const privacyNote =
-  "Sift doesn't collect or sell your data, it only sends movie titles to a ratings API.";
-
-const reasons = [
+interface UninstallReason {
+  id: string;
+  desc: string;
+  question?: {
+    text: string;
+    readOnly?: boolean;
+    options?: string[];
+  };
+  note?: {
+    text: string;
+    href?: string;
+  };
+}
+const reasons: UninstallReason[] = [
   {
-    reason: "Found a better alternative",
-    extra: {
-      id: "went-with",
-      question: "What was the extension you ended up going with?",
-      payloadLabel: "Went with",
+    id: "found-better-alternative",
+    desc: "Found a better alternative",
+    question: {
+      text: "Unbelievable. What tool did you like more?",
     },
   },
   {
-    reason: "Too slow / performance issues",
-    extra: {
-      id: "website",
-      question: "Which website(s) did Sift give you trouble on?",
-      payloadLabel: "Website(s)",
+    id: "too-slow-perf-issues",
+    desc: "Too slow / performance issues",
+    question: {
+      text: "Argh. Which site(s) did you have trouble on?",
       options: platformOptions,
     },
   },
   {
-    reason: "Too many incorrect ratings",
-    extra: {
-      id: "incorrect-ratings",
-      question: "Which site and title(s) did this happen on?",
-      payloadLabel: "Site/title(s)",
+    id: "incorrect-ratings",
+    desc: "Too many incorrect ratings",
+    question: {
+      text: "Ergh. Which site(s) was this on?",
+      options: platformOptions,
     },
   },
   {
-    reason: "Doesn't work on my streaming platform",
-    extra: {
-      id: "platform",
-      question: "Which platform? We'll try to support it soon.",
-      payloadLabel: "Platform",
+    id: "doesnt-work-on-desired-website",
+    desc: "Doesn't support my desired streaming website",
+    question: {
+      text: "Ugh. What site(s) should we add support for?",
     },
   },
   {
-    reason: "Privacy concerns",
-    extra: {
-      id: "privacy-concern",
-      question: "What data are you worried about?",
-      payloadLabel: "Concern",
+    id: "privacy-concerns",
+    desc: "Privacy concerns",
+    question: {
+      text: "Huh. Any data in particular you're concerned about?",
     },
-    note: privacyNote,
+    note: {
+      text: "Sift doesn't collect or sell your data, it only sends movie titles to a ratings API. Click for our full privacy policy.",
+      href: "/privacy",
+    },
   },
-  { reason: "No longer need it" },
   {
-    reason: "Other",
-    extra: {
-      id: "other-details",
-      question: "Anything else you want to tell us ...",
-      payloadLabel: "",
+    id: "no-longer-need-it",
+    desc: "No longer need it",
+    question: {
+      text: "Impossible. Everyone needs Sift! Everyone!",
+      readOnly: true,
+    },
+  },
+  {
+    id: "other",
+    desc: "Some other reason",
+    question: {
+      text: "Hmm. What did we miss?",
     },
   },
 ];
 
-function MultiSelectDropdown({
-  value,
-  onChange,
-  options,
-  placeholder,
-}: {
-  value: string[];
-  onChange: (value: string[]) => void;
-  options: string[];
-  placeholder: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  function toggleOption(option: string) {
-    onChange(
-      value.includes(option)
-        ? value.filter((v) => v !== option)
-        : [...value, option],
-    );
-  }
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-2 rounded-md border bg-background py-2 pl-3 pr-2 text-left text-sm focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-      >
-        <span
-          className={`truncate ${value.length === 0 ? "text-muted-foreground" : "text-foreground"}`}
-        >
-          {value.length === 0 ? placeholder : value.join(", ")}
-        </span>
-        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-      </button>
-      {open && (
-        <ul className="absolute top-full z-30 mt-1 max-h-56 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md">
-          {options.map((option) => {
-            const checked = value.includes(option);
-            return (
-              <li key={option}>
-                <button
-                  type="button"
-                  onClick={() => toggleOption(option)}
-                  className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-foreground hover:bg-accent hover:text-accent-foreground"
-                >
-                  <span
-                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                      checked
-                        ? "border-primary bg-primary"
-                        : "border-input"
-                    }`}
-                  >
-                    {checked && (
-                      <Check className="h-3 w-3 text-primary-foreground" />
-                    )}
-                  </span>
-                  {option}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
-  );
-}
-
 export default function UninstallPage() {
-  const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
-  const [textValues, setTextValues] = useState<Record<string, string>>({});
-  const [multiValues, setMultiValues] = useState<Record<string, string[]>>(
-    {},
-  );
+  const [selectedReasons, setSelectedReasons] =
+    useState<ImmutableSet<UninstallReason["id"]>>(ImmutableSet());
+  const [textValues, setTextValues] = useState<
+    Record<UninstallReason["id"], string>
+  >({});
+  const [multiValues, setMultiValues] = useState<
+    Record<UninstallReason["id"], string[]>
+  >({});
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  function toggleReason(reason: string, extraId?: string) {
-    setSelectedReasons((prev) =>
-      prev.includes(reason)
-        ? prev.filter((r) => r !== reason)
-        : [...prev, reason],
-    );
-    if (extraId) {
-      setTextValues((prev) => ({ ...prev, [extraId]: "" }));
-      setMultiValues((prev) => ({ ...prev, [extraId]: [] }));
-    }
-  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -203,68 +131,78 @@ export default function UninstallPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-2 items-start gap-x-8 gap-y-3">
-                {reasons.map(({ reason, extra, note }) => {
-                  const checked = selectedReasons.includes(reason);
+                {reasons.map(({ id, desc, note, question }) => {
+                  const checked = selectedReasons.has(id);
                   return (
-                    <Fragment key={reason}>
-                      <div className="flex items-center gap-2 rounded-lg border px-3 py-[9px] has-[:checked]:border-primary has-[:checked]:bg-accent/50">
-                        <label className="flex flex-1 items-center gap-3 cursor-pointer">
+                    <Fragment key={id}>
+                      <div className="uninstall-reason flex items-center gap-2 rounded-lg border has-checked:border-primary has-checked:bg-accent/50">
+                        <label className="px-3 py-2.25 flex flex-1 items-center gap-3 cursor-pointer">
                           <input
+                            name={`reason-${id}`}
                             type="checkbox"
                             checked={checked}
-                            onChange={() => toggleReason(reason, extra?.id)}
+                            onChange={() =>
+                              setSelectedReasons(
+                                selectedReasons.has(id)
+                                  ? selectedReasons.delete(id)
+                                  : selectedReasons.add(id),
+                              )
+                            }
                             className="h-4 w-4 accent-primary"
                           />
                           <span className="text-sm text-foreground">
-                            {reason}
+                            {desc}
                           </span>
+                          {note && (
+                            <Link
+                              href={note.href ?? "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="Read our privacy policy"
+                              className="ml-auto group relative shrink-0 text-muted-foreground hover:text-foreground"
+                            >
+                              <Info className="h-3.5 w-3.5" />
+                              <span className="pointer-events-none absolute right-0 top-full z-30 mt-1 w-64 rounded-md border bg-popover p-2 text-xs font-normal text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100">
+                                {note.text}
+                              </span>
+                            </Link>
+                          )}
                         </label>
-                        {note && (
-                          <Link
-                            href="/privacy"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Read our privacy policy"
-                            className="group relative shrink-0 text-muted-foreground hover:text-foreground"
-                          >
-                            <Info className="h-3.5 w-3.5" />
-                            <span className="pointer-events-none absolute right-0 top-full z-30 mt-1 w-64 rounded-md border bg-popover p-2 text-xs font-normal text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100">
-                              {note} Click for our full privacy policy.
-                            </span>
-                          </Link>
-                        )}
                       </div>
-                      <div>
-                        {extra && checked && (
-                          <div className="animate-in fade-in duration-200">
-                            {extra.options ? (
-                              <MultiSelectDropdown
-                                value={multiValues[extra.id] ?? []}
-                                onChange={(value) =>
-                                  setMultiValues((prev) => ({
-                                    ...prev,
-                                    [extra.id]: value,
-                                  }))
-                                }
-                                options={extra.options}
-                                placeholder={extra.question}
-                              />
-                            ) : (
-                              <input
-                                type="text"
-                                value={textValues[extra.id] ?? ""}
-                                onChange={(e) =>
-                                  setTextValues((prev) => ({
-                                    ...prev,
-                                    [extra.id]: e.target.value,
-                                  }))
-                                }
-                                placeholder={extra.question}
-                                className="w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                              />
-                            )}
-                          </div>
-                        )}
+
+                      <div className="uninstall-reason-details">
+                        {checked &&
+                          question &&
+                          (question.options ? (
+                            <MultiSelectDropdown
+                              defaultOpen={true}
+                              value={multiValues[id] ?? []}
+                              onChange={(value) =>
+                                setMultiValues((prev) => ({
+                                  ...prev,
+                                  [id]: value,
+                                }))
+                              }
+                              options={question.options}
+                              placeholder={question.text}
+                            />
+                          ) : (
+                            <input
+                              autoFocus={!question.readOnly}
+                              name={`reason-${id}-details`}
+                              type="text"
+                              value={textValues[id] ?? ""}
+                              onChange={(e) =>
+                                setTextValues((prev) => ({
+                                  ...prev,
+                                  [id]: e.target.value,
+                                }))
+                              }
+                              placeholder={question.text}
+                              disabled={question.readOnly}
+                              className="disabled:bg-gray-200 placeholder-gray-400 w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                            />
+                          ))}
                       </div>
                     </Fragment>
                   );
@@ -272,32 +210,29 @@ export default function UninstallPage() {
               </div>
 
               <div>
-                <label
-                  htmlFor="email"
-                  className="mb-2 block text-sm font-medium text-foreground"
-                >
-                  Email{" "}
-                  <span className="font-normal text-muted-foreground">
-                    (optional, so we can inform you when we fix the issues
-                    you've raised!)
+                <label className="flex flex-col text-xs font-medium text-gray-400">
+                  <input
+                    name="email"
+                    autoComplete="on"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email"
+                    className="mb-1 w-[calc(50%-1rem)] rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-gray-400 focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  />
+                  <span className="pl-4">
+                    ^ optional. If you'd like us to inform you when we've fixed
+                    the issues you're raising.
                   </span>
                 </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                />
               </div>
 
               {error && <p className="text-sm text-destructive">{error}</p>}
 
               <Button
                 type="submit"
-                className="w-full disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-primary"
-                disabled={loading || selectedReasons.length === 0}
+                className="block w-[calc(50%-1rem)] disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-primary"
+                disabled={loading || selectedReasons.size === 0}
               >
                 {loading ? "Submitting..." : "Submit"}
               </Button>
@@ -313,26 +248,18 @@ export default function UninstallPage() {
     e.preventDefault();
     setError("");
 
-    const reasonSegments = selectedReasons.map((r) => {
-      const extra = reasons.find((x) => x.reason === r)?.extra;
-      const value = extra
-        ? extra.options
-          ? (multiValues[extra.id] ?? []).join(", ")
-          : (textValues[extra.id] ?? "")
-        : "";
-      const detail = !value
-        ? ""
-        : extra!.payloadLabel
-          ? `${extra!.payloadLabel}: ${value}`
-          : value;
-      return [r, detail].filter(Boolean).join(" - ");
-    });
-    const reason = reasonSegments.join(" | ");
-
-    if (!reason) {
-      setError("Please select or enter a reason");
+    if (selectedReasons.size === 0) {
+      setError("Please select at least one of the options above.");
       return;
     }
+
+    const message = Array.from(selectedReasons)
+      .map((rId) => {
+        return [rId, multiValues[rId]?.join(", "), textValues[rId]]
+          .filter(Boolean)
+          .join(": ");
+      })
+      .join("\n");
 
     setLoading(true);
 
@@ -341,9 +268,9 @@ export default function UninstallPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: reason,
-          email: email || undefined,
           category: "uninstall-reason",
+          message,
+          ...(email ? { email } : {}),
         } satisfies UserMessage),
       });
 
