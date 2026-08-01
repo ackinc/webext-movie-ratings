@@ -81,10 +81,25 @@ div[data-uia="carousel-scroller"]
   top: 4px;
   left: 4px;
   margin: 0;
-  padding: 0 4px;
+}
+
+div[data-uia="carousel-scroller"]
+  div:has(> div > a[data-uia="ranked-card"])
+  .sift-imdb-data {
+  margin-left: 50%;
+}
+
+.sift-imdb-data-content[data-program-selector='section.carousel-row:not(#place-holder-carousel) div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"])'] {
   background-color: #0000007f;
   border-radius: 0;
+  padding: 0px 4px;
   color: white;
+
+  .headline {
+    .rating-page-link svg {
+      stroke: white;
+    }
+  }
 }
 
 .sift-imdb-data-content[data-program-selector='div:has(> section[data-uia="billboard"]) section[data-uia="billboard"]'] {
@@ -100,6 +115,18 @@ div[data-uia="carousel-scroller"]
 }
 
 .sift-imdb-data-content[data-program-selector="div.billboard div.info.meta-layer"] {
+  color: white;
+  font-size: 16px;
+
+  .headline {
+    .rating-page-link svg {
+      height: 16px;
+      stroke: white;
+    }
+  }
+}
+
+.sift-imdb-data-content[data-program-selector="div.moreLikeThis--wrapper div.titleCard--container"] {
   color: white;
   font-size: 16px;
 

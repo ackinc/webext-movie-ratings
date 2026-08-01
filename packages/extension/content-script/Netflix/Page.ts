@@ -18,11 +18,15 @@ export default class NetflixPage extends AbstractPage {
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
+    if (location.pathname === "/games") return [];
+
     return [
       "div.billboard",
       "div.lolomoRow:not(.lolomoPreview)",
       "div.titleGroup--wrapper",
       "div.moreLikeThis--wrapper",
+
+      // "browse by language" page
       "div.gallery",
 
       // 2026-07-06
@@ -80,6 +84,14 @@ export default class NetflixPage extends AbstractPage {
           pContainerParent.previousElementSibling!.querySelector("div.title")
             ?.textContent ?? ""
         );
+      } else if (
+        pContainerParent.previousElementSibling?.matches(
+          'div[data-uia="navigation+subheader"]',
+        )
+      ) {
+        return pContainerParent.previousElementSibling!.querySelector(
+          "div.title",
+        )!.textContent;
       } else {
         return pContainerParent.previousElementSibling!.querySelector(
           "div.aro-genre-details > span.genreTitle",
@@ -102,7 +114,7 @@ export default class NetflixPage extends AbstractPage {
     if (
       pContainerNode.matches("section.carousel-row:not(#place-holder-carousel)")
     ) {
-      return (pContainerNode.firstChild as HTMLElement).querySelector("p")!
+      return (pContainerNode.firstChild as HTMLElement).querySelector("h2")!
         .textContent;
     }
 
@@ -166,7 +178,7 @@ export default class NetflixPage extends AbstractPage {
       return [
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="standard-card"])',
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"])',
-        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"])',
+        'div[data-uia="carousel-scroller"] div:has(> div > a[data-uia="ranked-card"])',
       ];
     }
 

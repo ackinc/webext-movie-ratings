@@ -64,12 +64,14 @@ export default class ProgramNode extends AbstractProgramNode {
       )!;
     } else if (
       programNode.matches(
-        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"])',
+        'div[data-uia="carousel-scroller"] div:has(> div > a[data-uia="ranked-card"])',
       )
     ) {
-      title = (programNode.firstChild! as HTMLElement).getAttribute(
-        "aria-label",
-      )!;
+      title = (
+        programNode.querySelector(
+          'a[data-uia="ranked-card"][aria-label]',
+        )! as HTMLElement
+      ).getAttribute("aria-label")!;
     } else if (programNode.matches("div.previewModal--container.mini-modal")) {
       title = programNode
         .querySelector(
@@ -180,16 +182,6 @@ export default class ProgramNode extends AbstractProgramNode {
       )!;
       videoMetadataNode?.firstElementChild?.appendChild(imdbNode);
 
-      return;
-    }
-
-    if (
-      programNode.matches(
-        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="ranked-card"])',
-      )
-    ) {
-      const imgNode = programNode.querySelector("img")!;
-      imgNode.insertAdjacentElement("afterend", imdbNode);
       return;
     }
 
