@@ -3,9 +3,9 @@
 ## What does this extension do? [20s Demo][demo-video-link]
 
 - adds the IMDB rating of a movie / tv show next to it's tile on the page
+- allows you to "fade-to-black" programs that are low-rated
 - clicking on the rating opens the movie's IMDB page in a new tab
 - requests permissions **only** for the sites you enable it on after installation
-- allows you to "fade-to-black" programs that are low-rated
 
 ![Sift](misc/screenshots/what_does_this_extension_do.png)
 
