@@ -199,8 +199,8 @@ export default function UninstallPage() {
                 >
                   Email{" "}
                   <span className="font-normal text-muted-foreground">
-                    (optional, so we can inform you when we fix the issues
-                    you've raised!)
+                    (optional; if you'd like us to inform you when we've fixed
+                    the issues you're raising)
                   </span>
                 </label>
                 <input
