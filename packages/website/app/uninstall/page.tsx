@@ -2,6 +2,7 @@
 
 import { Fragment, useState } from "react";
 import Link from "next/link";
+import { Set as ImmutableSet } from "immutable";
 import { Info } from "lucide-react";
 import type { UserMessage } from "sifttypes";
 import { Header } from "@/components/header";
@@ -10,87 +11,93 @@ import { Button } from "@/components/ui/button";
 import { MultiSelectDropdown } from "@/components/multi-select-dropdown";
 import { API_URL, supportedPlatforms } from "../../lib/constants";
 
-const platformOptions = supportedPlatforms.map((p) => p.name);
+const platformOptions = supportedPlatforms.map((p) => p.name).sort();
 
-const privacyNote =
-  "Sift doesn't collect or sell your data, it only sends movie titles to a ratings API.";
-
-const reasons = [
+interface UninstallReason {
+  id: string;
+  desc: string;
+  question?: {
+    text: string;
+    readOnly?: boolean;
+    options?: string[];
+  };
+  note?: {
+    text: string;
+    href?: string;
+  };
+}
+const reasons: UninstallReason[] = [
   {
-    reason: "Found a better alternative",
-    extra: {
-      id: "went-with",
-      question: "What was the extension you ended up going with?",
-      payloadLabel: "Went with",
+    id: "found-better-alternative",
+    desc: "Found a better alternative",
+    question: {
+      text: "Unbelievable. What was the extension you ended up going with?",
     },
   },
   {
-    reason: "Too slow / performance issues",
-    extra: {
-      id: "website",
-      question: "Which website(s) did Sift give you trouble on?",
-      payloadLabel: "Website(s)",
+    id: "too-slow-perf-issues",
+    desc: "Too slow / performance issues",
+    question: {
+      text: "Argh. Which website(s) did Sift give you trouble on?",
       options: platformOptions,
     },
   },
   {
-    reason: "Too many incorrect ratings",
-    extra: {
-      id: "incorrect-ratings",
-      question: "Which site and title(s) did this happen on?",
-      payloadLabel: "Site/title(s)",
+    id: "incorrect-ratings",
+    desc: "Too many incorrect ratings",
+    question: {
+      text: "Uh oh. Which website(s) did you experience this on?",
+      options: platformOptions,
     },
   },
   {
-    reason: "Doesn't work on my streaming platform",
-    extra: {
-      id: "platform",
-      question: "Which platform? We'll try to support it soon.",
-      payloadLabel: "Platform",
+    id: "doesnt-work-on-desired-website",
+    desc: "Doesn't support my desired streaming website",
+    question: {
+      text: "Huh. Which website(s) should we add support for?",
     },
   },
   {
-    reason: "Privacy concerns",
-    extra: {
-      id: "privacy-concern",
-      question: "What data are you worried about?",
-      payloadLabel: "Concern",
+    id: "privacy-concerns",
+    desc: "Privacy concerns",
+    question: {
+      text: "Any data in particular you're concerned about?",
     },
-    note: privacyNote,
+    note: {
+      text: "Sift doesn't collect or sell your data, it only sends movie titles to a ratings API. Click for our full privacy policy.",
+      href: "/privacy",
+    },
   },
-  { reason: "No longer need it" },
   {
-    reason: "Other",
-    extra: {
-      id: "other-details",
-      question: "Anything else you want to tell us ...",
-      payloadLabel: "",
+    id: "no-longer-need-it",
+    desc: "No longer need it",
+    question: {
+      text: "But that's impossible. Everyone needs Sift! Everyone!",
+      readOnly: true,
+    },
+  },
+  {
+    id: "other",
+    desc: "Some other reason",
+    question: {
+      text: "What did we miss?",
     },
   },
 ];
 
 export default function UninstallPage() {
-  const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
-  const [textValues, setTextValues] = useState<Record<string, string>>({});
-  const [multiValues, setMultiValues] = useState<Record<string, string[]>>(
-    {},
-  );
+  const [selectedReasons, setSelectedReasons] =
+    useState<ImmutableSet<UninstallReason["id"]>>(ImmutableSet());
+  const [textValues, setTextValues] = useState<
+    Record<UninstallReason["id"], string>
+  >({});
+  const [multiValues, setMultiValues] = useState<
+    Record<UninstallReason["id"], string[]>
+  >({});
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  function toggleReason(reason: string, extraId?: string) {
-    setSelectedReasons((prev) =>
-      prev.includes(reason)
-        ? prev.filter((r) => r !== reason)
-        : [...prev, reason],
-    );
-    if (extraId) {
-      setTextValues((prev) => ({ ...prev, [extraId]: "" }));
-      setMultiValues((prev) => ({ ...prev, [extraId]: [] }));
-    }
-  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -124,25 +131,32 @@ export default function UninstallPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-2 items-start gap-x-8 gap-y-3">
-                {reasons.map(({ reason, extra, note }) => {
-                  const checked = selectedReasons.includes(reason);
+                {reasons.map(({ id, desc, note, question }) => {
+                  const checked = selectedReasons.has(id);
                   return (
-                    <Fragment key={reason}>
-                      <div className="flex items-center gap-2 rounded-lg border px-3 py-[9px] has-[:checked]:border-primary has-[:checked]:bg-accent/50">
+                    <Fragment key={id}>
+                      <div className="flex items-center gap-2 rounded-lg border px-3 py-2.25 has-checked:border-primary has-checked:bg-accent/50">
                         <label className="flex flex-1 items-center gap-3 cursor-pointer">
                           <input
+                            name={`reason-${id}`}
                             type="checkbox"
                             checked={checked}
-                            onChange={() => toggleReason(reason, extra?.id)}
+                            onChange={() =>
+                              setSelectedReasons(
+                                selectedReasons.has(id)
+                                  ? selectedReasons.delete(id)
+                                  : selectedReasons.add(id),
+                              )
+                            }
                             className="h-4 w-4 accent-primary"
                           />
                           <span className="text-sm text-foreground">
-                            {reason}
+                            {desc}
                           </span>
                         </label>
                         {note && (
                           <Link
-                            href="/privacy"
+                            href={note.href ?? "#"}
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="Read our privacy policy"
@@ -150,38 +164,40 @@ export default function UninstallPage() {
                           >
                             <Info className="h-3.5 w-3.5" />
                             <span className="pointer-events-none absolute right-0 top-full z-30 mt-1 w-64 rounded-md border bg-popover p-2 text-xs font-normal text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100">
-                              {note} Click for our full privacy policy.
+                              {note.text}
                             </span>
                           </Link>
                         )}
                       </div>
                       <div>
-                        {extra && checked && (
+                        {checked && question && (
                           <div className="animate-in fade-in duration-200">
-                            {extra.options ? (
+                            {question.options ? (
                               <MultiSelectDropdown
-                                value={multiValues[extra.id] ?? []}
+                                value={multiValues[id] ?? []}
                                 onChange={(value) =>
                                   setMultiValues((prev) => ({
                                     ...prev,
-                                    [extra.id]: value,
+                                    [id]: value,
                                   }))
                                 }
-                                options={extra.options}
-                                placeholder={extra.question}
+                                options={question.options}
+                                placeholder={question.text}
                               />
                             ) : (
                               <input
+                                name={`reason-${id}-details`}
                                 type="text"
-                                value={textValues[extra.id] ?? ""}
+                                value={textValues[id] ?? ""}
                                 onChange={(e) =>
                                   setTextValues((prev) => ({
                                     ...prev,
-                                    [extra.id]: e.target.value,
+                                    [id]: e.target.value,
                                   }))
                                 }
-                                placeholder={extra.question}
-                                className="w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                                placeholder={question.text}
+                                disabled={question.readOnly}
+                                className="disabled:bg-gray-200 placeholder-gray-400 w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                               />
                             )}
                           </div>
@@ -217,8 +233,8 @@ export default function UninstallPage() {
 
               <Button
                 type="submit"
-                className="w-full disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-primary"
-                disabled={loading || selectedReasons.length === 0}
+                className="block w-full disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-primary"
+                disabled={loading || selectedReasons.size === 0}
               >
                 {loading ? "Submitting..." : "Submit"}
               </Button>
@@ -234,26 +250,18 @@ export default function UninstallPage() {
     e.preventDefault();
     setError("");
 
-    const reasonSegments = selectedReasons.map((r) => {
-      const extra = reasons.find((x) => x.reason === r)?.extra;
-      const value = extra
-        ? extra.options
-          ? (multiValues[extra.id] ?? []).join(", ")
-          : (textValues[extra.id] ?? "")
-        : "";
-      const detail = !value
-        ? ""
-        : extra!.payloadLabel
-          ? `${extra!.payloadLabel}: ${value}`
-          : value;
-      return [r, detail].filter(Boolean).join(" - ");
-    });
-    const reason = reasonSegments.join(" | ");
-
-    if (!reason) {
-      setError("Please select or enter a reason");
+    if (selectedReasons.size === 0) {
+      setError("Please select at least one of the options above.");
       return;
     }
+
+    const message = Array.from(selectedReasons)
+      .map((rId) => {
+        return [rId, multiValues[rId]?.join(", "), textValues[rId]]
+          .filter(Boolean)
+          .join(": ");
+      })
+      .join("\n");
 
     setLoading(true);
 
@@ -262,9 +270,9 @@ export default function UninstallPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: reason,
-          email: email || undefined,
           category: "uninstall-reason",
+          message,
+          ...(email ? { email } : {}),
         } satisfies UserMessage),
       });
 
