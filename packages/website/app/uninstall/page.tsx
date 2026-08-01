@@ -135,7 +135,7 @@ export default function UninstallPage() {
                   const checked = selectedReasons.has(id);
                   return (
                     <Fragment key={id}>
-                      <div className="flex items-center gap-2 rounded-lg border has-checked:border-primary has-checked:bg-accent/50">
+                      <div className="uninstall-reason flex items-center gap-2 rounded-lg border has-checked:border-primary has-checked:bg-accent/50">
                         <label className="px-3 py-2.25 flex flex-1 items-center gap-3 cursor-pointer">
                           <input
                             name={`reason-${id}`}
@@ -169,41 +169,40 @@ export default function UninstallPage() {
                           )}
                         </label>
                       </div>
-                      <div>
-                        {checked && question && (
-                          <div className="animate-in fade-in duration-200">
-                            {question.options ? (
-                              <MultiSelectDropdown
-                                defaultOpen={true}
-                                value={multiValues[id] ?? []}
-                                onChange={(value) =>
-                                  setMultiValues((prev) => ({
-                                    ...prev,
-                                    [id]: value,
-                                  }))
-                                }
-                                options={question.options}
-                                placeholder={question.text}
-                              />
-                            ) : (
-                              <input
-                                autoFocus={!question.readOnly}
-                                name={`reason-${id}-details`}
-                                type="text"
-                                value={textValues[id] ?? ""}
-                                onChange={(e) =>
-                                  setTextValues((prev) => ({
-                                    ...prev,
-                                    [id]: e.target.value,
-                                  }))
-                                }
-                                placeholder={question.text}
-                                disabled={question.readOnly}
-                                className="disabled:bg-gray-200 placeholder-gray-400 w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                              />
-                            )}
-                          </div>
-                        )}
+
+                      <div className="uninstall-reason-details">
+                        {checked &&
+                          question &&
+                          (question.options ? (
+                            <MultiSelectDropdown
+                              defaultOpen={true}
+                              value={multiValues[id] ?? []}
+                              onChange={(value) =>
+                                setMultiValues((prev) => ({
+                                  ...prev,
+                                  [id]: value,
+                                }))
+                              }
+                              options={question.options}
+                              placeholder={question.text}
+                            />
+                          ) : (
+                            <input
+                              autoFocus={!question.readOnly}
+                              name={`reason-${id}-details`}
+                              type="text"
+                              value={textValues[id] ?? ""}
+                              onChange={(e) =>
+                                setTextValues((prev) => ({
+                                  ...prev,
+                                  [id]: e.target.value,
+                                }))
+                              }
+                              placeholder={question.text}
+                              disabled={question.readOnly}
+                              className="disabled:bg-gray-200 placeholder-gray-400 w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                            />
+                          ))}
                       </div>
                     </Fragment>
                   );

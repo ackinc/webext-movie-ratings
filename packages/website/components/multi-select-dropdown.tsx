@@ -51,7 +51,7 @@ export function MultiSelectDropdown({
         <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
       </button>
       {open && (
-        <ul className="absolute top-full z-300 mt-1 max-h-56 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md">
+        <ul className="absolute top-full z-300 max-h-56 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md">
           {options.map((option) => {
             const checked = value.includes(option);
             return (
