@@ -209,31 +209,28 @@ export default function UninstallPage() {
               </div>
 
               <div>
-                <label
-                  htmlFor="email"
-                  className="mb-2 block text-sm font-medium text-foreground"
-                >
-                  Email{" "}
-                  <span className="font-normal text-muted-foreground">
-                    (optional; if you'd like us to inform you when we've fixed
-                    the issues you're raising)
+                <label className="flex flex-col text-xs font-medium text-gray-400">
+                  <input
+                    name="email"
+                    autoComplete="on"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Email"
+                    className="mb-1 w-[calc(50%-1rem)] rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-gray-400 focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  />
+                  <span className="pl-4">
+                    ^ optional. If you'd like us to inform you when we've fixed
+                    the issues you're raising.
                   </span>
                 </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                />
               </div>
 
               {error && <p className="text-sm text-destructive">{error}</p>}
 
               <Button
                 type="submit"
-                className="block w-full disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-primary"
+                className="block w-[calc(50%-1rem)] disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-primary"
                 disabled={loading || selectedReasons.size === 0}
               >
                 {loading ? "Submitting..." : "Submit"}
