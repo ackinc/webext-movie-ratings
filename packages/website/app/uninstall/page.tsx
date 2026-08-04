@@ -58,6 +58,13 @@ const reasons: UninstallReason[] = [
     },
   },
   {
+    id: "doesnt-support-preferred-ratings-provider",
+    desc: "Doesn't support the ratings provider I prefer",
+    question: {
+      text: "Rats. Is it Rotten Tomatoes?",
+    },
+  },
+  {
     id: "privacy-concerns",
     desc: "Privacy concerns",
     question: {
