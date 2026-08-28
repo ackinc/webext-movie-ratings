@@ -18,7 +18,13 @@ export async function checkForNewNotifications(): Promise<InAppNotification[]> {
           timestamp: 1783331877794,
         }
       : null,
-  ].filter((x) => x !== null);
+    {
+      notificationId: "SIFT_NOW_SUPPORTS_PLEX",
+      content: `Sift now supports [Plex](https://watch.plex.tv)!`,
+      targetPage: "settings",
+      timestamp: 1787935479278,
+    },
+  ].filter((x) => x !== null) satisfies Required<SiftNotification>[];
 
   const lastReceivedNotif = await getLatestNotification();
   const newNotifications: Required<SiftNotification>[] = (
