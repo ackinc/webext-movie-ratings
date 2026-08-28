@@ -25,6 +25,7 @@ import PeacockTVPage from "./PeacockTV/Page";
 import SonyLivPage from "./SonyLiv/Page";
 import NetflixPage from "./Netflix/Page";
 import ParamountPlusPage from "./ParamountPlus/Page";
+import PlexPage from "./Plex/Page";
 import PrimeVideoPage from "./PrimeVideo/Page";
 import AppleTVPage from "./AppleTV/Page";
 import MXPlayerPage from "./MXPlayer/Page";
@@ -132,6 +133,8 @@ async function initializePage() {
     page = new SonyLivPage();
   } else if (location.hostname === "www.netflix.com") {
     page = new NetflixPage();
+  } else if (location.hostname === "watch.plex.tv") {
+    page = new PlexPage();
   } else if (
     ["www.primevideo.com", "www.amazon.com", "www.amazon.de"].some(
       (x) => x === location.hostname,

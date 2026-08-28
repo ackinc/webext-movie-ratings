@@ -1,0 +1,7 @@
+/* Add Plex-specific IMDB rating placement and appearance overrides here. */
+
+.sift-imdb-data-content {
+  font-size: var(--font-caption-font-size);
+  font-weight: var(--font-caption-font-weight);
+  font-family: var(--font-caption-font-family);
+}

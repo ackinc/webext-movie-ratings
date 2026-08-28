@@ -135,6 +135,10 @@ export const supportedSites = {
     displayName: "Peacock TV",
     permStrings: ["https://www.peacocktv.com/*"],
   },
+  plex: {
+    displayName: "Plex",
+    permStrings: ["https://watch.plex.tv/*"],
+  },
   primevideo: {
     displayName: "Prime Video (primevideo.com)",
     permStrings: ["https://www.primevideo.com/*"],
