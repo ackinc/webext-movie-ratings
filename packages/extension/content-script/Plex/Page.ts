@@ -17,6 +17,7 @@ export default class PlexPage extends AbstractPage {
     return [
       'div[class*="FullBleed-module"]',
       'main:has(> div[class*="MaxLineWidthContainer-module"])',
+      'div[data-testid="searchResults"]',
     ];
   }
 
@@ -33,6 +34,10 @@ export default class PlexPage extends AbstractPage {
       )
     ) {
       return pContainerNode.querySelector("h1")!.textContent;
+    }
+
+    if (pContainerNode.matches('div[data-testid="searchResults"]')) {
+      return "Search results";
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
@@ -72,6 +77,12 @@ export default class PlexPage extends AbstractPage {
         'figure:has(a[data-id^="tv.plex.provider.epg"][aria-label])',
         'figure:has(a[data-id^="tv.plex.provider.vod"][aria-label])',
         'figure:has(a[data-id^="tv.plex.provider.discover"][aria-label])',
+      ];
+    }
+
+    if (selector === 'div[data-testid="searchResults"]') {
+      return [
+        'div[class*="SearchPopover-module"] div:has(> span[title]:nth-child(2))',
       ];
     }
 

@@ -61,6 +61,19 @@ export default class ProgramNode extends AbstractProgramNode {
           ":scope > div:nth-child(2) > span[title]",
         )!;
       title = titleNode.textContent;
+    } else if (
+      programNode.matches(
+        'div[class*="SearchPopover-module"] div:has(> span[title]:nth-child(2))',
+      )
+    ) {
+      const titleNode = programNode.querySelector("span[title]:first-child")!;
+      title = titleNode.textContent;
+
+      const typeAndYearNode = programNode.querySelector(
+        "span[title]:nth-child(2)",
+      )!;
+      type = typeAndYearNode.textContent.includes("Movie") ? "movie" : "series";
+      year = +typeAndYearNode.textContent.split(" ").at(-1)!;
     }
 
     return {
@@ -119,6 +132,16 @@ export default class ProgramNode extends AbstractProgramNode {
           ":scope > div:nth-child(2) > span[title]",
         );
       titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (
+      programNode.matches(
+        'div[class*="SearchPopover-module"] div:has(> span[title]:nth-child(2))',
+      )
+    ) {
+      const titleNode = programNode.querySelector("span[title]:first-child")!;
+      titleNode?.parentElement?.appendChild(imdbNode);
       return;
     }
 
