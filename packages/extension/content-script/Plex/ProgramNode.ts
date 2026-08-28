@@ -3,14 +3,13 @@ import type { ProgramData } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
   static override extractProgramData(programNode: HTMLElement): ProgramData {
-    // TODO: Extract the Plex program title and movie/series type.
     let title: string = "";
     let type: ProgramData["type"] | undefined = undefined;
     let year: ProgramData["year"] | undefined = undefined;
 
     if (
       programNode.matches(
-        'li:has(a[data-id^="tv.plex.provider.epg"][aria-label])',
+        'figure:has(a[data-id^="tv.plex.provider.epg"][aria-label])',
       )
     ) {
       const titleNode = programNode.querySelector(
@@ -26,7 +25,7 @@ export default class ProgramNode extends AbstractProgramNode {
       }
     } else if (
       programNode.matches(
-        'li:has(a[data-id^="tv.plex.provider.vod"][aria-label])',
+        'figure:has(a[data-id^="tv.plex.provider.vod"][aria-label])',
       )
     ) {
       const titleNode = programNode.querySelector(
@@ -38,9 +37,10 @@ export default class ProgramNode extends AbstractProgramNode {
         "figcaption > span:nth-child(2)",
       );
       if (typeNode?.textContent.match(/season/i)) type = "series";
+      else if (typeNode?.textContent.match(/^\d+$/)) type = "movie";
     } else if (
       programNode.matches(
-        'li:has(a[data-id^="tv.plex.provider.discover"][aria-label])',
+        'figure:has(a[data-id^="tv.plex.provider.discover"][aria-label])',
       )
     ) {
       const titleNode = programNode.querySelector(
@@ -76,7 +76,7 @@ export default class ProgramNode extends AbstractProgramNode {
   ): void {
     if (
       programNode.matches(
-        'li:has(a[data-id^="tv.plex.provider.epg"][aria-label])',
+        'figure:has(a[data-id^="tv.plex.provider.epg"][aria-label])',
       )
     ) {
       const titleNode = programNode.querySelector(
@@ -88,7 +88,7 @@ export default class ProgramNode extends AbstractProgramNode {
 
     if (
       programNode.matches(
-        'li:has(a[data-id^="tv.plex.provider.vod"][aria-label])',
+        'figure:has(a[data-id^="tv.plex.provider.vod"][aria-label])',
       )
     ) {
       const titleNode = programNode.querySelector(
@@ -100,7 +100,7 @@ export default class ProgramNode extends AbstractProgramNode {
 
     if (
       programNode.matches(
-        'li:has(a[data-id^="tv.plex.provider.discover"][aria-label])',
+        'figure:has(a[data-id^="tv.plex.provider.discover"][aria-label])',
       )
     ) {
       const titleNode = programNode.querySelector(
