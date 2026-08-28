@@ -1,5 +1,9 @@
 # Changelog
 
+## v9.7.0
+
+- Sift now supports [Plex](https://watch.plex.tv)
+
 ## v9.6.0
 
 - Users can now report a rating as incorrect
