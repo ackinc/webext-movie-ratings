@@ -56,8 +56,15 @@ export class SWError extends Error {
 export class OmdbApiError extends Error {
   url: string;
 
+  // prevent logging of sensitive data when this error is logged
+  static scrubUrl(url: string) {
+    const u = new URL(url);
+    u.searchParams.delete("apiKey");
+    return u.href;
+  }
+
   constructor(message: string, url: string, options?: { cause: unknown }) {
     super(message, options);
-    this.url = url;
+    this.url = OmdbApiError.scrubUrl(url);
   }
 }
