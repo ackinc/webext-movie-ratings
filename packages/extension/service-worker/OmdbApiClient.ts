@@ -65,7 +65,11 @@ export default class OmdbApiClient {
 
       let result: IMDBDataFromOMDB;
       if ("Error" in respBody) {
-        if (respBody.Error.includes("not found")) {
+        if (
+          ["incorrect imdb id", "not found"].some((x) =>
+            respBody.Error.toLowerCase().includes(x),
+          )
+        ) {
           result = { imdbRating: "N/F", imdbId: imdbId ?? "" };
         } else {
           throw new OmdbApiError(respBody.Error, url);
