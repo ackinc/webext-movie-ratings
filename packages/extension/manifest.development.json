@@ -1,4 +1,5 @@
 {
+  "name": "[DEV] Sift: IMDB on Netflix, IMDB on Prime, etc. etc.",
   "permissions": [
     "scripting",
     "storage",

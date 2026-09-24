@@ -50,8 +50,8 @@ const staticFiles = [
   .map((f) => path.join(srcDir, f));
 const manifestFiles = [
   `manifest.json`,
-  `manifest.${APP_ENV}.json`,
   `misc/${TARGET_BROWSER}/manifest.json`,
+  `manifest.${APP_ENV}.json`,
   `misc/${TARGET_BROWSER}/manifest.${APP_ENV}.json`,
 ]
   .map((f) => path.join(srcDir, f))
