@@ -13,7 +13,7 @@
       "cwd": "${workspaceFolder}",
       "args": [],
       "outFiles": ["${workspaceFolder}/**/*.js"],
-      "envFile": "${workspaceFolder}/scripts/.env"
+      "envFile": "${workspaceFolder}/packages/api-server/.env"
     }
   ]
 }
