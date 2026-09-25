@@ -1,11 +1,12 @@
 import "dotenv/config";
 import Pino from "pino";
 
-const { APP_ENV } = process.env;
+const { APP_ENV, LOG_LEVEL } = process.env;
 
 const logConf =
   APP_ENV === "development"
     ? {
+        level: LOG_LEVEL || "info",
         transport: {
           target: "pino-pretty",
           options: {
@@ -13,6 +14,6 @@ const logConf =
           },
         },
       }
-    : {};
+    : { level: LOG_LEVEL || "info" };
 const logger = Pino(logConf);
 export default logger;

@@ -7,7 +7,8 @@
     "start": "node server.ts",
     "dev": "tsx watch --clear-screen=false server.ts",
     "start:crons": "node crons.ts",
-    "dev:crons": "tsx watch --clear-screen=false crons.ts"
+    "dev:crons": "tsx watch --clear-screen=false crons.ts",
+    "migrations": "./scripts/runMigrations.ts"
   },
   "keywords": [],
   "author": "",
