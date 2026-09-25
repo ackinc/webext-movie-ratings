@@ -34,11 +34,3 @@ export interface UserMessageRecord
 }
 
 export interface NotificationRecord extends DbRecord, Notification {}
-
-export interface IndexedImdbTitle {
-  id: string;
-  imdbId: string;
-  title: string;
-  type: ProgramType;
-  year: number | null;
-}

@@ -10,6 +10,7 @@ import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Meilisearch, type Index, type IndexObject } from "meilisearch";
 import { pick } from "siftutils";
+import type { IndexedImdbTitle } from "sifttypes";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import {
@@ -20,7 +21,6 @@ import {
   isMovieOrSeries,
 } from "./common.ts";
 import baseLogger from "../logger.ts";
-import type { IndexedImdbTitle } from "../types.ts";
 
 type Document = IndexedImdbTitle;
 

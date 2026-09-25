@@ -4,6 +4,7 @@ import {
   siftApiProgramMatchSchemas,
   userMessageSchema,
   notificationSchema,
+  indexedImdbTitleSchema,
 } from "./schemas.ts";
 
 export type ProgramType = Static<typeof programTypeSchema>;
@@ -17,3 +18,6 @@ export namespace SiftApiProgramMatching {
 export type UserMessage = Static<typeof userMessageSchema>;
 
 export type Notification = Static<typeof notificationSchema>;
+
+// represents the data we put into our search engine
+export type IndexedImdbTitle = Static<typeof indexedImdbTitleSchema>;
