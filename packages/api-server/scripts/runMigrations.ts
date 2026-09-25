@@ -60,7 +60,7 @@ function runMigration(filename: string) {
       INSERT OR REPLACE INTO migrations (id) VALUES ('${filename}');
       COMMIT;
     `);
-    logger.debug(`Finished running migration ${filename}`);
+    logger.info(`Finished running migration ${filename}`);
   } catch (e) {
     db.prepare(
       `INSERT OR REPLACE INTO migrations (id, status) VALUES (?, ?)`,
