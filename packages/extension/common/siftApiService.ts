@@ -4,7 +4,7 @@ import type {
   Notification,
   SiftApiProgramMatching,
   UserMessage,
-} from "sifttypes";
+} from "siftcore";
 import { ErrorMessage } from ".";
 
 const retryStrategy = {

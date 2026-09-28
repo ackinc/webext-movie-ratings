@@ -1,5 +1,6 @@
 import { type IDBPDatabase } from "idb";
 import { add } from "date-fns";
+import type { Sitename, Sitehost } from "siftcore";
 import {
   pick,
   omit,
@@ -248,6 +249,9 @@ function getIncorrectRatingReportKey(
   program: Omit<Program, "node" | "container">,
   pageUrl: string,
 ) {
-  const site = hostToSitename[new URL(pageUrl).hostname]!;
+  const site = hostToSitename[new URL(pageUrl).hostname as Sitehost] as
+    | Sitename
+    | undefined;
+  if (!site) throw new Error(`Unsupported site: ${pageUrl}`);
   return [programToHash(program), site].join("|");
 }

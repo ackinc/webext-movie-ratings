@@ -1,4 +1,4 @@
-import type { PermString, ProgramFilterSettings, Sitename } from "./types";
+import type { ProgramFilterSettings } from "./types";
 
 export const DB_NAME = "siftDb";
 export const DB_VERSION = 3;
@@ -93,101 +93,6 @@ export const enum ErrorMessage {
   siftApiServerError = "There was an error on the Sift API server-side",
   unexpectedDataExtractionFailure = "Failed to extract data from program node",
 }
-
-export const supportedSites = {
-  appletv: {
-    displayName: "AppleTV",
-    permStrings: ["https://tv.apple.com/*"],
-  },
-  crunchyroll: {
-    displayName: "Crunchyroll",
-    permStrings: ["https://www.crunchyroll.com/*"],
-  },
-  // disneyplus: {
-  //   displayName: "Disney Plus",
-  //   permStrings: ["https://www.disneyplus.com/*"],
-  // },
-  hbomax: {
-    displayName: "HBO Max",
-    permStrings: ["https://www.hbomax.com/*", "https://play.hbomax.com/*"],
-  },
-  hotstar: {
-    displayName: "Hotstar",
-    permStrings: ["https://www.hotstar.com/*"],
-  },
-  hulu: {
-    displayName: "Hulu",
-    permStrings: ["https://www.hulu.com/*"],
-  },
-  mxplayer: {
-    displayName: "MX Player",
-    permStrings: ["https://www.mxplayer.in/*"],
-  },
-  netflix: {
-    displayName: "Netflix",
-    permStrings: ["https://www.netflix.com/*"],
-  },
-  paramountplus: {
-    displayName: "Paramount Plus",
-    permStrings: ["https://www.paramountplus.com/*"],
-  },
-  peacocktv: {
-    displayName: "Peacock TV",
-    permStrings: ["https://www.peacocktv.com/*"],
-  },
-  plex: {
-    displayName: "Plex",
-    permStrings: ["https://watch.plex.tv/*"],
-  },
-  primevideo: {
-    displayName: "Prime Video (primevideo.com)",
-    permStrings: ["https://www.primevideo.com/*"],
-  },
-  primevideoamazondotcom: {
-    displayName: "Prime Video (amazon.com/gp/video)",
-    permStrings: ["https://www.amazon.com/*"],
-  },
-  primevideoamazondotde: {
-    displayName: "Prime Video (amazon.de/gp/video)",
-    permStrings: ["https://www.amazon.de/*"],
-  },
-  sonyliv: {
-    displayName: "SonyLIV",
-    permStrings: ["https://www.sonyliv.com/*"],
-  },
-  youtubemovies: {
-    displayName: "Youtube Movies",
-    permStrings: ["https://www.youtube.com/*"],
-  },
-  zee5: {
-    displayName: "Zee5",
-    permStrings: ["https://www.zee5.com/*"],
-  },
-} as const;
-
-export const permStringToSitename = Object.entries(supportedSites).reduce(
-  (acc, [sitename, { permStrings }]) =>
-    Object.assign(
-      acc,
-      permStrings.reduce(
-        (acc2, ps) => Object.assign(acc2, { [ps]: sitename }),
-        {},
-      ),
-    ),
-  {},
-) as Record<PermString, Sitename>;
-
-export const hostToSitename = Object.entries(supportedSites).reduce(
-  (acc, [sitename, { permStrings }]) =>
-    Object.assign(
-      acc,
-      permStrings.reduce(
-        (acc2, ps) => Object.assign(acc2, { [new URL(ps).hostname]: sitename }),
-        {},
-      ),
-    ),
-  {},
-) as Record<string, Sitename>;
 
 export const webStoreLink =
   TARGET_BROWSER === "edge"

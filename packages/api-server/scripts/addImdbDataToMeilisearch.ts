@@ -10,6 +10,7 @@ import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Meilisearch, type Index, type IndexObject } from "meilisearch";
 import { pick } from "siftutils";
+import type { IndexedImdbTitle } from "siftcore";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import {
@@ -20,6 +21,8 @@ import {
   isMovieOrSeries,
 } from "./common.ts";
 import baseLogger from "../logger.ts";
+
+type Document = IndexedImdbTitle;
 
 const __filename = path.basename(fileURLToPath(import.meta.url));
 const { APP_ENV, IMDB_DATA_DIR, MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } =
@@ -86,14 +89,6 @@ const durationMs = +new Date() - +startTime;
 logger.info(`Completed in (${durationMs}ms)`);
 
 // helpers
-
-interface Document {
-  id: string;
-  imdbId: ImdbId;
-  title: string;
-  type: "movie" | "series";
-  year: number | null;
-}
 
 async function prepareIndex(client: Meilisearch): Promise<Index<Document>> {
   const indexName = "imdb";

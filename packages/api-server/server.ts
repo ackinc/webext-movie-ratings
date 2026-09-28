@@ -8,15 +8,20 @@ import Fastify, { type RouteShorthandOptions } from "fastify";
 import cors from "@fastify/cors";
 import { Type, type Static } from "typebox";
 import {
+  hostToSitename,
+  type Sitehost,
   type SiftApiProgramMatching,
   siftApiProgramMatchSchemas,
   type UserMessage,
   userMessageSchema,
   type Notification,
   notificationSchema,
-} from "sifttypes";
+  type IndexedImdbTitle,
+  indexedImdbTitleSchema,
+} from "siftcore";
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
+import { HTTPError } from "./customErrors.ts";
 import * as dbService from "./dbService.ts";
 import * as emailService from "./emailService.ts";
 import logger from "./logger.ts";
@@ -116,12 +121,22 @@ function createServer() {
       },
     } satisfies RouteShorthandOptions,
     async function (request, reply) {
-      const program = { ...request.query };
+      const queryData = { ...request.query };
+
+      const hostname = new URL(queryData.pageUrl).hostname;
+      if (!(hostname in hostToSitename)) {
+        throw new HTTPError(400, `Not a supported site: ${queryData.pageUrl}`);
+      }
 
       let row = dbService.createProgramMatchRecord(
         {
-          ...pick(program, ["title", "type", "year"]),
-          meta: JSON.stringify({ originallyRequestedFrom: program.pageUrl }),
+          title: request.query.title,
+          type: request.query.type ?? null,
+          year: request.query.year ?? null,
+          site: hostToSitename[hostname as Sitehost],
+          status: "pending",
+          imdbId: null,
+          meta: JSON.stringify({ originallyRequestedFrom: queryData.pageUrl }),
         },
         "ON CONFLICT DO NOTHING",
       );
@@ -131,7 +146,7 @@ function createServer() {
         (row.status === "abandoned" &&
           parseISO(row.updatedAt) < (await getIndexLastUpdatedTime()))
       ) {
-        const [bestMatch] = await querySearchEngine(program);
+        const [bestMatch] = await querySearchEngine(queryData);
         row = dbService.updateProgramMatchRecord(row.id, {
           status: bestMatch ? "matched" : "abandoned",
           imdbId: bestMatch ? bestMatch.imdbId : null,

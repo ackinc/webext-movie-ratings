@@ -3,7 +3,8 @@ import type {
   SiftApiProgramMatching,
   UserMessage,
   Notification,
-} from "sifttypes";
+  Sitename,
+} from "siftcore";
 
 export interface DbRecord {
   id: number;
@@ -12,10 +13,12 @@ export interface DbRecord {
   meta: string | null;
 }
 
+// This is the data that goes into and comes out of the db
 export interface RawProgramMatchRecord extends DbRecord {
   title: string;
   type: ProgramType | "\\N";
   year: number | 0;
+  site: Sitename;
   status: SiftApiProgramMatching.Status | "pending";
   imdbId: string | null;
 }
@@ -34,11 +37,3 @@ export interface UserMessageRecord
 }
 
 export interface NotificationRecord extends DbRecord, Notification {}
-
-export interface IndexedImdbTitle {
-  id: string;
-  imdbId: string;
-  title: string;
-  type: ProgramType;
-  year: number | null;
-}

@@ -35,3 +35,11 @@ export const notificationSchema = Type.Object({
   content: Type.String(),
   timestamp: Type.Optional(Type.Number()),
 });
+
+export const indexedImdbTitleSchema = Type.Object({
+  id: Type.String(),
+  imdbId: Type.String(),
+  title: Type.String(),
+  type: programTypeSchema,
+  year: Type.Union([Type.Number(), Type.Null()]),
+});

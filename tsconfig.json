@@ -8,7 +8,7 @@
     { "path": "./packages/website" },
     { "path": "./shared/utils" },
     { "path": "./shared/nodeutils" },
-    { "path": "./shared/types" }
+    { "path": "./shared/core" }
   ],
 
   // Visit https://aka.ms/tsconfig to read more about this file

@@ -62,12 +62,12 @@ importers:
       pino:
         specifier: ^10.3.1
         version: 10.3.1
+      siftcore:
+        specifier: workspace:core@*
+        version: link:../../shared/core
       siftnodeutils:
         specifier: workspace:nodeutils@*
         version: link:../../shared/nodeutils
-      sifttypes:
-        specifier: workspace:types@*
-        version: link:../../shared/types
       siftutils:
         specifier: workspace:utils@*
         version: link:../../shared/utils
@@ -208,9 +208,9 @@ importers:
       showdown:
         specifier: ^2.1.0
         version: 2.1.0
-      sifttypes:
-        specifier: workspace:types@*
-        version: link:../../shared/types
+      siftcore:
+        specifier: workspace:core@*
+        version: link:../../shared/core
       siftutils:
         specifier: workspace:utils@*
         version: link:../../shared/utils
@@ -256,9 +256,9 @@ importers:
       react-dom:
         specifier: 19.2.4
         version: 19.2.4(react@19.2.4)
-      sifttypes:
-        specifier: workspace:types@*
-        version: link:../../shared/types
+      siftcore:
+        specifier: workspace:core@*
+        version: link:../../shared/core
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.5.0
@@ -294,17 +294,17 @@ importers:
         specifier: 5.7.3
         version: 5.7.3
 
+  shared/core:
+    dependencies:
+      typebox:
+        specifier: ^1.1.34
+        version: 1.1.34
+
   shared/nodeutils:
     devDependencies:
       '@types/node':
         specifier: ^25.6.0
         version: 25.6.0
-
-  shared/types:
-    dependencies:
-      typebox:
-        specifier: ^1.1.34
-        version: 1.1.34
 
   shared/utils:
     devDependencies:
