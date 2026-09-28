@@ -45,7 +45,7 @@ function getLastMigration(): string | null {
       .prepare<
         string[],
         { id: string }
-      >(`SELECT id FROM migrations WHERE status = ? ORDER BY updatedAt DESC`)
+      >(`SELECT id FROM migrations WHERE status = ? ORDER BY id DESC`)
       .get("success")?.id ?? null
   );
 }
