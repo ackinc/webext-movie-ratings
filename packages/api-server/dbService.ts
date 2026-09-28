@@ -1,11 +1,7 @@
 import Database, { type Database as TDatabase } from "better-sqlite3";
 import { formatISO9075 } from "date-fns";
 import { UTCDate } from "@date-fns/utc";
-import {
-  type SiftApiProgramMatching,
-  type UserMessage,
-  type Notification,
-} from "siftcore";
+import { type UserMessage, type Notification } from "siftcore";
 import { pick } from "siftutils";
 import type {
   DbRecord,
@@ -24,27 +20,25 @@ export function closeConnection() {
   db.close();
 }
 
+type ProgramMatchQuery = Pick<ProgramMatchRecord, "title" | "site"> &
+  Partial<Pick<ProgramMatchRecord, "type" | "year">>;
+
 export function getProgramMatchRecord(
-  idOrProgram:
-    | number
-    | bigint
-    | Pick<SiftApiProgramMatching.Request, "title" | "type" | "year">,
+  idOrQuery: number | bigint | ProgramMatchQuery,
 ): ProgramMatchRecord | null {
   let rowId: number | bigint | undefined;
 
-  if (typeof idOrProgram === "number" || typeof idOrProgram === "bigint") {
-    rowId = idOrProgram as number | bigint;
+  if (typeof idOrQuery === "number" || typeof idOrQuery === "bigint") {
+    rowId = idOrQuery as number | bigint;
   } else {
+    let query = idOrQuery;
     rowId = db
-      .prepare<
-        Pick<SiftApiProgramMatching.Request, "title" | "type" | "year">,
-        { id: number | bigint }
-      >(
-        `SELECT id FROM titles WHERE title = $title
-          ${"type" in idOrProgram ? " AND type = $type " : ""}
-          ${"year" in idOrProgram ? " AND year = $year " : ""}`,
+      .prepare<ProgramMatchQuery, { id: number | bigint }>(
+        `SELECT id FROM titles WHERE title = $title AND site = $site
+          ${"type" in query ? " AND type = $type " : ""}
+          ${"year" in query ? " AND year = $year " : ""}`,
       )
-      .get(idOrProgram)?.id;
+      .get(query)?.id;
   }
 
   if (rowId === undefined) return null;
@@ -58,13 +52,17 @@ export function getProgramMatchRecord(
 }
 
 export function createProgramMatchRecord(
-  data: Pick<SiftApiProgramMatching.Request, "title" | "type" | "year"> & {
-    meta?: string;
-  },
+  data: Omit<ProgramMatchRecord, keyof DbRecord> & { meta?: string },
   onConflictClause = "",
 ) {
-  const entries = Object.entries(data);
-  if (entries.length === 0) throw new Error("data arg cannot be empty object");
+  if (Object.keys(data).length === 0)
+    throw new Error("data arg cannot be empty object");
+
+  const createData: Omit<RawProgramMatchRecord, keyof DbRecord> & {
+    meta?: string;
+  } = { ...data, type: data.type ?? "\\N", year: data.year ?? 0 };
+  const entries = Object.entries(createData);
+
   const { changes, lastInsertRowid } = db
     .prepare(
       `INSERT INTO titles (${entries.map(([col]) => `"${col}"`).join(", ")})
@@ -74,7 +72,9 @@ export function createProgramMatchRecord(
     .run(...entries.map(([, val]) => val));
 
   return getProgramMatchRecord(
-    changes === 1 ? lastInsertRowid : pick(data, ["title", "type", "year"]),
+    changes === 1
+      ? lastInsertRowid
+      : pick(data, ["title", "type", "year", "site"]),
   )!;
 }
 
