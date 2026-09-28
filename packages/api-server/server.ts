@@ -16,8 +16,6 @@ import {
   userMessageSchema,
   type Notification,
   notificationSchema,
-  type IndexedImdbTitle,
-  indexedImdbTitleSchema,
 } from "siftcore";
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
