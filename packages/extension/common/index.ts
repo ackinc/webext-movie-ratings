@@ -1,4 +1,5 @@
 export * from "siftutils";
+export * from "sifttypes";
 
 export * from "./constants";
 export * from "./helpers";

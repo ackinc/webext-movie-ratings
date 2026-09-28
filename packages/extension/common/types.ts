@@ -1,5 +1,5 @@
-import type { Notification as SiftNotification } from "sifttypes";
-import { MessageType, supportedSites } from "./constants";
+import type { Notification as SiftNotification, Sitename } from "sifttypes";
+import { MessageType } from "./constants";
 
 export type ProgramContainerData = {
   title: string;
@@ -223,10 +223,6 @@ export type ExtensionContext =
   | "popup"
   | "service-worker"
   | "extension-page";
-
-export type Sitename = keyof typeof supportedSites;
-export type PermString =
-  (typeof supportedSites)[Sitename]["permStrings"][number];
 
 export type PopupPage =
   | "onboarding"
