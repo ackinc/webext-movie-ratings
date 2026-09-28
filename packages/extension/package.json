@@ -44,7 +44,7 @@
     "prettier": "^3.7.4",
     "rate-limit-utils": "^1.0.0",
     "showdown": "^2.1.0",
-    "sifttypes": "workspace:types@*",
+    "siftcore": "workspace:core@*",
     "siftutils": "workspace:utils@*",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",

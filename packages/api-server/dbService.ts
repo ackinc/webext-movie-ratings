@@ -5,7 +5,7 @@ import {
   type SiftApiProgramMatching,
   type UserMessage,
   type Notification,
-} from "sifttypes";
+} from "siftcore";
 import { pick } from "siftutils";
 import type {
   DbRecord,

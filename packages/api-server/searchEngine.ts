@@ -1,6 +1,6 @@
 import { parseISO, differenceInMinutes } from "date-fns";
 import { Meilisearch } from "meilisearch";
-import type { SiftApiProgramMatching, IndexedImdbTitle } from "sifttypes";
+import type { SiftApiProgramMatching, IndexedImdbTitle } from "siftcore";
 
 const { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = process.env;
 

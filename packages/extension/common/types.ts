@@ -1,4 +1,4 @@
-import type { Notification as SiftNotification, Sitename } from "sifttypes";
+import type { Notification as SiftNotification, Sitename } from "siftcore";
 import { MessageType } from "./constants";
 
 export type ProgramContainerData = {

@@ -1,5 +1,5 @@
 import { addWeeks, differenceInDays } from "date-fns";
-import type { Notification as SiftNotification } from "sifttypes";
+import type { Notification as SiftNotification } from "siftcore";
 import { getSetting } from "@common";
 import * as siftApiService from "./siftApiService";
 import * as storage from "./storage";

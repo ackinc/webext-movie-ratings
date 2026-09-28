@@ -4,7 +4,7 @@ import { Fragment, useState } from "react";
 import Link from "next/link";
 import { Set as ImmutableSet } from "immutable";
 import { Info } from "lucide-react";
-import type { UserMessage } from "sifttypes";
+import type { UserMessage } from "siftcore";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";

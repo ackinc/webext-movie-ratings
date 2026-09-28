@@ -3,7 +3,7 @@ import type {
   SiftApiProgramMatching,
   UserMessage,
   Notification,
-} from "sifttypes";
+} from "siftcore";
 
 export interface DbRecord {
   id: number;

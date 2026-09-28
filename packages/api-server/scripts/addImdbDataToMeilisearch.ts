@@ -10,7 +10,7 @@ import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { Meilisearch, type Index, type IndexObject } from "meilisearch";
 import { pick } from "siftutils";
-import type { IndexedImdbTitle } from "sifttypes";
+import type { IndexedImdbTitle } from "siftcore";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import {

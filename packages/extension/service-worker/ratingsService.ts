@@ -1,6 +1,6 @@
 import { type IDBPDatabase } from "idb";
 import { add } from "date-fns";
-import type { Sitename, Sitehost } from "sifttypes";
+import type { Sitename, Sitehost } from "siftcore";
 import {
   pick,
   omit,
