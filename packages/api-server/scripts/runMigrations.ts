@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-// TODO: error reporting to Sentry
-
+import "dotenv/config";
 import Database, { type Database as TDatabase } from "better-sqlite3";
 import { pick } from "siftutils";
 import * as path from "node:path";
 import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import baseLogger from "../logger.ts";
+import "../instrument.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
