@@ -134,6 +134,7 @@ function createServer() {
           site: hostToSitename[hostname as Sitehost],
           status: "pending",
           imdbId: null,
+          matchedBy: null,
           meta: JSON.stringify({ originallyRequestedFrom: queryData.pageUrl }),
         },
         "ON CONFLICT DO NOTHING",
