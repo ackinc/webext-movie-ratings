@@ -14,6 +14,10 @@ export interface DbRecord {
 }
 
 // This is the data that goes into and comes out of the db
+// We transform ProgramMatchRecords into RawProgramMatchRecords
+//   before inserting into the db because of how UNIQUE constraints
+//   are applied in SQL
+// Grep NOTE_WHY_TITLES_TYPE_AND_YEAR_NOT_NULLABLE for details
 export interface RawProgramMatchRecord extends DbRecord {
   title: string;
   type: ProgramType | "\\N";
@@ -23,6 +27,12 @@ export interface RawProgramMatchRecord extends DbRecord {
   imdbId: string | null;
 }
 
+export type RawProgramMatchQuery = Pick<
+  RawProgramMatchRecord,
+  "title" | "site"
+> &
+  Partial<Pick<RawProgramMatchRecord, "type" | "year">>;
+
 export type ProgramMatchRecord = Omit<
   RawProgramMatchRecord,
   "type" | "year"
@@ -30,6 +40,9 @@ export type ProgramMatchRecord = Omit<
   type: ProgramType | null;
   year: number | null;
 };
+
+export type ProgramMatchQuery = Pick<ProgramMatchRecord, "title" | "site"> &
+  Partial<Pick<ProgramMatchRecord, "type" | "year">>;
 
 export interface UserMessageRecord
   extends DbRecord, Omit<UserMessage, "email"> {

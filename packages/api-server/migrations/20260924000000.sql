@@ -1,5 +1,6 @@
 -- create the basic tables, constraints and triggers
 
+-- NOTE_WHY_TITLES_TYPE_AND_YEAR_NOT_NULLABLE
 -- can't allow type and year be NULLABLE because the UNIQUE
 --   constraint won't work as one would expect
 -- see https://sqlite.org/faq.html#q26
