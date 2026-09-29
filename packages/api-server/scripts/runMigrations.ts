@@ -62,9 +62,6 @@ function runMigration(filename: string) {
     `);
     logger.info(`Finished running migration ${filename}`);
   } catch (e) {
-    db.prepare(
-      `INSERT OR REPLACE INTO migrations (id, status) VALUES (?, ?)`,
-    ).run(filename, `Error: ${(e as Error).message}`);
     throw new Error(`Error running migration ${filename}`, { cause: e });
   }
 }

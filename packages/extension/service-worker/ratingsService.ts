@@ -4,7 +4,6 @@ import type { Sitename, Sitehost } from "siftcore";
 import {
   pick,
   omit,
-  getSetting,
   programToHash,
   hostToSitename,
   type CachedIMDBData,
@@ -127,9 +126,10 @@ async function getIMDBData(
     let imdbData: IMDBData | null = null;
     let error: Error | null = null;
 
-    const siftProgramMatchingEnabled = Boolean(
-      await getSetting("errorReportingOptIn"),
-    );
+    // this was gated behind the "opt-in to error reporting" extension
+    //   setting before; the gate has been removed because program-matching
+    //   is now an essential part of the extension
+    const siftProgramMatchingEnabled = true;
 
     try {
       const skipOptimisticOmdbRequest =

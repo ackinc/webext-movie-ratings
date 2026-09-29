@@ -9,6 +9,8 @@ import type {
   RawProgramMatchRecord,
   UserMessageRecord,
   NotificationRecord,
+  ProgramMatchQuery,
+  RawProgramMatchQuery,
 } from "./types.ts";
 
 const env = pick(process.env, ["DB_PATH"], true);
@@ -20,9 +22,6 @@ export function closeConnection() {
   db.close();
 }
 
-type ProgramMatchQuery = Pick<ProgramMatchRecord, "title" | "site"> &
-  Partial<Pick<ProgramMatchRecord, "type" | "year">>;
-
 export function getProgramMatchRecord(
   idOrQuery: number | bigint | ProgramMatchQuery,
 ): ProgramMatchRecord | null {
@@ -31,9 +30,17 @@ export function getProgramMatchRecord(
   if (typeof idOrQuery === "number" || typeof idOrQuery === "bigint") {
     rowId = idOrQuery as number | bigint;
   } else {
-    let query = idOrQuery;
+    const query: RawProgramMatchQuery = {
+      ...pick(idOrQuery, ["title", "site"]),
+      ...("type" in idOrQuery
+        ? { type: idOrQuery.type === null ? "\\N" : idOrQuery.type }
+        : {}),
+      ...("year" in idOrQuery
+        ? { year: idOrQuery.year === null ? 0 : idOrQuery.year }
+        : {}),
+    };
     rowId = db
-      .prepare<ProgramMatchQuery, { id: number | bigint }>(
+      .prepare<RawProgramMatchQuery, { id: number | bigint }>(
         `SELECT id FROM titles WHERE title = $title AND site = $site
           ${"type" in query ? " AND type = $type " : ""}
           ${"year" in query ? " AND year = $year " : ""}`,

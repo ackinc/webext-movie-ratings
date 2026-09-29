@@ -8,16 +8,11 @@ import {
   DB_NAME,
   DB_VERSION,
 } from "./constants";
-import type {
-  ExtensionContext,
-  ExtensionSettings,
-  Message,
-  ProgramData,
-} from "./types";
+import type { ExtensionContext, Message, ProgramData } from "./types";
 import TelemetryStore from "./TelemetryStore";
 import RatingsCache from "./RatingsCache";
 import { captureException } from "./errorReporter";
-import * as storage from "./storage";
+import { setSetting } from "./settings";
 
 export function getExtensionContext(): ExtensionContext {
   const { location } = globalThis;
@@ -119,19 +114,6 @@ export function extractProgramTitle(str: string): string {
       // title should end with alphabet or number
       .replace(/[^A-Za-z0-9]*$/, "")
   );
-}
-
-export async function getSetting<K extends keyof ExtensionSettings>(
-  key: K,
-): Promise<ExtensionSettings[K] | undefined> {
-  return await storage.get(key);
-}
-
-export async function setSetting<K extends keyof ExtensionSettings>(
-  key: K,
-  value: ExtensionSettings[K],
-): Promise<void> {
-  await storage.set(key, value);
 }
 
 export async function upgradeIdbAndGetConnection() {
