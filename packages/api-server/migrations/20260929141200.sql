@@ -17,7 +17,10 @@ CREATE TABLE "titles_new" (
   PRIMARY KEY("id")
 );
 
-INSERT INTO titles_new SELECT * FROM titles WHERE id IS NOT NULL;
+INSERT INTO titles_new
+SELECT id, title, type, year, site, status, imdbId, createdAt, updatedAt, meta
+FROM titles
+WHERE id IS NOT NULL;
 
 DROP TABLE titles;
 
