@@ -149,6 +149,7 @@ function createServer() {
         row = dbService.updateProgramMatchRecord(row.id, {
           status: bestMatch ? "matched" : "abandoned",
           imdbId: bestMatch ? bestMatch.imdbId : null,
+          matchedBy: bestMatch ? "system" : null,
         });
       }
 
