@@ -13,15 +13,6 @@ export default function PitchErrorReportingOptInPage() {
         when the extension encounters an error.
       </p>
 
-      <p>
-        <span style={{ fontWeight: "bold" }}>
-          This includes cases where Sift is unable to find ratings for a
-          particular movie / show
-        </span>{" "}
-        - we'll send the program's title and other details to our servers where
-        we'll attempt to match it to an entry in the IMDB database
-      </p>
-
       <ErrorReportingOptIn
         style={{
           backgroundColor: "var(--main-bg-color)",
