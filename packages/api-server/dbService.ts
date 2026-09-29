@@ -87,7 +87,9 @@ export function createProgramMatchRecord(
 
 export function updateProgramMatchRecord(
   rowId: number | bigint,
-  data: Partial<Pick<ProgramMatchRecord, "status" | "imdbId" | "meta">>,
+  data: Partial<
+    Pick<ProgramMatchRecord, "status" | "imdbId" | "matchedBy" | "meta">
+  >,
 ) {
   const entries = Object.entries(data);
   if (entries.length > 0) {

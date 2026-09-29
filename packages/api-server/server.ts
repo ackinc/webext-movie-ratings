@@ -134,6 +134,7 @@ function createServer() {
           site: hostToSitename[hostname as Sitehost],
           status: "pending",
           imdbId: null,
+          matchedBy: null,
           meta: JSON.stringify({ originallyRequestedFrom: queryData.pageUrl }),
         },
         "ON CONFLICT DO NOTHING",
@@ -148,6 +149,7 @@ function createServer() {
         row = dbService.updateProgramMatchRecord(row.id, {
           status: bestMatch ? "matched" : "abandoned",
           imdbId: bestMatch ? bestMatch.imdbId : null,
+          matchedBy: bestMatch ? "system" : null,
         });
       }
 

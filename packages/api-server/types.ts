@@ -25,6 +25,7 @@ export interface RawProgramMatchRecord extends DbRecord {
   site: Sitename;
   status: SiftApiProgramMatching.Status | "pending";
   imdbId: string | null;
+  matchedBy: string | null;
 }
 
 export type RawProgramMatchQuery = Pick<
