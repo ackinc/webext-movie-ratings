@@ -1,5 +1,3 @@
-export const abandonedMatchStatusExpiryInDays = 30;
-
 export const extensionIds = {
   chrome: [
     "pfnhkljamlclkackkndllofcfhihacna", // CWS
