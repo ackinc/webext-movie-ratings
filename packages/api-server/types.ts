@@ -23,7 +23,7 @@ export interface RawProgramMatchRecord extends DbRecord {
   type: ProgramType | "\\N";
   year: number | 0;
   site: Sitename;
-  status: SiftApiProgramMatching.Status | "pending";
+  status: "pending" | SiftApiProgramMatching.Status | "reportedIncorrect";
   imdbId: string | null;
   matchedBy: string | null;
 }
