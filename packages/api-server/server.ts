@@ -23,7 +23,8 @@ import { HTTPError } from "./customErrors.ts";
 import * as dbService from "./dbService.ts";
 import * as emailService from "./emailService.ts";
 import logger from "./logger.ts";
-import { querySearchEngine, getIndexLastUpdatedTime } from "./searchEngine.ts";
+import { getIndexLastUpdatedTime, querySearchEngine } from "./searchEngine.ts";
+import type { ProgramMatchQuery } from "./types.ts";
 
 const env = pick(
   process.env,
@@ -119,50 +120,61 @@ function createServer() {
       },
     } satisfies RouteShorthandOptions,
     async function (request, reply) {
-      const queryData = { ...request.query };
+      const { title, type, year, pageUrl } = request.query;
 
-      const hostname = new URL(queryData.pageUrl).hostname;
+      const hostname = new URL(pageUrl).hostname;
       if (!(hostname in hostToSitename)) {
-        throw new HTTPError(400, `Not a supported site: ${queryData.pageUrl}`);
+        throw new HTTPError(400, `Not a supported site: ${pageUrl}`);
       }
 
-      let row = dbService.createProgramMatchRecord(
-        {
-          title: request.query.title,
-          type: request.query.type ?? null,
-          year: request.query.year ?? null,
-          site: hostToSitename[hostname as Sitehost],
-          status: "pending",
-          imdbId: null,
-          matchedBy: null,
-          meta: JSON.stringify({ originallyRequestedFrom: queryData.pageUrl }),
-        },
-        "ON CONFLICT DO NOTHING",
-      );
+      const query: Required<ProgramMatchQuery> = {
+        title,
+        type: type ?? null,
+        year: year ?? null,
+        site: hostToSitename[hostname as Sitehost],
+      };
+      const existingRow = dbService.getProgramMatchRecord(query);
 
-      if (
-        row.status === "pending" ||
-        (row.status === "abandoned" &&
-          parseISO(row.updatedAt) < (await getIndexLastUpdatedTime()))
-      ) {
-        const [bestMatch] = await querySearchEngine(queryData);
-        row = dbService.updateProgramMatchRecord(row.id, {
-          status: bestMatch ? "matched" : "abandoned",
-          imdbId: bestMatch ? bestMatch.imdbId : null,
-          matchedBy: bestMatch ? "system" : null,
-        });
+      if (existingRow?.status === "matched") {
+        return reply
+          .code(200)
+          .send({ status: "matched", imdbId: existingRow.imdbId! });
       }
 
-      if (row.status === "matched") {
-        return reply.code(200).send({ status: "matched", imdbId: row.imdbId! });
-      }
-
-      if (row.status === "abandoned") {
+      if (existingRow?.status === "reportedIncorrect") {
+        // TODO: arguably we should return a different status here,
+        //   since the recommended retry-after period for a true 'abandoned'
+        //   status and the 'reportedIncorrect' status are not the same
+        // In fact, maybe we should provide a 'days-to-retry-after' value
+        //   in these responses
         return reply.code(200).send({ status: "abandoned" });
       }
 
-      /* row.status === 'pending' */
-      throw new Error(`Unexpected status '${row.status}' for row id ${row.id}`);
+      if (existingRow?.status === "abandoned") {
+        const indexLastUpdatedAt = await getIndexLastUpdatedTime();
+        if (indexLastUpdatedAt < parseISO(existingRow.updatedAt)) {
+          return reply.code(200).send({ status: "abandoned" });
+        }
+      }
+
+      // existingRow does not exist, or our index of imdb titles has been
+      //   updated since it was marked 'abandoned'
+
+      const [bestMatch] = await querySearchEngine(query);
+      const row = dbService.upsertProgramMatchRecord({
+        ...query,
+        status: bestMatch ? "matched" : "abandoned",
+        imdbId: bestMatch ? bestMatch.imdbId : null,
+        matchedBy: "system",
+      });
+
+      return reply
+        .code(200)
+        .send(
+          bestMatch
+            ? { status: "matched", imdbId: row.imdbId! }
+            : { status: "abandoned" },
+        );
     },
   );
 
