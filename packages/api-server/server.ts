@@ -73,11 +73,11 @@ function createServer() {
   });
 
   // health check route
-  const healthCheckRequestSchema = Type.Object({
-    delayMs: Type.Optional(Type.Number()),
-    error: Type.Optional(Type.String()),
-    workThroughDelay: Type.Optional(Type.Boolean()),
-  });
+  const healthCheckRequestSchema = Type.Script(`{
+    delayMs?: number,
+    error?: string,
+    workThroughDelay?: boolean,
+  }`);
   fastify.get<{
     Querystring: Static<typeof healthCheckRequestSchema>;
     Reply: { 200: { status: string } };
