@@ -2,7 +2,7 @@ import Database, { type Database as TDatabase } from "better-sqlite3";
 import { formatISO9075 } from "date-fns";
 import { UTCDate } from "@date-fns/utc";
 import { type UserMessage, type Notification } from "siftcore";
-import { pick } from "siftutils";
+import { pick, shallowEqual } from "siftutils";
 import type {
   DbRecord,
   ProgramMatchRecord,
@@ -99,6 +99,25 @@ export function updateProgramMatchRecord(
     ).run(...entries.map(([, val]) => val), rowId);
   }
   return getRecordById<ProgramMatchRecord>(rowId, "titles");
+}
+
+export function upsertProgramMatchRecord(
+  data: Omit<ProgramMatchRecord, keyof DbRecord> & { meta?: string },
+) {
+  let row: ProgramMatchRecord | null = null;
+
+  db.transaction(() => {
+    row = createProgramMatchRecord(data, "ON CONFLICT DO NOTHING");
+    const updateNeeded = !shallowEqual(data, pick(row, Object.keys(data)));
+    if (updateNeeded) {
+      row = updateProgramMatchRecord(
+        row.id,
+        pick(data, ["status", "imdbId", "matchedBy", "meta"]),
+      );
+    }
+  });
+
+  return row!;
 }
 
 export function createMessageRecord(userMessage: UserMessage) {
