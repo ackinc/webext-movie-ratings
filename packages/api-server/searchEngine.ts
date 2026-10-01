@@ -15,8 +15,8 @@ const defaultLimit = 5;
 
 export async function querySearchEngine(
   program: Omit<SiftApiProgramMatching.Request, "pageUrl">,
-  rankingScoreThreshold: number = defaultThreshold,
   limit: number = defaultLimit,
+  rankingScoreThreshold: number = defaultThreshold,
 ): Promise<IndexedImdbTitle[]> {
   const { hits: searchResults } = await index.search<IndexedImdbTitle>(
     program.title,
