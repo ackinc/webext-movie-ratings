@@ -1,6 +1,7 @@
 import { parseISO, differenceInMinutes } from "date-fns";
 import { Meilisearch } from "meilisearch";
-import type { SiftApiProgramMatching, IndexedImdbTitle } from "siftcore";
+import type { IndexedImdbTitle } from "siftcore";
+import type { ProgramMatchQuery } from "./types.ts";
 
 const { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = process.env;
 
@@ -14,12 +15,12 @@ const defaultThreshold = 0.9;
 const defaultLimit = 5;
 
 export async function querySearchEngine(
-  program: Omit<SiftApiProgramMatching.Request, "pageUrl">,
+  query: Omit<ProgramMatchQuery, "site">,
   limit: number = defaultLimit,
   rankingScoreThreshold: number = defaultThreshold,
 ): Promise<IndexedImdbTitle[]> {
   const { hits: searchResults } = await index.search<IndexedImdbTitle>(
-    program.title,
+    query.title,
     { limit, rankingScoreThreshold },
   );
 
@@ -33,14 +34,14 @@ export async function querySearchEngine(
 
   const searchResultsWithTypeAndYearMatch = searchResults.filter(
     ({ type, year }) =>
-      (type === program.type || program.type === undefined) &&
-      (year === program.year || program.year === undefined),
+      (type === query.type || !query.type) &&
+      (year === query.year || !query.year),
   );
   if (searchResultsWithTypeAndYearMatch.length > 0)
     return searchResultsWithTypeAndYearMatch;
 
   const searchResultsWithTypeMatch = searchResults.filter(
-    ({ type }) => type === program.type || program.type === undefined,
+    ({ type }) => type === query.type || !query.type,
   );
   if (searchResultsWithTypeMatch.length > 0) return searchResultsWithTypeMatch;
 
