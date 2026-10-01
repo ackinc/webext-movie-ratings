@@ -18,6 +18,10 @@ const env = pick(process.env, ["DB_PATH"], true);
 const db: TDatabase = new Database(env.DB_PATH);
 db.pragma("journal_mode = WAL");
 
+export function transaction(fn: () => void) {
+  db.transaction(fn);
+}
+
 export function closeConnection() {
   db.close();
 }
