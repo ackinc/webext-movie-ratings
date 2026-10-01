@@ -10,8 +10,8 @@ import { Type, type Static } from "typebox";
 import {
   hostToSitename,
   type Sitehost,
-  type SiftApiProgramMatching,
-  siftApiProgramMatchSchemas,
+  type SiftApiProgramMatching as ProgramMatching,
+  siftApiProgramMatchSchemas as ProgramMatchSchemas,
   type UserMessage,
   userMessageSchema,
   type Notification,
@@ -108,14 +108,14 @@ function createServer() {
   //      those cases where the search engine doesn't throw up a
   //      suitable match
   fastify.get<{
-    Querystring: SiftApiProgramMatching.Request;
-    Reply: { 200: SiftApiProgramMatching.Response };
+    Querystring: ProgramMatching.Request;
+    Reply: { 200: ProgramMatching.Response };
   }>(
     "/imdbId",
     {
       schema: {
-        querystring: siftApiProgramMatchSchemas.request,
-        response: { 200: siftApiProgramMatchSchemas.response },
+        querystring: ProgramMatchSchemas.request,
+        response: { 200: ProgramMatchSchemas.response },
       },
     } satisfies RouteShorthandOptions,
     async function (request, reply) {
