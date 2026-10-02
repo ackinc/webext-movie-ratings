@@ -22,25 +22,28 @@ const logger = baseLogger.child({ script: fileURLToPath(import.meta.url) });
 const db: TDatabase = new Database(env.DB_PATH);
 db.pragma("journal_mode = WAL");
 
-const matchedTitles = db
+db.exec("UPDATE titles SET meta = NULL WHERE status = 'abandoned'");
+
+const matchedRecordsFromDb = db
   .prepare<
     never[],
     RawProgramMatchRecord
   >("SELECT * FROM titles WHERE status = 'matched' AND meta ->> 'bestMatch' IS NULL")
   .all();
 
-const bestMatches = await Promise.all(matchedTitles.map(getBestMatch));
+const matchedDocsFromSearchEngine = await Promise.all(
+  matchedRecordsFromDb.map(getMatchedDoc),
+);
 
 const preparedStmt = db.prepare(`UPDATE titles SET meta = ? WHERE id = ?`);
-db.transaction(() => {
-  db.exec("UPDATE titles SET meta = NULL WHERE status = 'abandoned'");
-  matchedTitles.forEach(({ id }, idx) => {
-    const bestMatch = bestMatches[idx];
-    if (bestMatch) preparedStmt.run(JSON.stringify({ bestMatch }), id);
-  });
+matchedRecordsFromDb.forEach(({ id }, idx) => {
+  const bestMatch = matchedDocsFromSearchEngine[idx];
+  if (bestMatch) preparedStmt.run(JSON.stringify({ bestMatch }), id);
 });
 
-async function getBestMatch(
+// helpers
+
+async function getMatchedDoc(
   row: RawProgramMatchRecord,
 ): Promise<IndexedImdbTitle | undefined> {
   const query = {

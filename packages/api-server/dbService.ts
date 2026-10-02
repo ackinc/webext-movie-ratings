@@ -1,4 +1,7 @@
-import Database, { type Database as TDatabase } from "better-sqlite3";
+import Database, {
+  type Database as TDatabase,
+  type Transaction,
+} from "better-sqlite3";
 import { formatISO9075 } from "date-fns";
 import { UTCDate } from "@date-fns/utc";
 import { type UserMessage, type Notification } from "siftcore";
@@ -18,8 +21,8 @@ const env = pick(process.env, ["DB_PATH"], true);
 const db: TDatabase = new Database(env.DB_PATH);
 db.pragma("journal_mode = WAL");
 
-export function transaction(fn: () => void) {
-  db.transaction(fn);
+export function transaction(fn: () => void): Transaction {
+  return db.transaction(fn);
 }
 
 export function closeConnection() {
@@ -110,6 +113,7 @@ export function upsertProgramMatchRecord(
 ) {
   let row: ProgramMatchRecord | null = null;
 
+  // TODO: use "INSERT ON CONFLICT DO UPDATE" here instead
   db.transaction(() => {
     row = createProgramMatchRecord(data, "ON CONFLICT DO NOTHING");
     const updateNeeded = !shallowEqual(data, pick(row, Object.keys(data)));
@@ -119,7 +123,7 @@ export function upsertProgramMatchRecord(
         pick(data, ["status", "imdbId", "matchedBy", "meta"]),
       );
     }
-  });
+  })();
 
   return row!;
 }
