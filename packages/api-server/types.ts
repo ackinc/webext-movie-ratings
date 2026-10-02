@@ -34,6 +34,18 @@ export type RawProgramMatchQuery = Pick<
 > &
   Partial<Pick<RawProgramMatchRecord, "type" | "year">>;
 
+// NOTE_PROGRAM_MATCH_RECORD_META_VALUE
+// The value in `meta` column for a ProgramMatchRecord depends
+//   on its `status`
+// if status === 'matched', meta: {
+//   bestMatch: IndexedImdbTitle
+// }
+// else if status === 'reportedIncorrect', meta: {
+//   token: string,
+//   suggestedMatches: IndexedImdbTitle[],
+//   userSelectedMatch: IndexedImdbTitle
+// }
+// else (i.e. status === 'abandoned'), meta: null
 export type ProgramMatchRecord = Omit<
   RawProgramMatchRecord,
   "type" | "year"

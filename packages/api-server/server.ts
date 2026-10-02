@@ -166,6 +166,8 @@ function createServer() {
         status: bestMatch ? "matched" : "abandoned",
         imdbId: bestMatch ? bestMatch.imdbId : null,
         matchedBy: "system",
+        // see NOTE_PROGRAM_MATCH_RECORD_META_VALUE for details re. this field
+        meta: JSON.stringify({ bestMatch }),
       });
 
       return reply
