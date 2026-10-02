@@ -167,7 +167,7 @@ function createServer() {
         imdbId: bestMatch ? bestMatch.imdbId : null,
         matchedBy: "system",
         // see NOTE_PROGRAM_MATCH_RECORD_META_VALUE for details re. this field
-        meta: JSON.stringify({ bestMatch }),
+        meta: JSON.stringify(bestMatch ? { bestMatch } : {}),
       });
 
       return reply

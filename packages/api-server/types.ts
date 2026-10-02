@@ -45,7 +45,8 @@ export type RawProgramMatchQuery = Pick<
 //   suggestedMatches: IndexedImdbTitle[],
 //   userSelectedMatch: IndexedImdbTitle
 // }
-// else (i.e. status === 'abandoned'), meta: null
+// else (i.e. status === 'abandoned'), meta: {
+// }
 export type ProgramMatchRecord = Omit<
   RawProgramMatchRecord,
   "type" | "year"

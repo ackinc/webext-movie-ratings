@@ -22,7 +22,9 @@ const logger = baseLogger.child({ script: fileURLToPath(import.meta.url) });
 const db: TDatabase = new Database(env.DB_PATH);
 db.pragma("journal_mode = WAL");
 
-db.exec("UPDATE titles SET meta = NULL WHERE status = 'abandoned'");
+db.exec(
+  "UPDATE titles SET matchedBy = 'system', meta = '{}' WHERE status = 'abandoned'",
+);
 
 const matchedRecordsFromDb = db
   .prepare<
