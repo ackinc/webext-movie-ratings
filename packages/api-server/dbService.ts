@@ -1,8 +1,11 @@
-import Database, { type Database as TDatabase } from "better-sqlite3";
+import Database, {
+  type Database as TDatabase,
+  type Transaction,
+} from "better-sqlite3";
 import { formatISO9075 } from "date-fns";
 import { UTCDate } from "@date-fns/utc";
 import { type UserMessage, type Notification } from "siftcore";
-import { pick } from "siftutils";
+import { pick, shallowEqual } from "siftutils";
 import type {
   DbRecord,
   ProgramMatchRecord,
@@ -17,6 +20,14 @@ const env = pick(process.env, ["DB_PATH"], true);
 
 const db: TDatabase = new Database(env.DB_PATH);
 db.pragma("journal_mode = WAL");
+
+// TODO: make the default export of this module a proxy for db
+//   so we don't need to have thin functions like "transaction"
+//   and "close" below
+
+export function transaction(fn: () => void): Transaction {
+  return db.transaction(fn);
+}
 
 export function closeConnection() {
   db.close();
@@ -99,6 +110,26 @@ export function updateProgramMatchRecord(
     ).run(...entries.map(([, val]) => val), rowId);
   }
   return getRecordById<ProgramMatchRecord>(rowId, "titles");
+}
+
+export function upsertProgramMatchRecord(
+  data: Omit<ProgramMatchRecord, keyof DbRecord> & { meta?: string },
+) {
+  let row: ProgramMatchRecord | null = null;
+
+  // TODO: use "INSERT ON CONFLICT DO UPDATE" here instead
+  db.transaction(() => {
+    row = createProgramMatchRecord(data, "ON CONFLICT DO NOTHING");
+    const updateNeeded = !shallowEqual(data, pick(row, Object.keys(data)));
+    if (updateNeeded) {
+      row = updateProgramMatchRecord(
+        row.id,
+        pick(data, ["status", "imdbId", "matchedBy", "meta"]),
+      );
+    }
+  })();
+
+  return row!;
 }
 
 export function createMessageRecord(userMessage: UserMessage) {

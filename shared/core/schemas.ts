@@ -15,6 +15,13 @@ export const siftApiProgramMatchSchemas = {
     status: siftApiProgramMatchStatus,
     imdbId: Type.Optional(Type.String()),
   }),
+  incorrectMatchReportRequest: Type.Object({
+    title: Type.String(),
+    type: Type.Optional(programTypeSchema),
+    year: Type.Optional(Type.Number()),
+    pageUrl: Type.String(),
+    imdbId: Type.String(),
+  }),
 };
 
 const userMessageCategory = Type.Enum([

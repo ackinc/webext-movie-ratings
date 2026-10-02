@@ -13,6 +13,13 @@ export namespace SiftApiProgramMatching {
   export type Status = Static<typeof siftApiProgramMatchSchemas.status>;
   export type Request = Static<typeof siftApiProgramMatchSchemas.request>;
   export type Response = Static<typeof siftApiProgramMatchSchemas.response>;
+  export type IncorrectMatchReportRequest = Static<
+    typeof siftApiProgramMatchSchemas.incorrectMatchReportRequest
+  >;
+  export type IncorrectMatchReportResponse = {
+    token: string;
+    suggestions: Omit<IndexedImdbTitle, "id">[];
+  };
 }
 
 export type UserMessage = Static<typeof userMessageSchema>;
