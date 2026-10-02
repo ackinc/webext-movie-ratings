@@ -21,6 +21,10 @@ const env = pick(process.env, ["DB_PATH"], true);
 const db: TDatabase = new Database(env.DB_PATH);
 db.pragma("journal_mode = WAL");
 
+// TODO: make the default export of this module a proxy for db
+//   so we don't need to have thin functions like "transaction"
+//   and "close" below
+
 export function transaction(fn: () => void): Transaction {
   return db.transaction(fn);
 }
