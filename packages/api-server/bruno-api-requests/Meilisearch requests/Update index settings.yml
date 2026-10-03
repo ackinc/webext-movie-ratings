@@ -1,15 +1,21 @@
 info:
-  name: Get index info
+  name: Update index settings
   type: http
-  seq: 3
+  seq: 6
 
 http:
-  method: GET
-  url: "{{MEILISEARCH_URL}}/indexes/:indexName"
+  method: PATCH
+  url: "{{MEILISEARCH_URL}}/indexes/:indexName/settings"
   params:
     - name: indexName
       value: "{{indexName}}"
       type: path
+  body:
+    type: json
+    data: |-
+      {
+        "filterableAttributes": ["imdbId"]
+      }
   auth: inherit
 
 settings:

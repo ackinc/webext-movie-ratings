@@ -1,16 +1,17 @@
 info:
-  name: Get index info
+  name: Get version
   type: http
-  seq: 3
+  seq: 1
 
 http:
   method: GET
-  url: "{{MEILISEARCH_URL}}/indexes/:indexName"
-  params:
-    - name: indexName
-      value: "{{indexName}}"
-      type: path
+  url: "{{MEILISEARCH_URL}}/version"
   auth: inherit
+
+runtime:
+  variables:
+    - name: MEILISEARCH_URL
+      value: http://localhost:7700
 
 settings:
   encodeUrl: true

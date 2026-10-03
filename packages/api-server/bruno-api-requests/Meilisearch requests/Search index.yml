@@ -1,20 +1,30 @@
 info:
   name: Search index
   type: http
-  seq: 7
+  seq: 9
 
 http:
   method: GET
-  url: "{{MEILISEARCH_URL}}/indexes/:indexName/search?limit=5&q=somefakedoc&showRankingScore=true"
+  url: "{{MEILISEARCH_URL}}/indexes/:indexName/search?limit=10&q=Pocket Monsters Best&showRankingScore=true&rankingScoreThreshold=0.5&distinct=imdbId"
   params:
     - name: limit
-      value: "5"
+      value: "10"
       type: query
     - name: q
-      value: somefakedoc
+      value: Pocket Monsters Best
       type: query
     - name: showRankingScore
       value: "true"
+      type: query
+    - name: rankingScoreThreshold
+      value: "0.5"
+      type: query
+    - name: showRankingScoreDetails
+      value: "true"
+      type: query
+      disabled: true
+    - name: distinct
+      value: imdbId
       type: query
     - name: indexName
       value: "{{indexName}}"
@@ -26,3 +36,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

@@ -1,7 +1,7 @@
 info:
   name: List indexes
   type: http
-  seq: 1
+  seq: 2
 
 http:
   method: GET
@@ -18,3 +18,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

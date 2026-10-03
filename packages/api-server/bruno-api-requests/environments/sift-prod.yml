@@ -1,0 +1,7 @@
+name: sift-prod
+variables:
+  - name: MEILISEARCH_URL
+    value: http://localhost:7701
+  - secret: true
+    name: MEILISEARCH_MASTER_KEY
+    description: ""

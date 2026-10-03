@@ -1,11 +1,11 @@
 info:
-  name: Get index info
+  name: Get index settings
   type: http
-  seq: 3
+  seq: 5
 
 http:
   method: GET
-  url: "{{MEILISEARCH_URL}}/indexes/:indexName"
+  url: "{{MEILISEARCH_URL}}/indexes/:indexName/settings"
   params:
     - name: indexName
       value: "{{indexName}}"
