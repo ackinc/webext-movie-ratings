@@ -7,6 +7,7 @@ import { parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
 import cors from "@fastify/cors";
 import { Type, type Static } from "typebox";
+import { v4 as uuidv4 } from "uuid";
 import {
   hostToSitename,
   type Sitehost,
@@ -16,6 +17,7 @@ import {
   userMessageSchema,
   type Notification,
   notificationSchema,
+  type IndexedImdbTitle,
 } from "siftcore";
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
@@ -177,6 +179,105 @@ function createServer() {
             ? { status: "matched", imdbId: row.imdbId! }
             : { status: "abandoned" },
         );
+    },
+  );
+
+  // report-incorrect-program-match route
+  fastify.post<{
+    Body: ProgramMatching.IncorrectMatchReportRequest;
+    Reply: { 200: ProgramMatching.IncorrectMatchReportResponse };
+  }>(
+    "/incorrect-matches",
+    {
+      schema: {
+        body: ProgramMatchSchemas.incorrectMatchReportRequest,
+      },
+    } satisfies RouteShorthandOptions,
+    async function (request, reply) {
+      const { title, type, year, pageUrl, imdbId } = request.body;
+
+      const hostname = new URL(pageUrl).hostname;
+      if (!(hostname in hostToSitename)) {
+        throw new HTTPError(400, `Not a supported site: ${pageUrl}`);
+      }
+
+      const query: Required<ProgramMatchQuery> = {
+        title,
+        type: type ?? null,
+        year: year ?? null,
+        site: hostToSitename[hostname as Sitehost],
+      };
+
+      const existingRow = dbService.getProgramMatchRecord(query);
+
+      if (!existingRow || existingRow.status === "abandoned") {
+        const token = uuidv4();
+        const suggestedMatches = await querySearchEngine(query);
+        dbService.upsertProgramMatchRecord({
+          ...query,
+          status: "reportedIncorrect",
+          imdbId,
+          matchedBy: "system",
+          meta: JSON.stringify({ token, suggestedMatches }),
+        });
+
+        return reply.code(200).send({ token, suggestedMatches });
+      }
+
+      if (existingRow.status === "reportedIncorrect") {
+        const meta = JSON.parse(existingRow.meta!) as {
+          token: string;
+          suggestedMatches: IndexedImdbTitle[];
+        };
+
+        return reply.code(200).send(meta);
+      }
+
+      /* status === 'matched' */
+
+      if (existingRow.imdbId === imdbId) {
+        const token = uuidv4();
+        const suggestedMatches = await querySearchEngine(query);
+        dbService.updateProgramMatchRecord(existingRow.id, {
+          status: "reportedIncorrect",
+          meta: JSON.stringify({ token, suggestedMatches }),
+        });
+
+        return reply.code(200).send({ token, suggestedMatches });
+      }
+
+      // We can get here, at this unexpected point where a user is
+      //   reporting that the given [title+type+year+site](ttys)
+      //   combo is incorrectly matched to imdbId_A when our db says
+      //   we matched it to imdbId_B, in these two cases:
+      // A: request is malicious
+      // B:
+      //    - T=0: Sift matched ttys to imdbId_A at user A's request,
+      //           when omdb did not have a match for ttys
+      //    - T=1: omdb adds match to imdbId_B for ttys to its own db
+      //    - T=2: user B sees rating for imdbId_B while using Sift
+
+      const suggestedMatches = await querySearchEngine(query);
+
+      // ensure existing match shows up at top of suggestions list
+      {
+        const existingMatchIdx = suggestedMatches.findIndex(
+          (sm) => sm.imdbId === existingRow.imdbId,
+        );
+        if (existingMatchIdx === -1) {
+          suggestedMatches.unshift(
+            JSON.parse(existingRow.meta!).bestMatch as IndexedImdbTitle,
+          );
+        } else {
+          const x = suggestedMatches[existingMatchIdx]!;
+          suggestedMatches.splice(existingMatchIdx, 1);
+          suggestedMatches.unshift(x);
+        }
+      }
+
+      return reply
+        .code(200)
+        .send({ suggestedMatches: suggestedMatches.slice(0, 5) });
     },
   );
 
