@@ -9,12 +9,17 @@
 
 import "dotenv/config";
 import { fileURLToPath } from "node:url";
-import type { IndexedImdbTitle } from "siftcore";
 import { pick } from "siftutils";
+import { mapLimit } from "async";
 import Database, { type Database as TDatabase } from "better-sqlite3";
 import { default as baseLogger } from "../logger.ts";
 import { querySearchEngine } from "../searchEngine.ts";
 import type { RawProgramMatchRecord } from "../types.ts";
+
+// if this is too high and the search engine cannot keep up, queries will start
+//   failing with 408 request timeout errors
+const MAX_PARALLEL_SEARCH_QUERIES = 50;
+const MAX_RESULTS_FROM_SEARCH_QUERY = 10;
 
 const env = pick(process.env, ["DB_PATH"], true);
 const logger = baseLogger.child({ script: fileURLToPath(import.meta.url) });
@@ -22,9 +27,17 @@ const logger = baseLogger.child({ script: fileURLToPath(import.meta.url) });
 const db: TDatabase = new Database(env.DB_PATH);
 db.pragma("journal_mode = WAL");
 
-db.exec(
-  "UPDATE titles SET matchedBy = 'system', meta = '{}' WHERE status = 'abandoned'",
-);
+const { changes } = db
+  .prepare(
+    `
+  UPDATE titles
+  SET matchedBy = 'system', meta = '{}'
+  WHERE status = 'abandoned'
+    AND (matchedBy != 'system' OR meta != '{}')
+`,
+  )
+  .run();
+logger.info(`Updated ${changes} 'abandoned' rows`);
 
 const matchedRecordsFromDb = db
   .prepare<
@@ -32,31 +45,32 @@ const matchedRecordsFromDb = db
     RawProgramMatchRecord
   >("SELECT * FROM titles WHERE status = 'matched' AND meta ->> 'bestMatch' IS NULL")
   .all();
-
-const matchedDocsFromSearchEngine = await Promise.all(
-  matchedRecordsFromDb.map(getMatchedDoc),
+logger.info(
+  `Found ${matchedRecordsFromDb.length} 'matched' rows that need updating`,
 );
 
 const preparedStmt = db.prepare(`UPDATE titles SET meta = ? WHERE id = ?`);
-matchedRecordsFromDb.forEach(({ id }, idx) => {
-  const bestMatch = matchedDocsFromSearchEngine[idx];
-  if (bestMatch) preparedStmt.run(JSON.stringify({ bestMatch }), id);
-});
+await mapLimit(
+  matchedRecordsFromDb,
+  MAX_PARALLEL_SEARCH_QUERIES,
+  updateMetaValue,
+);
 
 // helpers
 
-async function getMatchedDoc(
-  row: RawProgramMatchRecord,
-): Promise<IndexedImdbTitle | undefined> {
+async function updateMetaValue(row: RawProgramMatchRecord) {
   const query = {
     title: row.title,
     type: row.type === "\\N" ? null : row.type,
     year: row.year === 0 ? null : row.year,
   };
-  const matches = await querySearchEngine(query);
-  const bm = matches.find((m) => m.imdbId === row.imdbId);
-  if (!bm) {
-    logger.warn(`no search results for matched title record ${row.id}`);
+  const matches = await querySearchEngine(query, MAX_RESULTS_FROM_SEARCH_QUERY);
+  const bestMatch = matches.find((m) => m.imdbId === row.imdbId);
+  if (!bestMatch) {
+    logger.warn(
+      `Row with id ${row.id} has imdbId ${row.imdbId}, but search results have imdbIds: ${matches.map((m) => m.imdbId).join(", ")}`,
+    );
+  } else {
+    preparedStmt.run(JSON.stringify({ bestMatch }), row.id);
   }
-  return bm;
 }

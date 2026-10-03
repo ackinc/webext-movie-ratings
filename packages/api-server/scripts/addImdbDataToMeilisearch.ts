@@ -8,6 +8,7 @@ import "../instrument.ts";
 import * as path from "node:path";
 import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
+import { isEqual } from "lodash-es";
 import { Meilisearch, type Index, type IndexObject } from "meilisearch";
 import { pick } from "siftutils";
 import type { IndexedImdbTitle } from "siftcore";
@@ -107,9 +108,18 @@ async function prepareIndex(client: Meilisearch): Promise<Index<Document>> {
     index = client.index<Document>(indexName);
   }
 
-  const searchAttrs = await index.getSearchableAttributes();
-  if (!(searchAttrs.length === 1 && searchAttrs[0] === "title")) {
-    await index.updateSearchableAttributes(["title"]);
+  const desiredSettings = {
+    searchableAttributes: ["title"],
+    filterableAttributes: ["imdbId"],
+  };
+  const actualSettings = await client.index(indexName).getSettings();
+  if (
+    !isEqual(
+      desiredSettings,
+      pick(actualSettings, Object.keys(desiredSettings)),
+    )
+  ) {
+    await client.index(indexName).updateSettings(desiredSettings).waitTask();
   }
 
   return index;

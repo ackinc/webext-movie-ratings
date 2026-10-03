@@ -21,7 +21,7 @@ export async function querySearchEngine(
 ): Promise<IndexedImdbTitle[]> {
   const { hits: searchResults } = await index.search<IndexedImdbTitle>(
     query.title,
-    { limit, rankingScoreThreshold },
+    { limit, rankingScoreThreshold, distinct: "imdbId" },
   );
 
   if (searchResults.length === 0) return [];
