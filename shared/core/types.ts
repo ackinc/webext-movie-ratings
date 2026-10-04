@@ -17,6 +17,7 @@ export namespace SiftApiProgramMatching {
     typeof siftApiProgramMatchSchemas.incorrectMatchReportRequest
   >;
   export type IncorrectMatchReportResponse = {
+    id: number;
     // this token will need to be sent back from the extension-side
     //   when a user selects one of the suggested matches
     token?: string;

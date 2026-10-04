@@ -43,7 +43,7 @@ export type RawProgramMatchQuery = Pick<
 // else if status === 'reportedIncorrect', meta: {
 //   token: string,
 //   suggestedMatches: IndexedImdbTitle[],
-//   userSelectedMatch: IndexedImdbTitle
+//   userSelectedMatch: IndexedImdbTitle | null
 // }
 // else (i.e. status === 'abandoned'), meta: {
 // }

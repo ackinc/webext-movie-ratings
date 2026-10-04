@@ -213,15 +213,19 @@ function createServer() {
       if (!existingRow || existingRow.status === "abandoned") {
         const token = uuidv4();
         const suggestedMatches = await querySearchEngine(query);
-        dbService.upsertProgramMatchRecord({
+        const row = dbService.upsertProgramMatchRecord({
           ...query,
           status: "reportedIncorrect",
           imdbId,
           matchedBy: "system",
-          meta: JSON.stringify({ token, suggestedMatches }),
+          meta: JSON.stringify({
+            token,
+            suggestedMatches,
+            userSelectedMatch: null,
+          }),
         });
 
-        return reply.code(200).send({ token, suggestedMatches });
+        return reply.code(200).send({ id: row.id, token, suggestedMatches });
       }
 
       if (existingRow.status === "reportedIncorrect") {
@@ -230,7 +234,7 @@ function createServer() {
           suggestedMatches: IndexedImdbTitle[];
         };
 
-        return reply.code(200).send(meta);
+        return reply.code(200).send({ id: existingRow.id, ...meta });
       }
 
       /* status === 'matched' */
@@ -243,7 +247,9 @@ function createServer() {
           meta: JSON.stringify({ token, suggestedMatches }),
         });
 
-        return reply.code(200).send({ token, suggestedMatches });
+        return reply
+          .code(200)
+          .send({ id: existingRow.id, token, suggestedMatches });
       }
 
       // We can get here, at this unexpected point where a user is
@@ -275,9 +281,10 @@ function createServer() {
         }
       }
 
-      return reply
-        .code(200)
-        .send({ suggestedMatches: suggestedMatches.slice(0, 5) });
+      return reply.code(200).send({
+        id: existingRow.id,
+        suggestedMatches: suggestedMatches.slice(0, 5),
+      });
     },
   );
 
