@@ -30,7 +30,7 @@ import type { ProgramMatchQuery } from "./types.ts";
 
 const env = pick(
   process.env,
-  ["APP_ENV", "PORT", "SIFT_API_KEY", "WEBSITE_URL"],
+  ["APP_ENV", "PORT", "SIFT_API_KEY", "SIFT_API_URL", "WEBSITE_URL"],
   true,
 );
 
@@ -224,6 +224,7 @@ function createServer() {
             token,
             suggestedMatches,
             userSelectedMatch: null,
+            adminEmailSent: false,
           }),
         });
 
@@ -289,6 +290,39 @@ function createServer() {
       });
     },
   );
+
+  /* BEGIN routes to register updates to an incorrect-match-report */
+
+  fastify.post<{
+    Body: ProgramMatching.AddSuggestionToIncorrectMatchReportRequest;
+    Reply: { 200: { status: string } };
+  }>(
+    "/update-match-reported-incorrect",
+    {
+      schema: {
+        body: ProgramMatchSchemas.addSuggestionToIncorrectMatchReportRequest,
+      },
+    } satisfies RouteShorthandOptions,
+    updateIncorrectMatchReportRequestHandler,
+  );
+
+  // since we intend for admins to make this request by clicking a button
+  //   in an email, we need a GET handler
+  fastify.get<{
+    Querystring: ProgramMatching.AddSuggestionToIncorrectMatchReportRequest;
+    Reply: { 200: { status: string } };
+  }>(
+    "/update-match-reported-incorrect",
+    {
+      schema: {
+        querystring:
+          ProgramMatchSchemas.addSuggestionToIncorrectMatchReportRequest,
+      },
+    } satisfies RouteShorthandOptions,
+    updateIncorrectMatchReportRequestHandler,
+  );
+
+  /* END routes to register updates to an incorrect-match-report */
 
   // receive user messages
   fastify.post<{
@@ -395,4 +429,84 @@ async function cleanup(signal: "SIGINT" | "SIGTERM") {
   dbService.closeConnection();
   await Sentry.close();
   process.exit(0);
+}
+
+async function updateIncorrectMatchReportRequestHandler(
+  request: Fastify.FastifyRequest,
+  reply: Fastify.FastifyReply,
+) {
+  const requestData = (request.body ??
+    request.query) as ProgramMatching.AddSuggestionToIncorrectMatchReportRequest;
+  const { id, token: matchToken, suggestionId, authToken } = requestData;
+
+  let row = dbService.getProgramMatchRecord(id);
+  if (!(row && row.status === "reportedIncorrect"))
+    return reply.code(200).send({ status: "ok" });
+
+  const rowMeta = JSON.parse(row.meta!) as {
+    token: string;
+    suggestedMatches: IndexedImdbTitle[];
+  };
+  const { token, suggestedMatches } = rowMeta;
+  if (token !== matchToken) return reply.code(200).send({ status: "ok" });
+
+  const userSelectedMatch = suggestedMatches.find(
+    ({ id }) => id === suggestionId,
+  );
+  if (!userSelectedMatch) return reply.code(200).send({ status: "ok" });
+
+  // if admin made this request, the row should be updated differently
+  let isRequestByAdmin = false;
+  try {
+    if (authToken) {
+      isRequestByAdmin = authToken === env.SIFT_API_KEY;
+    } else {
+      await ensureAuthorized(request);
+      isRequestByAdmin = true;
+    }
+  } catch (e) {}
+  if (isRequestByAdmin) {
+    dbService.updateProgramMatchRecord(row.id, {
+      status: "matched",
+      imdbId: userSelectedMatch.imdbId,
+      meta: JSON.stringify({ bestMatch: userSelectedMatch }),
+    });
+    return reply.code(200).send({ status: "ok" });
+  }
+
+  row = dbService.updateProgramMatchRecord(row.id, {
+    meta: JSON.stringify({ ...rowMeta, userSelectedMatch }),
+  });
+
+  reply.code(200).send({ status: "ok" });
+
+  // send admin email
+  {
+    const rowMeta = JSON.parse(row.meta!) as {
+      token: string;
+      suggestedMatches: IndexedImdbTitle[];
+      userSelectedMatch: IndexedImdbTitle;
+    };
+    const suggestions = rowMeta.suggestedMatches.map((m) => ({
+      ...m,
+      notes: [
+        m.imdbId === row.imdbId ? "isPreviousMatch" : null,
+        m.id === rowMeta.userSelectedMatch.id ? "isUserSelectedMatch" : null,
+      ]
+        .filter((x) => x)
+        .join(", "),
+      pmUpdateLink: `${env.SIFT_API_URL}/update-match-reported-incorrect?authToken=${env.SIFT_API_KEY}&id=${row.id}&token=${rowMeta.token}&suggestionId=${m.id}`,
+    }));
+    await emailService.sendToDev({
+      subject: "Sift: update incorrect match",
+      body: emailService.precompiledTemplates.updateIncorrectMatchAdminEmail({
+        matchRecord: row,
+        suggestions,
+      }),
+    });
+
+    dbService.updateProgramMatchRecord(row.id, {
+      meta: JSON.stringify({ ...rowMeta, adminEmailSent: true }),
+    });
+  }
 }

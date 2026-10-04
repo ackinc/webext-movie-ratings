@@ -23,6 +23,9 @@ export namespace SiftApiProgramMatching {
     token?: string;
     suggestedMatches: IndexedImdbTitle[];
   };
+  export type AddSuggestionToIncorrectMatchReportRequest = Static<
+    typeof siftApiProgramMatchSchemas.addSuggestionToIncorrectMatchReportRequest
+  >;
 }
 
 export type UserMessage = Static<typeof userMessageSchema>;

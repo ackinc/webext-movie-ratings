@@ -1,0 +1,56 @@
+<h1>Sift</h1>
+
+<p>An incorrect match was reported for the following title:</p>
+
+<div>
+  {{#with matchRecord}}
+    <span>{{id}}</span>
+    <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
+    <span>{{title}}</span>
+    <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
+    <span>{{type}}</span>
+    <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
+    <span>{{year}}</span>
+    <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
+    <span>{{site}}</span>
+  {{/with}}
+</div>
+
+<p>This title was matched to imdbId
+  <b>{{matchRecord.imdbId}}</b>
+  by
+  <b>{{matchRecord.matchedBy}}</b></p>
+
+<p>The following alternatives are suggested:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Imdb ID</th>
+      <th>Title</th>
+      <th>Type</th>
+      <th>Year</th>
+      <th>Notes</th>
+      <th>IMDB link</th>
+      <th>Sift match update link</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {{#each suggestions}}
+      <tr>
+        <td><a
+            href="https://imdb.com/{{imdbId}}"
+            target="_blank"
+          >{{imdbId}}</a></td>
+        <td>{{title}}</td>
+        <td>{{type}}</td>
+        <td>{{year}}</td>
+        <td>{{notes}}</td>
+        <td><a href="{{pmUpdateLink}}" target="_blank">Select</a></td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<p>Please choose one of the above.</p>

@@ -1,7 +1,13 @@
 import "dotenv/config";
 
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import nodemailer from "nodemailer";
+import type { IndexedImdbTitle } from "siftcore";
 import { pick } from "siftutils";
+import Handlebars from "handlebars";
+import type { ProgramMatchRecord } from "./types.ts";
 
 const { DEV_EMAIL, RESEND_API_KEY } = pick(
   process.env,
@@ -19,6 +25,19 @@ const transporter = nodemailer.createTransport({
   },
 });
 const defaultFromAddress = "Sift <app@getsift.today>";
+
+const templatesDir = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "email-templates",
+);
+export const precompiledTemplates = {
+  updateIncorrectMatchAdminEmail: Handlebars.compile(
+    fs.readFileSync(
+      path.join(templatesDir, "UpdateIncorrectMatchAdminEmail.handlebars"),
+      { encoding: "utf-8" },
+    ),
+  ),
+};
 
 interface Email {
   from?: string;
@@ -41,5 +60,20 @@ export async function sendToDev({ from, subject, body }: Omit<Email, "to">) {
     to: DEV_EMAIL!,
     subject,
     html: body,
+  });
+}
+
+export async function sendUpdateIncorrectMatchAdminEmail(
+  matchRecord: ProgramMatchRecord,
+  suggestions: (IndexedImdbTitle & { notes: string; pmUpdateLink: string })[],
+) {
+  await transporter.sendMail({
+    from: defaultFromAddress,
+    to: DEV_EMAIL!,
+    subject: "Sift: update incorrect match",
+    html: precompiledTemplates.updateIncorrectMatchAdminEmail({
+      matchRecord,
+      suggestions,
+    }),
   });
 }
