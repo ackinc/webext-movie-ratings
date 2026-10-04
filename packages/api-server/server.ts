@@ -382,15 +382,9 @@ function createServer() {
   return fastify;
 }
 
-async function ensureAuthorized(
-  request: Fastify.FastifyRequest,
-  reply: Fastify.FastifyReply,
-) {
-  if (
-    request.headers.authorization?.replace(/^Bearer /, "") !== env.SIFT_API_KEY!
-  ) {
-    reply.code(403).send({ status: "UNAUTHORIZED" });
-  }
+async function ensureAuthorized(request: Fastify.FastifyRequest) {
+  const authToken = request.headers.authorization?.replace(/^Bearer /, "");
+  if (authToken !== env.SIFT_API_KEY!) throw new HTTPError(403, "Unauthorized");
 }
 
 async function cleanup(signal: "SIGINT" | "SIGTERM") {
