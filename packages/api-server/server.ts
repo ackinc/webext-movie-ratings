@@ -66,9 +66,11 @@ function createServer() {
     } else {
       this.log.error(error);
     }
-    reply
-      .status(statusCode)
-      .send({ error: statusCode < 500 ? error.message : "Server error" });
+    if (!reply.sent) {
+      reply
+        .status(statusCode)
+        .send({ error: statusCode < 500 ? error.message : "Server error" });
+    }
     if (statusCode >= 500) {
       Sentry.captureException(error);
     }
