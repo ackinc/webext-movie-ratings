@@ -247,7 +247,12 @@ function createServer() {
         const suggestedMatches = await querySearchEngine(query);
         dbService.updateProgramMatchRecord(existingRow.id, {
           status: "reportedIncorrect",
-          meta: JSON.stringify({ token, suggestedMatches }),
+          meta: JSON.stringify({
+            token,
+            suggestedMatches,
+            userSelectedMatch: null,
+            adminEmailSent: false,
+          }),
         });
 
         return reply
