@@ -4,10 +4,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import nodemailer from "nodemailer";
-import type { IndexedImdbTitle } from "siftcore";
 import { pick } from "siftutils";
 import Handlebars from "handlebars";
-import type { ProgramMatchRecord } from "./types.ts";
 
 const { DEV_EMAIL, RESEND_API_KEY } = pick(
   process.env,
@@ -60,20 +58,5 @@ export async function sendToDev({ from, subject, body }: Omit<Email, "to">) {
     to: DEV_EMAIL!,
     subject,
     html: body,
-  });
-}
-
-export async function sendUpdateIncorrectMatchAdminEmail(
-  matchRecord: ProgramMatchRecord,
-  suggestions: (IndexedImdbTitle & { notes: string; pmUpdateLink: string })[],
-) {
-  await transporter.sendMail({
-    from: defaultFromAddress,
-    to: DEV_EMAIL!,
-    subject: "Sift: update incorrect match",
-    html: precompiledTemplates.updateIncorrectMatchAdminEmail({
-      matchRecord,
-      suggestions,
-    }),
   });
 }
