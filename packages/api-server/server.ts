@@ -22,7 +22,7 @@ import {
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
 import { HTTPError } from "./customErrors.ts";
-import * as dbService from "./dbService.ts";
+import dbService from "./dbService.ts";
 import * as emailService from "./emailService.ts";
 import logger from "./logger.ts";
 import { getIndexLastUpdatedTime, querySearchEngine } from "./searchEngine.ts";
@@ -426,7 +426,7 @@ async function ensureAuthorized(request: Fastify.FastifyRequest) {
 async function cleanup(signal: "SIGINT" | "SIGTERM") {
   logger.info(`Received ${signal}. Exiting ...`);
   await server.close();
-  dbService.closeConnection();
+  dbService.close();
   await Sentry.close();
   process.exit(0);
 }

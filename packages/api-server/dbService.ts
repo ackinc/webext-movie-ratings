@@ -1,7 +1,4 @@
-import Database, {
-  type Database as TDatabase,
-  type Transaction,
-} from "better-sqlite3";
+import Database, { type Database as TDatabase } from "better-sqlite3";
 import { formatISO9075 } from "date-fns";
 import { UTCDate } from "@date-fns/utc";
 import { type UserMessage, type Notification } from "siftcore";
@@ -21,19 +18,27 @@ const env = pick(process.env, ["DB_PATH"], true);
 const db: TDatabase = new Database(env.DB_PATH);
 db.pragma("journal_mode = WAL");
 
-// TODO: make the default export of this module a proxy for db
-//   so we don't need to have thin functions like "transaction"
-//   and "close" below
+const exported = {
+  getProgramMatchRecord,
+  createProgramMatchRecord,
+  updateProgramMatchRecord,
+  upsertProgramMatchRecord,
+  createMessageRecord,
+  createNotification,
+  getNotificationsSince,
+} as const;
+type Exported = keyof typeof exported;
 
-export function transaction(fn: () => void): Transaction {
-  return db.transaction(fn);
-}
+const proxy = new Proxy(db, {
+  get(target, prop, receiver) {
+    return prop in exported
+      ? (exported[prop as Exported] as (typeof exported)[Exported])
+      : Reflect.get(target, prop, receiver);
+  },
+}) as TDatabase & typeof exported;
+export default proxy;
 
-export function closeConnection() {
-  db.close();
-}
-
-export function getProgramMatchRecord(
+function getProgramMatchRecord(
   idOrQuery: number | bigint | ProgramMatchQuery,
 ): ProgramMatchRecord | null {
   let rowId: number | bigint | undefined;
@@ -69,7 +74,7 @@ export function getProgramMatchRecord(
   };
 }
 
-export function createProgramMatchRecord(
+function createProgramMatchRecord(
   data: Omit<ProgramMatchRecord, keyof DbRecord> & { meta?: string },
   onConflictClause = "",
 ) {
@@ -96,7 +101,7 @@ export function createProgramMatchRecord(
   )!;
 }
 
-export function updateProgramMatchRecord(
+function updateProgramMatchRecord(
   rowId: number | bigint,
   data: Partial<
     Pick<ProgramMatchRecord, "status" | "imdbId" | "matchedBy" | "meta">
@@ -112,7 +117,7 @@ export function updateProgramMatchRecord(
   return getRecordById<ProgramMatchRecord>(rowId, "titles");
 }
 
-export function upsertProgramMatchRecord(
+function upsertProgramMatchRecord(
   data: Omit<ProgramMatchRecord, keyof DbRecord> & { meta?: string },
 ) {
   let row: ProgramMatchRecord | null = null;
@@ -132,7 +137,7 @@ export function upsertProgramMatchRecord(
   return row!;
 }
 
-export function createMessageRecord(userMessage: UserMessage) {
+function createMessageRecord(userMessage: UserMessage) {
   const { email, category, message } = userMessage;
   const { lastInsertRowid } = db
     .prepare("INSERT INTO messages (email, category, message) VALUES (?, ?, ?)")
@@ -141,9 +146,7 @@ export function createMessageRecord(userMessage: UserMessage) {
   return getRecordById<UserMessageRecord>(lastInsertRowid, "messages");
 }
 
-export function createNotification(
-  notification: Notification,
-): NotificationRecord {
+function createNotification(notification: Notification): NotificationRecord {
   const { notificationId, targetPage, content, timestamp } = notification;
   const { lastInsertRowid } = db
     .prepare(
@@ -159,7 +162,7 @@ export function createNotification(
   return getRecordById<NotificationRecord>(lastInsertRowid, "notifications");
 }
 
-export function getNotificationsSince(fromMs: number): NotificationRecord[] {
+function getNotificationsSince(fromMs: number): NotificationRecord[] {
   const fromTimestamp = formatISO9075(new UTCDate(fromMs));
   const rows = db
     .prepare<
