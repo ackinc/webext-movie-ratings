@@ -1,53 +1,90 @@
-<p>An incorrect match was reported for the following title:</p>
+<html>
+  <head>
+    <style>
+      table {
+        border: 1px solid #454545;
+      }
 
-<div>
-  {{#with matchRecord}}
-    <span>rowId {{id}}</span>
-    <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-    <span>{{title}}</span>
-    <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-    <span>{{type}}</span>
-    <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-    <span>{{year}}</span>
-    <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
-    <span>{{site}}</span>
-  {{/with}}
-</div>
+      thead {
+        background-color: #cacaca;
+      }
 
-<p>This title was matched to imdbId
-  <b>{{matchRecord.imdbId}}</b>
-  by
-  <b>{{matchRecord.matchedBy}}</b></p>
+      th {
+        font-weight: bold;
+        text-align: left;
+      }
 
-<p>The following alternatives are suggested:</p>
+      tbody tr:nth-row(even) {
+        background-color: #eaeaea;
+      }
 
-<table>
-  <thead>
-    <tr>
-      <th>Imdb ID</th>
-      <th>Title</th>
-      <th>Type</th>
-      <th>Year</th>
-      <th>Notes</th>
-      <th>Sift match update link</th>
-    </tr>
-  </thead>
+      td {
+        padding: 4px 8px;
+      }
 
-  <tbody>
-    {{#each suggestions}}
-      <tr>
-        <td><a
-            href="https://imdb.com/{{imdbId}}"
-            target="_blank"
-          >{{imdbId}}</a></td>
-        <td>{{title}}</td>
-        <td>{{type}}</td>
-        <td>{{year}}</td>
-        <td>{{notes}}</td>
-        <td><a href="{{pmUpdateLink}}" target="_blank">Select</a></td>
-      </tr>
-    {{/each}}
-  </tbody>
-</table>
+      td:last-child a {
+        padding: 4px 8px;
+        background-color: azure;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
 
-<p>Please choose one of the above.</p>
+  <body>
+    <p>An incorrect match was reported for the following title:</p>
+
+    <div>
+      {{#with matchRecord}}
+        <span>rowId {{id}}</span>
+        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
+        <span>{{title}}</span>
+        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
+        <span>{{type}}</span>
+        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
+        <span>{{year}}</span>
+        <span>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
+        <span>{{site}}</span>
+      {{/with}}
+    </div>
+
+    <p>Search link for this title on
+      {{matchRecord.site}}:
+      <a href="{{searchUrl}}" target="_blank">link</a></p>
+
+    <p>This title was matched to imdbId
+      <b>{{matchRecord.imdbId}}</b>
+      by
+      <b>{{matchRecord.matchedBy}}</b></p>
+
+    <p>The following alternatives are suggested:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Imdb ID</th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Year</th>
+          <th>Notes</th>
+          <th>Sift match update link</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {{#each suggestions}}
+          <tr>
+            <td><a
+                href="https://imdb.com/title/{{imdbId}}"
+                target="_blank"
+              >{{imdbId}}</a></td>
+            <td>{{title}}</td>
+            <td>{{type}}</td>
+            <td>{{year}}</td>
+            <td>{{notes}}</td>
+            <td><a href="{{pmUpdateLink}}" target="_blank">Select</a></td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </body>
+</html>
