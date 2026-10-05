@@ -5,9 +5,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.ts",
-    "dev": "tsx watch --clear-screen=false server.ts",
+    "dev": "tsx watch --include email-templates/* --clear-screen=false server.ts",
     "start:crons": "node crons.ts",
-    "dev:crons": "tsx watch --clear-screen=false crons.ts",
+    "dev:crons": "tsx watch --include email-templates/* --clear-screen=false crons.ts",
     "migrations": "./scripts/runMigrations.ts"
   },
   "keywords": [],

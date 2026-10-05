@@ -29,6 +29,16 @@ cron.schedule(
     }).unref(), // we don't want the server to wait until this process is done before closing
 );
 
-// TODO: every few hours, check for incorrect-report-matches that haven't
-//   been updated with a suggestedMatch by the reporting user, and send
-//   admin the relevant emails
+cron.schedule(
+  "11 * * * *",
+  () =>
+    spawn(
+      "node",
+      [path.join(__dirname, "./scripts/sendIncorrectMatchEmails.ts")],
+      {
+        // we don't want this process to be interrupted if the api-server is restarting
+        detached: true,
+        stdio: "inherit",
+      },
+    ).unref(), // we don't want the server to wait until this process is done before closing
+);
