@@ -1,0 +1,29 @@
+info:
+  name: "[admin] Update report of incorrect match"
+  type: http
+  seq: 6
+
+http:
+  method: GET
+  url: "{{API_URL}}/messages?id=&token=&suggestionId=&authToken="
+  params:
+    - name: id
+      value: ""
+      type: query
+    - name: token
+      value: ""
+      type: query
+    - name: suggestionId
+      value: ""
+      type: query
+    - name: authToken
+      value: ""
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

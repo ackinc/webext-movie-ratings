@@ -1,0 +1,24 @@
+info:
+  name: "[user] Update report of incorrect match"
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{API_URL}}/update-match-reported-incorrect"
+  body:
+    type: json
+    data: |-
+      {
+        "id": 36,
+        "token": "9dba898f-ef53-4ad9-93c8-6c27a9530848",
+        "suggestionId": "TG9rYWggQ2hhcHRlciAxOiBDaGFuZHJhOjptb3ZpZTo6MjAyNQ__"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
