@@ -167,11 +167,11 @@ export default class ProgramNode extends AbstractProgramNode {
 
     if (programNode.matches("div.previewModal--container.mini-modal")) {
       const videoMetadataNode = programNode.querySelector(
-        'div.videoMetadata--container[data-uia="videoMetadata--container"]',
+        "div.previewModal--metadatAndControls-info",
       );
       // in a few rare cases, netflix fails to add the video metadata node
       //   to the DOM
-      videoMetadataNode?.firstElementChild?.appendChild(imdbNode);
+      videoMetadataNode?.insertAdjacentElement("afterend", imdbNode);
 
       return;
     }
