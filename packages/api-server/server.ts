@@ -236,12 +236,14 @@ function createServer() {
       }
 
       if (existingRow.status === "reportedIncorrect") {
-        const meta = JSON.parse(existingRow.meta!) as {
+        const { token, suggestedMatches } = JSON.parse(existingRow.meta!) as {
           token: string;
           suggestedMatches: IndexedImdbTitle[];
         };
 
-        return reply.code(200).send({ id: existingRow.id, ...meta });
+        return reply
+          .code(200)
+          .send({ id: existingRow.id, token, suggestedMatches });
       }
 
       /* status === 'matched' */
