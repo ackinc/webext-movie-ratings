@@ -12,8 +12,8 @@ import { fileURLToPath } from "node:url";
 import { pick } from "siftutils";
 import { mapLimit } from "async";
 import Database, { type Database as TDatabase } from "better-sqlite3";
-import { default as baseLogger } from "../logger.ts";
-import { querySearchEngine } from "../searchEngine.ts";
+import { default as baseLogger } from "../services/logger.ts";
+import { querySearchEngine } from "../services/searchEngineService.ts";
 import type { RawProgramMatchRecord } from "../types.ts";
 
 // if this is too high and the search engine cannot keep up, queries will start

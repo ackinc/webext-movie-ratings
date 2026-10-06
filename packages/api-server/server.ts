@@ -22,10 +22,13 @@ import {
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
 import { HTTPError } from "./customErrors.ts";
-import dbService from "./dbService.ts";
-import * as emailService from "./emailService.ts";
-import logger from "./logger.ts";
-import { getIndexLastUpdatedTime, querySearchEngine } from "./searchEngine.ts";
+import dbService from "./services/dbService.ts";
+import * as emailService from "./services/emailService.ts";
+import logger from "./services/logger.ts";
+import {
+  getIndexLastUpdatedTime,
+  querySearchEngine,
+} from "./services/searchEngineService.ts";
 import { sendAdminEmailToUpdateIncorrectMatch } from "./helpers.ts";
 import type { ProgramMatchQuery } from "./types.ts";
 

@@ -21,7 +21,7 @@ import {
   processFile,
   isMovieOrSeries,
 } from "./common.ts";
-import baseLogger from "../logger.ts";
+import baseLogger from "../services/logger.ts";
 
 type Document = IndexedImdbTitle;
 

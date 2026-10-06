@@ -2,10 +2,10 @@ import "dotenv/config";
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { fileURLToPath } from "node:url";
 import nodemailer from "nodemailer";
 import { pick } from "siftutils";
 import Handlebars from "handlebars";
+import { emailTemplatesDir } from "../constants.ts";
 
 const { DEV_EMAIL, RESEND_API_KEY } = pick(
   process.env,
@@ -24,14 +24,10 @@ const transporter = nodemailer.createTransport({
 });
 const defaultFromAddress = "Sift <app@getsift.today>";
 
-const templatesDir = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "email-templates",
-);
 export const precompiledTemplates = {
   updateIncorrectMatchAdminEmail: Handlebars.compile(
     fs.readFileSync(
-      path.join(templatesDir, "UpdateIncorrectMatchAdminEmail.handlebars"),
+      path.join(emailTemplatesDir, "UpdateIncorrectMatchAdminEmail.handlebars"),
       { encoding: "utf-8" },
     ),
   ),

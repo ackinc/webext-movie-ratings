@@ -9,7 +9,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Meilisearch } from "meilisearch";
 import { pick } from "siftutils";
-import baseLogger from "../logger.ts";
+import baseLogger from "../services/logger.ts";
 
 const { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = pick(
   process.env,

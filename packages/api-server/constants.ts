@@ -1,3 +1,6 @@
+import * as path from "node:path";
+import { fileURLToPath } from "node:url";
+
 export const extensionIds = {
   chrome: [
     "pfnhkljamlclkackkndllofcfhihacna", // CWS
@@ -11,3 +14,8 @@ export const imdbDataFileUrls = [
   "https://datasets.imdbws.com/title.basics.tsv.gz",
   "https://datasets.imdbws.com/title.akas.tsv.gz",
 ];
+
+export const emailTemplatesDir = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "./email-templates",
+);

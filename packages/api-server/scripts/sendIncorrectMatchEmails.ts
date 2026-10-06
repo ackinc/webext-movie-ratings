@@ -2,10 +2,10 @@
 
 import "dotenv/config";
 import { addHours, format } from "date-fns";
-import dbService from "../dbService.ts";
+import dbService from "../services/dbService.ts";
 import type { RawProgramMatchRecord } from "../types.ts";
 import { sendAdminEmailToUpdateIncorrectMatch } from "../helpers.ts";
-import logger from "../logger.ts";
+import logger from "../services/logger.ts";
 
 const cutoffTime = format(addHours(new Date(), -1), "yyyy-MM-dd HH:mm:ss");
 logger.debug(`cutoffTime: ${cutoffTime}`);

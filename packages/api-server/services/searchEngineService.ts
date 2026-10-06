@@ -1,7 +1,7 @@
 import { parseISO, differenceInMinutes } from "date-fns";
 import { Meilisearch } from "meilisearch";
 import type { IndexedImdbTitle } from "siftcore";
-import type { ProgramMatchQuery } from "./types.ts";
+import type { ProgramMatchQuery } from "../types.ts";
 
 const { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = process.env;
 

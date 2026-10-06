@@ -1,4 +1,4 @@
-import * as emailService from "./emailService.ts";
+import * as emailService from "./services/emailService.ts";
 import { supportedSites, type Sitename, type IndexedImdbTitle } from "siftcore";
 import { pick } from "siftutils";
 import type { ProgramMatchRecord, RawProgramMatchRecord } from "./types.ts";

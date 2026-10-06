@@ -11,7 +11,7 @@ import type {
   NotificationRecord,
   ProgramMatchQuery,
   RawProgramMatchQuery,
-} from "./types.ts";
+} from "../types.ts";
 
 const env = pick(process.env, ["DB_PATH"], true);
 

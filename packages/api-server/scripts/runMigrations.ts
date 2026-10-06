@@ -6,7 +6,7 @@ import { pick } from "siftutils";
 import * as path from "node:path";
 import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import baseLogger from "../logger.ts";
+import baseLogger from "../services/logger.ts";
 import "../instrument.ts";
 
 const __filename = fileURLToPath(import.meta.url);
