@@ -1,12 +1,15 @@
 import AbstractProgramNode from "../AbstractProgramNode";
 import { ErrorMessage, extractProgramTitle } from "../../common";
-import type { ProgramData } from "../../common/types";
+import type { ProgramContainer, ProgramData } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override extractProgramData(programNode: HTMLElement): ProgramData {
+  static override extractProgramData(
+    programNode: HTMLElement,
+    pContainer: ProgramContainer,
+  ): ProgramData {
     if (programNode.matches('div[data-t="carousel-card-wrapper"]')) {
       const title = programNode.querySelector("h3")!.textContent;
-      return { title };
+      return { ...super.extractProgramData(programNode, pContainer), title };
     }
 
     if (
@@ -19,12 +22,16 @@ export default class ProgramNode extends AbstractProgramNode {
       const type = hrefNode.getAttribute("href")?.startsWith("/series")
         ? "series"
         : "movie";
-      return { title, type };
+      return {
+        ...super.extractProgramData(programNode, pContainer),
+        title,
+        type,
+      };
     }
 
     if (programNode.matches('div[data-t^="episode-card"]')) {
       const title = programNode.querySelector("small")!.textContent;
-      return { title };
+      return { ...super.extractProgramData(programNode, pContainer), title };
     }
 
     if (
@@ -36,12 +43,12 @@ export default class ProgramNode extends AbstractProgramNode {
         'a[class^="playable-card-hover"][data-t="series-title"]',
       )!;
       const title = extractProgramTitle(hrefNode.textContent);
-      return { title };
+      return { ...super.extractProgramData(programNode, pContainer), title };
     }
 
     if (programNode.matches('div[data-t^="watch-list-card"]')) {
       const title = programNode.querySelector("h3")!.textContent;
-      return { title };
+      return { ...super.extractProgramData(programNode, pContainer), title };
     }
 
     if (
@@ -54,18 +61,18 @@ export default class ProgramNode extends AbstractProgramNode {
       const title = extractProgramTitle(
         programNode.querySelector("h4")!.textContent,
       );
-      return { title };
+      return { ...super.extractProgramData(programNode, pContainer), title };
     }
 
     if (programNode.matches('div[data-t="single-show-card"]')) {
       const title = programNode.querySelector("h2")!.textContent;
-      return { title };
+      return { ...super.extractProgramData(programNode, pContainer), title };
     }
 
     if (programNode.matches("div.browse-card")) {
       const title =
         programNode.querySelector('h3[data-t="title"]')!.textContent;
-      return { title };
+      return { ...super.extractProgramData(programNode, pContainer), title };
     }
 
     if (programNode.matches('div[data-t="series-card"]')) {
@@ -85,12 +92,15 @@ export default class ProgramNode extends AbstractProgramNode {
       const titleNode = programNode.querySelector(
         'h2[class*="horizontal-card-hover__title"] > a:first-child',
       )!;
-      return { title: titleNode.textContent };
+      return {
+        ...super.extractProgramData(programNode, pContainer),
+        title: titleNode.textContent,
+      };
     }
 
     if (programNode.matches('div[data-t="search-series-card"]')) {
       const title = programNode.querySelector("h2")!.textContent;
-      return { title };
+      return { ...super.extractProgramData(programNode, pContainer), title };
     }
 
     if (
@@ -100,19 +110,19 @@ export default class ProgramNode extends AbstractProgramNode {
     ) {
       const title =
         programNode.querySelector('h2[data-t="title"]')!.textContent;
-      return { title };
+      return { ...super.extractProgramData(programNode, pContainer), title };
     }
 
     if (programNode.matches('div[data-t="search-movie-card"]')) {
       const title = programNode.querySelector("h2")!.textContent;
-      return { title };
+      return { ...super.extractProgramData(programNode, pContainer), title };
     }
 
     if (programNode.matches('div[data-t="search-episode-card"]')) {
       const title = programNode.querySelector(
         'small[data-t="series-title"]',
       )!.textContent;
-      return { title };
+      return { ...super.extractProgramData(programNode, pContainer), title };
     }
 
     if (
@@ -123,7 +133,10 @@ export default class ProgramNode extends AbstractProgramNode {
       const titleNode = programNode.querySelector(
         'a[data-t="series-title"] > small',
       )!;
-      return { title: titleNode.textContent };
+      return {
+        ...super.extractProgramData(programNode, pContainer),
+        title: titleNode.textContent,
+      };
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramNode);

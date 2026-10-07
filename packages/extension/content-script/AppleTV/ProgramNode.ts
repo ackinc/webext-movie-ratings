@@ -1,9 +1,12 @@
 import AbstractProgramNode from "../AbstractProgramNode";
 import { ErrorMessage } from "../../common";
-import type { Program, ProgramData } from "../../common";
+import type { Program, ProgramContainer, ProgramData } from "../../common";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override extractProgramData(programNode: HTMLElement): ProgramData {
+  static override extractProgramData(
+    programNode: HTMLElement,
+    pContainer: ProgramContainer,
+  ): ProgramData {
     let title: string = "";
     let type: Program["type"] | undefined = location.pathname.includes(
       "/movie/",
@@ -60,7 +63,11 @@ export default class ProgramNode extends AbstractProgramNode {
       throw new Error(ErrorMessage.unrecognizedProgramNode);
     }
 
-    return { title, ...(type ? { type } : {}) };
+    return {
+      ...super.extractProgramData(programNode, pContainer),
+      title,
+      ...(type ? { type } : {}),
+    };
   }
 
   static override insertIMDBNode(
