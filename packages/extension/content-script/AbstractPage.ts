@@ -159,7 +159,7 @@ valid containers:\n\t${programContainers
 
   #createProgram = (arg: Omit<Program, keyof ProgramData>): Program => ({
     ...arg,
-    ...this.#ctor.ProgramNode.extractProgramData(arg.node),
+    ...this.#ctor.ProgramNode.extractProgramData(arg.node, arg.container),
   });
 
   checkIMDBDataAlreadyAdded(program: Program): boolean {
