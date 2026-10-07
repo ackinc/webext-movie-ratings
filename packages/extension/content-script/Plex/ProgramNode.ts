@@ -1,8 +1,11 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import type { ProgramData } from "../../common/types";
+import type { ProgramContainer, ProgramData } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override extractProgramData(programNode: HTMLElement): ProgramData {
+  static override extractProgramData(
+    programNode: HTMLElement,
+    pContainer: ProgramContainer,
+  ): ProgramData {
     let title: string = "";
     let type: ProgramData["type"] | undefined = undefined;
     let year: ProgramData["year"] | undefined = undefined;
@@ -77,6 +80,7 @@ export default class ProgramNode extends AbstractProgramNode {
     }
 
     return {
+      ...super.extractProgramData(programNode, pContainer),
       title,
       ...(type ? { type } : {}),
       ...(year ? { year } : {}),
