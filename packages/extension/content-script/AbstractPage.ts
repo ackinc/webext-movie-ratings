@@ -124,7 +124,7 @@ valid containers:\n\t${programContainers
       return `${pc.title} [sel: ${pc.selector}] [${programsInPc.length}]: ${
         programsInPc
           .slice(0, maxProgramTitles)
-          .map((p) => p.title)
+          .map((p) => `${p.title} ${p.type ?? "-"}${p.year ?? "-"}`)
           .join(", ") + (programsInPc.length > maxProgramTitles ? " ..." : "")
       }`;
     }

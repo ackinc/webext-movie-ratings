@@ -1,6 +1,19 @@
 import { CssClasses } from "../common";
 import type { ProgramContainer, ProgramData } from "../common/types";
 
+const movieTells = ["movie", "movies", "oscar", "oscars"].map(
+  (x) => new RegExp(`\\b${x}\\b`, "i"),
+);
+const seriesTells = [
+  "series",
+  "show",
+  "shows",
+  "episode",
+  "episodes",
+  "emmy",
+  "tv",
+].map((x) => new RegExp(`\\b${x}\\b`, "i"));
+
 export default class AbstractProgramNode {
   static isMovieOrSeries(_programNode: HTMLElement): boolean {
     return true;
@@ -15,13 +28,6 @@ export default class AbstractProgramNode {
     pContainer: ProgramContainer,
   ): ProgramData {
     const pieces = [location.pathname, pContainer.title];
-
-    const movieTells = ["movie", "oscar"].map(
-      (x) => new RegExp(`\b${x}\b`, "i"),
-    );
-    const seriesTells = ["series", "show", "episode", "tv"].map(
-      (x) => new RegExp(`\b${x}\b`, "i"),
-    );
 
     const type: ProgramData["type"] | null = movieTells.some((t) =>
       pieces.some((p) => t.test(p)),
