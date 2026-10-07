@@ -1,8 +1,7 @@
 import { type IDBPDatabase } from "idb";
 import { add } from "date-fns";
-import type { Sitename, Sitehost } from "siftcore";
+import type { Sitename, Sitehost, SiftApiProgramMatching } from "siftcore";
 import {
-  pick,
   omit,
   programToHash,
   hostToSitename,
@@ -30,7 +29,7 @@ export interface RatingsService {
     program: Omit<Program, "node" | "container">,
     imdbData: IMDBData,
     pageUrl: string,
-  ): Promise<void>;
+  ): Promise<SiftApiProgramMatching.IncorrectMatchReportResponse>;
   undoMarkRatingAsIncorrect(
     program: Omit<Program, "node" | "container">,
     imdbData: IMDBData,
@@ -223,16 +222,10 @@ async function markRatingAsIncorrect(
     reportedAt: +new Date(),
   });
 
-  // TODO: send after a delay, and make it cancelable, so the user has time to
-  //   undo a misclick
-  await siftApiService.sendUserFeedback(
-    JSON.stringify({
-      ...program,
-      ...pick(imdbData, ["imdbId", "imdbRating"]),
-      pageUrl,
-    }),
-    undefined,
-    "incorrect-rating-report",
+  return await siftApiService.reportIncorrectProgramMatch(
+    program,
+    imdbData.imdbId,
+    pageUrl,
   );
 }
 

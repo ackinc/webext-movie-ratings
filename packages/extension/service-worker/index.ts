@@ -197,7 +197,7 @@ function handleMessage(
 
       waitForRatingsService()
         .then((rs) => rs.markRatingAsIncorrect(program, imdbData, pageUrl))
-        .then(() => sendResponse({ data: {} }))
+        .then((data) => sendResponse({ data }))
         .catch(captureException);
 
       return true;

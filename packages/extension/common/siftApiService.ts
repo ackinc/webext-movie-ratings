@@ -16,6 +16,10 @@ const retryStrategy = {
 export const getMatchedImdbId = retry(getMatchedImdbId_, retryStrategy);
 export const sendUserFeedback = retry(sendUserFeedback_, retryStrategy);
 export const getNotifications = retry(getNotifications_, retryStrategy);
+export const reportIncorrectProgramMatch = retry(
+  reportIncorrectProgramMatch_,
+  retryStrategy,
+);
 
 async function getMatchedImdbId_(
   programData: ProgramData,
@@ -67,4 +71,27 @@ async function getNotifications_(
   if (!response.ok) throw new Error(ErrorMessage.siftApiServerError);
   const { notifications } = await response.json();
   return notifications;
+}
+
+async function reportIncorrectProgramMatch_(
+  program: ProgramData,
+  imdbId: string,
+  pageUrl: string,
+) {
+  const url = new URL(`${SIFT_API_URL}/incorrect-matches`);
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...pick(program, ["title", "type", "year"]),
+      imdbId,
+      pageUrl,
+    } satisfies SiftApiProgramMatching.IncorrectMatchReportRequest),
+  });
+  if (!response.ok) throw new Error(ErrorMessage.siftApiServerError);
+
+  const body: SiftApiProgramMatching.IncorrectMatchReportResponse =
+    await response.json();
+  return body;
 }
