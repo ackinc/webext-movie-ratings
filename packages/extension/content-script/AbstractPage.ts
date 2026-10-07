@@ -124,7 +124,7 @@ valid containers:\n\t${programContainers
       return `${pc.title} [sel: ${pc.selector}] [${programsInPc.length}]: ${
         programsInPc
           .slice(0, maxProgramTitles)
-          .map((p) => p.title)
+          .map((p) => `${p.title} ${p.type ?? "-"}${p.year ?? "-"}`)
           .join(", ") + (programsInPc.length > maxProgramTitles ? " ..." : "")
       }`;
     }
@@ -159,7 +159,7 @@ valid containers:\n\t${programContainers
 
   #createProgram = (arg: Omit<Program, keyof ProgramData>): Program => ({
     ...arg,
-    ...this.#ctor.ProgramNode.extractProgramData(arg.node),
+    ...this.#ctor.ProgramNode.extractProgramData(arg.node, arg.container),
   });
 
   checkIMDBDataAlreadyAdded(program: Program): boolean {

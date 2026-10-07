@@ -1,5 +1,9 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import type { Program, ProgramData } from "../../common/types";
+import type {
+  Program,
+  ProgramContainer,
+  ProgramData,
+} from "../../common/types";
 import { ErrorMessage } from "../../common";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -29,7 +33,10 @@ export default class ProgramNode extends AbstractProgramNode {
     throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 
-  static override extractProgramData(programNode: HTMLElement): ProgramData {
+  static override extractProgramData(
+    programNode: HTMLElement,
+    pContainer: ProgramContainer,
+  ): ProgramData {
     if (programNode.matches('div[data-testid="tray-card-default"]')) {
       const disambiguatingNode = programNode.querySelector(
         'div[data-testid="action"]',
@@ -49,7 +56,11 @@ export default class ProgramNode extends AbstractProgramNode {
         type = href.includes("/movies/") ? "movie" : "series";
       }
 
-      return { title, type };
+      return {
+        ...super.extractProgramData(programNode, pContainer),
+        title,
+        type,
+      };
     }
 
     if (programNode.matches('div[data-testid="tray-card-hover"]')) {
@@ -81,7 +92,12 @@ export default class ProgramNode extends AbstractProgramNode {
           ? +yearNode.textContent
           : undefined;
 
-      return { title, ...(type ? { type } : {}), ...(year ? { year } : {}) };
+      return {
+        ...super.extractProgramData(programNode, pContainer),
+        title,
+        ...(type ? { type } : {}),
+        ...(year ? { year } : {}),
+      };
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramNode);

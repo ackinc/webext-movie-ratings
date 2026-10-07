@@ -1,5 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import type { ProgramData } from "../../common/types";
+import type { ProgramContainer, ProgramData } from "../../common/types";
 import { ErrorMessage, extractProgramTitle } from "../../common";
 import { captureException } from "../../common/errorReporter";
 import { DataExtractionError } from "../../common/customErrors";
@@ -27,10 +27,16 @@ export default class ProgramNode extends AbstractProgramNode {
     throw new Error(ErrorMessage.unrecognizedProgramNode);
   }
 
-  static override extractProgramData(programNode: HTMLElement): ProgramData {
+  static override extractProgramData(
+    programNode: HTMLElement,
+    pContainer: ProgramContainer,
+  ): ProgramData {
     if (programNode.matches("ytd-grid-movie-renderer")) {
       const titleNode = programNode.querySelector("span#video-title")!;
-      return { title: extractProgramTitle(titleNode.textContent) };
+      return {
+        ...super.extractProgramData(programNode, pContainer),
+        title: extractProgramTitle(titleNode.textContent),
+      };
     }
 
     if (programNode.matches("yt-lockup-view-model")) {
@@ -57,7 +63,11 @@ export default class ProgramNode extends AbstractProgramNode {
         );
       }
 
-      return { title, ...(year ? { year } : {}) };
+      return {
+        ...super.extractProgramData(programNode, pContainer),
+        title,
+        ...(year ? { year } : {}),
+      };
     }
 
     if (programNode.matches("div#above-the-fold.ytd-watch-metadata")) {
@@ -79,7 +89,11 @@ export default class ProgramNode extends AbstractProgramNode {
           ? +yearNode.textContent
           : NaN;
 
-      return { title, ...(Number.isInteger(year) ? { year } : {}) };
+      return {
+        ...super.extractProgramData(programNode, pContainer),
+        title,
+        ...(Number.isInteger(year) ? { year } : {}),
+      };
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramNode);

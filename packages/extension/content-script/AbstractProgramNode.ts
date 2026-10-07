@@ -1,16 +1,46 @@
 import { CssClasses } from "../common";
-import type { ProgramData } from "../common/types";
+import type { ProgramContainer, ProgramData } from "../common/types";
+
+const movieTells = ["movie", "movies", "oscar", "oscars"].map(
+  (x) => new RegExp(`\\b${x}\\b`, "i"),
+);
+const seriesTells = [
+  "series",
+  "show",
+  "shows",
+  "episode",
+  "episodes",
+  "emmy",
+  "tv",
+].map((x) => new RegExp(`\\b${x}\\b`, "i"));
 
 export default class AbstractProgramNode {
   static isMovieOrSeries(_programNode: HTMLElement): boolean {
     return true;
   }
 
-  // ensure implementations throw ErrorMessage.unrecognizedProgramNode if
-  //   _programNode does not match any of the selectors returned by
+  // ensure overriding implementations throw
+  //   ErrorMessage.unrecognizedProgramNode if _programNode does
+  //   not match any of the selectors returned by
   //   page.getProgramNodeSelectors
-  static extractProgramData(_programNode: HTMLElement): ProgramData {
-    throw new Error("Not implemented");
+  static extractProgramData(
+    _programNode: HTMLElement,
+    pContainer: ProgramContainer,
+  ): ProgramData {
+    const pieces = [location.pathname, pContainer.title];
+
+    const type: ProgramData["type"] | null = movieTells.some((t) =>
+      pieces.some((p) => t.test(p)),
+    )
+      ? "movie"
+      : seriesTells.some((t) => pieces.some((p) => t.test(p)))
+        ? "series"
+        : null;
+
+    return {
+      title: "", // to be filled by overriding methods in subclasses
+      ...(type ? { type } : {}),
+    };
   }
 
   static insertIMDBNode(programNode: HTMLElement, imdbNode: HTMLElement) {

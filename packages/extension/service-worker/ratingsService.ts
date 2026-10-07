@@ -146,18 +146,29 @@ async function getIMDBData(
         imdbData = await omdbApiClient.fetchIMDBData(cached?.imdbId || program);
       }
 
-      if (siftProgramMatchingEnabled && !cached?.imdbId && !imdbData?.imdbId) {
-        // we didn't have the program's imdb id, and the omdb api wasn't
-        //   able to figure it out based on the program's details; let's see
-        //   if sift's program-matching can do it
-        const { imdbId: matchedImdbId } = await siftApiService
-          .getMatchedImdbId(program, pageUrl)
-          .catch(() => (imdbData = { imdbId: "", imdbRating: "N/M" }));
+      if (siftProgramMatchingEnabled && !(cached?.imdbId || imdbData?.imdbId)) {
+        // we didn't have the program's imdb id, and, if we didn't skip the
+        //   optimistic omdb api request above, the omdb api wasn't able to
+        //   figure it out based on the program's details; let's see if sift's
+        //   program-matching can do it
 
-        if (matchedImdbId) {
+        let matchStatus: SiftApiProgramMatching.Response["status"] | "error";
+        let matchedImdbId: string | undefined = undefined;
+        try {
+          ({ status: matchStatus, imdbId: matchedImdbId } =
+            await siftApiService.getMatchedImdbId(program, pageUrl));
+        } catch {
+          matchStatus = "error";
+        }
+
+        if (matchStatus === "matched") {
           // try to get the imdb data from omdb by querying with the
           //   imdb id we just matched this program to
-          imdbData = await omdbApiClient.fetchIMDBData(matchedImdbId);
+          imdbData = await omdbApiClient.fetchIMDBData(matchedImdbId!);
+        } else if (matchStatus === "abandoned") {
+          imdbData = { imdbId: "", imdbRating: "N/F" };
+        } else /* matchStatus === 'error' */ {
+          imdbData = { imdbId: "", imdbRating: "N/M" };
         }
       }
     } catch (e) {

@@ -1,9 +1,12 @@
 import AbstractProgramNode from "../AbstractProgramNode";
 import { ErrorMessage, extractProgramTitle } from "../../common";
-import type { ProgramData } from "../../common/types";
+import type { ProgramContainer, ProgramData } from "../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
-  static override extractProgramData(programNode: HTMLElement): ProgramData {
+  static override extractProgramData(
+    programNode: HTMLElement,
+    pContainer: ProgramContainer,
+  ): ProgramData {
     let title: string = "";
     let type: "movie" | "series" | null = null;
     let year: number | null = null;
@@ -33,6 +36,7 @@ export default class ProgramNode extends AbstractProgramNode {
     }
 
     return {
+      ...super.extractProgramData(programNode, pContainer),
       title: extractProgramTitle(title),
       ...(type ? { type } : {}),
       ...(year && Number.isInteger(year) ? { year } : {}),
