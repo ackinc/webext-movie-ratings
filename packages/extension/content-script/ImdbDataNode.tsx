@@ -19,11 +19,10 @@ interface ImdbDataNodeProps {
 
 export default function ImdbDataNode({
   program,
-  imdbData: data,
+  imdbData: initialImdbData,
 }: ImdbDataNodeProps) {
-  const [wasReportedIncorrect, setWasReportedIncorrect] = useState(
-    Boolean(data.wasReportedIncorrect),
-  );
+  const [imdbData, setImdbData] = useState<IMDBData>(initialImdbData);
+  const { wasReportedIncorrect } = imdbData;
 
   return (
     <div
@@ -31,28 +30,42 @@ export default function ImdbDataNode({
       // acts as a hook for page- and location-specific styling
       // of these nodes
       data-program-selector={program.selector}
+      // used when applying rating filters and when checking for
+      //   expiry of displayed rating data
+      data-imdb-id={imdbData.imdbId}
+      data-imdb-rating={String(imdbData.imdbRating)}
+      {...("expiry" in imdbData
+        ? { "data-expiry": String(imdbData.expiry) }
+        : {})}
+      {...("wasReportedIncorrect" in imdbData
+        ? {
+            "data-was-reported-incorrect": String(
+              imdbData.wasReportedIncorrect,
+            ),
+          }
+        : {})}
     >
       <div
         className="headline"
         style={{
           visibility:
             APP_ENV === "production" &&
-            typeof data.imdbRating === "string" &&
-            ["N/F", "N/M"].includes(data.imdbRating)
+            typeof imdbData.imdbRating === "string" &&
+            ["N/F", "N/M"].includes(imdbData.imdbRating)
               ? "hidden"
               : "visible",
         }}
       >
         <a
           className={`rating-page-link ${wasReportedIncorrect ? "rating-reported-incorrect" : ""}`}
-          href={getIMDBLink(data.imdbId)}
+          href={getIMDBLink(imdbData.imdbId)}
           target="_blank"
           onClick={(e) => e.stopPropagation()}
         >
           IMDb{" "}
-          {typeof data.imdbRating === "number"
-            ? data.imdbRating.toFixed(1)
-            : data.imdbRating}
+          {typeof imdbData.imdbRating === "number"
+            ? imdbData.imdbRating.toFixed(1)
+            : imdbData.imdbRating}
           <ExternalLinkIcon />
         </a>
         <button
@@ -75,10 +88,30 @@ export default function ImdbDataNode({
         : MessageType.reportIncorrectProgramMatch,
       data: {
         program: pick(program, ["title", "type", "year", "selector"]),
-        imdbData: data,
+        imdbData,
         pageUrl: location.href,
       },
     } satisfies Message);
     setWasReportedIncorrect((x) => !x);
   }
+}
+
+export function getImdbDataFromNode(node: HTMLElement): IMDBData {
+  if (!node.classList.contains(CssClasses.imdbDataNode)) {
+    throw new Error("node is not an IMDB data node");
+  }
+
+  const { dataset } = node.shadowRoot!.querySelector<HTMLDivElement>(
+    `.${CssClasses.imdbDataNodeContent}`,
+  )!;
+  return {
+    imdbId: dataset["imdbId"]!,
+    imdbRating:
+      +dataset["imdbRating"]! ||
+      (dataset["imdbRating"] as Exclude<IMDBData["imdbRating"], number>),
+    ...("expiry" in dataset ? { expiry: +dataset["expiry"]! } : {}),
+    ...("wasReportedIncorrect" in dataset
+      ? { wasReportedIncorrect: dataset["wasReportedIncorrect"] === "true" }
+      : {}),
+  };
 }

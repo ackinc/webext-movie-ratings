@@ -38,6 +38,7 @@ import {
   updateFilteredOutProgramNodeStyles,
 } from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
+import { getImdbDataFromNode } from "./ImdbDataNode";
 
 let page: AbstractPage;
 let programFilterSettings: ProgramFilterSettings;
@@ -269,7 +270,7 @@ function fadeIfFilteredOut(p: Program): Program {
   ).ProgramNode.getIMDBNode(p.node);
   if (!imdbNode) return p;
 
-  const rating = parseFloat(imdbNode.dataset!["imdbRating"]!);
+  const rating = +getImdbDataFromNode(imdbNode).imdbRating;
   if (rating < settings.minRating || rating > settings.maxRating) {
     p.node.classList.add(CssClasses.filteredOutProgramNode);
   } else if (settings.excludeUnratedPrograms && Number.isNaN(rating)) {
@@ -290,7 +291,10 @@ function collectWebpageRatingStats(programs: Program[]): WebpageStats {
 
   const ctor = page.constructor as typeof AbstractPage;
   programs.forEach(({ node }) => {
-    const rating = ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
+    const imdbNode = ctor.ProgramNode.getIMDBNode(node);
+    const rating = imdbNode
+      ? getImdbDataFromNode(imdbNode).imdbRating
+      : undefined;
     if (rating === "N/A") nProgramsRatedNA++;
     if (rating === "N/F") nProgramsRatedNF++;
     if (rating === "N/M") nProgramsRatedNM++;

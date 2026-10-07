@@ -31,7 +31,7 @@ import {
 import { DataExtractionError, SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
 import { addSidecar, removeSidecar } from "./sidecar";
-import ImdbDataNode from "./ImdbDataNode";
+import ImdbDataNode, { getImdbDataFromNode } from "./ImdbDataNode";
 import { limitConcurrency } from "rate-limit-utils";
 import imdbNodeStyles from "./imdbDataNode.styles.css";
 
@@ -164,14 +164,10 @@ valid containers:\n\t${programContainers
 
   checkIMDBDataAlreadyAdded(program: Program): boolean {
     const imdbNode = this.#ctor.ProgramNode.getIMDBNode(program.node);
+    if (!imdbNode) return false;
 
-    return Boolean(
-      imdbNode &&
-      !(
-        "expiry" in imdbNode.dataset &&
-        +imdbNode.dataset["expiry"]! <= +new Date()
-      ),
-    );
+    const imdbData = getImdbDataFromNode(imdbNode);
+    return Boolean(!("expiry" in imdbData && imdbData.expiry <= +new Date()));
   }
 
   addIMDBData(program: Program, data: IMDBData) {
@@ -279,12 +275,7 @@ valid containers:\n\t${programContainers
     imdbData: IMDBData,
   ): HTMLElement {
     const node = document.createElement("div");
-
     node.classList.add(CssClasses.imdbDataNode);
-
-    node.dataset["imdbId"] = imdbData.imdbId;
-    node.dataset["imdbRating"] = String(imdbData.imdbRating);
-    if ("expiry" in imdbData) node.dataset["expiry"] = String(imdbData.expiry);
 
     const shadowRoot = node.attachShadow({ mode: "open" });
     shadowRoot.adoptedStyleSheets = [
