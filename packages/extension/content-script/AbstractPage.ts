@@ -178,6 +178,23 @@ valid containers:\n\t${programContainers
     this.#ctor.ProgramNode.insertIMDBNode(program.node, ratingNode);
   }
 
+  protected createIMDBDataNode(
+    program: Program,
+    imdbData: IMDBData,
+  ): HTMLElement {
+    const node = document.createElement("div");
+    node.classList.add(CssClasses.imdbDataNode);
+
+    const shadowRoot = node.attachShadow({ mode: "open" });
+    shadowRoot.adoptedStyleSheets = [
+      this.stylesheets.imdbNode,
+      this.stylesheets.page,
+    ];
+    render(h(ImdbDataNode, { program, imdbData }), shadowRoot);
+
+    return node;
+  }
+
   protected async injectStyles() {
     const filterSettings =
       (await getSetting("programFiltersSettings")) ??
@@ -269,23 +286,6 @@ valid containers:\n\t${programContainers
       )
       .flat();
   };
-
-  protected createIMDBDataNode(
-    program: Program,
-    imdbData: IMDBData,
-  ): HTMLElement {
-    const node = document.createElement("div");
-    node.classList.add(CssClasses.imdbDataNode);
-
-    const shadowRoot = node.attachShadow({ mode: "open" });
-    shadowRoot.adoptedStyleSheets = [
-      this.stylesheets.imdbNode,
-      this.stylesheets.page,
-    ];
-    render(h(ImdbDataNode, { program, imdbData }), shadowRoot);
-
-    return node;
-  }
 
   /* methods dealing with outdated-selector-detection */
 
