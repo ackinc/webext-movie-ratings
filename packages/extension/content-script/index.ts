@@ -10,35 +10,35 @@ import {
 } from "../common";
 import { SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
-import type AbstractPage from "./AbstractPage";
+import type AbstractPage from "./pages/AbstractPage";
 import type {
   Message,
   Program,
   ProgramFilterSettings,
   WebpageStats,
 } from "../common/types";
-import DisneyPlusPage from "./DisneyPlus/Page";
-import HBOMaxPage from "./HBOMax/Page";
-import HotstarPage from "./Hotstar/Page";
-import HuluPage from "./Hulu/Page";
-import PeacockTVPage from "./PeacockTV/Page";
-import SonyLivPage from "./SonyLiv/Page";
-import NetflixPage from "./Netflix/Page";
-import ParamountPlusPage from "./ParamountPlus/Page";
-import PlexPage from "./Plex/Page";
-import PrimeVideoPage from "./PrimeVideo/Page";
-import AppleTVPage from "./AppleTV/Page";
-import MXPlayerPage from "./MXPlayer/Page";
-import CrunchyrollPage from "./Crunchyroll/Page";
-import YoutubeMoviesPage from "./YoutubeMovies/Page";
-import Zee5Page from "./Zee5/Page";
+import DisneyPlusPage from "./pages/DisneyPlus/Page";
+import HBOMaxPage from "./pages/HBOMax/Page";
+import HotstarPage from "./pages/Hotstar/Page";
+import HuluPage from "./pages/Hulu/Page";
+import PeacockTVPage from "./pages/PeacockTV/Page";
+import SonyLivPage from "./pages/SonyLiv/Page";
+import NetflixPage from "./pages/Netflix/Page";
+import ParamountPlusPage from "./pages/ParamountPlus/Page";
+import PlexPage from "./pages/Plex/Page";
+import PrimeVideoPage from "./pages/PrimeVideo/Page";
+import AppleTVPage from "./pages/AppleTV/Page";
+import MXPlayerPage from "./pages/MXPlayer/Page";
+import CrunchyrollPage from "./pages/Crunchyroll/Page";
+import YoutubeMoviesPage from "./pages/YoutubeMovies/Page";
+import Zee5Page from "./pages/Zee5/Page";
 import {
   isVoidElement,
   requestIMDBData,
   updateFilteredOutProgramNodeStyles,
 } from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
-import { getImdbDataFromNode } from "./ImdbDataNode";
+import { getImdbDataFromNode } from "./RatingNode/utils";
 
 let page: AbstractPage;
 let programFilterSettings: ProgramFilterSettings;

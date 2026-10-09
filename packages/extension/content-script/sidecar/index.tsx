@@ -1,7 +1,7 @@
 // @ts-expect-error `h` and `Fragment` need to be imported here, even
 //   though they are unused
 import { render, h, Fragment } from "preact";
-import type AbstractPage from "../AbstractPage";
+import type AbstractPage from "../pages/AbstractPage";
 import PageControlPanel from "./PageControlPanel";
 
 const sidecarClassName = "sift-sidecar";

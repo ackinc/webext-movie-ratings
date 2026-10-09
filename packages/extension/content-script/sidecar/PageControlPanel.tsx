@@ -1,7 +1,7 @@
 import { useState } from "preact/hooks";
 import Button from "@common/components/Buttons/Button";
 import IconButton from "@common/components/Buttons/IconButton";
-import type AbstractPage from "../AbstractPage";
+import type AbstractPage from "../pages/AbstractPage";
 import CloseIcon from "@common/components/Icons/Close";
 import siftLogoIcon from "@images/logo48.png";
 

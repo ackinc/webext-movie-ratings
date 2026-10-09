@@ -1,0 +1,94 @@
+import AbstractProgramNode from "../AbstractProgramNode";
+import { ErrorMessage } from "../../../common";
+import type { Program, ProgramContainer, ProgramData } from "../../../common";
+
+export default class ProgramNode extends AbstractProgramNode {
+  static override extractProgramData(
+    programNode: HTMLElement,
+    pContainer: ProgramContainer,
+  ): ProgramData {
+    let title: string = "";
+    let type: Program["type"] | undefined = location.pathname.includes(
+      "/movie/",
+    )
+      ? "movie"
+      : location.pathname.includes("/show/")
+        ? "series"
+        : undefined;
+
+    if (programNode.matches("ul > li button.epic-showcase-item")) {
+      title = programNode.getAttribute("aria-label")!;
+    } else if (["ul > li a.lockup"].some((s) => programNode.matches(s))) {
+      const href = programNode.getAttribute("href")!;
+
+      // if this attr exists, its value is reliable and should be preferred to
+      //   whatever can be extracted from the href
+      title =
+        programNode.querySelector("div.content img")?.getAttribute("alt") ?? "";
+
+      if (!title) {
+        const hrefParts = href.split("/");
+        const titleIdx =
+          Math.max(hrefParts.indexOf("movie"), hrefParts.indexOf("show")) + 1;
+        title =
+          titleIdx === 0
+            ? "" /* not a movie or series */
+            : hrefParts[titleIdx]!.replace(/-/g, " ");
+      }
+
+      if (!type) {
+        type = href.includes("/movie/")
+          ? "movie"
+          : href.includes("/show/")
+            ? "series"
+            : undefined;
+      }
+    } else if (["ul > li div.lockup"].some((s) => programNode.matches(s))) {
+      if (
+        location.pathname.endsWith("/search") &&
+        location.search.includes("term=")
+      ) {
+        // on the search results page, search results DOM elements don't have
+        //   any info we can use to figure out which movies/shows they are
+      } else {
+        title = programNode
+          .querySelector("div.content img")!
+          .getAttribute("alt")!;
+      }
+    } else if (programNode.matches("div.search-hint-lockup")) {
+      title = programNode.querySelector(
+        'div[data-testid="search-hint-lockup-title"] > span',
+      )!.textContent;
+    } else {
+      throw new Error(ErrorMessage.unrecognizedProgramNode);
+    }
+
+    return {
+      ...super.extractProgramData(programNode, pContainer),
+      title,
+      ...(type ? { type } : {}),
+    };
+  }
+
+  static override insertIMDBNode(
+    programNode: HTMLElement,
+    imdbNode: HTMLElement,
+  ): void {
+    if (programNode.matches("div.search-hint-lockup")) {
+      const titleNode = programNode.querySelector(
+        'div[data-testid="search-hint-lockup-title"]',
+      );
+      titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    // top-results section of search-results page
+    if (programNode.matches("a.search-card.lockup")) {
+      const titleNode = programNode.querySelector("p.search-card-title");
+      titleNode?.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    programNode.appendChild(imdbNode);
+  }
+}
