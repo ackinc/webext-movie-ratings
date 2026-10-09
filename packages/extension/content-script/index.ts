@@ -1,3 +1,7 @@
+// @ts-expect-error `h` and `Fragment` need to be imported here, even
+//   though they are unused, because we need esbuild to pull them into
+//   the build output
+import { h, Fragment } from "preact";
 import {
   browser,
   defaultProgramFilterSettings,
