@@ -15,6 +15,13 @@ interface SuggestedMatchesModalProps {
   suggestedAlternatives: IndexedImdbTitle[];
 }
 
+// the max space the modal-content can take up; used to ensure we render
+//   the modal-content at a position where none of it is overflowing the
+//   current viewport
+// WARN: keep these values synced with their equivalents in the css file
+const MAX_WIDTH = 360;
+const MAX_HEIGHT = 320;
+
 export default function SuggestedMatchesModal({
   className,
   program,
@@ -39,8 +46,16 @@ export default function SuggestedMatchesModal({
   const ratingNode = program.node.querySelector(`.${CssClasses.imdbDataNode}`)!;
 
   const rect = ratingNode.getBoundingClientRect();
-  const left = rect.x;
-  const top = rect.y + rect.height;
+  const top =
+    rect.bottom + MAX_HEIGHT <= document.documentElement.clientHeight
+      ? rect.bottom
+      : null;
+  const bottom =
+    top === null ? document.documentElement.clientHeight - rect.top : null;
+  const left =
+    rect.x + MAX_WIDTH <= document.documentElement.clientWidth ? rect.x : null;
+  const right =
+    left === null ? document.documentElement.clientWidth - rect.right : null;
 
   return (
     <div
@@ -49,7 +64,13 @@ export default function SuggestedMatchesModal({
     >
       <div
         className="modal-content"
-        style={{ position: "fixed", top, left }}
+        style={{
+          position: "fixed",
+          ...(top ? { top } : {}),
+          ...(bottom ? { bottom } : {}),
+          ...(left ? { left } : {}),
+          ...(right ? { right } : {}),
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="header">
