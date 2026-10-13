@@ -15,19 +15,23 @@ export default function MatchesList({
       {suggestions.map((sm) => (
         <li key={sm.imdbId}>
           <div className="suggestion-details">
-            {onSelectSuggestion ? (
-              <IconButton
-                className="btn-select-suggestion"
-                onClick={() => onSelectSuggestion(sm)}
-                variant="outlined"
-              >
-                <CheckmarkOnCircle className="icon-select" />
-              </IconButton>
-            ) : null}
+            <span className="suggestion-action">
+              {onSelectSuggestion ? (
+                <IconButton
+                  className="btn-select-suggestion"
+                  onClick={() => onSelectSuggestion(sm)}
+                  variant="outlined"
+                >
+                  <CheckmarkOnCircle className="icon-select" />
+                </IconButton>
+              ) : null}
+            </span>
 
-            <span>{sm.title}</span>
+            <span className="suggestion-title">{sm.title}</span>
 
-            <span>({[sm.year, sm.type].filter((x) => x).join(" ")})</span>
+            <span className="suggestion-metadata">
+              {[sm.year, sm.type].filter((x) => x).join(" ")}
+            </span>
           </div>
 
           <a
