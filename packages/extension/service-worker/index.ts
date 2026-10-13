@@ -12,6 +12,7 @@ import {
   ErrorMessage,
   upgradeIdbAndGetConnection,
   addBadge,
+  removeBadge,
 } from "../common";
 import type { Message, SWMessageResponse } from "../common/types";
 import {
@@ -29,12 +30,20 @@ import {
 
 let ratingsService: RatingsService;
 let telemetryStore: TelemetryStore;
-(async () => {
+onStart();
+
+//////////////////////////////
+//** function definitions **//
+//////////////////////////////
+
+async function onStart() {
   try {
     browser.runtime.onInstalled.addListener(onInstalled);
     browser.runtime.onMessage.addListener(handleMessage);
     browser.permissions.onAdded.addListener(handlePermissionsAdded);
     browser.tabs.onUpdated.addListener(handleTabUpdated);
+
+    await removeBadge();
 
     const db = await upgradeIdbAndGetConnection();
     telemetryStore = await TelemetryStore.create(
@@ -56,11 +65,7 @@ let telemetryStore: TelemetryStore;
   } catch (e) {
     captureException(e);
   }
-})();
-
-//////////////////////////////
-//** function definitions **//
-//////////////////////////////
+}
 
 async function onInstalled() {
   browser.runtime.setUninstallURL(SIFT_WEBSITE_URL + "/uninstall");
