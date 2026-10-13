@@ -1,5 +1,6 @@
 import { useState } from "preact/hooks";
 import cx from "classnames";
+import { partition } from "siftutils";
 import {
   browser,
   CssClasses,
@@ -9,8 +10,12 @@ import {
   type IMDBData,
   type Message,
   type Program,
+  type SiftApiProgramMatching,
 } from "@common";
 import ExternalLinkIcon from "@common/components/Icons/ExternalLink";
+import LoadingIcon from "@common/components/Icons/Loading";
+import { showSuggestedMatchesModal } from "../suggestedMatchesModalService";
+import { requestIMDBData } from "../utils";
 
 interface RatingNodeProps {
   imdbData: IMDBData;
@@ -22,6 +27,8 @@ export default function RatingNode({
   imdbData: initialImdbData,
 }: RatingNodeProps) {
   const [imdbData, setImdbData] = useState<IMDBData>(initialImdbData);
+  const [loading, setLoading] = useState(false);
+
   const { wasReportedIncorrect } = imdbData;
 
   return (
@@ -68,12 +75,16 @@ export default function RatingNode({
             : imdbData.imdbRating}
           <ExternalLinkIcon />
         </a>
-        <button
-          className="maybe-wrong-button"
-          onClick={handleMaybeWrongButtonClick}
-        >
-          {wasReportedIncorrect ? "Undo" : "Wrong?"}
-        </button>
+        {loading ? (
+          <LoadingIcon className="loading-icon" />
+        ) : (
+          <button
+            className="maybe-wrong-button"
+            onClick={handleMaybeWrongButtonClick}
+          >
+            {wasReportedIncorrect ? "Undo" : "Wrong?"}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -82,19 +93,51 @@ export default function RatingNode({
     e.preventDefault();
     e.stopPropagation();
 
-    await browser.runtime.sendMessage({
-      type: wasReportedIncorrect
-        ? MessageType.undoReportIncorrectProgramMatch
-        : MessageType.reportIncorrectProgramMatch,
-      data: {
-        program: pick(program, ["title", "type", "year", "selector"]),
-        imdbData,
-        pageUrl: location.href,
-      },
-    } satisfies Message);
-    setImdbData((data) => ({
-      ...data,
-      wasReportedIncorrect: !data.wasReportedIncorrect,
-    }));
+    const payload = {
+      program: pick(program, ["title", "type", "year", "selector"]),
+      containerTitle: program.container.title,
+      imdbData,
+      pageUrl: location.href,
+    } as const;
+
+    if (wasReportedIncorrect) {
+      await browser.runtime.sendMessage<Message, unknown>({
+        type: MessageType.undoReportIncorrectProgramMatch,
+        data: payload,
+      });
+      refreshImdbData();
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const { data } = await browser.runtime.sendMessage<
+        Message,
+        { data: SiftApiProgramMatching.IncorrectMatchReportResponse }
+      >({ type: MessageType.reportIncorrectProgramMatch, data: payload });
+
+      const { id, token, suggestedMatches } = data;
+      const [[matchedImdbTitle], suggestedAlternatives] = partition(
+        suggestedMatches,
+        (sm) => sm.imdbId === imdbData.imdbId,
+      );
+      if (suggestedAlternatives.length > 0) {
+        showSuggestedMatchesModal(
+          program,
+          id,
+          token,
+          matchedImdbTitle,
+          suggestedAlternatives,
+        );
+      }
+    } finally {
+      setLoading(false);
+      refreshImdbData();
+    }
+  }
+
+  async function refreshImdbData() {
+    setImdbData(await requestIMDBData(program));
   }
 }
