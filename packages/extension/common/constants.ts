@@ -12,6 +12,7 @@ export const enum CssClasses {
   imdbDataNode = "sift-imdb-data",
   imdbDataNodeContent = "sift-imdb-data-content",
   filteredOutProgramNode = "sift-filtered-out-program",
+  portal = "sift-portal",
 }
 export const enum CssColors {
   mainBgColor = "#f5c618",

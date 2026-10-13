@@ -43,6 +43,7 @@ import {
 } from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
 import { getImdbDataFromNode } from "./RatingNode/utils";
+import { addPortal, removePortal } from "./portal";
 
 let page: AbstractPage;
 let programFilterSettings: ProgramFilterSettings;
@@ -93,6 +94,8 @@ async function main() {
   sessionStartTime = +new Date();
   addListeners();
   if (APP_ENV !== "production") addSidecar({ page });
+  addPortal();
+
   schedulePageProcessing("onStart");
 }
 
@@ -116,6 +119,7 @@ function cleanup(broadcast = true) {
   }
 
   removeSidecar();
+  removePortal();
   removeListeners();
   if (timeout) clearTimeout(timeout);
   page.cleanup();
