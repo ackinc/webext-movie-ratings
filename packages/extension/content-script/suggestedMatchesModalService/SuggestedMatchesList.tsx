@@ -13,40 +13,60 @@ export default function MatchesList({
   return (
     <ul className="match-suggestions">
       {suggestions.map((sm) => (
-        <li key={sm.imdbId}>
-          <div className="suggestion-details">
-            <span className="suggestion-action">
-              {onSelectSuggestion ? (
-                <IconButton
-                  className="btn-select-suggestion"
-                  onClick={() => onSelectSuggestion(sm)}
-                  variant="outlined"
-                >
-                  <CheckmarkOnCircle className="icon-select" />
-                </IconButton>
-              ) : null}
-            </span>
-
-            <span className="suggestion-title">{sm.title}</span>
-
-            <span className="suggestion-metadata">
-              {[sm.year, sm.type].filter((x) => x).join(" ")}
-            </span>
-          </div>
-
-          <a
-            href={`https://imdb.com/title/${sm.imdbId}`}
-            target="_blank"
-            className="suggestion-imdb-link"
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-          >
-            IMDB {sm.rating === null ? "N/A" : sm.rating.toFixed(1)}
-            <ExternalLinkIcon className="icon-external-link" />
-          </a>
-        </li>
+        <MatchesListItem
+          key={sm.id}
+          suggestedMatch={sm}
+          {...(onSelectSuggestion ? { onSelectSuggestion } : {})}
+        />
       ))}
     </ul>
+  );
+}
+
+function MatchesListItem({
+  suggestedMatch: sm,
+  onSelectSuggestion,
+  ...restProps
+}: {
+  suggestedMatch: IndexedImdbTitle;
+  onSelectSuggestion?: (sm: IndexedImdbTitle) => void;
+}) {
+  return (
+    <li {...restProps}>
+      <div
+        className="suggestion-details"
+        onClick={() => onSelectSuggestion && onSelectSuggestion(sm)}
+      >
+        <span className="suggestion-action">
+          {onSelectSuggestion ? (
+            <IconButton
+              className="btn-select-suggestion"
+              onClick={() => onSelectSuggestion(sm)}
+              variant="outlined"
+            >
+              <CheckmarkOnCircle className="icon-select" />
+            </IconButton>
+          ) : null}
+        </span>
+
+        <span className="suggestion-title">{sm.title}</span>
+
+        <span className="suggestion-metadata">
+          {sm.imdbId ? [sm.year, sm.type].filter((x) => x).join(" ") : ""}
+        </span>
+      </div>
+
+      {sm.imdbId ? (
+        <a
+          href={`https://imdb.com/title/${sm.imdbId}`}
+          target="_blank"
+          className="suggestion-imdb-link"
+          onClick={(e) => e.stopPropagation()}
+        >
+          IMDB {typeof sm.rating === "number" ? sm.rating.toFixed(1) : ""}
+          <ExternalLinkIcon className="icon-external-link" />
+        </a>
+      ) : null}
+    </li>
   );
 }

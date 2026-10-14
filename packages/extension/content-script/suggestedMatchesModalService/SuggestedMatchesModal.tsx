@@ -22,6 +22,16 @@ interface SuggestedMatchesModalProps {
 const MAX_WIDTH = 360;
 const MAX_HEIGHT = 320;
 
+// displayed at the bottom of the list of alternative matches
+const optionNoneOfTheAbove = {
+  id: "null-placeholder",
+  imdbId: "",
+  title: "[None of the above]",
+  type: "movie",
+  year: null,
+  rating: null,
+} as const;
+
 export default function SuggestedMatchesModal({
   className,
   program,
@@ -93,9 +103,10 @@ export default function SuggestedMatchesModal({
             correct match?
           </p>
           <MatchesList
-            suggestions={suggestedAlternatives}
+            suggestions={suggestedAlternatives.concat([optionNoneOfTheAbove])}
             onSelectSuggestion={(sm: IndexedImdbTitle) => {
               console.log(`User selected`, sm);
+              if (!sm.imdbId) hideSuggestedMatchesModal();
             }}
           />
         </div>
