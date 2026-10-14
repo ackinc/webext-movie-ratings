@@ -8,6 +8,13 @@ export type ImdbId = string;
 export type LineNumber = number;
 export type Line = string;
 export type Batch = [LineNumber, Line][];
+interface ProcessFileOptions {
+  batchSize?: number;
+  logger?: Logger;
+  logProgressEveryNLines?: number;
+  maxLinesToProcess?: number;
+  haltFn?: (line: string, lineNum: number) => boolean;
+}
 export async function processFile(
   filepath: string,
   processFn: (batch: Batch) => Promise<void>,
@@ -18,13 +25,7 @@ export async function processFile(
     logProgressEveryNLines = 1000,
     maxLinesToProcess = Infinity,
     haltFn = () => false,
-  }: {
-    batchSize?: number;
-    logger?: Logger;
-    logProgressEveryNLines?: number;
-    maxLinesToProcess?: number;
-    haltFn?: (line: string, lineNum: number) => boolean;
-  } = {},
+  }: ProcessFileOptions = {},
 ) {
   const rl = readline.createInterface({
     input: fs.createReadStream(filepath, { encoding: "utf-8" }),
