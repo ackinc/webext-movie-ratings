@@ -5,6 +5,7 @@ import { CssClasses, type Program } from "@common";
 import siftLogoIcon from "@images/logo48.png";
 import MatchesList from "./SuggestedMatchesList";
 import { hideSuggestedMatchesModal } from ".";
+import * as siftApiService from "@common/siftApiService";
 
 interface SuggestedMatchesModalProps {
   className?: string;
@@ -34,6 +35,8 @@ const optionNoneOfTheAbove = {
 
 export default function SuggestedMatchesModal({
   className,
+  id,
+  token,
   program,
   matchedImdbTitle,
   suggestedAlternatives,
@@ -104,13 +107,30 @@ export default function SuggestedMatchesModal({
           </p>
           <MatchesList
             suggestions={suggestedAlternatives.concat([optionNoneOfTheAbove])}
-            onSelectSuggestion={(sm: IndexedImdbTitle) => {
-              console.log(`User selected`, sm);
-              if (!sm.imdbId) hideSuggestedMatchesModal();
-            }}
+            onSelectSuggestion={handleSelection}
           />
         </div>
       </div>
     </div>
   );
+
+  async function handleSelection(sm: IndexedImdbTitle) {
+    console.log(`User selected`, sm);
+
+    // TODO
+    //   update ratings cache
+    //   trigger findProgramsAndRefreshRatings
+
+    hideSuggestedMatchesModal();
+
+    if (sm.imdbId && token) {
+      siftApiService
+        .updateIncorrectMatchReport({
+          id,
+          token,
+          suggestedImdbId: sm.imdbId,
+        })
+        .catch(() => {});
+    }
+  }
 }
