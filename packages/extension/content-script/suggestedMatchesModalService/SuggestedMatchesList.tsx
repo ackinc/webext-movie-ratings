@@ -42,7 +42,7 @@ export default function MatchesList({
               e.stopPropagation();
             }}
           >
-            IMDB 1.0
+            IMDB {sm.rating === null ? "N/A" : sm.rating.toFixed(1)}
             <ExternalLinkIcon className="icon-external-link" />
           </a>
         </li>
