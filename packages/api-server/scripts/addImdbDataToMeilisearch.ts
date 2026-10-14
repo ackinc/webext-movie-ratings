@@ -1,12 +1,17 @@
 #!/usr/bin/env node
 
+// this script will be run on the production machine, which as of 20261014
+//   is very resource constrained (2GB RAM), so we're going out of our way to
+//   keep memory usage low
+// specifically, this is the reason we do two passes over the title.basics.tsv
+//   file
+
 import "dotenv/config";
 
 // initialize Sentry
 import "../instrument.ts";
 
 import * as path from "node:path";
-import * as fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { isEqual } from "lodash-es";
 import { Meilisearch, type Index, type IndexObject } from "meilisearch";
@@ -33,6 +38,31 @@ const { APP_ENV, IMDB_DATA_DIR, MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } =
     true,
   );
 
+const requiredFiles = {
+  BASICS: {
+    filename: "title.basics.tsv",
+    colnames: [
+      "tconst",
+      "titleType",
+      "primaryTitle",
+      "originalTitle",
+      null,
+      "startYear",
+    ],
+  },
+  AKAS: {
+    filename: "title.akas.tsv",
+    colnames: ["titleId", null, "title"],
+  },
+  RATINGS: {
+    filename: "title.ratings.tsv",
+    colnames: ["tconst", "averageRating", "numVotes"],
+  },
+} as const;
+Object.values(requiredFiles).forEach(({ filename, colnames }) =>
+  checkColnames(path.join(IMDB_DATA_DIR!, filename), colnames),
+);
+
 const argv = yargs(hideBin(process.argv))
   .option("batchSize", {
     number: true,
@@ -42,12 +72,6 @@ const argv = yargs(hideBin(process.argv))
   .parseSync();
 const { batchSize } = argv;
 
-await Promise.all(
-  ["title.basics.tsv", "title.akas.tsv"].map((filename) =>
-    fs.promises.access(path.join(IMDB_DATA_DIR!, filename)),
-  ),
-);
-
 const client = new Meilisearch({
   host: MEILISEARCH_URL!,
   apiKey: MEILISEARCH_MASTER_KEY!,
@@ -56,38 +80,68 @@ const index = await prepareIndex(client);
 
 const logger = baseLogger.child({ script: __filename });
 const startTime = new Date();
+let durationMs: number;
 
 const canonDocumentsByImdbId = new Map<
   ImdbId,
   // only storing the data we need to keep memory usage low
-  Pick<Document, "type" | "year">
+  Pick<Document, "type" | "year" | "rating">
 >();
-const basicsFilepath = path.join(IMDB_DATA_DIR!, "title.basics.tsv");
-checkColnames(basicsFilepath, [
-  "tconst",
-  "titleType",
-  "primaryTitle",
-  "originalTitle",
-  null,
-  "startYear",
-]);
-await processFile(basicsFilepath, processBatchFromBasicsFile, isMovieOrSeries, {
-  batchSize: batchSize,
-  logger,
-  logProgressEveryNLines: batchSize,
-});
 
-const akasFilepath = path.join(IMDB_DATA_DIR!, "title.akas.tsv");
-checkColnames(akasFilepath, ["titleId", null, "title"]);
+/* STAGE 1: populate canonDocumentsByImdbId */
+
 await processFile(
-  akasFilepath,
-  processBatchFromAkasFile,
+  path.join(IMDB_DATA_DIR!, requiredFiles.BASICS.filename),
+  extractCanonData,
+  isMovieOrSeries,
+  {
+    batchSize: batchSize,
+    logger,
+    logProgressEveryNLines: batchSize,
+  },
+);
+durationMs = +new Date() - +startTime;
+logger.info(`Finished first pass of basics file at T=${durationMs}ms`);
+
+await processFile(
+  path.join(IMDB_DATA_DIR!, requiredFiles.RATINGS.filename),
+  addRatingsToCanonData,
+  (line: string) => canonDocumentsByImdbId.has(line.split("\t")[0]!),
+  {
+    batchSize: batchSize,
+    logger,
+    logProgressEveryNLines: batchSize,
+  },
+);
+durationMs = +new Date() - +startTime;
+logger.info(`Finished processing ratings file at T=${durationMs}ms`);
+
+/* STAGE 2: add docs to index */
+
+// second pass of basics file - add docs to index
+await processFile(
+  path.join(IMDB_DATA_DIR!, requiredFiles.BASICS.filename),
+  addDocsFromBasicsFile,
+  isMovieOrSeries,
+  {
+    batchSize: batchSize,
+    logger,
+    logProgressEveryNLines: batchSize,
+  },
+);
+durationMs = +new Date() - +startTime;
+logger.info(`Finished processing basics file at T=${durationMs}ms`);
+
+await processFile(
+  path.join(IMDB_DATA_DIR!, requiredFiles.AKAS.filename),
+  addDocsFromAkasFile,
   (line: string) => canonDocumentsByImdbId.has(line.split("\t")[0]!),
   { batchSize: batchSize, logger, logProgressEveryNLines: batchSize },
 );
+durationMs = +new Date() - +startTime;
+logger.info(`Finished processing akas file at T=${durationMs}ms`);
 
-const durationMs = +new Date() - +startTime;
-logger.info(`Completed in (${durationMs}ms)`);
+logger.info(`Done`);
 
 // helpers
 
@@ -100,11 +154,11 @@ async function prepareIndex(client: Meilisearch): Promise<Index<Document>> {
     rawInfo = await index.getRawInfo();
     if (rawInfo.primaryKey !== "id") {
       // will fail if index already has documents
-      await client.updateIndex(indexName, { primaryKey: "id" });
+      await client.updateIndex(indexName, { primaryKey: "id" }).waitTask();
     }
   } catch (_e) {
-    if (rawInfo) await client.deleteIndex(indexName);
-    await client.createIndex(indexName, { primaryKey: "id" });
+    if (rawInfo) await client.deleteIndex(indexName).waitTask();
+    await client.createIndex(indexName, { primaryKey: "id" }).waitTask();
     index = client.index<Document>(indexName);
   }
 
@@ -125,53 +179,78 @@ async function prepareIndex(client: Meilisearch): Promise<Index<Document>> {
   return index;
 }
 
-function getDocumentsFromBasicsFileLine(line: string): Document[] {
+async function extractCanonData(batch: Batch) {
+  batch.forEach(([, line]) => {
+    // first doc returned by getDocumentsFromBasicsFileLine is the canonDoc
+    //   for particular Imdb Id
+    const [{ imdbId, type, year, rating }] =
+      getDocumentsFromBasicsFileLine(line);
+    canonDocumentsByImdbId.set(imdbId, { type, year, rating });
+  });
+}
+
+async function addRatingsToCanonData(batch: Batch) {
+  batch.forEach(([, line]) => {
+    const [imdbId, rating] = line.split("\t");
+    canonDocumentsByImdbId.get(imdbId!)!.rating = +rating!;
+  });
+}
+
+async function addDocsFromBasicsFile(batch: Batch) {
+  const documents = batch.flatMap(([, line]) =>
+    getDocumentsFromBasicsFileLine(line),
+  );
+  index.addDocuments(
+    documents.map((d) => ({
+      ...d,
+      rating: canonDocumentsByImdbId.get(d.imdbId)?.rating ?? null,
+    })),
+  );
+}
+
+async function addDocsFromAkasFile(batch: Batch) {
+  const documents = batch.flatMap(([, line]) =>
+    getDocumentsFromAkasFileLine(line),
+  );
+  index.addDocuments(
+    documents.map((d) => ({
+      ...d,
+      rating: canonDocumentsByImdbId.get(d.imdbId)?.rating ?? null,
+    })),
+  );
+}
+
+function getDocumentsFromBasicsFileLine(
+  line: string,
+): [Document] | [Document, Document] {
   const parts = line.split("\t");
   const imdbId = parts[0]!;
   const type = ["movie", "tvMovie"].includes(parts[1]!) ? "movie" : "series";
   const year = parts[5] === "\\N" ? null : +parts[5]!;
+  const rating = canonDocumentsByImdbId.get(imdbId)?.rating ?? null;
   return [
-    makeDocument({ imdbId, title: parts[2]!, type, year }),
+    makeDocument({ imdbId, title: parts[2]!, type, year, rating }),
     parts[2] === parts[3]
       ? null
-      : makeDocument({ imdbId, title: parts[3]!, type, year }),
-  ].filter((x) => x !== null);
+      : makeDocument({ imdbId, title: parts[3]!, type, year, rating }),
+  ].filter((x) => x !== null) as [Document] | [Document, Document];
 }
 
 function getDocumentsFromAkasFileLine(line: string): [Document] {
   const parts = line.split("\t");
   const imdbId = parts[0]!;
   const title = parts[2]!;
-  const { type, year } = canonDocumentsByImdbId.get(imdbId)!;
-  return [makeDocument({ imdbId, title, type, year })];
+  const { type, year, rating } = canonDocumentsByImdbId.get(imdbId)!;
+  return [makeDocument({ imdbId, title, type, year, rating })];
 }
 
 function makeDocument(partialDoc: Omit<Document, "id">): Document {
-  const { title, type, year } = partialDoc;
+  const { imdbId, title, type, year } = partialDoc;
   return {
     ...partialDoc,
     // meilisearch index pkeys can't have the non-alnum chars allowed in b64
-    id: Buffer.from([title, type, year].join("::"))
+    id: Buffer.from([imdbId, title, type, year].join("::"))
       .toString("base64")
       .replace(/[+/=]/g, "_"),
   };
-}
-
-async function processBatchFromBasicsFile(batch: Batch) {
-  const documents = batch.flatMap(([, line]) =>
-    getDocumentsFromBasicsFileLine(line),
-  );
-  await index.addDocuments(documents);
-  documents.forEach((doc, idx) => {
-    // first doc returned by getDocumentsFromBasicsFileLine is canon
-    if (idx === 0)
-      canonDocumentsByImdbId.set(doc.imdbId, pick(doc, ["type", "year"]));
-  });
-}
-
-async function processBatchFromAkasFile(batch: Batch) {
-  const documents = batch.flatMap(([, line]) =>
-    getDocumentsFromAkasFileLine(line),
-  );
-  await index.addDocuments(documents);
 }
