@@ -13,7 +13,8 @@
       "cwd": "${workspaceFolder}",
       "args": [],
       "outFiles": ["${workspaceFolder}/**/*.js"],
-      "envFile": "${workspaceFolder}/packages/api-server/.env"
+      "envFile": "${workspaceFolder}/packages/api-server/.env",
+      "outputCapture": "std"
     },
     {
       "type": "node",
