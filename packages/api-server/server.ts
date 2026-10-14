@@ -448,7 +448,7 @@ async function updateIncorrectMatchReportRequestHandler(
 ) {
   const requestData = (request.body ??
     request.query) as ProgramMatching.AddSuggestionToIncorrectMatchReportRequest;
-  const { id, token: matchToken, suggestionId, authToken } = requestData;
+  const { id, token: matchToken, suggestedImdbId, authToken } = requestData;
 
   let row = dbService.getProgramMatchRecord(id);
   if (!(row && row.status === "reportedIncorrect"))
@@ -462,7 +462,7 @@ async function updateIncorrectMatchReportRequestHandler(
   if (token !== matchToken) return reply.code(200).send({ status: "ok" });
 
   const userSelectedMatch = suggestedMatches.find(
-    ({ id }) => id === suggestionId,
+    ({ imdbId }) => imdbId === suggestedImdbId,
   );
   if (!userSelectedMatch) return reply.code(200).send({ status: "ok" });
 

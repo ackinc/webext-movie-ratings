@@ -21,7 +21,7 @@ export async function sendAdminEmailToUpdateIncorrectMatch(
     ]
       .filter((x) => x)
       .join(", "),
-    pmUpdateLink: `${env.SIFT_API_URL}/update-match-reported-incorrect?authToken=${env.SIFT_API_KEY}&id=${record.id}&token=${rowMeta.token}&suggestionId=${m.id}`,
+    pmUpdateLink: `${env.SIFT_API_URL}/update-match-reported-incorrect?authToken=${env.SIFT_API_KEY}&id=${record.id}&token=${rowMeta.token}&suggestedImdbId=${m.imdbId}`,
   }));
   await emailService.sendToDev({
     subject: "Sift: update incorrect match",

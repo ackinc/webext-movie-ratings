@@ -25,7 +25,7 @@ export const siftApiProgramMatchSchemas = {
   addSuggestionToIncorrectMatchReportRequest: Type.Script(`{
     id: number;
     token?: string;
-    suggestionId: string;
+    suggestedImdbId: string;
     authToken?: string;
   }`),
 };

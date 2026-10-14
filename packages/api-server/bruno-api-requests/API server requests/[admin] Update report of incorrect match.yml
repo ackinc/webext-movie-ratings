@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{API_URL}}/messages?id=&token=&suggestionId=&authToken="
+  url: "{{API_URL}}/messages?id=&token=&suggestedImdbId=&authToken="
   params:
     - name: id
       value: ""
@@ -13,7 +13,7 @@ http:
     - name: token
       value: ""
       type: query
-    - name: suggestionId
+    - name: suggestedImdbId
       value: ""
       type: query
     - name: authToken

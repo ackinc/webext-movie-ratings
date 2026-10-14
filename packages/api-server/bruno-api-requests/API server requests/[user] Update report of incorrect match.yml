@@ -12,7 +12,7 @@ http:
       {
         "id": 36,
         "token": "9dba898f-ef53-4ad9-93c8-6c27a9530848",
-        "suggestionId": "TG9rYWggQ2hhcHRlciAxOiBDaGFuZHJhOjptb3ZpZTo6MjAyNQ__"
+        "suggestedImdbId": ""
       }
   auth: inherit
 
