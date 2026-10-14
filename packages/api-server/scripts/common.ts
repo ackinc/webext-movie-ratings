@@ -8,6 +8,13 @@ export type ImdbId = string;
 export type LineNumber = number;
 export type Line = string;
 export type Batch = [LineNumber, Line][];
+interface ProcessFileOptions {
+  batchSize?: number;
+  logger?: Logger;
+  logProgressEveryNLines?: number;
+  maxLinesToProcess?: number;
+  haltFn?: (line: string, lineNum: number) => boolean;
+}
 export async function processFile(
   filepath: string,
   processFn: (batch: Batch) => Promise<void>,
@@ -18,13 +25,7 @@ export async function processFile(
     logProgressEveryNLines = 1000,
     maxLinesToProcess = Infinity,
     haltFn = () => false,
-  }: {
-    batchSize?: number;
-    logger?: Logger;
-    logProgressEveryNLines?: number;
-    maxLinesToProcess?: number;
-    haltFn?: (line: string, lineNum: number) => boolean;
-  } = {},
+  }: ProcessFileOptions = {},
 ) {
   const rl = readline.createInterface({
     input: fs.createReadStream(filepath, { encoding: "utf-8" }),
@@ -32,6 +33,7 @@ export async function processFile(
 
   let headerSkipped = false;
   let lineNum = 0;
+  let nLinesDropped = 0;
   let startTime = new Date();
   let batch: Batch = [];
   for await (const line of rl) {
@@ -50,12 +52,14 @@ export async function processFile(
         await processFn(batch);
         batch = [];
       }
+    } else {
+      nLinesDropped++;
     }
 
     if (lineNum % logProgressEveryNLines === 0) {
       const now = new Date();
       const durationMs = +now - +startTime;
-      const msg = `Processed ${lineNum} lines of ${filepath} (${durationMs}ms) ...`;
+      const msg = `Processed ${lineNum} lines (dropped ${nLinesDropped}) of ${filepath} (${durationMs}ms) ...`;
       logger ? logger.info(msg) : console.log(msg);
       startTime = now;
     }
@@ -65,7 +69,7 @@ export async function processFile(
 
 export function checkColnames(
   filepath: string,
-  expectedColnames: (string | null)[],
+  expectedColnames: Readonly<(string | null)[]>,
 ): void {
   const colnames = execSync(`head -n1 ${filepath}`)
     .toString()
