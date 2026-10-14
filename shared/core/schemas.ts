@@ -49,4 +49,5 @@ export const indexedImdbTitleSchema = Type.Object({
   title: Type.String(),
   type: programTypeSchema,
   year: Type.Union([Type.Number(), Type.Null()]),
+  rating: Type.Union([Type.Number(), Type.Null()]),
 });
