@@ -27,6 +27,7 @@ import {
   initialize as initializeRatingsService,
   type RatingsService,
 } from "./ratingsService";
+import { DB_NAME, DB_VERSION } from "@common";
 
 let ratingsService: RatingsService;
 let telemetryStore: TelemetryStore;
@@ -45,7 +46,7 @@ async function onStart() {
 
     await removeBadge();
 
-    const db = await upgradeIdbAndGetConnection();
+    const db = await upgradeIdbAndGetConnection(DB_NAME, DB_VERSION);
     telemetryStore = await TelemetryStore.create(
       db as IDBPDatabase<TelemetryStoreSchema>,
     );

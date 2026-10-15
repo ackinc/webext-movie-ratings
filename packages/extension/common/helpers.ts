@@ -1,18 +1,8 @@
 // this module is for more complex helper fns
 
-import { openDB } from "idb";
-import {
-  browser,
-  CssColors,
-  languages,
-  DB_NAME,
-  DB_VERSION,
-} from "./constants";
-import type { ExtensionContext, Message, ProgramData } from "./types";
-import TelemetryStore from "./TelemetryStore";
-import RatingsCache from "./RatingsCache";
+import { browser, CssColors, languages } from "./constants";
+import type { ExtensionContext, Message } from "./types";
 import { captureException } from "./errorReporter";
-import { setSetting } from "./settings";
 
 export function getExtensionContext(): ExtensionContext {
   const { location } = globalThis;
@@ -116,17 +106,6 @@ export function extractProgramTitle(str: string): string {
   );
 }
 
-export async function upgradeIdbAndGetConnection() {
-  const db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade: (db, oldVersion) => {
-      RatingsCache.upgradeDb(db, oldVersion);
-      TelemetryStore.upgradeDb(db, oldVersion);
-    },
-  });
-  await setSetting("updatedDbVersion", DB_VERSION);
-  return db;
-}
-
 export async function addBadge(text: string) {
   await Promise.all([
     browser.action.setBadgeBackgroundColor({ color: CssColors.mainBgColor }),
@@ -137,18 +116,4 @@ export async function addBadge(text: string) {
 
 export async function removeBadge() {
   await addBadge("");
-}
-
-export function programToHash(program: ProgramData): string {
-  const { title, type, year } = program;
-  // using btoa directly on a title with non-latin1 chars (without
-  //   encoding to utf-8 first) will cause an error to be thrown
-  const utf8EncodedTitle = String.fromCharCode(
-    ...new TextEncoder().encode(title),
-  );
-  return btoa(
-    [utf8EncodedTitle.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
-      .filter(Boolean)
-      .join("|"),
-  );
 }

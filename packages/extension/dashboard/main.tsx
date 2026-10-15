@@ -2,7 +2,7 @@
 //   though they are unused
 import { render, h, Fragment } from "preact";
 import { type IDBPDatabase } from "idb";
-import { upgradeIdbAndGetConnection } from "../common";
+import { DB_NAME, DB_VERSION, upgradeIdbAndGetConnection } from "../common";
 import TelemetryStore, {
   type TelemetryStoreSchema,
 } from "../common/TelemetryStore";
@@ -10,7 +10,7 @@ import Dashboard from "./Dashboard";
 import "./main.css";
 
 (async () => {
-  const db = await upgradeIdbAndGetConnection();
+  const db = await upgradeIdbAndGetConnection(DB_NAME, DB_VERSION);
   const telemetryStore = await TelemetryStore.create(
     db as IDBPDatabase<TelemetryStoreSchema>,
     1, // doesn't matter - we're read-only
