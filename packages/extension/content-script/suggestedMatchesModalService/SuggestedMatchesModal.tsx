@@ -1,11 +1,16 @@
 import cx from "classnames";
 import { useEffect } from "preact/hooks";
 import { type IndexedImdbTitle } from "siftcore";
-import { CssClasses, type Program } from "@common";
+import {
+  browser,
+  CssClasses,
+  MessageType,
+  type Message,
+  type Program,
+} from "@common";
 import siftLogoIcon from "@images/logo48.png";
 import MatchesList from "./SuggestedMatchesList";
 import { hideSuggestedMatchesModal } from ".";
-import * as siftApiService from "@common/siftApiService";
 
 interface SuggestedMatchesModalProps {
   className?: string;
@@ -115,22 +120,30 @@ export default function SuggestedMatchesModal({
   );
 
   async function handleSelection(sm: IndexedImdbTitle) {
-    console.log(`User selected`, sm);
+    if (sm.imdbId) {
+      await browser.runtime.sendMessage<Message>({
+        type: MessageType.userSelectedASuggestedMatchForProgram,
+        data: {
+          program,
+          pageUrl: location.href,
+          imdbData: { imdbId: sm.imdbId, imdbRating: sm.rating ?? "N/A" },
+          ...(token ? { serverSideRowId: id, token } : null),
+        },
+      });
+    } else {
+      await browser.runtime.sendMessage<Message>({
+        type: MessageType.userRejectedSuggestedMatchesForProgram,
+        data: {
+          program,
+          pageUrl: location.href,
+          imdbData: null,
+          ...(token ? { serverSideRowId: id, token } : null),
+        },
+      });
+    }
 
-    // TODO
-    //   update ratings cache
-    //   trigger findProgramsAndRefreshRatings
+    // TODO: trigger findProgramsAndRefreshRatings
 
     hideSuggestedMatchesModal();
-
-    if (token) {
-      siftApiService
-        .updateIncorrectMatchReport({
-          id,
-          token,
-          suggestedImdbId: sm.imdbId,
-        })
-        .catch(() => {});
-    }
   }
 }

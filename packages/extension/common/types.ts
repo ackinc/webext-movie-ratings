@@ -91,6 +91,26 @@ export type Message =
       };
     }
   | {
+      type: MessageType.userSelectedASuggestedMatchForProgram;
+      data: {
+        program: Omit<Program, "node" | "container">;
+        imdbData: IMDBData;
+        pageUrl: string;
+        serverSideRowId?: number;
+        token?: string;
+      };
+    }
+  | {
+      type: MessageType.userRejectedSuggestedMatchesForProgram;
+      data: {
+        program: Omit<Program, "node" | "container">;
+        imdbData: null;
+        pageUrl: string;
+        serverSideRowId?: number;
+        token?: string;
+      };
+    }
+  | {
       // Sent via window.postMessage from MAIN world content script to
       //   paired ISOLATED world content script in same tab
       type: MessageType.urlChange;

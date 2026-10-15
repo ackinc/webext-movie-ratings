@@ -35,6 +35,7 @@ export interface RatingsService {
     imdbData: IMDBData,
     pageUrl: string,
   ): Promise<void>;
+  changeMatchedImdbTitleForProgram: typeof changeMatchedImdbTitleForProgram;
 }
 
 let inProgress: Record<
@@ -71,6 +72,7 @@ export async function initialize(db: IDBPDatabase): Promise<RatingsService> {
     getCachedIMDBData,
     markRatingAsIncorrect,
     undoMarkRatingAsIncorrect,
+    changeMatchedImdbTitleForProgram,
   };
 }
 
@@ -240,7 +242,7 @@ async function markRatingAsIncorrect(
   );
 }
 
-export async function undoMarkRatingAsIncorrect(
+async function undoMarkRatingAsIncorrect(
   program: Omit<Program, "node" | "container">,
   _imdbData: IMDBData,
   pageUrl: string,
@@ -257,6 +259,42 @@ export async function undoMarkRatingAsIncorrect(
   }
 
   await ratingsCache.putOne({ ...cached, wasReportedIncorrect: false });
+}
+
+async function changeMatchedImdbTitleForProgram(
+  program: Omit<Program, "node" | "container">,
+  imdbData: IMDBData | null,
+  pageUrl: string,
+  serverSideRowId: number | undefined,
+  token: string | undefined,
+) {
+  const { hostname } = new URL(pageUrl);
+  if (!(hostname in hostToSitename))
+    throw new Error(`Unsupported site: ${pageUrl}`);
+  const site = hostToSitename[hostname as Sitehost];
+
+  if (imdbData) {
+    const key = pickleProgram(program, site);
+    const cached = await ratingsCache.get(pickleProgram(program, site));
+    if (!cached) {
+      throw new Error(`cache entry with key ${key} expected but not found`);
+    }
+
+    await ratingsCache.putOne({
+      ...cached,
+      ...pick(imdbData, ["imdbId", "imdbRating"]),
+      wasReportedIncorrect: false,
+      expiry: +add(new Date(), ratingCacheDurations.onRatingFound),
+    });
+  }
+
+  if (serverSideRowId && token) {
+    await siftApiService.updateIncorrectMatchReport({
+      id: serverSideRowId,
+      token,
+      suggestedImdbId: imdbData?.imdbId ?? "",
+    });
+  }
 }
 
 function pickleProgram(program: ProgramData, site?: Sitename): string {

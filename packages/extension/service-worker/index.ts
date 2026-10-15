@@ -216,6 +216,27 @@ function handleMessage(
         .catch(captureException);
 
       return true;
+    } else if (
+      request.type === MessageType.userSelectedASuggestedMatchForProgram ||
+      request.type === MessageType.userRejectedSuggestedMatchesForProgram
+    ) {
+      const { program, imdbData, pageUrl, serverSideRowId, token } =
+        request.data;
+
+      waitForRatingsService()
+        .then((rs) =>
+          rs.changeMatchedImdbTitleForProgram(
+            program,
+            imdbData,
+            pageUrl,
+            serverSideRowId,
+            token,
+          ),
+        )
+        .then(() => sendResponse({ data: {} }))
+        .catch(captureException);
+
+      return true;
     } else if (request.type === MessageType.webpageRatingStats) {
       if (FF_TELEMETRY_ENABLED) {
         if (!telemetryStore) {
