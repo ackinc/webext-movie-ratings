@@ -50,6 +50,15 @@ process.on("SIGTERM", cleanup);
 
 function createServer() {
   const fastify = Fastify({ loggerInstance: logger });
+
+  // for simulating longer response times in dev so it's easier
+  //   to see some transitional states in the extension
+  // if (env.APP_ENV === "development") {
+  //   fastify.addHook("onRequest", async (_request, _reply) => {
+  //     await delayMs(1000);
+  //   });
+  // }
+
   fastify.register(cors, {
     origin:
       env.APP_ENV === "production"
