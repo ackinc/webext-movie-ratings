@@ -1,5 +1,6 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
 import {
+  idbStoreNames,
   invertObj,
   omit,
   shallowEqual,
@@ -7,7 +8,7 @@ import {
   type ErrorDetails,
   type ExtensionContext,
   type WebpageStats,
-} from ".";
+} from "@common";
 
 export interface TelemetryStoreSchema extends DBSchema {
   telemetryStore: {
@@ -47,7 +48,7 @@ type Event =
       };
     };
 
-const storeName = "telemetryStore";
+const storeName = idbStoreNames.telemetry;
 const keyPartSeparator = "::";
 
 const eventTypeToKeyPrefix = {

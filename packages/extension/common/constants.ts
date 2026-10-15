@@ -105,4 +105,5 @@ export const webStoreLink =
 export const idbStoreNames = {
   ratings: "ratingsStore",
   incorrectRatingReports: "incorrectRatingReportsStore",
+  telemetry: "telemetryStore",
 } as const;
