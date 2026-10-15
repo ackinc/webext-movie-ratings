@@ -123,7 +123,7 @@ export default function SuggestedMatchesModal({
 
     hideSuggestedMatchesModal();
 
-    if (sm.imdbId && token) {
+    if (token) {
       siftApiService
         .updateIncorrectMatchReport({
           id,

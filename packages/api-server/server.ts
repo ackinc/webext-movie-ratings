@@ -227,7 +227,7 @@ function createServer() {
           meta: JSON.stringify({
             token,
             suggestedMatches,
-            userSelectedMatch: null,
+            userSelectedImdbId: null,
             adminEmailSent: false,
           }),
         });
@@ -256,7 +256,7 @@ function createServer() {
           meta: JSON.stringify({
             token,
             suggestedMatches,
-            userSelectedMatch: null,
+            userSelectedImdbId: null,
             adminEmailSent: false,
           }),
         });
@@ -450,6 +450,19 @@ async function updateIncorrectMatchReportRequestHandler(
     request.query) as ProgramMatching.AddSuggestionToIncorrectMatchReportRequest;
   const { id, token: matchToken, suggestedImdbId, authToken } = requestData;
 
+  // if admin made this request, the row should be updated differently
+  let isRequestByAdmin = false;
+  try {
+    if (authToken) {
+      isRequestByAdmin = authToken === env.SIFT_API_KEY;
+    } else {
+      await ensureAuthorized(request);
+      isRequestByAdmin = true;
+    }
+  } catch (e) {}
+
+  /* ensure request is valid */
+
   let row = dbService.getProgramMatchRecord(id);
   if (!(row && row.status === "reportedIncorrect"))
     return reply.code(200).send({ status: "ok" });
@@ -461,32 +474,40 @@ async function updateIncorrectMatchReportRequestHandler(
   const { token, suggestedMatches } = rowMeta;
   if (token !== matchToken) return reply.code(200).send({ status: "ok" });
 
-  const userSelectedMatch = suggestedMatches.find(
+  /* handle case where user/admin selects NOTA */
+
+  if (suggestedImdbId === "") {
+    if (isRequestByAdmin) throw new HTTPError(501, "NOT_IMPLEMENTED");
+
+    reply.code(200).send({ status: "ok" });
+    row = dbService.updateProgramMatchRecord(row.id, {
+      meta: JSON.stringify({
+        ...rowMeta,
+        userSelectedImdbId: "none-of-the-above",
+      }),
+    });
+    await sendAdminEmailToUpdateIncorrectMatch(row);
+    return;
+  }
+
+  /* handle case where user/admin selects a suggestion */
+
+  const bestMatch = suggestedMatches.find(
     ({ imdbId }) => imdbId === suggestedImdbId,
   );
-  if (!userSelectedMatch) return reply.code(200).send({ status: "ok" });
-
-  // if admin made this request, the row should be updated differently
-  let isRequestByAdmin = false;
-  try {
-    if (authToken) {
-      isRequestByAdmin = authToken === env.SIFT_API_KEY;
-    } else {
-      await ensureAuthorized(request);
-      isRequestByAdmin = true;
-    }
-  } catch (e) {}
+  if (!bestMatch) return reply.code(200).send({ status: "ok" });
   if (isRequestByAdmin) {
     dbService.updateProgramMatchRecord(row.id, {
       status: "matched",
-      imdbId: userSelectedMatch.imdbId,
-      meta: JSON.stringify({ bestMatch: userSelectedMatch }),
+      matchedBy: "admin",
+      imdbId: bestMatch.imdbId,
+      meta: JSON.stringify({ bestMatch }),
     });
     return reply.code(200).send({ status: "ok" });
   }
 
   row = dbService.updateProgramMatchRecord(row.id, {
-    meta: JSON.stringify({ ...rowMeta, userSelectedMatch }),
+    meta: JSON.stringify({ ...rowMeta, userSelectedImdbId: suggestedImdbId }),
   });
 
   reply.code(200).send({ status: "ok" });

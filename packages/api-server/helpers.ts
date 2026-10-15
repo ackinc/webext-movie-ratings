@@ -11,13 +11,13 @@ export async function sendAdminEmailToUpdateIncorrectMatch(
   const rowMeta = JSON.parse(record.meta!) as {
     token: string;
     suggestedMatches: IndexedImdbTitle[];
-    userSelectedMatch: IndexedImdbTitle;
+    userSelectedImdbId: IndexedImdbTitle["imdbId"] | "none-of-the-above" | null;
   };
   const suggestions = rowMeta.suggestedMatches.map((m) => ({
     ...m,
     notes: [
       m.imdbId === record.imdbId ? "isPreviousMatch" : null,
-      m.id === rowMeta.userSelectedMatch.id ? "isUserSelectedMatch" : null,
+      m.imdbId === rowMeta.userSelectedImdbId ? "isUserSelectedMatch" : null,
     ]
       .filter((x) => x)
       .join(", "),
@@ -30,6 +30,7 @@ export async function sendAdminEmailToUpdateIncorrectMatch(
       searchUrl:
         (supportedSites[record.site as Sitename].search || "#") + record.title,
       suggestions,
+      userIndicatedNOTA: rowMeta.userSelectedImdbId === "none-of-the-above",
     }),
   });
 }

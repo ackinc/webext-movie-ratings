@@ -56,7 +56,11 @@
       by
       <b>{{matchRecord.matchedBy}}</b></p>
 
-    <p>The following alternatives are suggested:</p>
+    <p>The following alternatives are suggested
+      {{#if userIndicatedNOTA}},
+        <b>but the user selected NOTA</b>
+      {{/if}}:
+    </p>
 
     <table>
       <thead>
