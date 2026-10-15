@@ -1,6 +1,7 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
 import {
   idbStoreNames,
+  type IdbMigrationName,
   type CachedIMDBData,
   type IMDBData,
   type Program,
@@ -26,7 +27,11 @@ const incorrectRatingReportsStoreName = idbStoreNames.incorrectRatingReports;
 export default class RatingsCache {
   db: IDBPDatabase<RatingsCacheSchema>;
 
-  static upgradeDb(db: IDBPDatabase, oldVersion: number) {
+  static upgradeDb(
+    db: IDBPDatabase,
+    oldVersion: number,
+    _completedMigrations: IdbMigrationName[] = [],
+  ) {
     if (oldVersion < 1) {
       db.createObjectStore(storeName, { keyPath: "key" });
     }

@@ -8,6 +8,7 @@ import {
   type ErrorDetails,
   type ExtensionContext,
   type WebpageStats,
+  type IdbMigrationName,
 } from "@common";
 
 export interface TelemetryStoreSchema extends DBSchema {
@@ -69,7 +70,11 @@ export default class TelemetryStore {
   db: IDBPDatabase<TelemetryStoreSchema>;
   intervalSizeInSeconds: number;
 
-  static upgradeDb(db: IDBPDatabase, oldVersion: number) {
+  static upgradeDb(
+    db: IDBPDatabase,
+    oldVersion: number,
+    _completedMigrations: IdbMigrationName[] = [],
+  ) {
     if (oldVersion < 2) {
       db.createObjectStore(storeName);
     }
