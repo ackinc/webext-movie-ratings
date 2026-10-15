@@ -73,7 +73,7 @@ export default function RatingNode({
           {typeof imdbData.imdbRating === "number"
             ? imdbData.imdbRating.toFixed(1)
             : imdbData.imdbRating}
-          <ExternalLinkIcon />
+          <ExternalLinkIcon className="external-link-icon" />
         </a>
         {loading ? (
           <LoadingIcon className="loading-icon" />

@@ -19,6 +19,7 @@
 
   .headline {
     display: flex;
+    align-items: center;
     gap: 16px;
 
     .rating-page-link {
@@ -54,6 +55,11 @@
       &:hover {
         font-weight: bold;
       }
+    }
+
+    svg.loading-icon {
+      fill: white;
+      stroke: white;
     }
   }
 
