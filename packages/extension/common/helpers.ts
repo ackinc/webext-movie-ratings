@@ -1,12 +1,8 @@
 // this module is for more complex helper fns
 
-import { openDB } from "idb";
 import { browser, CssColors, languages } from "./constants";
 import type { ExtensionContext, Message } from "./types";
-import TelemetryStore from "./TelemetryStore";
-import RatingsCache from "./RatingsCache";
 import { captureException } from "./errorReporter";
-import { setSetting } from "./settings";
 
 export function getExtensionContext(): ExtensionContext {
   const { location } = globalThis;
@@ -108,20 +104,6 @@ export function extractProgramTitle(str: string): string {
       // title should end with alphabet or number
       .replace(/[^A-Za-z0-9]*$/, "")
   );
-}
-
-export async function upgradeIdbAndGetConnection(
-  dbName: string,
-  dbVersion: number,
-) {
-  const db = await openDB(dbName, dbVersion, {
-    upgrade: (db, oldVersion) => {
-      RatingsCache.upgradeDb(db, oldVersion);
-      TelemetryStore.upgradeDb(db, oldVersion);
-    },
-  });
-  await setSetting("updatedDbVersion", dbVersion);
-  return db;
 }
 
 export async function addBadge(text: string) {
