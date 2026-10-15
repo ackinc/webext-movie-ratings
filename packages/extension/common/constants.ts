@@ -101,3 +101,8 @@ export const webStoreLink =
     : TARGET_BROWSER === "firefox"
       ? "https://addons.mozilla.org/firefox/addon/sift-imdb-ratings/"
       : "https://chromewebstore.google.com/detail/sift-imdb-ratings-on-vari/pfnhkljamlclkackkndllofcfhihacna";
+
+export const idbStoreNames = {
+  ratings: "ratingsStore",
+  incorrectRatingReports: "incorrectRatingReportsStore",
+} as const;

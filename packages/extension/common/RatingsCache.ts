@@ -1,5 +1,10 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
-import { type CachedIMDBData, type IMDBData, type Program } from "@common";
+import {
+  idbStoreNames,
+  type CachedIMDBData,
+  type IMDBData,
+  type Program,
+} from "@common";
 
 type CachedIncorrectRatingReport = Omit<Program, "container" | "node"> &
   IMDBData & { pageUrl: string } & { key: string; reportedAt: number };
@@ -15,8 +20,8 @@ export interface RatingsCacheSchema extends DBSchema {
   };
 }
 
-const storeName = "ratingsStore";
-const incorrectRatingReportsStoreName = "incorrectRatingReportsStore";
+const storeName = idbStoreNames.ratings;
+const incorrectRatingReportsStoreName = idbStoreNames.incorrectRatingReports;
 
 export default class RatingsCache {
   db: IDBPDatabase<RatingsCacheSchema>;
@@ -66,23 +71,5 @@ export default class RatingsCache {
       ),
     );
     return this;
-  }
-
-  async putIncorrectRatingReport(value: CachedIncorrectRatingReport) {
-    const txn = this.db.transaction(
-      [incorrectRatingReportsStoreName],
-      "readwrite",
-    );
-    const store = txn.objectStore(incorrectRatingReportsStoreName);
-    await store.put(value);
-    return value;
-  }
-
-  async getIncorrectRatingReport(key: string) {
-    return await this.db.get(incorrectRatingReportsStoreName, key);
-  }
-
-  async removeIncorrectRatingReport(key: string) {
-    return await this.db.delete(incorrectRatingReportsStoreName, key);
   }
 }

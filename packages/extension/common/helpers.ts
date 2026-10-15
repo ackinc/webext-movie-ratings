@@ -2,7 +2,7 @@
 
 import { openDB } from "idb";
 import { browser, CssColors, languages } from "./constants";
-import type { ExtensionContext, Message, ProgramData } from "./types";
+import type { ExtensionContext, Message } from "./types";
 import TelemetryStore from "./TelemetryStore";
 import RatingsCache from "./RatingsCache";
 import { captureException } from "./errorReporter";
@@ -134,18 +134,4 @@ export async function addBadge(text: string) {
 
 export async function removeBadge() {
   await addBadge("");
-}
-
-export function programToHash(program: ProgramData): string {
-  const { title, type, year } = program;
-  // using btoa directly on a title with non-latin1 chars (without
-  //   encoding to utf-8 first) will cause an error to be thrown
-  const utf8EncodedTitle = String.fromCharCode(
-    ...new TextEncoder().encode(title),
-  );
-  return btoa(
-    [utf8EncodedTitle.replace(/[^\w\s]/g, "").toLowerCase(), type, year]
-      .filter(Boolean)
-      .join("|"),
-  );
 }

@@ -1,5 +1,5 @@
 import { type IDBPDatabase } from "idb";
-import { isNetworkError } from "siftutils";
+import { pick, isNetworkError } from "siftutils";
 import {
   browser,
   getSetting,
@@ -13,6 +13,7 @@ import {
   upgradeIdbAndGetConnection,
   addBadge,
   removeBadge,
+  idbStoreNames,
 } from "../common";
 import type { Message, SWMessageResponse } from "../common/types";
 import {
@@ -28,6 +29,7 @@ import {
   type RatingsService,
 } from "./ratingsService";
 import { DB_NAME, DB_VERSION } from "@common";
+import type { RatingsCacheSchema } from "@common/RatingsCache";
 
 let ratingsService: RatingsService;
 let telemetryStore: TelemetryStore;
@@ -47,6 +49,8 @@ async function onStart() {
     await removeBadge();
 
     const db = await upgradeIdbAndGetConnection(DB_NAME, DB_VERSION);
+    await runDataMigrations(db);
+
     telemetryStore = await TelemetryStore.create(
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
@@ -417,4 +421,41 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
       addRules: value ? rules : [],
     });
   }
+}
+
+async function runDataMigrations(db: IDBPDatabase<unknown>) {
+  try {
+    await moveDataOutOfIncorrectRatingReportsStore(
+      db as IDBPDatabase<RatingsCacheSchema>,
+    );
+  } catch (e) {
+    captureException(e);
+  }
+}
+
+async function moveDataOutOfIncorrectRatingReportsStore(
+  db: IDBPDatabase<RatingsCacheSchema>,
+) {
+  const txn = db.transaction(
+    [idbStoreNames.incorrectRatingReports, idbStoreNames.ratings],
+    "readwrite",
+  );
+  const ratingsStore = txn.objectStore(idbStoreNames.ratings);
+  const irrStore = txn.objectStore(idbStoreNames.incorrectRatingReports);
+
+  const expiryVal = +new Date() - 1;
+  const incorrectRatingReports = await irrStore.getAll();
+  await Promise.all(
+    incorrectRatingReports
+      .flatMap((irr) => [
+        ratingsStore.put({
+          ...pick(irr, ["imdbId", "imdbRating"]),
+          wasReportedIncorrect: true,
+          key: irr.key,
+          expiry: expiryVal,
+        }),
+        irrStore.delete(irr.key),
+      ])
+      .concat(txn.done),
+  );
 }
