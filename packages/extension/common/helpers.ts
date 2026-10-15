@@ -1,13 +1,7 @@
 // this module is for more complex helper fns
 
 import { openDB } from "idb";
-import {
-  browser,
-  CssColors,
-  languages,
-  DB_NAME,
-  DB_VERSION,
-} from "./constants";
+import { browser, CssColors, languages } from "./constants";
 import type { ExtensionContext, Message, ProgramData } from "./types";
 import TelemetryStore from "./TelemetryStore";
 import RatingsCache from "./RatingsCache";
@@ -116,14 +110,17 @@ export function extractProgramTitle(str: string): string {
   );
 }
 
-export async function upgradeIdbAndGetConnection() {
-  const db = await openDB(DB_NAME, DB_VERSION, {
+export async function upgradeIdbAndGetConnection(
+  dbName: string,
+  dbVersion: number,
+) {
+  const db = await openDB(dbName, dbVersion, {
     upgrade: (db, oldVersion) => {
       RatingsCache.upgradeDb(db, oldVersion);
       TelemetryStore.upgradeDb(db, oldVersion);
     },
   });
-  await setSetting("updatedDbVersion", DB_VERSION);
+  await setSetting("updatedDbVersion", dbVersion);
   return db;
 }
 
