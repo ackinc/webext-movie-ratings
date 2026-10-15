@@ -1,6 +1,7 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
 import {
   idbStoreNames,
+  allIdbMigrations,
   type IdbMigrationName,
   type CachedIMDBData,
   type IMDBData,
@@ -22,7 +23,6 @@ export interface RatingsCacheSchema extends DBSchema {
 }
 
 const storeName = idbStoreNames.ratings;
-const incorrectRatingReportsStoreName = idbStoreNames.incorrectRatingReports;
 
 export default class RatingsCache {
   db: IDBPDatabase<RatingsCacheSchema>;
@@ -30,13 +30,24 @@ export default class RatingsCache {
   static upgradeDb(
     db: IDBPDatabase,
     oldVersion: number,
-    _completedMigrations: IdbMigrationName[] = [],
+    completedMigrations: IdbMigrationName[] = [],
   ) {
     if (oldVersion < 1) {
       db.createObjectStore(storeName, { keyPath: "key" });
     }
     if (oldVersion < 3) {
-      db.createObjectStore(incorrectRatingReportsStoreName, { keyPath: "key" });
+      db.createObjectStore(idbStoreNames.incorrectRatingReports, {
+        keyPath: "key",
+      });
+    }
+
+    if (
+      completedMigrations.includes(
+        allIdbMigrations.moveDataOutOfIncorrectRatingReportsStore.name,
+      ) &&
+      db.objectStoreNames.contains(idbStoreNames.incorrectRatingReports)
+    ) {
+      db.deleteObjectStore(idbStoreNames.incorrectRatingReports);
     }
   }
 

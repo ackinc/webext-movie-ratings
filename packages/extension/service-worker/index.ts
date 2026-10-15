@@ -11,7 +11,6 @@ import {
   supportedSites,
   ErrorMessage,
   upgradeIdbAndGetConnection,
-  runDataMigrations,
   addBadge,
   removeBadge,
 } from "../common";
@@ -48,8 +47,6 @@ async function onStart() {
     await removeBadge();
 
     const db = await upgradeIdbAndGetConnection(DB_NAME, DB_VERSION);
-    await runDataMigrations(db);
-
     telemetryStore = await TelemetryStore.create(
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
