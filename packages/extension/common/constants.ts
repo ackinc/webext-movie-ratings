@@ -67,6 +67,7 @@ export const enum MessageType {
   getSelectProgramModeState = "sift:getSelectProgramModeState",
   toggleSelectProgramMode = "sift:toggleSelectProgramMode",
   setMediaRequestBlockingState = "sift:setMediaRequestBlockingState",
+  refreshRatingsOnPage = "sift:refreshRatingsOnPage",
 }
 
 export const defaultProgramFilterSettings: ProgramFilterSettings = {

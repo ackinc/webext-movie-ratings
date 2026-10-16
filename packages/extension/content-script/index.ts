@@ -19,6 +19,7 @@ import type {
   Message,
   Program,
   ProgramFilterSettings,
+  SchedulePageProcessingReason,
   WebpageStats,
 } from "../common/types";
 import DisneyPlusPage from "./pages/DisneyPlus/Page";
@@ -100,8 +101,9 @@ async function main() {
 }
 
 function schedulePageProcessing(
-  reason: string,
+  reason: SchedulePageProcessingReason,
   withDelayMs: number = mainFnInvocationDelayMs,
+  fullRefresh: boolean = false,
 ) {
   if (timeout) clearTimeout(timeout);
 
@@ -110,7 +112,10 @@ function schedulePageProcessing(
     console.debug(`[${now}] schedulePageProcessing ${reason}`);
   }
 
-  timeout = setTimeout(findProgramsAndAddRatings, withDelayMs);
+  timeout = setTimeout(
+    () => findProgramsAndAddRatings(fullRefresh),
+    withDelayMs,
+  );
 }
 
 function cleanup(broadcast = true) {
@@ -186,7 +191,7 @@ function removeListeners() {
   browser.runtime?.onMessage.removeListener(handleMessage);
 }
 
-async function findProgramsAndAddRatings() {
+async function findProgramsAndAddRatings(fullRefresh: boolean = false) {
   try {
     const programs = page.findPrograms({
       swallowDataExtractionErrors: !(await getSetting(
@@ -195,7 +200,7 @@ async function findProgramsAndAddRatings() {
     });
 
     const results = await Promise.allSettled<Program>(
-      programs.map((p) => addRating(p).then(fadeIfFilteredOut)),
+      programs.map((p) => addRating(p, fullRefresh).then(fadeIfFilteredOut)),
     );
     const errors: Error[] = results
       .map((r, idx) => {
@@ -263,8 +268,11 @@ async function findProgramsAndAddRatings() {
   }
 }
 
-async function addRating(p: Program): Promise<Program> {
-  if (!page.checkIMDBDataAlreadyAdded(p)) {
+async function addRating(
+  p: Program,
+  skipExistsCheck: boolean = false,
+): Promise<Program> {
+  if (skipExistsCheck || !page.checkIMDBDataAlreadyAdded(p)) {
     page.addIMDBData(p, await requestIMDBData(p));
   }
   return p;
@@ -324,6 +332,7 @@ function handleMessage(
 ) {
   const msg = m instanceof MessageEvent ? (m.data as Message) : m;
   const { type } = msg;
+  if (!(typeof type === "string" && type.startsWith("sift"))) return;
 
   if (type === MessageType.cleanup) {
     cleanup();
@@ -344,6 +353,8 @@ function handleMessage(
     if (sendResponse) sendResponse(page.inSelectProgramMode ? "on" : "off");
   } else if (type === MessageType.toggleSelectProgramMode) {
     page.toggleSelectProgramMode();
+  } else if (type === MessageType.refreshRatingsOnPage) {
+    schedulePageProcessing("onMessageFromServiceWorker", undefined, true);
   }
 }
 

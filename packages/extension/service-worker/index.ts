@@ -160,7 +160,7 @@ async function handleTabUpdated(
 
 function handleMessage(
   request: Message,
-  _sender: chrome.runtime.MessageSender,
+  sender: chrome.runtime.MessageSender,
   sendResponse: (arg: SWMessageResponse<unknown>) => void,
 ) {
   try {
@@ -204,6 +204,13 @@ function handleMessage(
       waitForRatingsService()
         .then((rs) => rs.markRatingAsIncorrect(program, imdbData, pageUrl))
         .then((data) => sendResponse({ data }))
+        .then(() =>
+          sender.tab?.id
+            ? browser.tabs.sendMessage(sender.tab.id, {
+                type: MessageType.refreshRatingsOnPage,
+              })
+            : null,
+        )
         .catch(captureException);
 
       return true;
@@ -213,6 +220,13 @@ function handleMessage(
       waitForRatingsService()
         .then((rs) => rs.undoMarkRatingAsIncorrect(program, imdbData, pageUrl))
         .then(() => sendResponse({ data: {} }))
+        .then(() =>
+          sender.tab?.id
+            ? browser.tabs.sendMessage(sender.tab.id, {
+                type: MessageType.refreshRatingsOnPage,
+              })
+            : null,
+        )
         .catch(captureException);
 
       return true;
@@ -234,6 +248,13 @@ function handleMessage(
           ),
         )
         .then(() => sendResponse({ data: {} }))
+        .then(() =>
+          sender.tab?.id
+            ? browser.tabs.sendMessage<Message>(sender.tab.id, {
+                type: MessageType.refreshRatingsOnPage,
+              })
+            : null,
+        )
         .catch(captureException);
 
       return true;

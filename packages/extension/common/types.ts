@@ -165,6 +165,14 @@ export type Message =
       type: MessageType.cleanup;
     }
   | {
+      // Sent from service-worker to ISOLATED world content-script
+      //   when something has happened to make refreshing the ratings
+      //   on the page make sense (for ex a user has marked a rating
+      //   as incorrect, or selected a suggested alternative for a
+      //   program-match)
+      type: MessageType.refreshRatingsOnPage;
+    }
+  | {
       type: MessageType.healthCheck;
     }
   | {
@@ -257,3 +265,10 @@ export interface InAppNotification extends SiftNotification {
   status: InAppNotificationStatus;
   timestamp: number;
 }
+
+export type SchedulePageProcessingReason =
+  | "onStart"
+  | "onMutation"
+  | "onUrlChange"
+  | "onFiltersChange"
+  | "onMessageFromServiceWorker";
