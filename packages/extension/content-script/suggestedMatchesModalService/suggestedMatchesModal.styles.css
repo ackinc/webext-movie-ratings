@@ -133,14 +133,10 @@
 
           &:hover {
             text-decoration: underline;
-
-            svg.icon-external-link {
-              stroke: white;
-            }
           }
 
           svg.icon-external-link {
-            stroke: transparent;
+            stroke: white;
             width: 14px;
             height: 14px;
           }
