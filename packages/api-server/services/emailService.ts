@@ -1,15 +1,17 @@
 import "dotenv/config";
 
 import * as fs from "node:fs";
+import { tmpdir } from "node:os";
 import * as path from "node:path";
 import nodemailer from "nodemailer";
 import { pick } from "siftutils";
 import Handlebars from "handlebars";
+import logger from "./logger.ts";
 import { emailTemplatesDir } from "../constants.ts";
 
-const { DEV_EMAIL, RESEND_API_KEY } = pick(
+const { APP_ENV, DEV_EMAIL, RESEND_API_KEY } = pick(
   process.env,
-  ["DEV_EMAIL", "RESEND_API_KEY"],
+  ["APP_ENV", "DEV_EMAIL", "RESEND_API_KEY"],
   true,
 );
 
@@ -34,12 +36,24 @@ export const precompiledTemplates = {
 };
 
 interface Email {
-  from?: string;
+  from?: string | undefined;
   to: string;
   subject: string;
   body: string;
 }
 export async function send({ from, to, subject, body }: Email) {
+  // We usually don't want emails going out during dev
+  // The few times that we actually do, just comment this block out
+  if (APP_ENV === "development") {
+    const tempfile = path.join(
+      tmpdir(),
+      `${subject.toLowerCase().replace(/\W+/g, "_")}-${+new Date()}.html`,
+    );
+    await fs.promises.writeFile(tempfile, body);
+    logger.info(`Saved email at "${tempfile}"`);
+    return;
+  }
+
   await transporter.sendMail({
     from: from ?? defaultFromAddress,
     to,
@@ -49,10 +63,5 @@ export async function send({ from, to, subject, body }: Email) {
 }
 
 export async function sendToDev({ from, subject, body }: Omit<Email, "to">) {
-  await transporter.sendMail({
-    from: from ?? defaultFromAddress,
-    to: DEV_EMAIL!,
-    subject,
-    html: body,
-  });
+  await send({ from, to: DEV_EMAIL!, subject, body });
 }
