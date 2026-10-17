@@ -36,19 +36,28 @@ export default class ProgramNode extends AbstractProgramNode {
         .replace("Featured Content:", "")
         .trim();
 
-      const [yearNode, typeNode] = Array.from(
+      const metadataNodes = Array.from(
         programNode.querySelectorAll(
           'div[data-uia="billboard-title"] div[data-uia="attributes-elements"] > span',
         ),
-      ).slice(1, 3);
-      type = typeNode?.textContent
-        ? ["Seasons", "Episodes", "Series"].some((x) =>
-            typeNode.textContent.includes(x),
-          )
+      );
+
+      type = metadataNodes.some((node) =>
+        [/^film$/i, /\dh \d+m/].some((rxp) => rxp.test(node.textContent)),
+      )
+        ? "movie"
+        : metadataNodes.some((node) =>
+              [/\b(seasons|series|episodes)\b/i].some((rxp) =>
+                rxp.test(node.textContent),
+              ),
+            )
           ? "series"
-          : "movie"
-        : null;
-      year = yearNode?.textContent ? +yearNode.textContent : null;
+          : null;
+
+      const yearNode = metadataNodes.find((node) =>
+        /\d{4}/.test(node.textContent),
+      );
+      year = yearNode ? +yearNode.textContent : null;
     } else if (
       programNode.matches(
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="standard-card"])',
