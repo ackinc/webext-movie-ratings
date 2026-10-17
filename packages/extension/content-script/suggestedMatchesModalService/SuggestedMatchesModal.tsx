@@ -63,17 +63,24 @@ export default function SuggestedMatchesModal({
 
   const ratingNode = program.node.querySelector(`.${CssClasses.imdbDataNode}`)!;
 
+  // NOTE_POSITIONING_SUGGESTED_MATCHES_MODAL
+  // When the user dismisses this modal- by clicking on the backdrop, or
+  //   selecting one of the options in the suggested matches list, their
+  //   pointer should ideally be hovering somewhere over the corresponding
+  //   program-node
+  // If this is not the case, the UX can be poor if the program-node in
+  //   question is a "hover-node" (i.e. program-node with additional details
+  //   about the program that only shows up when the user is hovering over a
+  //   regular, non-hover program-node). And by poor UX, I mean the hover-node
+  //   disappears, causing the user to have to move the mouse to bring up the
+  //   hover-node again
+
+  const { clientHeight: ch, clientWidth: cw } = document.documentElement;
   const rect = ratingNode.getBoundingClientRect();
-  const top =
-    rect.bottom + MAX_HEIGHT <= document.documentElement.clientHeight
-      ? rect.bottom
-      : null;
-  const bottom =
-    top === null ? document.documentElement.clientHeight - rect.top : null;
-  const left =
-    rect.x + MAX_WIDTH <= document.documentElement.clientWidth ? rect.x : null;
-  const right =
-    left === null ? document.documentElement.clientWidth - rect.right : null;
+  const bottom = rect.y >= MAX_HEIGHT ? ch - rect.y : null;
+  const top = bottom === null ? rect.bottom : null;
+  const left = rect.x + MAX_WIDTH <= cw ? rect.x : null;
+  const right = left === null ? cw - rect.right : null;
 
   return (
     <div
