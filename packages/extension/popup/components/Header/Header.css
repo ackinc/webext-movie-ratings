@@ -24,3 +24,27 @@
   display: flex;
   gap: 8px;
 }
+
+.popup-tabs {
+  display: flex;
+  margin: 0 24px 16px;
+  border-bottom: 1px solid #d1d1d1;
+}
+
+.popup-tabs button {
+  flex: 1;
+  padding: 8px 4px;
+  background: transparent;
+  color: var(--main-text-color);
+  cursor: pointer;
+  font: inherit;
+  font-weight: bold;
+}
+
+.popup-tabs button.active {
+  box-shadow: inset 0 -3px var(--main-bg-color);
+}
+
+.popup-tabs button:not(.active):hover {
+  background: #f4f4f4;
+}
