@@ -39,29 +39,9 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
   }, [curPage]);
 
   return (
-    <>
-      <div className="header">
-        <div className="logo-container">
-          <img src={"/images/logo128.png"} alt="Sift logo" />
-        </div>
-
-        <h3>
-          {showingNewFeature
-            ? "New feature alert!"
-            : popupPageToHeadline[curPage]}
-        </h3>
-
-        {!["filters", "settings"].includes(curPage) ? (
-          <div className="nav-controls">
-            {curPage === "pitchErrorReporting" ? (
-              <CloseIconButton onClick={() => setCurPage("settings")} />
-            ) : curPage === "pitchMissingRatingReporting" ? (
-              <CloseIconButton onClick={() => setCurPage("filters")} />
-            ) : curPage === "feedbackForm" ? (
-              <CloseIconButton onClick={() => setCurPage("filters")} />
-            ) : null}
-          </div>
-        ) : null}
+    <div className="header">
+      <div className="logo-container">
+        <img src={"/images/logo128.png"} alt="Sift logo" />
       </div>
 
       {["filters", "settings"].includes(curPage) ? (
@@ -81,7 +61,25 @@ export default function Header({ curPage, setCurPage }: HeaderProps) {
             Settings
           </button>
         </nav>
+      ) : (
+        <h3>
+          {showingNewFeature
+            ? "New feature alert!"
+            : popupPageToHeadline[curPage]}
+        </h3>
+      )}
+
+      {!["filters", "settings"].includes(curPage) ? (
+        <div className="nav-controls">
+          {curPage === "pitchErrorReporting" ? (
+            <CloseIconButton onClick={() => setCurPage("settings")} />
+          ) : curPage === "pitchMissingRatingReporting" ? (
+            <CloseIconButton onClick={() => setCurPage("filters")} />
+          ) : curPage === "feedbackForm" ? (
+            <CloseIconButton onClick={() => setCurPage("filters")} />
+          ) : null}
+        </div>
       ) : null}
-    </>
+    </div>
   );
 }
