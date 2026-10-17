@@ -168,13 +168,20 @@ export default class ProgramNode extends AbstractProgramNode {
     }
 
     if (programNode.matches("div.previewModal--container.mini-modal")) {
-      const videoMetadataNode = programNode.querySelector(
+      // netflix has two different kinds of these nodes - one with the
+      //   program's full details, and another with much more limited metadata
+      //   that appears for programs the user has already partially watched
+
+      let metadataNode = programNode.querySelector(
         "div.previewModal--metadatAndControls-info",
       );
-      // in a few rare cases, netflix fails to add the video metadata node
-      //   to the DOM
-      videoMetadataNode?.insertAdjacentElement("afterend", imdbNode);
+      if (metadataNode) {
+        metadataNode.insertAdjacentElement("afterend", imdbNode);
+        return;
+      }
 
+      metadataNode = programNode.querySelector(".previewModal-progress");
+      metadataNode!.insertAdjacentElement("beforebegin", imdbNode);
       return;
     }
 
