@@ -38,6 +38,8 @@ export default class NetflixPage extends AbstractPage {
       "section.carousel-row:not(#place-holder-carousel)",
       "div.previewModal--wrapper.mini-modal:has(> div.previewModal--container)",
       "div.previewModal--wrapper:not(.mini-modal):has(> div.previewModal--container)",
+
+      'section[data-uia="entry-point-carousel"]',
     ];
   }
 
@@ -134,6 +136,12 @@ export default class NetflixPage extends AbstractPage {
       return "Preview modal";
     }
 
+    if (pContainerNode.matches('section[data-uia="entry-point-carousel"]')) {
+      return pContainerNode.querySelector(
+        'div[data-uia="entry-point-subheadline-divider"] + div',
+      )!.textContent;
+    }
+
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
@@ -194,6 +202,10 @@ export default class NetflixPage extends AbstractPage {
       "div.previewModal--wrapper:not(.mini-modal):has(> div.previewModal--container)"
     ) {
       return ["div.previewModal--container:not(.mini-modal)"];
+    }
+
+    if (selector === 'section[data-uia="entry-point-carousel"]') {
+      return ['div:has(> a[data-uia="standard-card"][aria-label])'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
