@@ -35,7 +35,7 @@ export default class NetflixPage extends AbstractPage {
 
       // 2026-05-14
       'div:has(> section[data-uia="billboard"])',
-      "section.carousel-row:not(#place-holder-carousel)",
+      'section.carousel-row:not(#place-holder-carousel):has(div[data-uia="carousel-scroller"]:nth-child(2))',
       "div.previewModal--wrapper.mini-modal:has(> div.previewModal--container)",
       "div.previewModal--wrapper:not(.mini-modal):has(> div.previewModal--container)",
 
@@ -114,7 +114,9 @@ export default class NetflixPage extends AbstractPage {
     }
 
     if (
-      pContainerNode.matches("section.carousel-row:not(#place-holder-carousel)")
+      pContainerNode.matches(
+        'section.carousel-row:not(#place-holder-carousel):has(div[data-uia="carousel-scroller"]:nth-child(2))',
+      )
     ) {
       return (pContainerNode.firstChild as HTMLElement).querySelector("h2")!
         .textContent;
@@ -182,7 +184,10 @@ export default class NetflixPage extends AbstractPage {
       return ['section[data-uia="billboard"]'];
     }
 
-    if (selector === "section.carousel-row:not(#place-holder-carousel)") {
+    if (
+      selector ===
+      'section.carousel-row:not(#place-holder-carousel):has(div[data-uia="carousel-scroller"]:nth-child(2))'
+    ) {
       return [
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="standard-card"])',
         'div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"])',
