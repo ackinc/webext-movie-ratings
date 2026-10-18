@@ -4,7 +4,6 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  gap: 8px;
 }
 
 .header .logo-container {
@@ -27,15 +26,11 @@
 
 .popup-tabs {
   display: flex;
-  flex: 1;
   align-self: stretch;
-  margin-left: 8px;
-  border-bottom: 1px solid #d1d1d1;
 }
 
 .popup-tabs button {
-  flex: 1;
-  padding: 8px 4px;
+  padding: 8px 16px;
   background: transparent;
   color: var(--main-text-color);
   cursor: pointer;
