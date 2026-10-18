@@ -76,15 +76,8 @@ async function onInstalled() {
   }
   await setSetting("extensionLastUpdateTime", now);
 
-  const [
-    onboardingStatus,
-    errorReportingOptIn,
-    pitchMissingRatingReportingPageSeen,
-    mediaRequestBlockingEnabled,
-  ] = await Promise.all([
+  const [onboardingStatus, mediaRequestBlockingEnabled] = await Promise.all([
     getSetting("onboardingStatus"),
-    getSetting("errorReportingOptIn"),
-    getSetting("pitchMissingRatingReportingPageSeen"),
     getSetting("mediaRequestBlockingEnabled"),
   ]);
 
@@ -92,10 +85,7 @@ async function onInstalled() {
     await setMediaRequestBlockingState(Boolean(mediaRequestBlockingEnabled));
   }
 
-  if (
-    onboardingStatus !== "finished" ||
-    (!errorReportingOptIn && !pitchMissingRatingReportingPageSeen)
-  ) {
+  if (onboardingStatus !== "finished") {
     addBadge("!");
   }
 
