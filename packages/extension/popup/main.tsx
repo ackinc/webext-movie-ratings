@@ -6,7 +6,6 @@ import SetCurPageContext from "./contexts/SetCurPageContext";
 import {
   removeBadge,
   getSetting,
-  setSetting,
   type InAppNotification,
   type PopupPage,
 } from "@common";
