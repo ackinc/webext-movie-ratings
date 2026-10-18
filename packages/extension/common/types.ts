@@ -237,7 +237,6 @@ export type ExtensionSettings = {
     | "displayedPermissionStatus"
     | "pitchedErrorReporting"
     | "finished";
-  pitchMissingRatingReportingPageSeen: boolean;
 } & ExtensionDeveloperSettings;
 
 type ExtensionDeveloperSettings = {
@@ -257,7 +256,6 @@ export type PopupPage =
   | "filters"
   | "settings"
   | "pitchErrorReporting"
-  | "pitchMissingRatingReporting"
   | "feedbackForm";
 
 export type InAppNotificationStatus = "unseen" | "seen" | "dismissed";

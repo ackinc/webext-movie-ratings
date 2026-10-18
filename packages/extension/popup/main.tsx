@@ -6,7 +6,6 @@ import SetCurPageContext from "./contexts/SetCurPageContext";
 import {
   removeBadge,
   getSetting,
-  setSetting,
   type InAppNotification,
   type PopupPage,
 } from "@common";
@@ -17,7 +16,6 @@ import ProgramFilters from "./pages/ProgramFiltersPage/ProgramFilters";
 import SettingsPage from "./pages/SettingsPage/SettingsPage";
 import Notifications from "./components/Notifications/Notifications";
 import PitchErrorReportingPage from "./pages/PitchErrorReportingPage/PitchErrorReportingPage";
-import PitchMissingRatingReportingPage from "./pages/PitchMissingRatingReportingPage/PitchMissingRatingReportingPage";
 import FeedbackFormPage from "./pages/FeedbackFormPage/FeedbackFormPage";
 import Footer from "./components/Footer/Footer";
 import "./main.css";
@@ -34,16 +32,6 @@ function App() {
     (async () => {
       if ((await getSetting("onboardingStatus")) !== "finished") {
         setCurPage("onboarding");
-        return;
-      }
-
-      const [errorReportingOptedIn, pitchMissingRatingReportingPageSeen] =
-        await Promise.all([
-          getSetting("errorReportingOptIn"),
-          getSetting("pitchMissingRatingReportingPageSeen"),
-        ]);
-      if (!errorReportingOptedIn && !pitchMissingRatingReportingPageSeen) {
-        setCurPage("pitchMissingRatingReporting");
         return;
       }
 
@@ -125,9 +113,6 @@ function App() {
           {curPage === "pitchErrorReporting" ? (
             <PitchErrorReportingPage />
           ) : null}
-          {curPage === "pitchMissingRatingReporting" ? (
-            <PitchMissingRatingReportingPage />
-          ) : null}
           {curPage === "feedbackForm" ? <FeedbackFormPage /> : null}
         </main>
 
@@ -143,7 +128,6 @@ function App() {
       ["ADDED_HBOMAX_PEACOCKTV_ZEE5_MXPLAYER", "ADDED_HULU"],
       "dismissed",
     );
-    await setSetting("pitchMissingRatingReportingPageSeen", true);
 
     removeBadge();
     setCurPage("filters");
