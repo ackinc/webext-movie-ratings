@@ -1,4 +1,4 @@
-import type { ProgramData } from "./types";
+import type { IMDBData, ProgramData } from "./types";
 import { pick, retry } from "siftutils";
 import type {
   Notification,
@@ -13,14 +13,14 @@ const retryStrategy = {
   maxRetries: 5,
 } as const;
 
-export const getMatchedImdbId = retry(getMatchedImdbId_, retryStrategy);
+export const fetchIMDBData = retry(fetchIMDBData_, retryStrategy);
 export const sendUserFeedback = retry(sendUserFeedback_, retryStrategy);
 export const getNotifications = retry(getNotifications_, retryStrategy);
 
-async function getMatchedImdbId_(
+async function fetchIMDBData_(
   programData: ProgramData,
   pageUrl: string,
-): Promise<SiftApiProgramMatching.Response> {
+): Promise<IMDBData> {
   const url = new URL(`${SIFT_API_URL}/imdbId`);
 
   const searchParams = {
@@ -35,8 +35,27 @@ async function getMatchedImdbId_(
   ).toString();
 
   const response = await fetch(url);
-  if (!response.ok) throw new Error(ErrorMessage.siftApiServerError);
-  return (await response.json()) as SiftApiProgramMatching.Response;
+  if (!response.ok) {
+    if (response.status < 500) {
+      const errorMsg = await response
+        .json()
+        .then((body) => body.error ?? JSON.stringify(body))
+        .catch(() => response.text());
+      throw new Error(
+        `Error calling sift's program-matching API. Status: ${response.status}. Error: ${errorMsg}`,
+      );
+    }
+
+    return { imdbId: "", imdbRating: "N/M" };
+  }
+
+  const body = (await response.json()) as SiftApiProgramMatching.Response;
+  return body.status === "matched"
+    ? {
+        imdbId: body.imdbId,
+        imdbRating: body.imdbRating ?? "N/A",
+      }
+    : { imdbId: "", imdbRating: "N/F" };
 }
 
 async function sendUserFeedback_(

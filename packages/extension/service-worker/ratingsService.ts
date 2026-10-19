@@ -1,6 +1,6 @@
 import { type IDBPDatabase } from "idb";
 import { add } from "date-fns";
-import type { Sitename, Sitehost, SiftApiProgramMatching } from "siftcore";
+import type { Sitename, Sitehost } from "siftcore";
 import {
   pick,
   omit,
@@ -126,15 +126,8 @@ async function getIMDBData(
     let imdbData: IMDBData | null = null;
     let error: Error | null = null;
 
-    // this was gated behind the "opt-in to error reporting" extension
-    //   setting before; the gate has been removed because program-matching
-    //   is now an essential part of the extension
-    const siftProgramMatchingEnabled = true;
-
     try {
-      const skipOptimisticOmdbRequest =
-        siftProgramMatchingEnabled && cached?.imdbRating === "N/M";
-      if (skipOptimisticOmdbRequest) {
+      if (cached?.imdbRating === "N/M") {
         // if we're here, it means the last time this function was called for
         //   this program, there was:
         //   a) an N/F response from omdb api
@@ -147,30 +140,12 @@ async function getIMDBData(
         imdbData = await omdbApiClient.fetchIMDBData(cached?.imdbId || program);
       }
 
-      if (siftProgramMatchingEnabled && !(cached?.imdbId || imdbData?.imdbId)) {
-        // we didn't have the program's imdb id, and, if we didn't skip the
-        //   optimistic omdb api request above, the omdb api wasn't able to
+      if (!(cached?.imdbId || imdbData?.imdbId)) {
+        // we didn't have the program's imdb id, and (if we didn't skip the
+        //   optimistic omdb api request above,) omdb wasn't able to
         //   figure it out based on the program's details; let's see if sift's
         //   program-matching can do it
-
-        let matchStatus: SiftApiProgramMatching.Response["status"] | "error";
-        let matchedImdbId: string | undefined = undefined;
-        try {
-          ({ status: matchStatus, imdbId: matchedImdbId } =
-            await siftApiService.getMatchedImdbId(program, pageUrl));
-        } catch {
-          matchStatus = "error";
-        }
-
-        if (matchStatus === "matched") {
-          // try to get the imdb data from omdb by querying with the
-          //   imdb id we just matched this program to
-          imdbData = await omdbApiClient.fetchIMDBData(matchedImdbId!);
-        } else if (matchStatus === "abandoned") {
-          imdbData = { imdbId: "", imdbRating: "N/F" };
-        } else /* matchStatus === 'error' */ {
-          imdbData = { imdbId: "", imdbRating: "N/M" };
-        }
+        imdbData = await siftApiService.fetchIMDBData(program, pageUrl);
       }
     } catch (e) {
       error =

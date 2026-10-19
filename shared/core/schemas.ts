@@ -11,10 +11,14 @@ export const siftApiProgramMatchSchemas = {
     year: Type.Optional(Type.Number()),
     pageUrl: Type.String(),
   }),
-  response: Type.Object({
-    status: siftApiProgramMatchStatus,
-    imdbId: Type.Optional(Type.String()),
-  }),
+  response: Type.Union([
+    Type.Object({ status: Type.Literal("abandoned") }),
+    Type.Object({
+      status: Type.Literal("matched"),
+      imdbId: Type.String(),
+      imdbRating: Type.Union([Type.Number(), Type.Null()]),
+    }),
+  ]),
   incorrectMatchReportRequest: Type.Object({
     title: Type.String(),
     type: Type.Optional(programTypeSchema),
