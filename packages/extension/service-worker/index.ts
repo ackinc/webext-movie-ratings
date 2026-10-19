@@ -88,9 +88,7 @@ async function onInstalled() {
 
   if (onboardingStatus !== "finished") {
     addBadge("!");
-  }
 
-  if (onboardingStatus !== "finished") {
     // firefox won't let us open the popup outside of a user-gesture
     if (TARGET_BROWSER !== "firefox") {
       browser.action.openPopup();
