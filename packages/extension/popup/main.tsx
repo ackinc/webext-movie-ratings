@@ -38,14 +38,7 @@ function App() {
       // show whichever page the user has unseen notifications for
       const [latestNotification, ...restNotifications] =
         await notificationsService.getNotificationsBy(
-          {
-            status: ["unseen", "seen"],
-            targetPage: [
-              "filters",
-              "settings",
-              "pitchErrorReporting",
-            ] satisfies PopupPage[],
-          },
+          { status: ["unseen", "seen"] },
           notificationsService.cmpNotificationsByStatusAndTimestamp,
           { limitPerPage: 3 },
         );
