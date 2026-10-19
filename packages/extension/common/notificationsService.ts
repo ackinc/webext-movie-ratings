@@ -1,5 +1,8 @@
 import { addWeeks, differenceInDays } from "date-fns";
-import type { Notification as SiftNotification } from "siftcore";
+import {
+  type Notification as SiftNotification,
+  notificationTargetPages,
+} from "siftcore";
 import { getSetting } from "@common";
 import * as siftApiService from "./siftApiService";
 import * as storage from "./storage";
@@ -7,23 +10,25 @@ import type { InAppNotification, InAppNotificationStatus } from "./types";
 import { webStoreLink } from "./constants";
 
 export async function checkForNewNotifications(): Promise<InAppNotification[]> {
+  await removeInvalidNotifications();
+
   const extensionInstallTime =
     (await getSetting("extensionInstallTime")) ?? +new Date();
   const clientSideNotifications: Required<SiftNotification>[] = [
     differenceInDays(new Date(), new Date(extensionInstallTime)) > 5
-      ? {
+      ? ({
           notificationId: "RATE_AND_REVIEW_SIFT",
           content: `Enjoying Sift? Please rate and review us in the [web store](${webStoreLink}).`,
           targetPage: "filters",
           timestamp: 1783331877794,
-        }
+        } as const)
       : null,
     {
       notificationId: "SIFT_NOW_SUPPORTS_PLEX",
       content: `Sift now supports [Plex](https://watch.plex.tv)!`,
       targetPage: "settings",
       timestamp: 1787935479278,
-    },
+    } as const,
   ].filter((x) => x !== null) satisfies Required<SiftNotification>[];
 
   const lastReceivedNotif = await getLatestNotification();
@@ -38,8 +43,6 @@ export async function checkForNewNotifications(): Promise<InAppNotification[]> {
   if (newNotifications.length > 0) {
     await storeNotifications(newNotifications);
   }
-
-  // TODO: prune old notifications
 
   return await getNotificationsBy({ status: ["unseen"] });
 }
@@ -145,4 +148,16 @@ export function cmpNotificationsByStatusAndTimestamp(
     statusPriorityOrderDesc.indexOf(a.status) -
       statusPriorityOrderDesc.indexOf(b.status) || b.timestamp - a.timestamp
   );
+}
+
+async function removeInvalidNotifications() {
+  const allNotifications = await getAllNotifications();
+  const toKeep = allNotifications.filter(
+    (n) =>
+      notificationTargetPages.includes(n.targetPage) &&
+      (["unseen", "seen", "dismissed"] as InAppNotificationStatus[]).includes(
+        n.status,
+      ),
+  );
+  await storage.set("notifications", toKeep);
 }

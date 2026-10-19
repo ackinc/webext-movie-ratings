@@ -36,9 +36,10 @@ export const userMessageSchema = Type.Object({
   message: Type.String(),
 });
 
+export const notificationTargetPages = ["filters", "settings"] as const;
 export const notificationSchema = Type.Object({
   notificationId: Type.String(),
-  targetPage: Type.String(),
+  targetPage: Type.Enum(notificationTargetPages),
   content: Type.String(),
   timestamp: Type.Optional(Type.Number()),
 });
