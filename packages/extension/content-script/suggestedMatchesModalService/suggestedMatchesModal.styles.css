@@ -5,6 +5,7 @@
   border: 0;
   padding: 0;
   text-decoration: none;
+  line-height: normal;
 }
 
 .modal-container.modal-suggested-matches {
@@ -63,6 +64,11 @@
         font-size: 14px;
         font-weight: bold;
       }
+    }
+
+    .current-match p:first-child,
+    .alternative-matches p:first-child {
+      margin-bottom: 4px;
     }
 
     ul {
