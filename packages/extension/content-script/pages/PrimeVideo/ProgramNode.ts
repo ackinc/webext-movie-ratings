@@ -25,9 +25,24 @@ export default class ProgramNode extends AbstractProgramNode {
       const titleNode = programNode.querySelector(
         'h4[data-testid="title-art"]',
       )!;
+      const yearNode = programNode.querySelector(
+        'section[data-testid="metadata-default"] span[data-testid="release-year"]',
+      );
+
+      const playButtonLabel =
+        programNode
+          .querySelector('a[role="button"][data-testid="play"]')
+          ?.getAttribute("aria-label") ?? "";
+      const type = !playButtonLabel
+        ? null
+        : /(episode \d+|s\d+ e\d+)$/i.test(playButtonLabel)
+          ? "series"
+          : "movie";
       return {
         ...super.extractProgramData(programNode, pContainer),
         title: extractProgramTitle(titleNode.textContent),
+        ...(yearNode ? { year: +yearNode.textContent } : {}),
+        ...(type ? { type } : {}),
       };
     }
 
