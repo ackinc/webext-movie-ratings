@@ -153,9 +153,13 @@ function createServer() {
       const existingRow = dbService.getProgramMatchRecord(query);
 
       if (existingRow?.status === "matched") {
-        return reply
-          .code(200)
-          .send({ status: "matched", imdbId: existingRow.imdbId! });
+        return reply.code(200).send({
+          status: "matched",
+          imdbId: existingRow.imdbId!,
+          imdbRating: (
+            JSON.parse(existingRow.meta!).bestMatch as IndexedImdbTitle
+          ).rating,
+        });
       }
 
       if (existingRow?.status === "reportedIncorrect") {
@@ -178,7 +182,7 @@ function createServer() {
       //   updated since it was marked 'abandoned'
 
       const [bestMatch] = await querySearchEngine(query);
-      const row = dbService.upsertProgramMatchRecord({
+      dbService.upsertProgramMatchRecord({
         ...query,
         status: bestMatch ? "matched" : "abandoned",
         imdbId: bestMatch ? bestMatch.imdbId : null,
@@ -187,13 +191,15 @@ function createServer() {
         meta: JSON.stringify(bestMatch ? { bestMatch } : {}),
       });
 
-      return reply
-        .code(200)
-        .send(
-          bestMatch
-            ? { status: "matched", imdbId: row.imdbId! }
-            : { status: "abandoned" },
-        );
+      return reply.code(200).send(
+        bestMatch
+          ? {
+              status: "matched",
+              imdbId: bestMatch.imdbId,
+              imdbRating: bestMatch.rating,
+            }
+          : { status: "abandoned" },
+      );
     },
   );
 
