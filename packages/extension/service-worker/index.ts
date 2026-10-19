@@ -395,6 +395,18 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
       },
       action: { type: "block" },
     },
+    {
+      id: 8,
+      priority: 2,
+      condition: {
+        initiatorDomains: initiatorDomains.filter((d) =>
+          /(amazon|primevideo)/i.test(d),
+        ),
+        requestMethods: ["get"],
+        requestDomains: ["amazon.pv-cdn.net", "akamaihd.net"],
+      },
+      action: { type: "block" },
+    },
   ];
 
   const existingRules = await chrome.declarativeNetRequest.getDynamicRules();
