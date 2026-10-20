@@ -71,7 +71,7 @@ function createServer() {
         : true,
   });
 
-  fastify.setErrorHandler(function (error: Error, _request, reply) {
+  fastify.setErrorHandler(function (error: Error, request, reply) {
     const statusCode =
       "statusCode" in error ? (error.statusCode as number) : 500;
     if (statusCode < 500) {
@@ -85,7 +85,12 @@ function createServer() {
         .send({ error: statusCode < 500 ? error.message : "Server error" });
     }
     if (statusCode >= 500) {
-      Sentry.captureException(error);
+      Sentry.captureException(error, {
+        tags: {
+          extensionVersion: (request.headers["x-sift-extension-version"] ??
+            "") as string,
+        },
+      });
     }
   });
 
