@@ -15,7 +15,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { isEqual } from "lodash-es";
 import { Meilisearch, type Index, type IndexObject } from "meilisearch";
-import { pick } from "siftutils";
+import { delayMs, pick } from "siftutils";
 import type { IndexedImdbTitle } from "siftcore";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -129,6 +129,8 @@ logger.info(`Finished processing ratings file at T=${durationMs}ms`);
 
 /* STAGE 2: add docs to index */
 
+const taskUids: number[] = [];
+
 // second pass of basics file - add docs to index
 await processFile(
   path.join(IMDB_DATA_DIR!, requiredFiles.BASICS.filename),
@@ -152,7 +154,31 @@ await processFile(
 durationMs = +new Date() - +startTime;
 logger.info(`Finished processing akas file at T=${durationMs}ms`);
 
-logger.info(`Done`);
+/* STAGE 3: wait until all tasks are [succeeded, failed, or canceled] */
+
+logger.info(`A total of ${taskUids.length} tasks were added to meilisearch`);
+
+do {
+  const result = await client.tasks.getTasks({
+    uids: taskUids,
+    statuses: ["enqueued", "processing"],
+  });
+  if (result.total === 0) break;
+  logger.info(`Waiting for ${result.total} tasks to complete ...`);
+  await delayMs(5000);
+} while (true);
+
+const failedTasks = await client.tasks.getTasks({
+  uids: taskUids,
+  statuses: ["failed"],
+});
+const nFailedDocs = failedTasks.results.reduce(
+  (acc, t) => acc + t.details!.receivedDocuments!,
+  0,
+);
+logger.info(
+  `All tasks finished. There were ${failedTasks.total} / ${taskUids.length} failed tasks, covering ${nFailedDocs} documents.`,
+);
 
 // helpers
 
@@ -213,24 +239,26 @@ async function addDocsFromBasicsFile(batch: Batch) {
   const documents = batch.flatMap(([, line]) =>
     getDocumentsFromBasicsFileLine(line),
   );
-  index.addDocuments(
+  const { taskUid } = await index.addDocuments(
     documents.map((d) => ({
       ...d,
       rating: canonDocumentsByImdbId.get(d.imdbId)?.rating ?? null,
     })),
   );
+  taskUids.push(taskUid);
 }
 
 async function addDocsFromAkasFile(batch: Batch) {
   const documents = batch.flatMap(([, line]) =>
     getDocumentsFromAkasFileLine(line),
   );
-  index.addDocuments(
+  const { taskUid } = await index.addDocuments(
     documents.map((d) => ({
       ...d,
       rating: canonDocumentsByImdbId.get(d.imdbId)?.rating ?? null,
     })),
   );
+  taskUids.push(taskUid);
 }
 
 function getDocumentsFromBasicsFileLine(
