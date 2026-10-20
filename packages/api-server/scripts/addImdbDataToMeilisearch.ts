@@ -31,12 +31,23 @@ import baseLogger from "../services/logger.ts";
 type Document = IndexedImdbTitle;
 
 const __filename = path.basename(fileURLToPath(import.meta.url));
-const { APP_ENV, IMDB_DATA_DIR, MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } =
-  pick(
-    process.env,
-    ["APP_ENV", "IMDB_DATA_DIR", "MEILISEARCH_MASTER_KEY", "MEILISEARCH_URL"],
-    true,
-  );
+const {
+  APP_ENV,
+  IMDB_DATA_DIR,
+  MEILISEARCH_MASTER_KEY,
+  MEILISEARCH_INDEX_NAME,
+  MEILISEARCH_URL,
+} = pick(
+  process.env,
+  [
+    "APP_ENV",
+    "IMDB_DATA_DIR",
+    "MEILISEARCH_MASTER_KEY",
+    "MEILISEARCH_INDEX_NAME",
+    "MEILISEARCH_URL",
+  ],
+  true,
+);
 
 const requiredFiles = {
   BASICS: {
@@ -76,7 +87,7 @@ const client = new Meilisearch({
   host: MEILISEARCH_URL!,
   apiKey: MEILISEARCH_MASTER_KEY!,
 });
-const index = await prepareIndex(client);
+const index = await prepareIndex(client, MEILISEARCH_INDEX_NAME!);
 
 const logger = baseLogger.child({ script: __filename });
 const startTime = new Date();
@@ -145,8 +156,10 @@ logger.info(`Done`);
 
 // helpers
 
-async function prepareIndex(client: Meilisearch): Promise<Index<Document>> {
-  const indexName = "imdb";
+async function prepareIndex(
+  client: Meilisearch,
+  indexName: string,
+): Promise<Index<Document>> {
   let index = client.index<Document>(indexName);
   let rawInfo: IndexObject | null = null;
 

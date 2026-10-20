@@ -1,15 +1,21 @@
 import { parseISO, differenceInMinutes } from "date-fns";
 import { Meilisearch } from "meilisearch";
 import type { IndexedImdbTitle } from "siftcore";
+import { pick } from "siftutils";
 import type { ProgramMatchQuery } from "../types.ts";
 
-const { MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } = process.env;
+const { MEILISEARCH_MASTER_KEY, MEILISEARCH_INDEX_NAME, MEILISEARCH_URL } =
+  pick(
+    process.env,
+    ["MEILISEARCH_MASTER_KEY", "MEILISEARCH_INDEX_NAME", "MEILISEARCH_URL"],
+    true,
+  );
 
 const client = new Meilisearch({
   host: MEILISEARCH_URL!,
   apiKey: MEILISEARCH_MASTER_KEY!,
 });
-const index = client.index("imdb");
+const index = client.index(MEILISEARCH_INDEX_NAME!);
 
 const defaultThreshold = 0.9;
 const defaultLimit = 5;
