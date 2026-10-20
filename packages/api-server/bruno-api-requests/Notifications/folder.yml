@@ -1,7 +1,7 @@
 info:
-  name: API server requests
+  name: Notifications
   type: folder
-  seq: 3
+  seq: 7
 
 request:
   auth: inherit

@@ -1,7 +1,7 @@
 opencollection: 1.0.0
 
 info:
-  name: sift-api-server
+  name: sift-api
 config:
   proxy:
     inherit: true
