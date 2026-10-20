@@ -44,12 +44,19 @@ export default class ProgramNode extends AbstractProgramNode {
             : undefined;
       }
     } else if (["ul > li div.lockup"].some((s) => programNode.matches(s))) {
+      let targetEl: HTMLElement | null = null;
       if (
         location.pathname.endsWith("/search") &&
         location.search.includes("term=")
       ) {
         // on the search results page, search results DOM elements don't have
         //   any info we can use to figure out which movies/shows they are
+      } else if (
+        (targetEl = programNode.querySelector(
+          'div[data-testid="artwork"] + span.visually-hidden',
+        ))
+      ) {
+        title = targetEl!.textContent;
       } else {
         title = programNode
           .querySelector("div.content img")!
