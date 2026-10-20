@@ -1,3 +1,4 @@
+import { browser } from "./constants";
 import type { IMDBData, ProgramData } from "./types";
 import { pick, retry } from "siftutils";
 import type {
@@ -25,6 +26,17 @@ export const updateIncorrectMatchReport = retry(
   retryStrategy,
 );
 
+async function patchedFetch(url: string | URL, opts?: RequestInit) {
+  opts = {
+    ...opts,
+    headers: {
+      ...opts?.headers,
+      "x-sift-extension-version": browser.runtime.getManifest().version,
+    },
+  };
+  return await fetch(url, opts);
+}
+
 async function fetchIMDBData_(
   programData: ProgramData,
   pageUrl: string,
@@ -42,7 +54,7 @@ async function fetchIMDBData_(
     searchParams as unknown as Record<string, string>,
   ).toString();
 
-  const response = await fetch(url);
+  const response = await patchedFetch(url);
   if (!response.ok) {
     if (response.status < 500) {
       const errorMsg = await response
@@ -73,7 +85,7 @@ async function sendUserFeedback_(
 ) {
   const url = new URL(`${SIFT_API_URL}/messages`);
 
-  const response = await fetch(url, {
+  const response = await patchedFetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -90,7 +102,7 @@ async function getNotifications_(
 ): Promise<Required<Notification>[]> {
   const url = new URL(`${SIFT_API_URL}/notifications`);
   url.searchParams.append("from", String(+from));
-  const response = await fetch(url);
+  const response = await patchedFetch(url);
   if (!response.ok) throw new Error(ErrorMessage.siftApiServerError);
   const { notifications } = await response.json();
   return notifications;
@@ -103,7 +115,7 @@ async function reportIncorrectProgramMatch_(
 ) {
   const url = new URL(`${SIFT_API_URL}/incorrect-matches`);
 
-  const response = await fetch(url, {
+  const response = await patchedFetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -127,7 +139,7 @@ async function updateIncorrectMatchReport_(
 ) {
   const url = new URL(`${SIFT_API_URL}/update-match-reported-incorrect`);
 
-  const response = await fetch(url, {
+  const response = await patchedFetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
