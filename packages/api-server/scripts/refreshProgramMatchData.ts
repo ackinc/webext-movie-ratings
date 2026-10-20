@@ -35,6 +35,7 @@ do {
     .prepare<never[], RawProgramMatchRecord>(
       `SELECT * FROM titles
       WHERE status IN ('matched', 'abandoned')
+      AND matchedBy = 'system'
       LIMIT ${MAX_CONCURRENCY}
       OFFSET ${curOffset}`,
     )
