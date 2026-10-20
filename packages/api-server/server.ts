@@ -7,6 +7,7 @@ import { parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
 import cors from "@fastify/cors";
 import { Type, type Static } from "typebox";
+import { v4 as uuidv4 } from "uuid";
 import {
   hostToSitename,
   type Sitehost,
@@ -21,15 +22,19 @@ import {
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
 import { HTTPError } from "./customErrors.ts";
-import * as dbService from "./dbService.ts";
-import * as emailService from "./emailService.ts";
-import logger from "./logger.ts";
-import { getIndexLastUpdatedTime, querySearchEngine } from "./searchEngine.ts";
+import dbService from "./services/dbService.ts";
+import * as emailService from "./services/emailService.ts";
+import logger from "./services/logger.ts";
+import {
+  getIndexLastUpdatedTime,
+  querySearchEngine,
+} from "./services/searchEngineService.ts";
+import { sendAdminEmailToUpdateIncorrectMatch } from "./helpers.ts";
 import type { ProgramMatchQuery } from "./types.ts";
 
 const env = pick(
   process.env,
-  ["APP_ENV", "PORT", "SIFT_API_KEY", "WEBSITE_URL"],
+  ["APP_ENV", "PORT", "SIFT_API_KEY", "SIFT_API_URL", "WEBSITE_URL"],
   true,
 );
 
@@ -45,6 +50,15 @@ process.on("SIGTERM", cleanup);
 
 function createServer() {
   const fastify = Fastify({ loggerInstance: logger });
+
+  // for simulating longer response times in dev so it's easier
+  //   to see some transitional states in the extension
+  // if (env.APP_ENV === "development") {
+  //   fastify.addHook("onRequest", async (_request, _reply) => {
+  //     await delayMs(1000);
+  //   });
+  // }
+
   fastify.register(cors, {
     origin:
       env.APP_ENV === "production"
@@ -65,9 +79,11 @@ function createServer() {
     } else {
       this.log.error(error);
     }
-    reply
-      .status(statusCode)
-      .send({ error: statusCode < 500 ? error.message : "Server error" });
+    if (!reply.sent) {
+      reply
+        .status(statusCode)
+        .send({ error: statusCode < 500 ? error.message : "Server error" });
+    }
     if (statusCode >= 500) {
       Sentry.captureException(error);
     }
@@ -187,6 +203,153 @@ function createServer() {
     },
   );
 
+  // report-incorrect-program-match route
+  fastify.post<{
+    Body: ProgramMatching.IncorrectMatchReportRequest;
+    Reply: { 200: ProgramMatching.IncorrectMatchReportResponse };
+  }>(
+    "/incorrect-matches",
+    {
+      schema: {
+        body: ProgramMatchSchemas.incorrectMatchReportRequest,
+      },
+    } satisfies RouteShorthandOptions,
+    async function (request, reply) {
+      const { title, type, year, pageUrl, imdbId } = request.body;
+
+      const hostname = new URL(pageUrl).hostname;
+      if (!(hostname in hostToSitename)) {
+        throw new HTTPError(400, `Not a supported site: ${pageUrl}`);
+      }
+
+      const query: Required<ProgramMatchQuery> = {
+        title,
+        type: type ?? null,
+        year: year ?? null,
+        site: hostToSitename[hostname as Sitehost],
+      };
+
+      const existingRow = dbService.getProgramMatchRecord(query);
+
+      if (!existingRow || existingRow.status === "abandoned") {
+        const token = uuidv4();
+        const suggestedMatches = await querySearchEngine(query);
+        const row = dbService.upsertProgramMatchRecord({
+          ...query,
+          status: "reportedIncorrect",
+          imdbId,
+          matchedBy: "system",
+          meta: JSON.stringify({
+            token,
+            suggestedMatches,
+            userSelectedImdbId: null,
+            adminEmailSent: false,
+          }),
+        });
+
+        return reply.code(200).send({ id: row.id, token, suggestedMatches });
+      }
+
+      if (existingRow.status === "reportedIncorrect") {
+        const { token, suggestedMatches } = JSON.parse(existingRow.meta!) as {
+          token: string;
+          suggestedMatches: IndexedImdbTitle[];
+        };
+
+        return reply
+          .code(200)
+          .send({ id: existingRow.id, token, suggestedMatches });
+      }
+
+      /* status === 'matched' */
+
+      if (existingRow.imdbId === imdbId) {
+        const token = uuidv4();
+        const suggestedMatches = await querySearchEngine(query);
+        dbService.updateProgramMatchRecord(existingRow.id, {
+          status: "reportedIncorrect",
+          meta: JSON.stringify({
+            token,
+            suggestedMatches,
+            userSelectedImdbId: null,
+            adminEmailSent: false,
+          }),
+        });
+
+        return reply
+          .code(200)
+          .send({ id: existingRow.id, token, suggestedMatches });
+      }
+
+      // We can get here, at this unexpected point where a user is
+      //   reporting that the given [title+type+year+site](ttys)
+      //   combo is incorrectly matched to imdbId_A when our db says
+      //   we matched it to imdbId_B, in these two cases:
+      // A: request is malicious
+      // B:
+      //    - T=0: Sift matched ttys to imdbId_A at user A's request,
+      //           when omdb did not have a match for ttys
+      //    - T=1: omdb adds match to imdbId_B for ttys to its own db
+      //    - T=2: user B sees rating for imdbId_B while using Sift
+
+      const suggestedMatches = await querySearchEngine(query);
+
+      // ensure existing match shows up at top of suggestions list
+      {
+        const existingMatchIdx = suggestedMatches.findIndex(
+          (sm) => sm.imdbId === existingRow.imdbId,
+        );
+        if (existingMatchIdx === -1) {
+          suggestedMatches.unshift(
+            JSON.parse(existingRow.meta!).bestMatch as IndexedImdbTitle,
+          );
+        } else {
+          const x = suggestedMatches[existingMatchIdx]!;
+          suggestedMatches.splice(existingMatchIdx, 1);
+          suggestedMatches.unshift(x);
+        }
+      }
+
+      return reply.code(200).send({
+        id: existingRow.id,
+        suggestedMatches: suggestedMatches.slice(0, 5),
+      });
+    },
+  );
+
+  /* BEGIN routes to register updates to an incorrect-match-report */
+
+  fastify.post<{
+    Body: ProgramMatching.AddSuggestionToIncorrectMatchReportRequest;
+    Reply: { 200: { status: string } };
+  }>(
+    "/update-match-reported-incorrect",
+    {
+      schema: {
+        body: ProgramMatchSchemas.addSuggestionToIncorrectMatchReportRequest,
+      },
+    } satisfies RouteShorthandOptions,
+    updateIncorrectMatchReportRequestHandler,
+  );
+
+  // since we intend for admins to make this request by clicking a button
+  //   in an email, we need a GET handler
+  fastify.get<{
+    Querystring: ProgramMatching.AddSuggestionToIncorrectMatchReportRequest;
+    Reply: { 200: { status: string } };
+  }>(
+    "/update-match-reported-incorrect",
+    {
+      schema: {
+        querystring:
+          ProgramMatchSchemas.addSuggestionToIncorrectMatchReportRequest,
+      },
+    } satisfies RouteShorthandOptions,
+    updateIncorrectMatchReportRequestHandler,
+  );
+
+  /* END routes to register updates to an incorrect-match-report */
+
   // receive user messages
   fastify.post<{
     Body: UserMessage;
@@ -281,21 +444,91 @@ function createServer() {
   return fastify;
 }
 
-async function ensureAuthorized(
-  request: Fastify.FastifyRequest,
-  reply: Fastify.FastifyReply,
-) {
-  if (
-    request.headers.authorization?.replace(/^Bearer /, "") !== env.SIFT_API_KEY!
-  ) {
-    reply.code(403).send({ status: "UNAUTHORIZED" });
-  }
+async function ensureAuthorized(request: Fastify.FastifyRequest) {
+  const authToken = request.headers.authorization?.replace(/^Bearer /, "");
+  if (authToken !== env.SIFT_API_KEY!) throw new HTTPError(403, "Unauthorized");
 }
 
 async function cleanup(signal: "SIGINT" | "SIGTERM") {
   logger.info(`Received ${signal}. Exiting ...`);
   await server.close();
-  dbService.closeConnection();
+  dbService.close();
   await Sentry.close();
   process.exit(0);
+}
+
+async function updateIncorrectMatchReportRequestHandler(
+  request: Fastify.FastifyRequest,
+  reply: Fastify.FastifyReply,
+) {
+  const requestData = (request.body ??
+    request.query) as ProgramMatching.AddSuggestionToIncorrectMatchReportRequest;
+  const { id, token: matchToken, suggestedImdbId, authToken } = requestData;
+
+  // if admin made this request, the row should be updated differently
+  let isRequestByAdmin = false;
+  try {
+    if (authToken) {
+      isRequestByAdmin = authToken === env.SIFT_API_KEY;
+    } else {
+      await ensureAuthorized(request);
+      isRequestByAdmin = true;
+    }
+  } catch (e) {}
+
+  /* ensure request is valid */
+
+  let row = dbService.getProgramMatchRecord(id);
+  if (!(row && row.status === "reportedIncorrect"))
+    return reply.code(200).send({ status: "ok" });
+
+  const rowMeta = JSON.parse(row.meta!) as {
+    token: string;
+    suggestedMatches: IndexedImdbTitle[];
+  };
+  const { token, suggestedMatches } = rowMeta;
+  if (token !== matchToken) return reply.code(200).send({ status: "ok" });
+
+  /* handle case where user/admin selects NOTA */
+
+  if (suggestedImdbId === "") {
+    if (isRequestByAdmin) throw new HTTPError(501, "NOT_IMPLEMENTED");
+
+    reply.code(200).send({ status: "ok" });
+    row = dbService.updateProgramMatchRecord(row.id, {
+      meta: JSON.stringify({
+        ...rowMeta,
+        userSelectedImdbId: "none-of-the-above",
+      }),
+    });
+    await sendAdminEmailToUpdateIncorrectMatch(row);
+    return;
+  }
+
+  /* handle case where user/admin selects a suggestion */
+
+  const bestMatch = suggestedMatches.find(
+    ({ imdbId }) => imdbId === suggestedImdbId,
+  );
+  if (!bestMatch) return reply.code(200).send({ status: "ok" });
+  if (isRequestByAdmin) {
+    dbService.updateProgramMatchRecord(row.id, {
+      status: "matched",
+      matchedBy: "admin",
+      imdbId: bestMatch.imdbId,
+      meta: JSON.stringify({ bestMatch }),
+    });
+    return reply.code(200).send({ status: "ok" });
+  }
+
+  row = dbService.updateProgramMatchRecord(row.id, {
+    meta: JSON.stringify({ ...rowMeta, userSelectedImdbId: suggestedImdbId }),
+  });
+
+  reply.code(200).send({ status: "ok" });
+
+  await sendAdminEmailToUpdateIncorrectMatch(row);
+  dbService.updateProgramMatchRecord(row.id, {
+    meta: JSON.stringify({ ...JSON.parse(row.meta!), adminEmailSent: true }),
+  });
 }

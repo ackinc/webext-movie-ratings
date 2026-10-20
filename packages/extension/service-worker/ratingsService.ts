@@ -1,10 +1,9 @@
 import { type IDBPDatabase } from "idb";
 import { add } from "date-fns";
-import type { Sitename, Sitehost } from "siftcore";
+import type { Sitename, Sitehost, SiftApiProgramMatching } from "siftcore";
+import { pick } from "siftutils";
 import {
-  pick,
   omit,
-  programToHash,
   hostToSitename,
   type CachedIMDBData,
   type IMDBData,
@@ -30,12 +29,13 @@ export interface RatingsService {
     program: Omit<Program, "node" | "container">,
     imdbData: IMDBData,
     pageUrl: string,
-  ): Promise<void>;
+  ): Promise<SiftApiProgramMatching.IncorrectMatchReportResponse>;
   undoMarkRatingAsIncorrect(
     program: Omit<Program, "node" | "container">,
     imdbData: IMDBData,
     pageUrl: string,
   ): Promise<void>;
+  changeMatchedImdbTitleForProgram: typeof changeMatchedImdbTitleForProgram;
 }
 
 let inProgress: Record<
@@ -72,6 +72,7 @@ export async function initialize(db: IDBPDatabase): Promise<RatingsService> {
     getCachedIMDBData,
     markRatingAsIncorrect,
     undoMarkRatingAsIncorrect,
+    changeMatchedImdbTitleForProgram,
   };
 }
 
@@ -113,7 +114,7 @@ async function getIMDBData(
   }
 
   return new Promise<IMDBData>((resolve, reject) => {
-    const key = programToHash(program);
+    const key = pickleProgram(program);
     if (key in inProgress) {
       inProgress[key]!.push({ resolve, reject });
     } else {
@@ -181,17 +182,15 @@ async function getCachedIMDBData(
   program: Omit<Program, "node" | "container">,
   pageUrl: string,
 ): Promise<CachedIMDBData | undefined> {
-  const cached = await ratingsCache.get(programToHash(program));
+  const { hostname } = new URL(pageUrl);
+  if (!(hostname in hostToSitename))
+    throw new Error(`Unsupported site: ${pageUrl}`);
+  const site = hostToSitename[hostname as Sitehost];
 
-  const incorrectRatingReportKey = getIncorrectRatingReportKey(
-    program,
-    pageUrl,
+  return (
+    (await ratingsCache.get(pickleProgram(program, site))) ??
+    (await ratingsCache.get(pickleProgram(program)))
   );
-  const wasReportedIncorrect = Boolean(
-    await ratingsCache.getIncorrectRatingReport(incorrectRatingReportKey),
-  );
-
-  return cached ? Object.assign(cached, { wasReportedIncorrect }) : cached;
 }
 
 async function markRatingAsIncorrect(
@@ -199,45 +198,92 @@ async function markRatingAsIncorrect(
   imdbData: IMDBData,
   pageUrl: string,
 ) {
-  const key = getIncorrectRatingReportKey(program, pageUrl);
-  await ratingsCache.putIncorrectRatingReport({
-    key,
-    ...program,
-    ...imdbData,
+  const { hostname } = new URL(pageUrl);
+  if (!(hostname in hostToSitename))
+    throw new Error(`Unsupported site: ${pageUrl}`);
+  const site = hostToSitename[hostname as Sitehost];
+
+  await ratingsCache.putOne({
+    ...pick(imdbData, ["imdbId", "imdbRating"]),
     wasReportedIncorrect: true,
-    pageUrl,
-    reportedAt: +new Date(),
+    key: pickleProgram(program, site),
+    expiry: +add(new Date(), ratingCacheDurations.onRatingFound),
   });
 
-  // TODO: send after a delay, and make it cancelable, so the user has time to
-  //   undo a misclick
-  await siftApiService.sendUserFeedback(
-    JSON.stringify({
-      ...program,
-      ...pick(imdbData, ["imdbId", "imdbRating"]),
-      pageUrl,
-    }),
-    undefined,
-    "incorrect-rating-report",
+  return await siftApiService.reportIncorrectProgramMatch(
+    program,
+    imdbData.imdbId,
+    pageUrl,
   );
 }
 
-export async function undoMarkRatingAsIncorrect(
+async function undoMarkRatingAsIncorrect(
   program: Omit<Program, "node" | "container">,
   _imdbData: IMDBData,
   pageUrl: string,
 ) {
-  const key = getIncorrectRatingReportKey(program, pageUrl);
-  await ratingsCache.removeIncorrectRatingReport(key);
+  const { hostname } = new URL(pageUrl);
+  if (!(hostname in hostToSitename))
+    throw new Error(`Unsupported site: ${pageUrl}`);
+  const site = hostToSitename[hostname as Sitehost];
+
+  const key = pickleProgram(program, site);
+  const cached = await ratingsCache.get(pickleProgram(program, site));
+  if (!cached) {
+    throw new Error(`cache entry with key ${key} expected but not found`);
+  }
+
+  await ratingsCache.putOne({ ...cached, wasReportedIncorrect: false });
 }
 
-function getIncorrectRatingReportKey(
+async function changeMatchedImdbTitleForProgram(
   program: Omit<Program, "node" | "container">,
+  imdbData: IMDBData | null,
   pageUrl: string,
+  serverSideRowId: number | undefined,
+  token: string | undefined,
 ) {
-  const site = hostToSitename[new URL(pageUrl).hostname as Sitehost] as
-    | Sitename
-    | undefined;
-  if (!site) throw new Error(`Unsupported site: ${pageUrl}`);
-  return [programToHash(program), site].join("|");
+  const { hostname } = new URL(pageUrl);
+  if (!(hostname in hostToSitename))
+    throw new Error(`Unsupported site: ${pageUrl}`);
+  const site = hostToSitename[hostname as Sitehost];
+
+  if (imdbData) {
+    const key = pickleProgram(program, site);
+    const cached = await ratingsCache.get(pickleProgram(program, site));
+    if (!cached) {
+      throw new Error(`cache entry with key ${key} expected but not found`);
+    }
+
+    await ratingsCache.putOne({
+      ...cached,
+      ...pick(imdbData, ["imdbId", "imdbRating"]),
+      wasReportedIncorrect: false,
+      expiry: +add(new Date(), ratingCacheDurations.onRatingFound),
+    });
+  }
+
+  if (serverSideRowId && token) {
+    await siftApiService.updateIncorrectMatchReport({
+      id: serverSideRowId,
+      token,
+      suggestedImdbId: imdbData?.imdbId ?? "",
+    });
+  }
+}
+
+function pickleProgram(program: ProgramData, site?: Sitename): string {
+  const { title, type, year } = program;
+  // using btoa directly on a title with non-latin1 chars (without
+  //   encoding to utf-8 first) will cause an error to be thrown
+  const utf8EncodedTitle = String.fromCharCode(
+    ...new TextEncoder().encode(title),
+  );
+  return (
+    btoa(
+      [utf8EncodedTitle.replace(/[^\w\s]/g, "").toLowerCase(), type, year, site]
+        .filter(Boolean)
+        .join("|"),
+    ) + (site ? `|${site}` : ``)
+  );
 }

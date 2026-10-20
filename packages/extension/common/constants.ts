@@ -12,6 +12,7 @@ export const enum CssClasses {
   imdbDataNode = "sift-imdb-data",
   imdbDataNodeContent = "sift-imdb-data-content",
   filteredOutProgramNode = "sift-filtered-out-program",
+  portal = "sift-portal",
 }
 export const enum CssColors {
   mainBgColor = "#f5c618",
@@ -49,6 +50,8 @@ export const enum MessageType {
   fetchCachedIMDBRating = "sift:fetchCachedIMDBRating",
   reportIncorrectProgramMatch = "sift:reportIncorrectProgramMatch",
   undoReportIncorrectProgramMatch = "sift:undoReportIncorrectProgramMatch",
+  userSelectedASuggestedMatchForProgram = "sift:userSelectedASuggestedMatchForProgram",
+  userRejectedSuggestedMatchesForProgram = "sift:userRejectedSuggestedMatchesForProgram",
   urlChange = "sift:urlchange",
   filterSettingsChange = "sift:filterSettingsChange",
   orphanCheck = "sift:orphanCheck",
@@ -64,6 +67,7 @@ export const enum MessageType {
   getSelectProgramModeState = "sift:getSelectProgramModeState",
   toggleSelectProgramMode = "sift:toggleSelectProgramMode",
   setMediaRequestBlockingState = "sift:setMediaRequestBlockingState",
+  refreshRatingsOnPage = "sift:refreshRatingsOnPage",
 }
 
 export const defaultProgramFilterSettings: ProgramFilterSettings = {
@@ -100,3 +104,9 @@ export const webStoreLink =
     : TARGET_BROWSER === "firefox"
       ? "https://addons.mozilla.org/firefox/addon/sift-imdb-ratings/"
       : "https://chromewebstore.google.com/detail/sift-imdb-ratings-on-vari/pfnhkljamlclkackkndllofcfhihacna";
+
+export const idbStoreNames = {
+  ratings: "ratingsStore",
+  incorrectRatingReports: "incorrectRatingReportsStore",
+  telemetry: "telemetryStore",
+} as const;

@@ -27,6 +27,7 @@ import {
   initialize as initializeRatingsService,
   type RatingsService,
 } from "./ratingsService";
+import { DB_NAME, DB_VERSION } from "@common";
 
 let ratingsService: RatingsService;
 let telemetryStore: TelemetryStore;
@@ -45,7 +46,7 @@ async function onStart() {
 
     await removeBadge();
 
-    const db = await upgradeIdbAndGetConnection();
+    const db = await upgradeIdbAndGetConnection(DB_NAME, DB_VERSION);
     telemetryStore = await TelemetryStore.create(
       db as IDBPDatabase<TelemetryStoreSchema>,
     );
@@ -87,9 +88,7 @@ async function onInstalled() {
 
   if (onboardingStatus !== "finished") {
     addBadge("!");
-  }
 
-  if (onboardingStatus !== "finished") {
     // firefox won't let us open the popup outside of a user-gesture
     if (TARGET_BROWSER !== "firefox") {
       browser.action.openPopup();
@@ -149,7 +148,7 @@ async function handleTabUpdated(
 
 function handleMessage(
   request: Message,
-  _sender: chrome.runtime.MessageSender,
+  sender: chrome.runtime.MessageSender,
   sendResponse: (arg: SWMessageResponse<unknown>) => void,
 ) {
   try {
@@ -192,7 +191,14 @@ function handleMessage(
 
       waitForRatingsService()
         .then((rs) => rs.markRatingAsIncorrect(program, imdbData, pageUrl))
-        .then(() => sendResponse({ data: {} }))
+        .then((data) => sendResponse({ data }))
+        .then(() =>
+          sender.tab?.id
+            ? browser.tabs.sendMessage(sender.tab.id, {
+                type: MessageType.refreshRatingsOnPage,
+              })
+            : null,
+        )
         .catch(captureException);
 
       return true;
@@ -202,6 +208,41 @@ function handleMessage(
       waitForRatingsService()
         .then((rs) => rs.undoMarkRatingAsIncorrect(program, imdbData, pageUrl))
         .then(() => sendResponse({ data: {} }))
+        .then(() =>
+          sender.tab?.id
+            ? browser.tabs.sendMessage(sender.tab.id, {
+                type: MessageType.refreshRatingsOnPage,
+              })
+            : null,
+        )
+        .catch(captureException);
+
+      return true;
+    } else if (
+      request.type === MessageType.userSelectedASuggestedMatchForProgram ||
+      request.type === MessageType.userRejectedSuggestedMatchesForProgram
+    ) {
+      const { program, imdbData, pageUrl, serverSideRowId, token } =
+        request.data;
+
+      waitForRatingsService()
+        .then((rs) =>
+          rs.changeMatchedImdbTitleForProgram(
+            program,
+            imdbData,
+            pageUrl,
+            serverSideRowId,
+            token,
+          ),
+        )
+        .then(() => sendResponse({ data: {} }))
+        .then(() =>
+          sender.tab?.id
+            ? browser.tabs.sendMessage<Message>(sender.tab.id, {
+                type: MessageType.refreshRatingsOnPage,
+              })
+            : null,
+        )
         .catch(captureException);
 
       return true;

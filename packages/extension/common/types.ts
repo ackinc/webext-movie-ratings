@@ -91,6 +91,26 @@ export type Message =
       };
     }
   | {
+      type: MessageType.userSelectedASuggestedMatchForProgram;
+      data: {
+        program: Omit<Program, "node" | "container">;
+        imdbData: IMDBData;
+        pageUrl: string;
+        serverSideRowId?: number;
+        token?: string;
+      };
+    }
+  | {
+      type: MessageType.userRejectedSuggestedMatchesForProgram;
+      data: {
+        program: Omit<Program, "node" | "container">;
+        imdbData: null;
+        pageUrl: string;
+        serverSideRowId?: number;
+        token?: string;
+      };
+    }
+  | {
       // Sent via window.postMessage from MAIN world content script to
       //   paired ISOLATED world content script in same tab
       type: MessageType.urlChange;
@@ -143,6 +163,14 @@ export type Message =
       // Re-broadcast (via window.postMessage) by the ISO content-script
       //   so the MAIN world content script also gets the message
       type: MessageType.cleanup;
+    }
+  | {
+      // Sent from service-worker to ISOLATED world content-script
+      //   when something has happened to make refreshing the ratings
+      //   on the page make sense (for ex a user has marked a rating
+      //   as incorrect, or selected a suggested alternative for a
+      //   program-match)
+      type: MessageType.refreshRatingsOnPage;
     }
   | {
       type: MessageType.healthCheck;
@@ -235,3 +263,10 @@ export interface InAppNotification extends SiftNotification {
   status: InAppNotificationStatus;
   timestamp: number;
 }
+
+export type SchedulePageProcessingReason =
+  | "onStart"
+  | "onMutation"
+  | "onUrlChange"
+  | "onFiltersChange"
+  | "onMessageFromServiceWorker";

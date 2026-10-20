@@ -10,8 +10,8 @@
 import "dotenv/config";
 import { pick } from "siftutils";
 import Database, { type Database as TDatabase } from "better-sqlite3";
-import logger from "../logger.ts";
-import { querySearchEngine } from "../searchEngine.ts";
+import logger from "../services/logger.ts";
+import { querySearchEngine } from "../services/searchEngineService.ts";
 import type { RawProgramMatchRecord } from "../types.ts";
 
 // if this is too high and the search engine cannot keep up, queries will start

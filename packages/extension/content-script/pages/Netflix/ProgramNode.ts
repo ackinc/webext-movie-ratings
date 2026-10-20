@@ -1,0 +1,208 @@
+import AbstractProgramNode from "../AbstractProgramNode";
+import { ErrorMessage, extractProgramTitle } from "../../../common";
+import type { ProgramContainer, ProgramData } from "../../../common/types";
+
+export default class ProgramNode extends AbstractProgramNode {
+  static override extractProgramData(
+    programNode: HTMLElement,
+    pContainer: ProgramContainer,
+  ): ProgramData {
+    let title: string = "";
+    let type: "movie" | "series" | null = null;
+    let year: number | null = null;
+
+    if (programNode.matches("div.billboard div.info.meta-layer")) {
+      title =
+        programNode
+          .querySelector("div.titleWrapper img")
+          ?.getAttribute("alt") ?? "";
+    } else if (
+      ["div.title-card-container"].some((s) => programNode.matches(s))
+    ) {
+      title = programNode.querySelector("a")!.getAttribute("aria-label")!;
+    } else if (
+      ["div.titleCard--container"].some((s) => programNode.matches(s))
+    ) {
+      title = programNode.getAttribute("aria-label")!;
+    } else if (
+      programNode.matches('div:has(> a[data-uia="standard-card"][aria-label])')
+    ) {
+      title = programNode
+        .querySelector('a[data-uia="standard-card"][aria-label]')!
+        .getAttribute("aria-label")!;
+    } else if (programNode.matches('section[data-uia="billboard"]')) {
+      title = programNode
+        .getAttribute("aria-label")!
+        .replace("Featured Content:", "")
+        .trim();
+
+      const metadataNodes = Array.from(
+        programNode.querySelectorAll(
+          'div[data-uia="billboard-title"] div[data-uia="attributes-elements"] > span',
+        ),
+      );
+
+      type = metadataNodes.some((node) =>
+        [/^film$/i, /\dh \d+m/].some((rxp) => rxp.test(node.textContent)),
+      )
+        ? "movie"
+        : metadataNodes.some((node) =>
+              [/\b(seasons|series|episodes)\b/i].some((rxp) =>
+                rxp.test(node.textContent),
+              ),
+            )
+          ? "series"
+          : null;
+
+      const yearNode = metadataNodes.find((node) =>
+        /\d{4}/.test(node.textContent),
+      );
+      year = yearNode ? +yearNode.textContent : null;
+    } else if (
+      programNode.matches(
+        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="standard-card"])',
+      )
+    ) {
+      title = (programNode.firstChild! as HTMLElement).getAttribute(
+        "aria-label",
+      )!;
+    } else if (
+      programNode.matches(
+        'div[data-uia="carousel-scroller"] div:has(> a[data-uia="progress-card"])',
+      )
+    ) {
+      title = (programNode.firstChild! as HTMLElement).getAttribute(
+        "aria-label",
+      )!;
+    } else if (
+      programNode.matches(
+        'div[data-uia="carousel-scroller"] div:has(> div > a[data-uia="ranked-card"])',
+      )
+    ) {
+      title = (
+        programNode.querySelector(
+          'a[data-uia="ranked-card"][aria-label]',
+        )! as HTMLElement
+      ).getAttribute("aria-label")!;
+    } else if (programNode.matches("div.previewModal--container.mini-modal")) {
+      title = programNode
+        .querySelector(
+          "div.videoMerchPlayer--boxart-wrapper > img.previewModal--boxart",
+        )!
+        .getAttribute("alt")!;
+      const typeNode = programNode.querySelector(
+        "div.previewModal--info div.previewModal--metadatAndControls-info div.videoMetadata--container > div.videoMetadata--line > span.duration",
+      );
+      type = typeNode
+        ? ["Seasons", "Episodes", "Series"].some((x) =>
+            typeNode.textContent.includes(x),
+          )
+          ? "series"
+          : "movie"
+        : null;
+    } else if (
+      programNode.matches("div.previewModal--container:not(.mini-modal)")
+    ) {
+      title = programNode
+        .querySelector("div.storyArt > img")!
+        .getAttribute("alt")!;
+
+      const [yearNode, typeNode] = Array.from(
+        programNode.querySelector(
+          'div.videoMetadata--container[data-uia="videoMetadata--container"]',
+        )?.firstChild?.childNodes ?? [],
+      ) as HTMLElement[];
+      type =
+        typeNode?.matches(".duration") && typeNode?.textContent
+          ? ["Seasons", "Episodes", "Series"].some((x) =>
+              typeNode.textContent.includes(x),
+            )
+            ? "series"
+            : "movie"
+          : null;
+      year =
+        yearNode?.matches(".year") && yearNode?.textContent
+          ? +yearNode.textContent
+          : null;
+    } else {
+      throw new Error(ErrorMessage.unrecognizedProgramNode);
+    }
+
+    if (!type) {
+      const durationNode = programNode.querySelector("span.duration");
+      type = durationNode
+        ? ["Seasons", "Episodes", "Series"].some((x) =>
+            durationNode.textContent.includes(x),
+          )
+          ? "series"
+          : "movie"
+        : null;
+    }
+    if (!year) {
+      const metadataWrapperNode = programNode.querySelector(
+        "div.titleCard--metadataWrapper",
+      );
+      year =
+        type === "movie" && metadataWrapperNode
+          ? +metadataWrapperNode.querySelector("div.year")!.textContent
+          : null;
+    }
+
+    return {
+      ...super.extractProgramData(programNode, pContainer),
+      title: extractProgramTitle(title),
+      ...(type ? { type } : {}),
+      ...(year && Number.isInteger(year) ? { year } : {}),
+    };
+  }
+
+  static override insertIMDBNode(
+    programNode: HTMLElement,
+    imdbNode: HTMLElement,
+  ) {
+    if (programNode.matches("div.billboard div.info.meta-layer")) {
+      const titleNode = programNode.querySelector("div.billboard-title");
+      titleNode!.insertAdjacentElement("afterend", imdbNode);
+
+      return;
+    }
+
+    if (programNode.matches('section[data-uia="billboard"]')) {
+      const attributesNode = programNode.querySelector(
+        'div[data-uia="billboard-title"] div[data-uia="attributes-elements"]',
+      )!;
+      attributesNode.insertAdjacentElement("afterend", imdbNode);
+
+      return;
+    }
+
+    if (programNode.matches("div.previewModal--container.mini-modal")) {
+      // netflix has two different kinds of these nodes - one with the
+      //   program's full details, and another with much more limited metadata
+      //   that appears for programs the user has already partially watched
+
+      let metadataNode = programNode.querySelector(
+        "div.previewModal--metadatAndControls-info",
+      );
+      if (metadataNode) {
+        metadataNode.insertAdjacentElement("afterend", imdbNode);
+        return;
+      }
+
+      metadataNode = programNode.querySelector(".previewModal-progress");
+      metadataNode!.insertAdjacentElement("beforebegin", imdbNode);
+      return;
+    }
+
+    if (programNode.matches("div.previewModal--container:not(.mini-modal)")) {
+      const videoMetadataNode = programNode.querySelector(
+        'div.videoMetadata--container[data-uia="videoMetadata--container"]',
+      )!;
+      videoMetadataNode?.firstElementChild?.appendChild(imdbNode);
+
+      return;
+    }
+
+    super.insertIMDBNode(programNode, imdbNode);
+  }
+}

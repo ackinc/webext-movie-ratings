@@ -26,6 +26,12 @@ export const siftApiProgramMatchSchemas = {
     pageUrl: Type.String(),
     imdbId: Type.String(),
   }),
+  addSuggestionToIncorrectMatchReportRequest: Type.Script(`{
+    id: number;
+    token?: string;
+    suggestedImdbId: string;
+    authToken?: string;
+  }`),
 };
 
 const userMessageCategory = Type.Enum([

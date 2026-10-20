@@ -28,3 +28,17 @@ cron.schedule(
       stdio: "inherit",
     }).unref(), // we don't want the server to wait until this process is done before closing
 );
+
+cron.schedule(
+  "11 * * * *",
+  () =>
+    spawn(
+      "node",
+      [path.join(__dirname, "./scripts/sendIncorrectMatchEmails.ts")],
+      {
+        // we don't want this process to be interrupted if the api-server is restarting
+        detached: true,
+        stdio: "inherit",
+      },
+    ).unref(), // we don't want the server to wait until this process is done before closing
+);

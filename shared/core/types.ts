@@ -17,9 +17,15 @@ export namespace SiftApiProgramMatching {
     typeof siftApiProgramMatchSchemas.incorrectMatchReportRequest
   >;
   export type IncorrectMatchReportResponse = {
-    token: string;
-    suggestions: Omit<IndexedImdbTitle, "id">[];
+    id: number;
+    // this token will need to be sent back from the extension-side
+    //   when a user selects one of the suggested matches
+    token?: string;
+    suggestedMatches: IndexedImdbTitle[];
   };
+  export type AddSuggestionToIncorrectMatchReportRequest = Static<
+    typeof siftApiProgramMatchSchemas.addSuggestionToIncorrectMatchReportRequest
+  >;
 }
 
 export type UserMessage = Static<typeof userMessageSchema>;

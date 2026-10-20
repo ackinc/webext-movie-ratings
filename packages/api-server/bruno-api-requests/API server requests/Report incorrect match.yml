@@ -1,0 +1,25 @@
+info:
+  name: Report incorrect match
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{API_URL}}/incorrect-matches"
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Lokah Chapter 1: Chandra",
+        "type": "movie",
+        "pageUrl": "https://www.hotstar.com/",
+        "imdbId": "tt33372494"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true

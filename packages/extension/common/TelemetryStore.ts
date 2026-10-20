@@ -1,5 +1,6 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
 import {
+  idbStoreNames,
   invertObj,
   omit,
   shallowEqual,
@@ -7,7 +8,8 @@ import {
   type ErrorDetails,
   type ExtensionContext,
   type WebpageStats,
-} from ".";
+  type IdbMigrationName,
+} from "@common";
 
 export interface TelemetryStoreSchema extends DBSchema {
   telemetryStore: {
@@ -47,7 +49,7 @@ type Event =
       };
     };
 
-const storeName = "telemetryStore";
+const storeName = idbStoreNames.telemetry;
 const keyPartSeparator = "::";
 
 const eventTypeToKeyPrefix = {
@@ -68,7 +70,11 @@ export default class TelemetryStore {
   db: IDBPDatabase<TelemetryStoreSchema>;
   intervalSizeInSeconds: number;
 
-  static upgradeDb(db: IDBPDatabase, oldVersion: number) {
+  static upgradeDb(
+    db: IDBPDatabase,
+    oldVersion: number,
+    _completedMigrations: IdbMigrationName[] = [],
+  ) {
     if (oldVersion < 2) {
       db.createObjectStore(storeName);
     }

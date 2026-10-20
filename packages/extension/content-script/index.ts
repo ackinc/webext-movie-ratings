@@ -1,3 +1,7 @@
+// @ts-expect-error `h` and `Fragment` need to be imported here, even
+//   though they are unused, because we need esbuild to pull them into
+//   the build output
+import { h, Fragment } from "preact";
 import {
   browser,
   defaultProgramFilterSettings,
@@ -10,34 +14,37 @@ import {
 } from "../common";
 import { SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
-import type AbstractPage from "./AbstractPage";
+import type AbstractPage from "./pages/AbstractPage";
 import type {
   Message,
   Program,
   ProgramFilterSettings,
+  SchedulePageProcessingReason,
   WebpageStats,
 } from "../common/types";
-import DisneyPlusPage from "./DisneyPlus/Page";
-import HBOMaxPage from "./HBOMax/Page";
-import HotstarPage from "./Hotstar/Page";
-import HuluPage from "./Hulu/Page";
-import PeacockTVPage from "./PeacockTV/Page";
-import SonyLivPage from "./SonyLiv/Page";
-import NetflixPage from "./Netflix/Page";
-import ParamountPlusPage from "./ParamountPlus/Page";
-import PlexPage from "./Plex/Page";
-import PrimeVideoPage from "./PrimeVideo/Page";
-import AppleTVPage from "./AppleTV/Page";
-import MXPlayerPage from "./MXPlayer/Page";
-import CrunchyrollPage from "./Crunchyroll/Page";
-import YoutubeMoviesPage from "./YoutubeMovies/Page";
-import Zee5Page from "./Zee5/Page";
+import DisneyPlusPage from "./pages/DisneyPlus/Page";
+import HBOMaxPage from "./pages/HBOMax/Page";
+import HotstarPage from "./pages/Hotstar/Page";
+import HuluPage from "./pages/Hulu/Page";
+import PeacockTVPage from "./pages/PeacockTV/Page";
+import SonyLivPage from "./pages/SonyLiv/Page";
+import NetflixPage from "./pages/Netflix/Page";
+import ParamountPlusPage from "./pages/ParamountPlus/Page";
+import PlexPage from "./pages/Plex/Page";
+import PrimeVideoPage from "./pages/PrimeVideo/Page";
+import AppleTVPage from "./pages/AppleTV/Page";
+import MXPlayerPage from "./pages/MXPlayer/Page";
+import CrunchyrollPage from "./pages/Crunchyroll/Page";
+import YoutubeMoviesPage from "./pages/YoutubeMovies/Page";
+import Zee5Page from "./pages/Zee5/Page";
 import {
   isVoidElement,
   requestIMDBData,
   updateFilteredOutProgramNodeStyles,
 } from "./utils";
 import { addSidecar, removeSidecar } from "./sidecar";
+import { getImdbDataFromNode } from "./RatingNode/utils";
+import { addPortal, removePortal } from "./portal";
 
 let page: AbstractPage;
 let programFilterSettings: ProgramFilterSettings;
@@ -88,12 +95,15 @@ async function main() {
   sessionStartTime = +new Date();
   addListeners();
   if (APP_ENV !== "production") addSidecar({ page });
+  addPortal();
+
   schedulePageProcessing("onStart");
 }
 
 function schedulePageProcessing(
-  reason: string,
+  reason: SchedulePageProcessingReason,
   withDelayMs: number = mainFnInvocationDelayMs,
+  fullRefresh: boolean = false,
 ) {
   if (timeout) clearTimeout(timeout);
 
@@ -102,7 +112,10 @@ function schedulePageProcessing(
     console.debug(`[${now}] schedulePageProcessing ${reason}`);
   }
 
-  timeout = setTimeout(findProgramsAndAddRatings, withDelayMs);
+  timeout = setTimeout(
+    () => findProgramsAndAddRatings(fullRefresh),
+    withDelayMs,
+  );
 }
 
 function cleanup(broadcast = true) {
@@ -111,6 +124,7 @@ function cleanup(broadcast = true) {
   }
 
   removeSidecar();
+  removePortal();
   removeListeners();
   if (timeout) clearTimeout(timeout);
   page.cleanup();
@@ -177,7 +191,7 @@ function removeListeners() {
   browser.runtime?.onMessage.removeListener(handleMessage);
 }
 
-async function findProgramsAndAddRatings() {
+async function findProgramsAndAddRatings(fullRefresh: boolean = false) {
   try {
     const programs = page.findPrograms({
       swallowDataExtractionErrors: !(await getSetting(
@@ -186,7 +200,7 @@ async function findProgramsAndAddRatings() {
     });
 
     const results = await Promise.allSettled<Program>(
-      programs.map((p) => addRating(p).then(fadeIfFilteredOut)),
+      programs.map((p) => addRating(p, fullRefresh).then(fadeIfFilteredOut)),
     );
     const errors: Error[] = results
       .map((r, idx) => {
@@ -254,8 +268,11 @@ async function findProgramsAndAddRatings() {
   }
 }
 
-async function addRating(p: Program): Promise<Program> {
-  if (!page.checkIMDBDataAlreadyAdded(p)) {
+async function addRating(
+  p: Program,
+  skipExistsCheck: boolean = false,
+): Promise<Program> {
+  if (skipExistsCheck || !page.checkIMDBDataAlreadyAdded(p)) {
     page.addIMDBData(p, await requestIMDBData(p));
   }
   return p;
@@ -269,7 +286,7 @@ function fadeIfFilteredOut(p: Program): Program {
   ).ProgramNode.getIMDBNode(p.node);
   if (!imdbNode) return p;
 
-  const rating = parseFloat(imdbNode.dataset!["imdbRating"]!);
+  const rating = +getImdbDataFromNode(imdbNode).imdbRating;
   if (rating < settings.minRating || rating > settings.maxRating) {
     p.node.classList.add(CssClasses.filteredOutProgramNode);
   } else if (settings.excludeUnratedPrograms && Number.isNaN(rating)) {
@@ -290,7 +307,10 @@ function collectWebpageRatingStats(programs: Program[]): WebpageStats {
 
   const ctor = page.constructor as typeof AbstractPage;
   programs.forEach(({ node }) => {
-    const rating = ctor.ProgramNode.getIMDBNode(node)?.dataset["imdbRating"];
+    const imdbNode = ctor.ProgramNode.getIMDBNode(node);
+    const rating = imdbNode
+      ? getImdbDataFromNode(imdbNode).imdbRating
+      : undefined;
     if (rating === "N/A") nProgramsRatedNA++;
     if (rating === "N/F") nProgramsRatedNF++;
     if (rating === "N/M") nProgramsRatedNM++;
@@ -312,6 +332,7 @@ function handleMessage(
 ) {
   const msg = m instanceof MessageEvent ? (m.data as Message) : m;
   const { type } = msg;
+  if (!(typeof type === "string" && type.startsWith("sift"))) return;
 
   if (type === MessageType.cleanup) {
     cleanup();
@@ -332,6 +353,8 @@ function handleMessage(
     if (sendResponse) sendResponse(page.inSelectProgramMode ? "on" : "off");
   } else if (type === MessageType.toggleSelectProgramMode) {
     page.toggleSelectProgramMode();
+  } else if (type === MessageType.refreshRatingsOnPage) {
+    schedulePageProcessing("onMessageFromServiceWorker", undefined, true);
   }
 }
 

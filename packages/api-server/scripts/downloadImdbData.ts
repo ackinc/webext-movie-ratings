@@ -12,7 +12,7 @@ import { ensureDir } from "fs-extra";
 import { pick } from "siftutils";
 import { downloadFile } from "siftnodeutils";
 import { imdbDataFileUrls } from "../constants.ts";
-import baseLogger from "../logger.ts";
+import baseLogger from "../services/logger.ts";
 
 const __filename = path.basename(fileURLToPath(import.meta.url));
 

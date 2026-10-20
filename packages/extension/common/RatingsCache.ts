@@ -1,5 +1,12 @@
 import { type DBSchema, type IDBPDatabase } from "idb";
-import { type CachedIMDBData, type IMDBData, type Program } from "@common";
+import {
+  idbStoreNames,
+  allIdbMigrations,
+  type IdbMigrationName,
+  type CachedIMDBData,
+  type IMDBData,
+  type Program,
+} from "@common";
 
 type CachedIncorrectRatingReport = Omit<Program, "container" | "node"> &
   IMDBData & { pageUrl: string } & { key: string; reportedAt: number };
@@ -15,18 +22,32 @@ export interface RatingsCacheSchema extends DBSchema {
   };
 }
 
-const storeName = "ratingsStore";
-const incorrectRatingReportsStoreName = "incorrectRatingReportsStore";
+const storeName = idbStoreNames.ratings;
 
 export default class RatingsCache {
   db: IDBPDatabase<RatingsCacheSchema>;
 
-  static upgradeDb(db: IDBPDatabase, oldVersion: number) {
+  static upgradeDb(
+    db: IDBPDatabase,
+    oldVersion: number,
+    completedMigrations: IdbMigrationName[] = [],
+  ) {
     if (oldVersion < 1) {
       db.createObjectStore(storeName, { keyPath: "key" });
     }
     if (oldVersion < 3) {
-      db.createObjectStore(incorrectRatingReportsStoreName, { keyPath: "key" });
+      db.createObjectStore(idbStoreNames.incorrectRatingReports, {
+        keyPath: "key",
+      });
+    }
+
+    if (
+      completedMigrations.includes(
+        allIdbMigrations.moveDataOutOfIncorrectRatingReportsStore.name,
+      ) &&
+      db.objectStoreNames.contains(idbStoreNames.incorrectRatingReports)
+    ) {
+      db.deleteObjectStore(idbStoreNames.incorrectRatingReports);
     }
   }
 
@@ -66,23 +87,5 @@ export default class RatingsCache {
       ),
     );
     return this;
-  }
-
-  async putIncorrectRatingReport(value: CachedIncorrectRatingReport) {
-    const txn = this.db.transaction(
-      [incorrectRatingReportsStoreName],
-      "readwrite",
-    );
-    const store = txn.objectStore(incorrectRatingReportsStoreName);
-    await store.put(value);
-    return value;
-  }
-
-  async getIncorrectRatingReport(key: string) {
-    return await this.db.get(incorrectRatingReportsStoreName, key);
-  }
-
-  async removeIncorrectRatingReport(key: string) {
-    return await this.db.delete(incorrectRatingReportsStoreName, key);
   }
 }

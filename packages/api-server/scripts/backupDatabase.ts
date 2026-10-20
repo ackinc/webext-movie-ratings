@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import Database from "better-sqlite3";
 import { pick } from "siftutils";
-import baseLogger from "../logger.ts";
+import baseLogger from "../services/logger.ts";
 
 const __filename = path.basename(fileURLToPath(import.meta.url));
 const env = pick(
