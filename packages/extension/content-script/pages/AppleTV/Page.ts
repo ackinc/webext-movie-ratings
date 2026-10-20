@@ -39,7 +39,7 @@ export default class AppleTvPage extends AbstractPage {
       )
     ) {
       title = pContainerNode.querySelector(
-        "div.header h2 span.dir-wrapper",
+        'div.header [data-testid="header-title"]',
       )!.textContent;
     } else if (pContainerNode.matches("ul.search-suggestions")) {
       title = pContainerNode.getAttribute("aria-label")!;
