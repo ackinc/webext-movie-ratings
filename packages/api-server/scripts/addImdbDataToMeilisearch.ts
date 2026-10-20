@@ -176,7 +176,7 @@ async function prepareIndex(
   }
 
   const desiredSettings = {
-    searchableAttributes: ["title"],
+    searchableAttributes: ["title", "imdbId"],
     filterableAttributes: ["imdbId"],
   };
   const actualSettings = await client.index(indexName).getSettings();
