@@ -3,8 +3,8 @@
 // this script will be run on the production machine, which as of 20261014
 //   is very resource constrained (2GB RAM), so we're going out of our way to
 //   keep memory usage low
-// specifically, this is the reason we do two passes over the title.basics.tsv
-//   file
+// specifically, this is the reason we don't store titles in canonDocumentsByImdbId,
+//   which necessitates two passes over title.basics.tsv
 
 import "dotenv/config";
 
