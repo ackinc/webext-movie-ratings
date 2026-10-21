@@ -33,11 +33,24 @@ export default class ProgramNode extends AbstractProgramNode {
         programNode
           .querySelector('a[role="button"][data-testid="play"]')
           ?.getAttribute("aria-label") ?? "";
-      const type = !playButtonLabel
-        ? null
-        : /(episode \d+|s\d+ e\d+)$/i.test(playButtonLabel)
+      let type: ProgramData["type"] | null =
+        /^Play (episode \d+|s\d+ e\d+)$/i.test(playButtonLabel)
           ? "series"
-          : "movie";
+          : null;
+
+      if (!type) {
+        const metadataContainer = programNode.querySelector(
+          'section[data-testid="metadata-default"]',
+        );
+        type = metadataContainer?.querySelector(
+          'span[data-testid="seasons-descriptor"]',
+        )
+          ? "series"
+          : metadataContainer?.querySelector('span[data-testid="runtime"]')
+            ? "movie"
+            : null;
+      }
+
       return {
         ...super.extractProgramData(programNode, pContainer),
         title: extractProgramTitle(titleNode.textContent),
