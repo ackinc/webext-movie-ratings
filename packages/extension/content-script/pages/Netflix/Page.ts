@@ -150,7 +150,12 @@ export default class NetflixPage extends AbstractPage {
   protected override isValidProgramContainer(
     pContainer: ProgramContainer,
   ): boolean {
-    return Boolean(pContainer.title) && !pContainer.title.startsWith("WWE:");
+    return (
+      Boolean(pContainer.title) &&
+      ![/^WWE:/i, /^Hooked from the First Episode$/i].some((regex) =>
+        regex.test(pContainer.title),
+      )
+    );
   }
 
   protected override getProgramNodeSelectors({

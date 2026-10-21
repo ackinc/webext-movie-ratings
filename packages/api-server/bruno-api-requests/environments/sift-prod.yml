@@ -1,7 +1,8 @@
 name: sift-prod
 variables:
-  - name: MEILISEARCH_URL
-    value: http://localhost:7701
+  - name: API_URL
+    value: https://api.getsift.today
+    description: ""
   - secret: true
-    name: MEILISEARCH_MASTER_KEY
+    name: SIFT_API_KEY
     description: ""

@@ -3,8 +3,8 @@
 // this script will be run on the production machine, which as of 20261014
 //   is very resource constrained (2GB RAM), so we're going out of our way to
 //   keep memory usage low
-// specifically, this is the reason we do two passes over the title.basics.tsv
-//   file
+// specifically, this is the reason we don't store titles in canonDocumentsByImdbId,
+//   which necessitates two passes over title.basics.tsv
 
 import "dotenv/config";
 
@@ -15,7 +15,7 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { isEqual } from "lodash-es";
 import { Meilisearch, type Index, type IndexObject } from "meilisearch";
-import { pick } from "siftutils";
+import { delayMs, pick } from "siftutils";
 import type { IndexedImdbTitle } from "siftcore";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
@@ -31,12 +31,23 @@ import baseLogger from "../services/logger.ts";
 type Document = IndexedImdbTitle;
 
 const __filename = path.basename(fileURLToPath(import.meta.url));
-const { APP_ENV, IMDB_DATA_DIR, MEILISEARCH_MASTER_KEY, MEILISEARCH_URL } =
-  pick(
-    process.env,
-    ["APP_ENV", "IMDB_DATA_DIR", "MEILISEARCH_MASTER_KEY", "MEILISEARCH_URL"],
-    true,
-  );
+const {
+  APP_ENV,
+  IMDB_DATA_DIR,
+  MEILISEARCH_MASTER_KEY,
+  MEILISEARCH_INDEX_NAME,
+  MEILISEARCH_URL,
+} = pick(
+  process.env,
+  [
+    "APP_ENV",
+    "IMDB_DATA_DIR",
+    "MEILISEARCH_MASTER_KEY",
+    "MEILISEARCH_INDEX_NAME",
+    "MEILISEARCH_URL",
+  ],
+  true,
+);
 
 const requiredFiles = {
   BASICS: {
@@ -76,7 +87,7 @@ const client = new Meilisearch({
   host: MEILISEARCH_URL!,
   apiKey: MEILISEARCH_MASTER_KEY!,
 });
-const index = await prepareIndex(client);
+const index = await prepareIndex(client, MEILISEARCH_INDEX_NAME!);
 
 const logger = baseLogger.child({ script: __filename });
 const startTime = new Date();
@@ -118,6 +129,8 @@ logger.info(`Finished processing ratings file at T=${durationMs}ms`);
 
 /* STAGE 2: add docs to index */
 
+const taskUids: number[] = [];
+
 // second pass of basics file - add docs to index
 await processFile(
   path.join(IMDB_DATA_DIR!, requiredFiles.BASICS.filename),
@@ -141,12 +154,38 @@ await processFile(
 durationMs = +new Date() - +startTime;
 logger.info(`Finished processing akas file at T=${durationMs}ms`);
 
-logger.info(`Done`);
+/* STAGE 3: wait until all tasks are [succeeded, failed, or canceled] */
+
+logger.info(`A total of ${taskUids.length} tasks were added to meilisearch`);
+
+do {
+  const result = await client.tasks.getTasks({
+    uids: taskUids,
+    statuses: ["enqueued", "processing"],
+  });
+  if (result.total === 0) break;
+  logger.info(`Waiting for ${result.total} tasks to complete ...`);
+  await delayMs(5000);
+} while (true);
+
+const failedTasks = await client.tasks.getTasks({
+  uids: taskUids,
+  statuses: ["failed"],
+});
+const nFailedDocs = failedTasks.results.reduce(
+  (acc, t) => acc + t.details!.receivedDocuments!,
+  0,
+);
+logger.info(
+  `All tasks finished. There were ${failedTasks.total} / ${taskUids.length} failed tasks, covering ${nFailedDocs} documents.`,
+);
 
 // helpers
 
-async function prepareIndex(client: Meilisearch): Promise<Index<Document>> {
-  const indexName = "imdb";
+async function prepareIndex(
+  client: Meilisearch,
+  indexName: string,
+): Promise<Index<Document>> {
   let index = client.index<Document>(indexName);
   let rawInfo: IndexObject | null = null;
 
@@ -163,7 +202,7 @@ async function prepareIndex(client: Meilisearch): Promise<Index<Document>> {
   }
 
   const desiredSettings = {
-    searchableAttributes: ["title"],
+    searchableAttributes: ["title", "imdbId"],
     filterableAttributes: ["imdbId"],
   };
   const actualSettings = await client.index(indexName).getSettings();
@@ -200,24 +239,26 @@ async function addDocsFromBasicsFile(batch: Batch) {
   const documents = batch.flatMap(([, line]) =>
     getDocumentsFromBasicsFileLine(line),
   );
-  index.addDocuments(
+  const { taskUid } = await index.addDocuments(
     documents.map((d) => ({
       ...d,
       rating: canonDocumentsByImdbId.get(d.imdbId)?.rating ?? null,
     })),
   );
+  taskUids.push(taskUid);
 }
 
 async function addDocsFromAkasFile(batch: Batch) {
   const documents = batch.flatMap(([, line]) =>
     getDocumentsFromAkasFileLine(line),
   );
-  index.addDocuments(
+  const { taskUid } = await index.addDocuments(
     documents.map((d) => ({
       ...d,
       rating: canonDocumentsByImdbId.get(d.imdbId)?.rating ?? null,
     })),
   );
+  taskUids.push(taskUid);
 }
 
 function getDocumentsFromBasicsFileLine(
@@ -245,12 +286,18 @@ function getDocumentsFromAkasFileLine(line: string): [Document] {
 }
 
 function makeDocument(partialDoc: Omit<Document, "id">): Document {
-  const { imdbId, title, type, year } = partialDoc;
+  const { imdbId, title } = partialDoc;
   return {
     ...partialDoc,
-    // meilisearch index pkeys can't have the non-alnum chars allowed in b64
-    id: Buffer.from([imdbId, title, type, year].join("::"))
-      .toString("base64")
-      .replace(/[+/=]/g, "_"),
+    // In meilisearch, a document identifier can be of type integer or string,
+    //   only composed of alphanumeric characters (a-z A-Z 0-9), hyphens (-)
+    //   and underscores (_), and can not be more than 511 bytes.
+    // In the IMDB database, there are some very long titles that are in
+    //   languages like Japanese, which take up to 4-bytes per char in utf-8
+    // Ensuring the length of the id is limited, as we do with the `.slice`
+    //   call below, prevents a meilisearch addOrUpdateDocuments task failure
+    id: Buffer.from([imdbId, title].join("::"))
+      .toString("base64url")
+      .slice(0, 511),
   };
 }

@@ -5,7 +5,9 @@ import { addHours, format } from "date-fns";
 import dbService from "../services/dbService.ts";
 import type { RawProgramMatchRecord } from "../types.ts";
 import { sendAdminEmailToUpdateIncorrectMatch } from "../helpers.ts";
-import logger from "../services/logger.ts";
+import baseLogger from "../services/logger.ts";
+
+const logger = baseLogger.child({ script: __filename });
 
 const cutoffTime = format(addHours(new Date(), -1), "yyyy-MM-dd HH:mm:ss");
 logger.debug(`cutoffTime: ${cutoffTime}`);
