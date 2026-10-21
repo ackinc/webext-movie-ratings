@@ -15,7 +15,7 @@ article[data-testid="super-carousel-card"] .sift-imdb-data {
   margin: 0;
 }
 
-.sift-imdb-data-content[data-program-selector='section[data-testid="super-carousel"] article[data-testid="super-carousel-card"]'] {
+.sift-imdb-data-content[data-program-selector='[data-testid="super-carousel"] article[data-testid="super-carousel-card"]'] {
   border-radius: 0;
   border-bottom-right-radius: 3px;
   padding: 3px 7px;

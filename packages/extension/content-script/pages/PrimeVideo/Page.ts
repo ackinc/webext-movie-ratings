@@ -16,13 +16,13 @@ export default class PrimeVideoPage extends AbstractPage {
   protected override getProgramContainerNodeSelectors(): string[] {
     return [
       // /movie
-      'section[data-testid="standard-carousel"]',
+      '[data-testid="standard-carousel"]',
 
       // /movie ("featured originals", ...)
-      'section[data-testid="super-carousel"]',
+      '[data-testid="super-carousel"]',
 
       // /movie ("top 10 movies in ...", ...)
-      'section[data-testid="charts-container"]',
+      '[data-testid="charts-container"]',
 
       // /movie (way down the page: "cinema-like experience at home ...")
       'section[data-testid="collection-carousel"]',
@@ -46,9 +46,9 @@ export default class PrimeVideoPage extends AbstractPage {
 
     if (
       [
-        'section[data-testid="standard-carousel"]',
-        'section[data-testid="super-carousel"]',
-        'section[data-testid="charts-container"]',
+        '[data-testid="standard-carousel"]',
+        '[data-testid="super-carousel"]',
+        '[data-testid="charts-container"]',
       ].some((x) => pContainerNode.matches(x))
     ) {
       title = pContainerNode.querySelector(
@@ -98,8 +98,8 @@ export default class PrimeVideoPage extends AbstractPage {
   }: Pick<ProgramContainer, "selector">): string[] {
     if (
       [
-        'section[data-testid="standard-carousel"]',
-        'section[data-testid="charts-container"]',
+        '[data-testid="standard-carousel"]',
+        '[data-testid="charts-container"]',
         'div[data-testid="grid-container"]',
       ].includes(selector)
     ) {
@@ -111,7 +111,7 @@ export default class PrimeVideoPage extends AbstractPage {
 
     if (
       [
-        'section[data-testid="super-carousel"]',
+        '[data-testid="super-carousel"]',
         'section[data-testid="collection-carousel"]',
       ].includes(selector)
     ) {
