@@ -1,5 +1,7 @@
 // simple, self-contained helper fns
 
+export function noop() {}
+
 export function delayMs(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

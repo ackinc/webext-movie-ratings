@@ -85,7 +85,11 @@ export default function SuggestedMatchesModal({
   return (
     <div
       className={cx("modal-container", "modal-suggested-matches", className)}
-      onClick={hideSuggestedMatchesModal}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        hideSuggestedMatchesModal();
+      }}
     >
       <div
         className="modal-content"
