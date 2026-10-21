@@ -18,7 +18,6 @@ import { blockEvents, unblockEvents } from "@common/eventListenerBlocking";
 import ExternalLinkIcon from "@common/components/Icons/ExternalLink";
 import LoadingIcon from "@common/components/Icons/Loading";
 import { showSuggestedMatchesModal } from "../suggestedMatchesModalService";
-import { requestIMDBData } from "../utils";
 
 interface RatingNodeProps {
   imdbData: IMDBData;
@@ -95,7 +94,6 @@ export default function RatingNode({
   async function handleMaybeWrongButtonClick(e: MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-
     // prevents on-hover program modals from disappearing due to a  loss
     //   of focus; this UX is especially egregious on AmazonPrimeVideo
     blockEvents();
@@ -108,11 +106,11 @@ export default function RatingNode({
     } as const;
 
     if (wasReportedIncorrect) {
+      setImdbData({ ...imdbData, wasReportedIncorrect: false });
       await browser.runtime.sendMessage<Message, unknown>({
         type: MessageType.undoReportIncorrectProgramMatch,
         data: payload,
       });
-      refreshImdbData();
 
       // calling this too early results in the on-hover program node
       //   disappearing on undo-button click in prime video
@@ -122,8 +120,9 @@ export default function RatingNode({
 
     let stopBlockingEventsAtEnd = true;
     try {
-      setLoading(true);
+      setImdbData({ ...imdbData, wasReportedIncorrect: true });
 
+      setLoading(true);
       const response = await browser.runtime.sendMessage<
         Message,
         SWMessageResponse<SiftApiProgramMatching.IncorrectMatchReportResponse>
@@ -131,31 +130,20 @@ export default function RatingNode({
       if ("error" in response) throw new SWError(response.error);
 
       const { id, token, suggestedMatches } = response.data;
-      const [[matchedImdbTitle], suggestedAlternatives] = partition(
+      const [[matched], alts] = partition(
         suggestedMatches,
         (sm) => sm.imdbId === imdbData.imdbId,
       );
-      if (suggestedAlternatives.length > 0) {
-        // we don't want to stop blocking events until the user has finished
-        //   interacting with the SuggestedMatchesModal, so the unblocking
-        //   will happen elsewhere rather than here
-        stopBlockingEventsAtEnd = false;
-        showSuggestedMatchesModal(
-          program,
-          id,
-          token,
-          matchedImdbTitle,
-          suggestedAlternatives,
-        );
-      }
+      if (alts.length === 0) return;
+
+      // we don't want to stop blocking events until the user has finished
+      //   interacting with the SuggestedMatchesModal, so the unblocking
+      //   will happen elsewhere rather than here
+      stopBlockingEventsAtEnd = false;
+      showSuggestedMatchesModal(program, id, token, matched, alts);
     } finally {
       setLoading(false);
-      refreshImdbData();
       if (stopBlockingEventsAtEnd) setTimeout(unblockEvents, 250);
     }
-  }
-
-  async function refreshImdbData() {
-    setImdbData(await requestIMDBData(program));
   }
 }
