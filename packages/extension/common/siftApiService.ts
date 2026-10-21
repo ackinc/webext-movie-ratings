@@ -17,14 +17,8 @@ const retryStrategy = {
 export const fetchIMDBData = retry(fetchIMDBData_, retryStrategy);
 export const sendUserFeedback = retry(sendUserFeedback_, retryStrategy);
 export const getNotifications = retry(getNotifications_, retryStrategy);
-export const reportIncorrectProgramMatch = retry(
-  reportIncorrectProgramMatch_,
-  retryStrategy,
-);
-export const updateIncorrectMatchReport = retry(
-  updateIncorrectMatchReport_,
-  retryStrategy,
-);
+export const reportIncorrectProgramMatch = reportIncorrectProgramMatch_;
+export const updateIncorrectMatchReport = updateIncorrectMatchReport_;
 
 async function patchedFetch(url: string | URL, opts?: RequestInit) {
   opts = {

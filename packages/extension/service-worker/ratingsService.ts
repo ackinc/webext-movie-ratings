@@ -253,7 +253,7 @@ async function changeMatchedImdbTitleForProgram(
   }
 
   if (serverSideRowId && token) {
-    await siftApiService.updateIncorrectMatchReport({
+    siftApiService.updateIncorrectMatchReport({
       id: serverSideRowId,
       token,
       suggestedImdbId: imdbData?.imdbId ?? "",
