@@ -11,7 +11,10 @@ import {
   type Message,
   type Program,
   type SiftApiProgramMatching,
+  type SWMessageResponse,
 } from "@common";
+import { SWError } from "@common/customErrors";
+import { blockEvents, unblockEvents } from "@common/eventListenerBlocking";
 import ExternalLinkIcon from "@common/components/Icons/ExternalLink";
 import LoadingIcon from "@common/components/Icons/Loading";
 import { showSuggestedMatchesModal } from "../suggestedMatchesModalService";
@@ -93,6 +96,10 @@ export default function RatingNode({
     e.preventDefault();
     e.stopPropagation();
 
+    // prevents on-hover program modals from disappearing due to a  loss
+    //   of focus; this UX is especially egregious on AmazonPrimeVideo
+    blockEvents();
+
     const payload = {
       program: pick(program, ["title", "type", "year", "selector"]),
       containerTitle: program.container.title,
@@ -106,23 +113,33 @@ export default function RatingNode({
         data: payload,
       });
       refreshImdbData();
+
+      // calling this too early results in the on-hover program node
+      //   disappearing on undo-button click in prime video
+      setTimeout(unblockEvents, 250);
       return;
     }
 
+    let stopBlockingEventsAtEnd = true;
     try {
       setLoading(true);
 
-      const { data } = await browser.runtime.sendMessage<
+      const response = await browser.runtime.sendMessage<
         Message,
-        { data: SiftApiProgramMatching.IncorrectMatchReportResponse }
+        SWMessageResponse<SiftApiProgramMatching.IncorrectMatchReportResponse>
       >({ type: MessageType.reportIncorrectProgramMatch, data: payload });
+      if ("error" in response) throw new SWError(response.error);
 
-      const { id, token, suggestedMatches } = data;
+      const { id, token, suggestedMatches } = response.data;
       const [[matchedImdbTitle], suggestedAlternatives] = partition(
         suggestedMatches,
         (sm) => sm.imdbId === imdbData.imdbId,
       );
       if (suggestedAlternatives.length > 0) {
+        // we don't want to stop blocking events until the user has finished
+        //   interacting with the SuggestedMatchesModal, so the unblocking
+        //   will happen elsewhere rather than here
+        stopBlockingEventsAtEnd = false;
         showSuggestedMatchesModal(
           program,
           id,
@@ -134,6 +151,7 @@ export default function RatingNode({
     } finally {
       setLoading(false);
       refreshImdbData();
+      if (stopBlockingEventsAtEnd) setTimeout(unblockEvents, 250);
     }
   }
 

@@ -199,7 +199,7 @@ function handleMessage(
               })
             : null,
         )
-        .catch(captureException);
+        .catch(handleError);
 
       return true;
     } else if (request.type === MessageType.undoReportIncorrectProgramMatch) {
@@ -215,7 +215,7 @@ function handleMessage(
               })
             : null,
         )
-        .catch(captureException);
+        .catch(handleError);
 
       return true;
     } else if (
@@ -243,7 +243,7 @@ function handleMessage(
               })
             : null,
         )
-        .catch(captureException);
+        .catch(handleError);
 
       return true;
     } else if (request.type === MessageType.webpageRatingStats) {

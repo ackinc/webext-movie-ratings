@@ -149,8 +149,6 @@ export default function SuggestedMatchesModal({
       });
     }
 
-    // TODO: trigger findProgramsAndRefreshRatings
-
     hideSuggestedMatchesModal();
   }
 }

@@ -1,6 +1,6 @@
 import { type IDBPDatabase } from "idb";
 import { add } from "date-fns";
-import type { Sitename, Sitehost, SiftApiProgramMatching } from "siftcore";
+import type { Sitename, Sitehost } from "siftcore";
 import { pick } from "siftutils";
 import {
   omit,
@@ -20,21 +20,10 @@ import OmdbApiClient from "./OmdbApiClient";
 /* interface */
 
 export interface RatingsService {
-  getCachedIMDBData(
-    program: ProgramData,
-    pageUrl: string,
-  ): Promise<CachedIMDBData | undefined>;
-  getIMDBData(program: ProgramData, pageUrl: string): Promise<IMDBData>;
-  markRatingAsIncorrect(
-    program: Omit<Program, "node" | "container">,
-    imdbData: IMDBData,
-    pageUrl: string,
-  ): Promise<SiftApiProgramMatching.IncorrectMatchReportResponse>;
-  undoMarkRatingAsIncorrect(
-    program: Omit<Program, "node" | "container">,
-    imdbData: IMDBData,
-    pageUrl: string,
-  ): Promise<void>;
+  getCachedIMDBData: typeof getCachedIMDBData;
+  getIMDBData: typeof getIMDBData;
+  markRatingAsIncorrect: typeof markRatingAsIncorrect;
+  undoMarkRatingAsIncorrect: typeof undoMarkRatingAsIncorrect;
   changeMatchedImdbTitleForProgram: typeof changeMatchedImdbTitleForProgram;
 }
 
