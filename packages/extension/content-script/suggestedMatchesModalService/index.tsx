@@ -1,5 +1,6 @@
 import { render } from "preact";
 import { CssClasses, type IndexedImdbTitle, type Program } from "@common";
+import { unblockEvents } from "@common/eventListenerBlocking";
 import SuggestedMatchesModal from "./SuggestedMatchesModal";
 import smModalStyles from "./suggestedMatchesModal.styles.css";
 import { cssStyleSheetFromText } from "../utils";
@@ -40,5 +41,7 @@ export function hideSuggestedMatchesModal() {
     // simply removing the container with `container.parentNode.removeChild`
     //   causes problems the next time showSuggestedMatchesModal is called
     render(null, portal.shadowRoot!);
+
+    setTimeout(unblockEvents, 250);
   }
 }
