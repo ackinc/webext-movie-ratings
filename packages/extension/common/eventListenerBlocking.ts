@@ -8,6 +8,7 @@ const targetEventTypes = [
   "mouseover",
   "pointerout",
   "focusout",
+  "visibilitychange",
 ] as const;
 
 const siftBlockFlag = Symbol.for("sift:blockEventsOnWebpage");
@@ -37,7 +38,7 @@ export function unblockEvents() {
   console.debug("EVENT LISTENERS UNBLOCKED");
 }
 
-function hijackEvent(e: MouseEvent | PointerEvent | FocusEvent) {
+function hijackEvent(e: Event) {
   e.preventDefault();
   e.stopImmediatePropagation();
 }
