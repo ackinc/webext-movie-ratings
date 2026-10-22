@@ -134,6 +134,9 @@ export default function RatingNode({
         suggestedMatches,
         (sm) => sm.imdbId === imdbData.imdbId,
       );
+
+      // TODO: handle case where matched.rating != imdbData.imdbRating
+
       if (alts.length === 0) return;
 
       // we don't want to stop blocking events until the user has finished
