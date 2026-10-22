@@ -133,6 +133,10 @@ export default class PrimeVideoPage extends AbstractPage {
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
+  protected override getOnHoverProgramNodeSelectors(): string[] {
+    return ['div[data-testid="standard-mini-details"]'];
+  }
+
   override checkIMDBDataAlreadyAdded(program: Program): boolean {
     // NOTE: SEARCH_RESULTS_PREVIEW_PANE
     // in search results preview pane, previews are updated in-place,
