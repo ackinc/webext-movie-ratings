@@ -107,7 +107,13 @@ export async function requestIMDBData(
         .sendMessage<Message, SWMessageResponse<IMDBData>>({
           type: MessageType.fetchIMDBRating,
           data: {
-            program: omit(program, ["node", "container"]),
+            // remove circularity (will cause message serialization failure)
+            program: {
+              ...omit(program, ["node", "container", "linked"]),
+              ...(program.linked
+                ? { linked: program.linked.map((p) => omit(p, ["linked"])) }
+                : {}),
+            },
             pageUrl: location.href,
           },
         } satisfies Message)

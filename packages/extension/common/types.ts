@@ -20,6 +20,11 @@ export type Program = {
   container: ProgramContainer;
   selector: Selector;
   node: HTMLElement;
+
+  // other programs on the webpage that represent the same movie/show
+  //   as this one; tracking them together like this helps ensure
+  //   consistency in the ratings we're showing across all of them
+  linked?: Program[];
 } & ProgramData;
 
 // associated with a particular Program
