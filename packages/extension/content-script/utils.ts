@@ -171,3 +171,25 @@ export function isVoidElement(elem: HTMLElement, except: string[] = []) {
     !except.map((x) => x.toLowerCase()).includes(tagName)
   );
 }
+
+export function checkNodesOverlap(n1: HTMLElement, n2: HTMLElement): boolean {
+  let rect1 = n1.getBoundingClientRect(),
+    rect2 = n2.getBoundingClientRect();
+  if (
+    rect1.top > rect2.top ||
+    (rect1.top === rect2.top && rect1.left > rect2.left)
+  ) {
+    const tmp = rect2;
+    rect2 = rect1;
+    rect1 = tmp;
+  }
+
+  // here, rect1 is always 'higher' in the viewport than rect2
+
+  return (
+    rect2.top <= rect1.bottom &&
+    ((rect2.left >= rect1.left && rect2.left <= rect1.right) ||
+      (rect2.right >= rect1.left && rect2.right <= rect1.right) ||
+      (rect2.left <= rect1.left && rect2.right >= rect1.right))
+  );
+}
