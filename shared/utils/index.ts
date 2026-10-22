@@ -205,3 +205,7 @@ export function renderTemplate(
     return acc;
   }, templateString);
 }
+
+export function dedupe<T extends unknown>(arr: T[]): T[] {
+  return Array.from(new Set(arr));
+}

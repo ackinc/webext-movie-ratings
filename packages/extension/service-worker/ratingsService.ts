@@ -1,7 +1,7 @@
 import { type IDBPDatabase } from "idb";
 import { add } from "date-fns";
 import { urlToSitename, type Sitename } from "siftcore";
-import { pick } from "siftutils";
+import { dedupe, pick } from "siftutils";
 import {
   omit,
   type CachedIMDBData,
@@ -92,10 +92,25 @@ async function fetchWithAddedTelemetry(
   return response;
 }
 
+function getMergedProgramData(
+  program: Omit<Program, "node" | "container">,
+): ProgramData {
+  return (program.linked ?? []).reduce(
+    (acc, p) => {
+      if (!("type" in acc) && "type" in p) acc.type = p.type;
+      if (!("year" in acc) && "year" in p) acc.year = p.year;
+      return acc;
+    },
+    pick(program, ["title", "type", "year"]),
+  );
+}
+
 async function getIMDBData(
   program: Omit<Program, "node" | "container">,
   pageUrl: string,
 ): Promise<IMDBData> {
+  const site = urlToSitename(pageUrl);
+
   const cached = await getCachedIMDBData(program, pageUrl);
   if (cached && cached.expiry > +new Date()) {
     return omit(cached, ["key"] as const);
@@ -103,6 +118,9 @@ async function getIMDBData(
 
   return new Promise<IMDBData>((resolve, reject) => {
     const key = pickleProgram(program);
+    // TODO: think through potential race conditions here
+    //   What if a nhpn req w/o ohpn link is in-progress when
+    //   a new nhpn-ohpn-linked msg arrives
     if (key in inProgress) {
       inProgress[key]!.push({ resolve, reject });
     } else {
@@ -115,6 +133,13 @@ async function getIMDBData(
     let imdbData: IMDBData | null = null;
     let error: Error | null = null;
 
+    // we want to give our rating providers the best chance of
+    //   accurately matching this program by giving them all the
+    //   data we have about it
+    // this data may be spread across multiple linked program-nodes,
+    //   for ex: a non-hover pnode and its associated on-hover pnode
+    const programData = getMergedProgramData(program);
+
     try {
       if (cached?.imdbRating === "N/M") {
         // if we're here, it means the last time this function was called for
@@ -126,42 +151,59 @@ async function getIMDBData(
       } else {
         // the cached imdbId may be '' (from a cached N/F rating), so we
         //   cannot use '??' operator below
-        imdbData = await omdbApiClient.fetchIMDBData(cached?.imdbId || program);
+        imdbData = await omdbApiClient.fetchIMDBData(
+          cached?.imdbId || programData,
+        );
       }
 
       if (!(cached?.imdbId || imdbData?.imdbId)) {
         // we didn't have the program's imdb id, and (if we didn't skip the
-        //   optimistic omdb api request above,) omdb wasn't able to
+        //   optimistic omdb api request above) omdb wasn't able to
         //   figure it out based on the program's details; let's see if sift's
         //   program-matching can do it
-        imdbData = await siftApiService.fetchIMDBData(program, pageUrl);
+        imdbData = await siftApiService.fetchIMDBData(programData, pageUrl);
       }
+
+      const expiry = +add(
+        new Date(),
+        imdbData!.imdbRating === "N/M"
+          ? // See NOTE: WHY_CACHE_ON_PROGRAM_MATCHING_ERROR
+            ratingCacheDurations.onProgramMatchingError
+          : imdbData!.imdbRating === "N/F"
+            ? ratingCacheDurations.onRatingNotFound
+            : ratingCacheDurations.onRatingFound,
+      );
+
+      await Promise.all([
+        // non-site-specific cache-entry
+        ratingsCache.putOne({
+          ...imdbData!,
+          expiry,
+          key: pickleProgram(programData),
+        }),
+        // site-specific cache entries for the program, each of the linked
+        //   pnodes and for the combined programData object we sent to the
+        //   rating-providers in the first place
+        ratingsCache.put(
+          [program, programData, ...(program.linked ?? [])].map((p) => ({
+            ...imdbData!,
+            expiry,
+            key: pickleProgram(p, site),
+          })),
+        ),
+      ]);
+
+      inProgress[key]!.forEach(({ resolve }) =>
+        resolve({ ...imdbData!, expiry }),
+      );
     } catch (e) {
       error =
         e instanceof Error
           ? e
           : new Error("Error fetching imdb data", { cause: e });
+      inProgress[key]!.forEach(({ reject }) => reject(error!));
     } finally {
-      if (error) {
-        inProgress[key]!.forEach(({ reject }) => reject(error!));
-        delete inProgress[key];
-      } else {
-        const expiry = +add(
-          new Date(),
-          imdbData!.imdbRating === "N/M"
-            ? // See NOTE: WHY_CACHE_ON_PROGRAM_MATCHING_ERROR
-              ratingCacheDurations.onProgramMatchingError
-            : imdbData!.imdbRating === "N/F"
-              ? ratingCacheDurations.onRatingNotFound
-              : ratingCacheDurations.onRatingFound,
-        );
-        inProgress[key]!.forEach(({ resolve }) =>
-          resolve({ ...imdbData!, expiry }),
-        );
-        delete inProgress[key];
-
-        await ratingsCache.putOne({ ...imdbData!, expiry, key });
-      }
+      delete inProgress[key];
     }
   }
 }
@@ -183,13 +225,20 @@ async function markRatingAsIncorrect(
   pageUrl: string,
 ) {
   const site = urlToSitename(pageUrl);
-
-  await ratingsCache.putOne({
+  const expiry = +add(new Date(), ratingCacheDurations.onRatingFound);
+  const cacheKeysToUpdate = dedupe(
+    [program, getMergedProgramData(program), ...(program.linked ?? [])].map(
+      (p) => pickleProgram(p, site),
+    ),
+  );
+  const updateObj = {
     ...pick(imdbData, ["imdbId", "imdbRating"]),
+    expiry,
     wasReportedIncorrect: true,
-    key: pickleProgram(program, site),
-    expiry: +add(new Date(), ratingCacheDurations.onRatingFound),
-  });
+  };
+  await ratingsCache.put(
+    cacheKeysToUpdate.map((key) => ({ ...updateObj, key })),
+  );
 
   return await siftApiService.reportIncorrectProgramMatch(
     program,
@@ -200,17 +249,24 @@ async function markRatingAsIncorrect(
 
 async function undoMarkRatingAsIncorrect(
   program: Omit<Program, "node" | "container">,
-  _imdbData: IMDBData,
+  imdbData: IMDBData,
   pageUrl: string,
 ) {
   const site = urlToSitename(pageUrl);
-  const key = pickleProgram(program, site);
-  const cached = await ratingsCache.get(pickleProgram(program, site));
-  if (!cached) {
-    throw new Error(`cache entry with key ${key} expected but not found`);
-  }
-
-  await ratingsCache.putOne({ ...cached, wasReportedIncorrect: false });
+  const expiry = +add(new Date(), ratingCacheDurations.onRatingFound);
+  const cacheKeysToUpdate = dedupe(
+    [program, getMergedProgramData(program), ...(program.linked ?? [])].map(
+      (p) => pickleProgram(p, site),
+    ),
+  );
+  const updateObj = {
+    ...pick(imdbData, ["imdbId", "imdbRating"]),
+    expiry,
+    wasReportedIncorrect: false,
+  };
+  await ratingsCache.put(
+    cacheKeysToUpdate.map((key) => ({ ...updateObj, key })),
+  );
 }
 
 async function changeMatchedImdbTitleForProgram(
@@ -223,18 +279,20 @@ async function changeMatchedImdbTitleForProgram(
   const site = urlToSitename(pageUrl);
 
   if (imdbData) {
-    const key = pickleProgram(program, site);
-    const cached = await ratingsCache.get(pickleProgram(program, site));
-    if (!cached) {
-      throw new Error(`cache entry with key ${key} expected but not found`);
-    }
-
-    await ratingsCache.putOne({
-      ...cached,
+    const expiry = +add(new Date(), ratingCacheDurations.onRatingFound);
+    const cacheKeysToUpdate = dedupe(
+      [program, getMergedProgramData(program), ...(program.linked ?? [])].map(
+        (p) => pickleProgram(p, site),
+      ),
+    );
+    const updateObj = {
       ...pick(imdbData, ["imdbId", "imdbRating"]),
       wasReportedIncorrect: false,
-      expiry: +add(new Date(), ratingCacheDurations.onRatingFound),
-    });
+      expiry,
+    };
+    await ratingsCache.put(
+      cacheKeysToUpdate.map((key) => ({ ...updateObj, key })),
+    );
   }
 
   if (serverSideRowId && token) {

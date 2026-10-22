@@ -273,7 +273,9 @@ async function addRating(
   skipExistsCheck: boolean = false,
 ): Promise<Program> {
   if (skipExistsCheck || !page.checkIMDBDataAlreadyAdded(p)) {
-    page.addIMDBData(p, await requestIMDBData(p));
+    const imdbData = await requestIMDBData(p);
+    page.addIMDBData(p, imdbData);
+    p.linked?.forEach((lp) => page.addIMDBData(lp, imdbData));
   }
   return p;
 }
