@@ -1,10 +1,9 @@
 import { type IDBPDatabase } from "idb";
 import { add } from "date-fns";
-import type { Sitename, Sitehost } from "siftcore";
+import { urlToSitename, type Sitename } from "siftcore";
 import { pick } from "siftutils";
 import {
   omit,
-  hostToSitename,
   type CachedIMDBData,
   type IMDBData,
   type ProgramData,
@@ -171,11 +170,7 @@ async function getCachedIMDBData(
   program: Omit<Program, "node" | "container">,
   pageUrl: string,
 ): Promise<CachedIMDBData | undefined> {
-  const { hostname } = new URL(pageUrl);
-  if (!(hostname in hostToSitename))
-    throw new Error(`Unsupported site: ${pageUrl}`);
-  const site = hostToSitename[hostname as Sitehost];
-
+  const site = urlToSitename(pageUrl);
   return (
     (await ratingsCache.get(pickleProgram(program, site))) ??
     (await ratingsCache.get(pickleProgram(program)))
@@ -187,10 +182,7 @@ async function markRatingAsIncorrect(
   imdbData: IMDBData,
   pageUrl: string,
 ) {
-  const { hostname } = new URL(pageUrl);
-  if (!(hostname in hostToSitename))
-    throw new Error(`Unsupported site: ${pageUrl}`);
-  const site = hostToSitename[hostname as Sitehost];
+  const site = urlToSitename(pageUrl);
 
   await ratingsCache.putOne({
     ...pick(imdbData, ["imdbId", "imdbRating"]),
@@ -211,11 +203,7 @@ async function undoMarkRatingAsIncorrect(
   _imdbData: IMDBData,
   pageUrl: string,
 ) {
-  const { hostname } = new URL(pageUrl);
-  if (!(hostname in hostToSitename))
-    throw new Error(`Unsupported site: ${pageUrl}`);
-  const site = hostToSitename[hostname as Sitehost];
-
+  const site = urlToSitename(pageUrl);
   const key = pickleProgram(program, site);
   const cached = await ratingsCache.get(pickleProgram(program, site));
   if (!cached) {
@@ -232,10 +220,7 @@ async function changeMatchedImdbTitleForProgram(
   serverSideRowId: number | undefined,
   token: string | undefined,
 ) {
-  const { hostname } = new URL(pageUrl);
-  if (!(hostname in hostToSitename))
-    throw new Error(`Unsupported site: ${pageUrl}`);
-  const site = hostToSitename[hostname as Sitehost];
+  const site = urlToSitename(pageUrl);
 
   if (imdbData) {
     const key = pickleProgram(program, site);
