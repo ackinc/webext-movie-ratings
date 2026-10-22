@@ -107,13 +107,7 @@ export async function requestIMDBData(
         .sendMessage<Message, SWMessageResponse<IMDBData>>({
           type: MessageType.fetchIMDBRating,
           data: {
-            // remove circularity (will cause message serialization failure)
-            program: {
-              ...omit(program, ["node", "container", "linked"]),
-              ...(program.linked
-                ? { linked: program.linked.map((p) => omit(p, ["linked"])) }
-                : {}),
-            },
+            program: rmCircularRefsFromProgram(program),
             pageUrl: location.href,
           },
         } satisfies Message)
@@ -198,4 +192,17 @@ export function checkNodesOverlap(n1: HTMLElement, n2: HTMLElement): boolean {
       (rect2.right >= rect1.left && rect2.right <= rect1.right) ||
       (rect2.left <= rect1.left && rect2.right >= rect1.right))
   );
+}
+
+// makes a deep-clone of program, with circular refs from inside
+//   program.linked removed; this needs to be done before the program
+//   can be sent to the service-worker via browser.runtime.sendMessage
+export function rmCircularRefsFromProgram(program: Program): Program {
+  return {
+    ...omit(program, ["container", "linked"]),
+    container: { ...program.container },
+    ...(program.linked
+      ? { linked: program.linked.map((p) => omit(p, ["linked"])) }
+      : {}),
+  };
 }

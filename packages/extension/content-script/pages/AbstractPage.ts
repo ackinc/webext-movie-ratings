@@ -28,6 +28,7 @@ import {
   getFopnCssRules,
   setSelectorStatusForCurrentSite,
   checkNodesOverlap,
+  rmCircularRefsFromProgram,
 } from "../utils";
 import { DataExtractionError, SWError } from "@common/customErrors";
 import { captureException } from "@common/errorReporter";
@@ -490,7 +491,10 @@ valid containers:\n\t${programContainers
       SWMessageResponse<CachedIMDBData>
     >({
       type: MessageType.fetchCachedIMDBRating,
-      data: { program, pageUrl: location.href },
+      data: {
+        program: rmCircularRefsFromProgram(program),
+        pageUrl: location.href,
+      },
     });
 
     if ("error" in response) throw new SWError(response.error);
