@@ -56,7 +56,7 @@ export default class ProgramNode extends AbstractProgramNode {
           'div[data-testid="artwork"] + span.visually-hidden',
         ))
       ) {
-        title = targetEl!.textContent;
+        title = targetEl!.textContent.split(",")[0]!;
       } else {
         title = programNode
           .querySelector("div.content img")!
