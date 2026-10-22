@@ -1,5 +1,5 @@
 import AbstractProgramNode from "../AbstractProgramNode";
-import { ErrorMessage, extractProgramTitle } from "../../../common";
+import { CssClasses, ErrorMessage, extractProgramTitle } from "../../../common";
 import type { ProgramContainer, ProgramData } from "../../../common/types";
 
 export default class ProgramNode extends AbstractProgramNode {
@@ -123,5 +123,18 @@ export default class ProgramNode extends AbstractProgramNode {
     }
 
     super.insertIMDBNode(programNode, imdbNode);
+  }
+
+  static override getIMDBNode(programNode: HTMLElement): HTMLElement | null {
+    if (programNode.querySelector('div[data-testid="standard-mini-details"]')) {
+      // amazonprimevideo adds on-hover-program-nodes to the DOM as children
+      //   of their associated non-hover-program-nodes
+      // if we're here, it means programNode is an nhpn that has an ohpn
+      //   child; we need to take care to get the imdb-node belonging to
+      //   the nhpn and not the ohpn
+      return programNode.querySelector(`:scope > .${CssClasses.imdbDataNode}`);
+    }
+
+    return super.getIMDBNode(programNode);
   }
 }

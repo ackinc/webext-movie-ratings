@@ -220,4 +220,8 @@ export default class NetflixPage extends AbstractPage {
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
+
+  protected override getOnHoverProgramNodeSelectors(): string[] {
+    return ["div.previewModal--container.mini-modal"];
+  }
 }

@@ -52,15 +52,7 @@ export default class AbstractProgramNode {
   }
 
   static removeIMDBNode(programNode: HTMLElement): void {
-    // HACK to prevent multiple sift-imdb-nodes being added
-    //   to non-hover-program-nodes on sites (like amazonprimevideo)
-    //   where on-hover-program-nodes are added to the DOM as
-    //   children of the corresponding non-hover-program-node
-    // TODO: better fix?
-    while (true) {
-      const imdbNode = this.getIMDBNode(programNode);
-      if (imdbNode) imdbNode.parentElement!.removeChild(imdbNode);
-      else break;
-    }
+    const imdbNode = this.getIMDBNode(programNode);
+    if (imdbNode) imdbNode.parentElement!.removeChild(imdbNode);
   }
 }

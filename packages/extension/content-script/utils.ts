@@ -107,7 +107,7 @@ export async function requestIMDBData(
         .sendMessage<Message, SWMessageResponse<IMDBData>>({
           type: MessageType.fetchIMDBRating,
           data: {
-            program: omit(program, ["node", "container"]),
+            program: rmCircularRefsFromProgram(program),
             pageUrl: location.href,
           },
         } satisfies Message)
@@ -170,4 +170,50 @@ export function isVoidElement(elem: HTMLElement, except: string[] = []) {
     voidElements.has(tagName) &&
     !except.map((x) => x.toLowerCase()).includes(tagName)
   );
+}
+
+export function checkNodesOverlap(
+  n1: HTMLElement,
+  n2: HTMLElement,
+  pxTolerance: number = 0,
+): boolean {
+  let rect1 = n1.getBoundingClientRect(),
+    rect2 = n2.getBoundingClientRect();
+  if (
+    rect1.top > rect2.top ||
+    (rect1.top === rect2.top && rect1.left > rect2.left)
+  ) {
+    const tmp = rect2;
+    rect2 = rect1;
+    rect1 = tmp;
+  }
+
+  // rect1 is always 'higher' in the viewport than rect2
+
+  const bounds = {
+    top: rect1.top - pxTolerance,
+    bottom: rect1.bottom + pxTolerance,
+    left: rect1.left - pxTolerance,
+    right: rect1.right + pxTolerance,
+  };
+
+  return (
+    rect2.top <= bounds.bottom &&
+    ((rect2.left >= bounds.left && rect2.left <= bounds.right) ||
+      (rect2.right >= bounds.left && rect2.right <= bounds.right) ||
+      (rect2.left <= bounds.left && rect2.right >= bounds.right))
+  );
+}
+
+// makes a deep-clone of program, with circular refs from inside
+//   program.linked removed; this needs to be done before the program
+//   can be sent to the service-worker via browser.runtime.sendMessage
+export function rmCircularRefsFromProgram(program: Program): Program {
+  return {
+    ...omit(program, ["container", "linked"]),
+    container: { ...program.container },
+    ...(program.linked
+      ? { linked: program.linked.map((p) => omit(p, ["linked"])) }
+      : {}),
+  };
 }

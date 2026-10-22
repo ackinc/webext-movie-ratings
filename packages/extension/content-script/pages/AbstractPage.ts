@@ -27,6 +27,8 @@ import {
   getSelectorStatusForCurrentSite,
   getFopnCssRules,
   setSelectorStatusForCurrentSite,
+  checkNodesOverlap,
+  rmCircularRefsFromProgram,
 } from "../utils";
 import { DataExtractionError, SWError } from "@common/customErrors";
 import { captureException } from "@common/errorReporter";
@@ -117,8 +119,16 @@ valid containers:\n\t${programContainers
       );
     }
 
-    this.foundPrograms = programsPerPC.flat();
-    return this.foundPrograms;
+    const programsOnPage = programsPerPC.flat();
+
+    const ohpnSelectors = this.getOnHoverProgramNodeSelectors();
+    programsOnPage
+      .filter((p) =>
+        ohpnSelectors.some((sel) => p.selector.endsWith(` ${sel}`)),
+      )
+      .forEach(findAndUpdateLinkedPrograms);
+
+    return (this.foundPrograms = programsOnPage);
 
     function logPC(pc: ProgramContainer, programsInPc: Program[]) {
       const maxProgramTitles = 5;
@@ -148,6 +158,25 @@ valid containers:\n\t${programContainers
           throw err;
         }
       };
+    }
+
+    function findAndUpdateLinkedPrograms(p: Program) {
+      const linked = programsOnPage.filter(
+        (p2) =>
+          p !== p2 &&
+          // on some supported sites (like amazonprimevide),
+          //   the on-hover-program-node doesn't quite overlap
+          //   with its related non-hover-program-node, so we
+          //   need non-zero tolerance as below
+          checkNodesOverlap(p.node, p2.node, 100) &&
+          (!p.type || !p2.type || p.type === p2.type) &&
+          (!p.year || !p2.year || p.year === p2.year) &&
+          p.title === p2.title, // TODO: fuzzy matching?
+      );
+      p.linked = linked;
+      linked.forEach((p2) => {
+        p2.linked = (p2.linked ?? []).concat(p);
+      });
     }
   }
 
@@ -257,6 +286,10 @@ valid containers:\n\t${programContainers
     _pContainerLike: Pick<ProgramContainer, "selector">,
   ): string[] {
     throw new Error("Not implemented");
+  }
+
+  protected getOnHoverProgramNodeSelectors(): string[] {
+    return [];
   }
 
   #findProgramNodesInProgramContainer = (
@@ -462,7 +495,10 @@ valid containers:\n\t${programContainers
       SWMessageResponse<CachedIMDBData>
     >({
       type: MessageType.fetchCachedIMDBRating,
-      data: { program, pageUrl: location.href },
+      data: {
+        program: rmCircularRefsFromProgram(program),
+        pageUrl: location.href,
+      },
     });
 
     if ("error" in response) throw new SWError(response.error);

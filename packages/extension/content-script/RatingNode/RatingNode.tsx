@@ -6,7 +6,6 @@ import {
   CssClasses,
   getIMDBLink,
   MessageType,
-  pick,
   type IMDBData,
   type Message,
   type Program,
@@ -18,6 +17,7 @@ import { blockEvents, unblockEvents } from "@common/eventListenerBlocking";
 import ExternalLinkIcon from "@common/components/Icons/ExternalLink";
 import LoadingIcon from "@common/components/Icons/Loading";
 import { showSuggestedMatchesModal } from "../suggestedMatchesModalService";
+import { rmCircularRefsFromProgram } from "../utils";
 
 interface RatingNodeProps {
   imdbData: IMDBData;
@@ -99,7 +99,7 @@ export default function RatingNode({
     blockEvents();
 
     const payload = {
-      program: pick(program, ["title", "type", "year", "selector"]),
+      program: rmCircularRefsFromProgram(program),
       containerTitle: program.container.title,
       imdbData,
       pageUrl: location.href,
