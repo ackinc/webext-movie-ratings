@@ -172,7 +172,11 @@ export function isVoidElement(elem: HTMLElement, except: string[] = []) {
   );
 }
 
-export function checkNodesOverlap(n1: HTMLElement, n2: HTMLElement): boolean {
+export function checkNodesOverlap(
+  n1: HTMLElement,
+  n2: HTMLElement,
+  pxTolerance: number = 0,
+): boolean {
   let rect1 = n1.getBoundingClientRect(),
     rect2 = n2.getBoundingClientRect();
   if (
@@ -184,13 +188,20 @@ export function checkNodesOverlap(n1: HTMLElement, n2: HTMLElement): boolean {
     rect1 = tmp;
   }
 
-  // here, rect1 is always 'higher' in the viewport than rect2
+  // rect1 is always 'higher' in the viewport than rect2
+
+  const bounds = {
+    top: rect1.top - pxTolerance,
+    bottom: rect1.bottom + pxTolerance,
+    left: rect1.left - pxTolerance,
+    right: rect1.right + pxTolerance,
+  };
 
   return (
-    rect2.top <= rect1.bottom &&
-    ((rect2.left >= rect1.left && rect2.left <= rect1.right) ||
-      (rect2.right >= rect1.left && rect2.right <= rect1.right) ||
-      (rect2.left <= rect1.left && rect2.right >= rect1.right))
+    rect2.top <= bounds.bottom &&
+    ((rect2.left >= bounds.left && rect2.left <= bounds.right) ||
+      (rect2.right >= bounds.left && rect2.right <= bounds.right) ||
+      (rect2.left <= bounds.left && rect2.right >= bounds.right))
   );
 }
 

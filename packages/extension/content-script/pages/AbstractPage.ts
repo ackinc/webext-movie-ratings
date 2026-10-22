@@ -164,7 +164,11 @@ valid containers:\n\t${programContainers
       const linked = programsOnPage.filter(
         (p2) =>
           p !== p2 &&
-          checkNodesOverlap(p.node, p2.node) &&
+          // on some supported sites (like amazonprimevide),
+          //   the on-hover-program-node doesn't quite overlap
+          //   with its related non-hover-program-node, so we
+          //   need non-zero tolerance as below
+          checkNodesOverlap(p.node, p2.node, 100) &&
           (!p.type || !p2.type || p.type === p2.type) &&
           (!p.year || !p2.year || p.year === p2.year) &&
           p.title === p2.title, // TODO: fuzzy matching?
