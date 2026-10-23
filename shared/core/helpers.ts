@@ -1,5 +1,5 @@
-import { hostToSitename } from "./constants";
-import { type Sitehost } from "./constants";
+import { hostToSitename } from "./constants.ts";
+import { type Sitehost } from "./constants.ts";
 
 export function urlToSitename(url: URL | string) {
   url = url instanceof URL ? url : new URL(url);
