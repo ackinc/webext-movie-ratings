@@ -13,6 +13,7 @@ import {
   type ProgramFilterSettings,
   type SelectorStatusForSite,
   type SWMessageResponse,
+  type SerializableProgram,
 } from "../common";
 import { SWError } from "../common/customErrors";
 
@@ -107,7 +108,7 @@ export async function requestIMDBData(
         .sendMessage<Message, SWMessageResponse<IMDBData>>({
           type: MessageType.fetchIMDBRating,
           data: {
-            program: rmCircularRefsFromProgram(program),
+            program: makeProgramSerializable(program),
             pageUrl: location.href,
           },
         } satisfies Message)
@@ -208,12 +209,18 @@ export function checkNodesOverlap(
 // makes a deep-clone of program, with circular refs from inside
 //   program.linked removed; this needs to be done before the program
 //   can be sent to the service-worker via browser.runtime.sendMessage
-export function rmCircularRefsFromProgram(program: Program): Program {
+// in firefox, HTMLElements cannot be serialized, so those have to be
+//   removed too
+export function makeProgramSerializable(program: Program): SerializableProgram {
   return {
-    ...omit(program, ["container", "linked"]),
-    container: { ...program.container },
+    ...omit(program, ["node", "container", "linked"]),
+    container: omit(program.container, ["node"]),
     ...(program.linked
-      ? { linked: program.linked.map((p) => omit(p, ["linked"])) }
+      ? {
+          linked: program.linked
+            .map((p) => omit(p, ["linked"]))
+            .map(makeProgramSerializable),
+        }
       : {}),
   };
 }

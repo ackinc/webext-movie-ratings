@@ -28,7 +28,7 @@ import {
   getFopnCssRules,
   setSelectorStatusForCurrentSite,
   checkNodesOverlap,
-  rmCircularRefsFromProgram,
+  makeProgramSerializable,
 } from "../utils";
 import { DataExtractionError, SWError } from "@common/customErrors";
 import { captureException } from "@common/errorReporter";
@@ -496,7 +496,7 @@ valid containers:\n\t${programContainers
     >({
       type: MessageType.fetchCachedIMDBRating,
       data: {
-        program: rmCircularRefsFromProgram(program),
+        program: makeProgramSerializable(program),
         pageUrl: location.href,
       },
     });

@@ -7,7 +7,7 @@ import {
   type CachedIMDBData,
   type IMDBData,
   type ProgramData,
-  type Program,
+  type SerializableProgram,
 } from "@common";
 import RatingsCache, { type RatingsCacheSchema } from "@common/RatingsCache";
 import TelemetryStore, {
@@ -92,9 +92,7 @@ async function fetchWithAddedTelemetry(
   return response;
 }
 
-function getMergedProgramData(
-  program: Omit<Program, "node" | "container">,
-): ProgramData {
+function getMergedProgramData(program: SerializableProgram): ProgramData {
   return (program.linked ?? []).reduce(
     (acc, p) => {
       if (!("type" in acc) && "type" in p) acc.type = p.type;
@@ -106,7 +104,7 @@ function getMergedProgramData(
 }
 
 async function getIMDBData(
-  program: Omit<Program, "node" | "container">,
+  program: SerializableProgram,
   pageUrl: string,
 ): Promise<IMDBData> {
   const site = urlToSitename(pageUrl);
@@ -209,7 +207,7 @@ async function getIMDBData(
 }
 
 async function getCachedIMDBData(
-  program: Omit<Program, "node" | "container">,
+  program: SerializableProgram,
   pageUrl: string,
 ): Promise<CachedIMDBData | undefined> {
   const site = urlToSitename(pageUrl);
@@ -220,7 +218,7 @@ async function getCachedIMDBData(
 }
 
 async function markRatingAsIncorrect(
-  program: Omit<Program, "node" | "container">,
+  program: SerializableProgram,
   imdbData: IMDBData,
   pageUrl: string,
 ) {
@@ -248,7 +246,7 @@ async function markRatingAsIncorrect(
 }
 
 async function undoMarkRatingAsIncorrect(
-  program: Omit<Program, "node" | "container">,
+  program: SerializableProgram,
   imdbData: IMDBData,
   pageUrl: string,
 ) {
@@ -270,7 +268,7 @@ async function undoMarkRatingAsIncorrect(
 }
 
 async function changeMatchedImdbTitleForProgram(
-  program: Omit<Program, "node" | "container">,
+  program: SerializableProgram,
   imdbData: IMDBData | null,
   pageUrl: string,
   serverSideRowId: number | undefined,

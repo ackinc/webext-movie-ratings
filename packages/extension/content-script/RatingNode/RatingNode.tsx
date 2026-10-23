@@ -17,7 +17,7 @@ import { blockEvents, unblockEvents } from "@common/eventListenerBlocking";
 import ExternalLinkIcon from "@common/components/Icons/ExternalLink";
 import LoadingIcon from "@common/components/Icons/Loading";
 import { showSuggestedMatchesModal } from "../suggestedMatchesModalService";
-import { rmCircularRefsFromProgram } from "../utils";
+import { makeProgramSerializable } from "../utils";
 
 interface RatingNodeProps {
   imdbData: IMDBData;
@@ -99,7 +99,7 @@ export default function RatingNode({
     blockEvents();
 
     const payload = {
-      program: rmCircularRefsFromProgram(program),
+      program: makeProgramSerializable(program),
       containerTitle: program.container.title,
       imdbData,
       pageUrl: location.href,

@@ -27,6 +27,20 @@ export type Program = {
   linked?: Program[];
 } & ProgramData;
 
+// Program-like objects capable of being passed between content-script
+//   and service-worker
+// In chrome/edge, we need to make sure circular references are removed,
+//   and though HTMLElements don't survive the journey, calling
+//   runtime.sendMessage with an object that contains them is not an error
+// In firefox, HTMLElements must be removed for the runtime.sendMessage call
+export type SerializableProgram = Omit<
+  Program,
+  "container" | "node" | "linked"
+> & {
+  container: Omit<ProgramContainer, "node">;
+  linked?: SerializableProgram[];
+};
+
 // associated with a particular Program
 export type IMDBData = {
   imdbId: string;
@@ -68,21 +82,21 @@ export type Message =
   | {
       type: MessageType.fetchCachedIMDBRating;
       data: {
-        program: Omit<Program, "node" | "container">;
+        program: SerializableProgram;
         pageUrl: string;
       };
     }
   | {
       type: MessageType.fetchIMDBRating;
       data: {
-        program: Omit<Program, "node" | "container">;
+        program: SerializableProgram;
         pageUrl: string;
       };
     }
   | {
       type: MessageType.reportIncorrectProgramMatch;
       data: {
-        program: Omit<Program, "node" | "container">;
+        program: SerializableProgram;
         imdbData: IMDBData;
         pageUrl: string;
       };
@@ -90,7 +104,7 @@ export type Message =
   | {
       type: MessageType.undoReportIncorrectProgramMatch;
       data: {
-        program: Omit<Program, "node" | "container">;
+        program: SerializableProgram;
         imdbData: IMDBData;
         pageUrl: string;
       };
@@ -98,7 +112,7 @@ export type Message =
   | {
       type: MessageType.userSelectedASuggestedMatchForProgram;
       data: {
-        program: Omit<Program, "node" | "container">;
+        program: SerializableProgram;
         imdbData: IMDBData;
         pageUrl: string;
         serverSideRowId?: number;
@@ -108,7 +122,7 @@ export type Message =
   | {
       type: MessageType.userRejectedSuggestedMatchesForProgram;
       data: {
-        program: Omit<Program, "node" | "container">;
+        program: SerializableProgram;
         imdbData: null;
         pageUrl: string;
         serverSideRowId?: number;

@@ -11,7 +11,7 @@ import {
 import siftLogoIcon from "@images/logo48.png";
 import MatchesList from "./SuggestedMatchesList";
 import { hideSuggestedMatchesModal } from ".";
-import { rmCircularRefsFromProgram } from "../utils";
+import { makeProgramSerializable } from "../utils";
 
 interface SuggestedMatchesModalProps {
   className?: string;
@@ -136,7 +136,7 @@ export default function SuggestedMatchesModal({
       await browser.runtime.sendMessage<Message>({
         type: MessageType.userSelectedASuggestedMatchForProgram,
         data: {
-          program: rmCircularRefsFromProgram(program),
+          program: makeProgramSerializable(program),
           pageUrl: location.href,
           imdbData: { imdbId: sm.imdbId, imdbRating: sm.rating ?? "N/A" },
           ...(token ? { serverSideRowId: id, token } : null),
@@ -146,7 +146,7 @@ export default function SuggestedMatchesModal({
       await browser.runtime.sendMessage<Message>({
         type: MessageType.userRejectedSuggestedMatchesForProgram,
         data: {
-          program: rmCircularRefsFromProgram(program),
+          program: makeProgramSerializable(program),
           pageUrl: location.href,
           imdbData: null,
           ...(token ? { serverSideRowId: id, token } : null),
