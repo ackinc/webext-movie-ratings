@@ -3,8 +3,12 @@ import SetCurPageContext from "@popup/contexts/SetCurPageContext";
 import ErrorReportingOptIn from "@popup/components/ErrorReportingOptIn/ErrorReportingOptIn";
 import SiteChooserForm from "@popup/components/SiteChooserForm/SiteChooserForm";
 import Separator from "@popup/components/Separator";
-import ToggleMediaRequestBlocking from "@popup/components/ToggleMediaRequestBlocking";
 import SettingToggle from "@popup/components/SettingToggle";
+import {
+  boolSettings,
+  type BoolSettingName,
+  type BoolSettingConf,
+} from "@common";
 import "./SettingsPage.css";
 
 export default function SettingsPage() {
@@ -13,16 +17,34 @@ export default function SettingsPage() {
   return (
     <div className="settings">
       <SiteChooserForm />
+
       <Separator />
       <ErrorReportingOptIn
         onClickShowDetails={() => setCurPage("pitchErrorReporting")}
       />
-      {APP_ENV === "development" ? <ToggleMediaRequestBlocking /> : null}
+
       {APP_ENV === "development" ? (
-        <SettingToggle
-          name="throwDataExtractionErrors"
-          label="Throw data extraction errors?"
-        />
+        <>
+          <Separator />
+          {(
+            Object.entries(boolSettings) as [BoolSettingName, BoolSettingConf][]
+          )
+            .filter(([_name, conf]) => conf.for === "dev")
+            .map(([name, conf]) => (
+              <SettingToggle
+                key={name}
+                name={name}
+                label={conf.label}
+                onChange={
+                  "onChange" in conf
+                    ? (conf.onChange as (
+                        value: boolean,
+                      ) => void | Promise<void>)
+                    : undefined
+                }
+              />
+            ))}
+        </>
       ) : null}
     </div>
   );

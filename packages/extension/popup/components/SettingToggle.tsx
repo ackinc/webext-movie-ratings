@@ -1,13 +1,18 @@
 import { useEffect, useState } from "preact/hooks";
-import { getSetting, setSetting, type ExtensionSettings } from "@common";
+import { getSetting, setSetting, type BoolExtensionSettings } from "@common";
 import CheckboxInput from "@common/components/Inputs/CheckboxInput/CheckboxInput";
 
 interface SettingToggleProps {
-  name: keyof ExtensionSettings;
+  name: keyof BoolExtensionSettings;
   label: string;
+  onChange?: ((newVal: boolean) => void | Promise<void>) | undefined;
 }
 
-export default function SettingToggle({ name, label }: SettingToggleProps) {
+export default function SettingToggle({
+  name,
+  label,
+  onChange = undefined,
+}: SettingToggleProps) {
   const [enabled, setEnabled] = useState(false);
 
   // load initial state
@@ -29,7 +34,9 @@ export default function SettingToggle({ name, label }: SettingToggleProps) {
   );
 
   async function handleChange() {
-    await setSetting(name, !enabled);
-    setEnabled(!enabled);
+    const newVal = !enabled;
+    if (onChange) await onChange(newVal);
+    await setSetting(name, newVal);
+    setEnabled(newVal);
   }
 }

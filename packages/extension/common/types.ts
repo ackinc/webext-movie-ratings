@@ -230,26 +230,6 @@ export type WebpageStats = {
   nProgramsRatedNM: number;
 };
 
-export type ExtensionSettings = {
-  extensionInstallTime: number;
-  extensionLastUpdateTime: number;
-  errorReportingOptIn: boolean;
-  programFiltersSettings: ProgramFilterSettings;
-  updatedDbVersion: number;
-  onboardingStatus:
-    | "started"
-    | "askedUserForPermissions"
-    | "displayedPermissionStatus"
-    | "pitchedErrorReporting"
-    | "finished";
-} & ExtensionDeveloperSettings;
-
-type ExtensionDeveloperSettings = {
-  outdatedSelectorDetectionEnabled: boolean;
-  mediaRequestBlockingEnabled: boolean;
-  throwDataExtractionErrors: boolean;
-};
-
 export type ExtensionContext =
   | "content-script"
   | "popup"
@@ -262,6 +242,13 @@ export type PopupPage =
   | "settings"
   | "pitchErrorReporting"
   | "feedbackForm";
+
+export type OnboardingStatus =
+  | "started"
+  | "askedUserForPermissions"
+  | "displayedPermissionStatus"
+  | "pitchedErrorReporting"
+  | "finished";
 
 export type InAppNotificationStatus = "unseen" | "seen" | "dismissed";
 export interface InAppNotification extends SiftNotification {
