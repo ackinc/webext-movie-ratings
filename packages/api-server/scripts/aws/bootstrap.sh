@@ -80,6 +80,7 @@ runuser -u ubuntu bash << EOF
   pm2 save
 EOF
 
+
 # TODO: deploy on git push
 
 
@@ -90,12 +91,12 @@ apt-get remove certbot
 snap install --classic certbot
 ln -s /snap/bin/certbot /usr/local/bin/certbot
 certbot certonly -n --nginx -d api.getsift.today
-echo "0 0 1 * * root certbot renew -n" | tee -a /etc/crontab
+echo "0 0 1 3,6,9,12 * root certbot renew -n" | tee -a /etc/crontab
 
 
 # install and configure nginx as reverse-proxy
 apt-get install -y nginx
-cat << EOF > /etc/nginx/sites-available/api.getsift.today
+cat << 'EOF' > /etc/nginx/sites-available/api.getsift.today
 server {
   listen 80;
   listen [::]:80;
@@ -113,6 +114,8 @@ server {
 
   location / {
     proxy_pass http://127.0.0.1:3000;
+
+    proxy_set_header X-Forwarded-For $remote_addr;
   }
 }
 EOF
