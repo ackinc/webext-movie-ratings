@@ -1,4 +1,4 @@
-:HL["/_next/static/chunks/03x2t8l073tir.css","style"]
+:HL["/_next/static/chunks/37f4u9fwn7p7a.css","style"]
 :HL["/_next/static/media/1bc7fc94203521e3-s.p.0gm5xa07u9y0b.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/_next/static/media/216579b50e548914-s.p.1ay1jy0-bfc4a.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
 :HL["/_next/static/media/3df2de83712245dd-s.p.0w014qgprzbql.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
@@ -11,11 +11,10 @@
 :HL["/images/platformWordmarks/crunchyroll.svg","image"]
 :HL["/images/platformWordmarks/hbomax.png","image"]
 :HL["/images/platformWordmarks/hulu.svg","image"]
-:HL["/images/platformWordmarks/mxplayer.svg","image"]
 :HL["/images/platformWordmarks/zee5.svg","image"]
+:HL["/images/platformWordmarks/peacocktv.webp","image"]
 :HL["/images/browserLogos/chrome32.png","image"]
 :HL["/images/browserLogos/edge32.png","image"]
 :HL["/images/browserLogos/firefox32.png","image"]
 :HL["images/logo128.png","image"]
-:HL["/images/platformWordmarks/peacocktv.webp","image"]
-0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"WUEXxa6JhPoFperPXXtoN"}
+0:{"tree":{"name":"","param":null,"prefetchHints":16,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":0,"slots":null}}},"staleTime":300,"buildId":"a7VwdI7ul0k1dSkLekF4d"}

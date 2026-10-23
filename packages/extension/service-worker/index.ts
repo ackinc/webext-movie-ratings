@@ -417,16 +417,6 @@ async function setMediaRequestBlockingState(value: boolean): Promise<void> {
       action: { type: "block" },
     },
     {
-      id: 5,
-      priority: 2,
-      condition: {
-        initiatorDomains: ["mxplayer.in"],
-        requestMethods: ["get"],
-        regexFilter: "^https://.+\\.cloudfront\\.net/video",
-      },
-      action: { type: "block" },
-    },
-    {
       id: 7,
       priority: 2,
       condition: {

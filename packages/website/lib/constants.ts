@@ -68,11 +68,6 @@ export const supportedPlatforms = [
     url: "https://www.hulu.com",
   },
   {
-    name: "MX Player",
-    logo: "/images/platformWordmarks/mxplayer.svg",
-    url: "https://www.mxplayer.in",
-  },
-  {
     name: "Zee 5",
     logo: "/images/platformWordmarks/zee5.svg",
     url: "https://www.zee5.com",

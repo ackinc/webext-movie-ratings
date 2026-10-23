@@ -35,12 +35,6 @@ export const supportedSites = {
     permStrings: ["https://www.hulu.com/*"],
     search: "",
   },
-  mxplayer: {
-    displayName: "MX Player",
-    hostNames: ["www.mxplayer.in"],
-    permStrings: ["https://www.mxplayer.in/*"],
-    search: "https://www.mxplayer.in/?search=true&q=",
-  },
   netflix: {
     displayName: "Netflix",
     hostNames: ["www.netflix.com"],

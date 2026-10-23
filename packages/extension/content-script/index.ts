@@ -33,7 +33,6 @@ import ParamountPlusPage from "./pages/ParamountPlus/Page";
 import PlexPage from "./pages/Plex/Page";
 import PrimeVideoPage from "./pages/PrimeVideo/Page";
 import AppleTVPage from "./pages/AppleTV/Page";
-import MXPlayerPage from "./pages/MXPlayer/Page";
 import CrunchyrollPage from "./pages/Crunchyroll/Page";
 import YoutubeMoviesPage from "./pages/YoutubeMovies/Page";
 import Zee5Page from "./pages/Zee5/Page";
@@ -167,8 +166,6 @@ async function initializePage() {
     page = new PeacockTVPage();
   } else if (location.hostname === "www.zee5.com") {
     page = new Zee5Page();
-  } else if (location.hostname === "www.mxplayer.in") {
-    page = new MXPlayerPage();
   } else {
     throw new Error("Page not recognized");
   }
