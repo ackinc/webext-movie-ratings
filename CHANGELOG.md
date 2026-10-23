@@ -1,5 +1,13 @@
 # Changelog
 
+## v10.1.0
+
+- Fixed issues with different ratings being shown for the same movie/series in the main webpage and in the more-info popup that some sites bring up when hovering over a program
+
+## v10.0.0
+
+- Users are now presented with a list of suggested alternative program-matches when they report a rating as incorrect
+
 ## v9.7.0
 
 - Sift now supports [Plex](https://watch.plex.tv)
