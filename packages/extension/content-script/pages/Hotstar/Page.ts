@@ -108,6 +108,10 @@ export default class HotstarPage extends AbstractPage {
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
   }
 
+  protected override getOnHoverProgramNodeSelectors(): string[] {
+    return ['div[data-testid="tray-card-hover"]'];
+  }
+
   protected override isValidProgram({ title, type }: Program): boolean {
     return Boolean(title && type);
   }
