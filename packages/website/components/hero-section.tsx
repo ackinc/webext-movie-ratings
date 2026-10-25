@@ -6,20 +6,36 @@ import { supportedBrowsers as browsers } from "@/lib/constants";
 
 export function HeroSection() {
   return (
-    <section id="hero" className="relative overflow-hidden py-20 md:py-32">
+    <section
+      id="hero"
+      className="relative isolate -mt-16 flex min-h-svh items-center overflow-hidden px-0 pt-16"
+    >
+      <video
+        className="absolute inset-0 -z-20 h-full w-full object-cover"
+        autoPlay
+        // loop
+        muted
+        playsInline
+        preload="metadata"
+        aria-hidden="true"
+      >
+        <source src="/videos/promo1.webm" type="video/webm" />
+      </video>
+      <div className="absolute inset-0 -z-10 bg-black/65" aria-hidden="true" />
+
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-4xl text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-accent/30 px-4 py-2 text-sm font-medium text-foreground">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white">
             <span className="flex h-2 w-2 rounded-full bg-green-500" />
             Free &amp; Open Source
           </div>
 
-          <h1 className="mb-6 text-5xl font-bold tracking-tight text-foreground md:text-7xl text-balance">
+          <h1 className="mb-6 text-5xl font-bold tracking-tight text-white md:text-7xl text-balance">
             IMDB ratings on your favourite{" "}
             <span className="text-accent">streaming apps</span>
           </h1>
 
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground md:text-xl text-pretty">
+          <p className="mx-auto mb-10 max-w-2xl text-lg text-white/85 md:text-xl text-pretty">
             Sift adds IMDB ratings next to movies and TV shows on Netflix, Prime
             Video, and more. Choose what to watch faster.
           </p>
@@ -42,7 +58,12 @@ export function HeroSection() {
                 </a>
               </Button>
             ))}
-            <Button size="lg" variant="outline" className="gap-2 px-8" asChild>
+            <Button
+              size="lg"
+              variant="outline"
+              className="gap-2 border-white/60 bg-black/20 px-8 text-white hover:bg-white/15 hover:text-white"
+              asChild
+            >
               <a
                 href="https://github.com/ackinc/webext-movie-ratings"
                 target="_blank"
