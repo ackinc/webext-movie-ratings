@@ -86,3 +86,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes showcase-video-float {
+  0%,
+  100% {
+    transform: rotate(2deg) translateY(0);
+  }
+  50% {
+    transform: rotate(2deg) translateY(-10px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .showcase-video {
+    animation: showcase-video-float 7s ease-in-out infinite;
+  }
+}
