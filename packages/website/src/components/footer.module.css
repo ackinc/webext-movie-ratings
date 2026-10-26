@@ -2,10 +2,6 @@
   border-top: 1px solid var(--border);
   padding: 3rem 0;
 }
-.container {
-  width: min(100% - 2rem, 80rem);
-  margin: 0 auto;
-}
 .inner {
   display: flex;
   flex-direction: column;

@@ -3,10 +3,14 @@ import styles from "./download-section.module.css";
 
 export function DownloadSection() {
   return (
-    <section id="download" className={styles["section"]}>
-      <div className={styles["container"]}>
-        <div className={styles["content"]}>
-          <h2>Get Sift for your browser</h2>
+    <section id="download" className="section">
+      <div className="container">
+        <div className={`section-content ${styles["content"]}`}>
+          <div className={`section-heading ${styles["heading"]}`}>
+            <h2 className={`section-title ${styles["title"]}`}>
+              Get Sift for your browser
+            </h2>
+          </div>
 
           <div className={styles["actions"]}>
             {browsers.map((browser) => (

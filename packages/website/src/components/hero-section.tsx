@@ -42,7 +42,7 @@ export function HeroSection() {
       </video>
       <div className={styles["overlay"]} aria-hidden="true" />
 
-      <div className={styles["inner"]}>
+      <div className={`${styles["inner"]} container`}>
         <div className={styles["content"]}>
           <div className={styles["badge"]}>
             <span className={styles["status"]} />

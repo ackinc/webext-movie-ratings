@@ -39,12 +39,11 @@ const features: {
 
 export function FeaturesSection() {
   return (
-    <section id="features" className={styles["section"]}>
-      <div className={styles["container"]}>
-        <div className={styles["content"]}>
-          <div className={styles["heading"]}>
-            <h2>Simple. Fast. Transparent.</h2>
-            <p>Everything you need to make better viewing decisions</p>
+    <section id="features" className="section">
+      <div className="container">
+        <div className={`section-content ${styles["content"]}`}>
+          <div className={`section-heading ${styles["heading"]}`}>
+            <h2 className="section-title">Simple. Fast. Transparent.</h2>
           </div>
 
           <div className={styles["grid"]}>

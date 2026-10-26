@@ -22,7 +22,7 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
         isOverlayingHero ? styles["overlay"] : styles["solid"]
       }`}
     >
-      <div className={styles["inner"]}>
+      <div className={`${styles["inner"]} container`}>
         <a href="/" className={styles["brand"]}>
           <img
             src="/images/logo128.png"
@@ -33,12 +33,6 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
         </a>
 
         <nav className={styles["nav"]}>
-          <a href="/#features" className={styles["link"]}>
-            Features
-          </a>
-          <a href="/#demo" className={styles["link"]}>
-            Demo
-          </a>
           <a href="/privacy" className={styles["link"]}>
             Privacy
           </a>

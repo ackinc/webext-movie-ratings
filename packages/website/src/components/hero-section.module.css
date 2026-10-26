@@ -19,9 +19,7 @@
 }
 .inner {
   display: flex;
-  width: min(100% - 2rem, 80rem);
   min-height: calc(100svh - 4rem);
-  margin: 0 auto;
   align-items: center;
 }
 .content {
@@ -97,12 +95,13 @@ h1 span {
   background: color-mix(in oklab, var(--primary), black 10%);
 }
 .githubButton {
-  border-color: rgb(255 255 255 / 0.6);
+  border-color: rgb(255 255 255 / 0.2);
   background: rgb(0 0 0 / 0.2);
-  color: white;
+  color: var(--muted-foreground);
 }
 .githubButton:hover {
   background: rgb(255 255 255 / 0.15);
+  color: var(--foreground);
 }
 .browserLogo,
 .githubButton svg {
@@ -126,7 +125,13 @@ h1 span {
 }
 @media (min-width: 1024px) {
   .overlay {
-    background: linear-gradient(to right, #000 0%, #000 20%, transparent 80%);
+    background-color: rgba(0, 0, 0, 0.25);
+    background-image: linear-gradient(
+      to right,
+      #000 0%,
+      #000 20%,
+      transparent 80%
+    );
   }
   .content {
     max-width: 36rem;

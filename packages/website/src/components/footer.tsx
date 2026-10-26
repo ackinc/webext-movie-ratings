@@ -4,7 +4,7 @@ import styles from "./footer.module.css";
 export function Footer() {
   return (
     <footer className={styles["footer"]}>
-      <div className={styles["container"]}>
+      <div className="container">
         <div className={styles["inner"]}>
           <div className={styles["brand"]}>
             <img

@@ -1,26 +1,10 @@
-.section {
-  padding: 4rem 0;
-}
-.container {
-  width: min(100% - 2rem, 80rem);
-  margin: 0 auto;
-}
 .content {
   max-width: 64rem;
-  margin: 0 auto;
 }
 .heading {
   margin-bottom: 2rem;
-  text-align: center;
 }
-h2 {
-  margin: 0 0 1rem;
-  color: var(--foreground);
-  font-size: 1.875rem;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-}
-.heading p,
+
 .card p {
   margin: 0;
   color: var(--muted-foreground);
@@ -85,12 +69,6 @@ h3 {
   margin-left: 0.25rem;
 }
 @media (min-width: 768px) {
-  .section {
-    padding: 6rem 0;
-  }
-  h2 {
-    font-size: 2.25rem;
-  }
   .grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

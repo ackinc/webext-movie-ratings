@@ -3,10 +3,12 @@ import styles from "./platforms-section.module.css";
 
 export function PlatformsSection() {
   return (
-    <section id="platforms" className={styles["section"]}>
-      <div className={styles["container"]}>
-        <div className={styles["content"]}>
-          <h2>Works where you watch</h2>
+    <section id="platforms" className="section">
+      <div className="container">
+        <div className={`section-content ${styles["content"]}`}>
+          <h2 className={`section-title ${styles["title"]}`}>
+            Works where you watch
+          </h2>
 
           <div className={styles["grid"]}>
             {platforms.map((platform) => (

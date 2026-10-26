@@ -10,8 +10,6 @@
 .inner {
   display: flex;
   height: 4rem;
-  width: min(100% - 2rem, 80rem);
-  margin: 0 auto;
   align-items: center;
   justify-content: space-between;
 }
@@ -31,7 +29,7 @@
   font-weight: 700;
 }
 .nav {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 1.5rem;
 }
@@ -54,7 +52,7 @@
 }
 .solid {
   border-color: var(--border);
-  background: rgb(from var(--background) r g b / 0.95);
+  background: rgb(from var(--background) r g b / 0.6);
   backdrop-filter: blur(8px);
   color: var(--foreground);
 }
@@ -63,9 +61,4 @@
 }
 .solid .link:hover {
   color: var(--foreground);
-}
-@media (min-width: 768px) {
-  .nav {
-    display: flex;
-  }
 }
