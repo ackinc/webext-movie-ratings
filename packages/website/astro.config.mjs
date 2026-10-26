@@ -3,7 +3,7 @@ import { defineConfig } from "astro/config";
 
 export default defineConfig({
   build: {
-    format: "file",
+    format: "directory",
   },
   integrations: [react()],
 });
