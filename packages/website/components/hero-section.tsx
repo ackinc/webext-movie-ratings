@@ -21,7 +21,8 @@ export function HeroSection() {
         video.pause();
 
         // if we don't remove the event listener here, it is getting called
-        //   in some kind of infinite loop causing high CPU usage
+        //   in an infinite loop due to the currentTime assignment above
+        //   causing a "seek" and dispatching a new timeupdate event
         video.removeEventListener("timeupdate", helper);
       }
     }
