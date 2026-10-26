@@ -17,7 +17,6 @@ export function HeroSection() {
     function helper() {
       // Freeze before the video's terminal black frames.
       if (video.duration && video.currentTime >= video.duration - 0.25) {
-        video.currentTime = video.duration - 0.25;
         video.pause();
 
         // if we don't remove the event listener here, it is getting called
@@ -42,7 +41,7 @@ export function HeroSection() {
         preload="metadata"
         aria-hidden="true"
       >
-        <source src="/videos/promo2.webm" type="video/webm" />
+        <source src="/videos/promo.webm" type="video/webm" />
       </video>
       <div className="absolute inset-0 -z-10 bg-black/65" aria-hidden="true" />
 
