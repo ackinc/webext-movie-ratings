@@ -1,31 +1,45 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { supportedBrowsers as browsers } from "@/lib/constants";
 
 export function HeroSection() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current!;
+
+    video.addEventListener("timeupdate", helper);
+    return () => video.removeEventListener("timeupdate", helper);
+
+    function helper() {
+      // Freeze before the video's terminal black frames.
+      if (video.duration && video.currentTime >= video.duration - 0.25) {
+        video.currentTime = video.duration - 0.25;
+        video.pause();
+
+        // if we don't remove the event listener here, it is getting called
+        //   in some kind of infinite loop causing high CPU usage
+        video.removeEventListener("timeupdate", helper);
+      }
+    }
+  }, []);
+
   return (
     <section
       id="hero"
       className="relative isolate -mt-16 min-h-svh overflow-hidden pt-16"
     >
       <video
+        ref={videoRef}
         className="hero-background-video absolute -z-20 object-cover"
         autoPlay
         muted
         playsInline
         preload="metadata"
         aria-hidden="true"
-        onTimeUpdate={(event) => {
-          const video = event.currentTarget;
-
-          // Freeze before the video's terminal black frames.
-          if (video.duration && video.currentTime >= video.duration - 0.25) {
-            video.currentTime = video.duration - 0.25;
-            video.pause();
-          }
-        }}
       >
         <source src="/videos/promo2.webm" type="video/webm" />
       </video>
