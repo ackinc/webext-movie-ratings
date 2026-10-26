@@ -108,6 +108,6 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .hero-background-video {
-    animation: hero-background-pan 24s linear infinite alternate;
+    animation: hero-background-pan 24s linear;
   }
 }
