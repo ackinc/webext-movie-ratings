@@ -1,25 +1,21 @@
 # Sift - [Landing page](https://getsift.today)
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+This is a static site built with [Astro](https://astro.build/) and React islands.
 
 ## Getting Started
 
-First, run the development server:
+Run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:4321](http://localhost:4321) with your browser. The site has pages at `/`, `/privacy`, and `/uninstall`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Astro pages and layout are in `src/`; interactive UI remains in the existing React components.
 
 ## Building and Deployment
 
-The husky pre-commit hook (`.husky/pre-commit`) will take care of building the website when its source files are changed.
+Build the production site with `pnpm --filter sift-website build`. The generated files are written to `dist/`.
 
 The `deployWebsite.yaml` GH Actions workflow (defined in `.github/workflows`) should take care of deploying the website automatically when source files are changed.

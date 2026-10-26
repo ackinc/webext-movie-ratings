@@ -12,7 +12,6 @@ next.user-config.*
 
 # Common ignores
 node_modules
-.next/
+.astro/
+dist/
 .DS_Store
-next-env.d.ts
-dist/dev/*

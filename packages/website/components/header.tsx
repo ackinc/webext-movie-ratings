@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 export function Header({ overlay = false }: { overlay?: boolean }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -29,9 +28,9 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
       }`}
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
+        <a href="/" className="flex items-center gap-2">
           <img
-            src="images/logo128.png"
+            src="/images/logo128.png"
             alt="Sift logo"
             className="h-8 w-8 rounded-lg"
           />
@@ -40,27 +39,27 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
           >
             Sift
           </span>
-        </Link>
+        </a>
 
         <nav className="hidden items-center gap-6 md:flex">
-          <Link
+          <a
             href="/#features"
             className={`text-sm font-medium transition-colors ${navigationClass}`}
           >
             Features
-          </Link>
-          <Link
+          </a>
+          <a
             href="/#demo"
             className={`text-sm font-medium transition-colors ${navigationClass}`}
           >
             Demo
-          </Link>
-          <Link
+          </a>
+          <a
             href="/privacy"
             className={`text-sm font-medium transition-colors ${navigationClass}`}
           >
             Privacy
-          </Link>
+          </a>
         </nav>
       </div>
     </header>

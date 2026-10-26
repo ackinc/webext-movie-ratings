@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "astro dev",
+    "build": "astro build",
     "clean": "rm -r dist/*",
-    "start": "next start",
+    "start": "astro preview",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"
@@ -18,15 +18,16 @@
     "clsx": "^2.1.1",
     "immutable": "^5.1.9",
     "lucide-react": "^0.564.0",
-    "next": "16.4.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "siftcore": "workspace:core@*",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
+    "@astrojs/react": "^4.4.2",
     "@tailwindcss/postcss": "^4.2.0",
     "@types/node": "^22",
+    "astro": "^5.16.6",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "husky": "^9.1.7",

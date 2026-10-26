@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Star, ExternalLink, Code2, ShieldCheck } from "lucide-react";
 
 const features: {
@@ -65,13 +64,13 @@ export function FeaturesSection() {
                 </h3>
                 <p className="text-muted-foreground">{feature.description}</p>
                 {feature.link && (
-                  <Link
+                  <a
                     href={feature.link}
                     className="mt-3 inline-flex items-center text-sm font-medium text-accent hover:underline"
                   >
                     {feature.linkText ?? "Learn more"}
                     <ExternalLink className="ml-1 h-3 w-3" />
-                  </Link>
+                  </a>
                 )}
               </div>
             ))}

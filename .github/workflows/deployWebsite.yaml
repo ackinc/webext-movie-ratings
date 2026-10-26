@@ -33,7 +33,7 @@ jobs:
         with:
           base-ref: ${{ github.event.before }}
           head-ref: ${{ github.event.after }}
-          filename-pattern: "packages/website/dist/*"
+          filename-pattern: "packages/website/**"
       - name: Check website among changed files
         id: check-website-changed
         run: |
@@ -54,6 +54,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build website
+        run: pnpm --filter sift-website build
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
