@@ -17,7 +17,7 @@ export function PlatformsSection() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={platform.name}
-                className="opacity-60 transition-all hover:opacity-100"
+                className="grayscale-80 opacity-60 transition-all hover:grayscale-0 hover:opacity-100"
               >
                 <img
                   src={platform.logo}
