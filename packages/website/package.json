@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "clean": "rm -r dist/*",
     "start": "next start",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

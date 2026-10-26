@@ -34,7 +34,7 @@ export const supportedPlatforms = [
   },
   {
     name: "YouTube Movies",
-    logo: "/images/platformWordmarks/youtube.png",
+    logo: "/images/platformWordmarks/youtube.svg",
     url: "https://www.youtube.com/movies",
   },
   {
@@ -44,7 +44,7 @@ export const supportedPlatforms = [
   },
   {
     name: "Hotstar",
-    logo: "/images/platformWordmarks/hotstar.png",
+    logo: "/images/platformWordmarks/jiohotstar.svg",
     url: "https://www.hotstar.com",
   },
   {
@@ -59,7 +59,7 @@ export const supportedPlatforms = [
   },
   {
     name: "HBO Max",
-    logo: "/images/platformWordmarks/hbomax.png",
+    logo: "/images/platformWordmarks/hbomax.svg",
     url: "https://www.hbomax.com",
   },
   {
@@ -74,7 +74,7 @@ export const supportedPlatforms = [
   },
   {
     name: "PeacockTV",
-    logo: "/images/platformWordmarks/peacocktv.webp",
+    logo: "/images/platformWordmarks/peacocktv.svg",
     url: "https://www.peacocktv.com",
   },
 ];

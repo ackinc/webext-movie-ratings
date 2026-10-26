@@ -86,3 +86,28 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes hero-background-pan {
+  from {
+    transform: rotate(-9deg) scale(1.08) translate3d(-12%, 8%, 0);
+  }
+  to {
+    transform: rotate(-9deg) scale(1.08) translate3d(12%, -8%, 0);
+  }
+}
+
+.hero-background-video {
+  top: -30%;
+  left: -30%;
+  width: 160%;
+  height: 160%;
+  max-width: none;
+  transform: rotate(-9deg) scale(1.08);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-background-video {
+    animation: hero-background-pan 24s linear forwards;
+  }
+}
