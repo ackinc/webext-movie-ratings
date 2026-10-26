@@ -43,10 +43,13 @@ export function HeroSection() {
       >
         <source src="/videos/promo.webm" type="video/webm" />
       </video>
-      <div className="absolute inset-0 -z-10 bg-black/65" aria-hidden="true" />
+      <div
+        className="absolute inset-0 -z-10 bg-black/25 lg:bg-[linear-gradient(to_right,#000_0%,#000_20%,rgb(0_0_0/0%)_80%)]"
+        aria-hidden="true"
+      />
 
       <div className="container mx-auto flex min-h-[calc(100svh-4rem)] items-center px-4">
-        <div className="mx-auto max-w-4xl text-center">
+        <div className="mx-auto max-w-4xl text-center lg:mx-0 lg:max-w-xl lg:text-left">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white">
             <span className="flex h-2 w-2 rounded-full bg-green-500" />
             Free &amp; Open Source
@@ -57,12 +60,12 @@ export function HeroSection() {
             <span className="text-accent">streaming apps</span>
           </h1>
 
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-white/85 md:text-xl text-pretty">
+          <p className="mx-auto mb-10 max-w-2xl text-lg text-white/85 md:text-xl text-pretty lg:mx-0">
             Sift adds IMDB ratings next to movies and TV shows on Netflix, Prime
             Video, and more. Choose what to watch faster.
           </p>
 
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row flex-wrap">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:flex-wrap lg:items-start lg:justify-start">
             {browsers.map((browser) => (
               <Button
                 key={browser.name}
