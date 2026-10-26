@@ -13,9 +13,9 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   title="Sift - IMDB Ratings on Netflix, Prime Video & More"
   description="Free & open-source browser extension that adds IMDB ratings to Netflix, Prime Video, Disney+, and other streaming platforms. Available for Chrome, Edge, and Firefox."
 >
-  <div class="flex min-h-screen flex-col">
+  <div class="page">
     <Header overlay client:load />
-    <main class="flex-1">
+    <main>
       <HeroSection client:load />
       <DemoSection />
       <FeaturesSection />
@@ -25,3 +25,15 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
     <Footer />
   </div>
 </BaseLayout>
+
+<style>
+  .page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  main {
+    flex: 1;
+  }
+</style>

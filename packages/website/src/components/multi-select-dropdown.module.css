@@ -1,0 +1,94 @@
+.dropdown {
+  position: relative;
+}
+.trigger {
+  display: flex;
+  width: 100%;
+  cursor: pointer;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  text-align: left;
+}
+.trigger:focus-visible,
+.option:focus-visible {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring), transparent 50%);
+}
+.placeholder {
+  overflow: hidden;
+  color: #9ca3af;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.value {
+  overflow: hidden;
+  color: var(--foreground);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chevron {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+.menu {
+  position: absolute;
+  z-index: 300;
+  top: 100%;
+  width: 100%;
+  max-height: 14rem;
+  margin: 0;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  padding: 0.25rem;
+  background: var(--popover);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  list-style: none;
+}
+.option {
+  display: flex;
+  width: 100%;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.125rem;
+  padding: 0.375rem 0.5rem;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 0.875rem;
+  text-align: left;
+}
+.option:hover {
+  background: color-mix(in oklab, var(--accent), transparent 50%);
+  color: var(--accent-foreground);
+}
+.checkbox {
+  display: flex;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--input);
+  border-radius: 0.25rem;
+}
+.checked {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+.check {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: var(--primary-foreground);
+}

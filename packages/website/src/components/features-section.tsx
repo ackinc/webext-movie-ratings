@@ -1,4 +1,5 @@
 import { Star, ExternalLink, Code2, ShieldCheck } from "lucide-react";
+import styles from "./features-section.module.css";
 
 const features: {
   icon: React.ComponentType<{ className?: string }>;
@@ -38,38 +39,26 @@ const features: {
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-16 md:py-24">
-      <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              Simple. Fast. Transparent.
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Everything you need to make better viewing decisions
-            </p>
+    <section id="features" className={styles["section"]}>
+      <div className={styles["container"]}>
+        <div className={styles["content"]}>
+          <div className={styles["heading"]}>
+            <h2>Simple. Fast. Transparent.</h2>
+            <p>Everything you need to make better viewing decisions</p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className={styles["grid"]}>
             {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="group rounded-xl border border-border bg-background p-6 transition-all hover:border-accent hover:shadow-lg"
-              >
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-accent/20 text-accent">
-                  <feature.icon className="h-6 w-6" />
+              <div key={feature.title} className={styles["card"]}>
+                <div className={styles["icon"]}>
+                  <feature.icon />
                 </div>
-                <h3 className="mb-2 text-xl font-semibold text-foreground">
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+                <h3>{feature.title}</h3>
+                <p>{feature.description}</p>
                 {feature.link && (
-                  <a
-                    href={feature.link}
-                    className="mt-3 inline-flex items-center text-sm font-medium text-accent hover:underline"
-                  >
+                  <a href={feature.link} className={styles["link"]}>
                     {feature.linkText ?? "Learn more"}
-                    <ExternalLink className="ml-1 h-3 w-3" />
+                    <ExternalLink />
                   </a>
                 )}
               </div>

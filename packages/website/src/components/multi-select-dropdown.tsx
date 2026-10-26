@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Check, ChevronDown } from "lucide-react";
+import styles from "./multi-select-dropdown.module.css";
 
 export function MultiSelectDropdown({
   defaultOpen,
@@ -37,21 +38,23 @@ export function MultiSelectDropdown({
   }
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className={styles["dropdown"]}>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="cursor-pointer flex w-full items-center justify-between gap-2 rounded-md border bg-background py-2 pl-3 pr-2 text-left text-sm focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        className={styles["trigger"]}
       >
         <span
-          className={`truncate ${value.length === 0 ? "text-gray-400" : "text-foreground"}`}
+          className={
+            value.length === 0 ? styles["placeholder"] : styles["value"]
+          }
         >
           {value.length === 0 ? placeholder : value.join(", ")}
         </span>
-        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <ChevronDown className={styles["chevron"]} />
       </button>
       {open && (
-        <ul className="absolute top-full z-300 max-h-56 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md">
+        <ul className={styles["menu"]}>
           {options.map((option) => {
             const checked = value.includes(option);
             return (
@@ -59,16 +62,12 @@ export function MultiSelectDropdown({
                 <button
                   type="button"
                   onClick={() => toggleOption(option)}
-                  className="cursor-pointer flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-foreground hover:bg-accent/50 hover:text-accent-foreground"
+                  className={styles["option"]}
                 >
                   <span
-                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-                      checked ? "border-primary bg-primary" : "border-input"
-                    }`}
+                    className={`${styles["checkbox"]} ${checked ? styles["checked"] : ""}`}
                   >
-                    {checked && (
-                      <Check className="h-3 w-3 text-primary-foreground" />
-                    )}
+                    {checked && <Check className={styles["check"]} />}
                   </span>
                   {option}
                 </button>

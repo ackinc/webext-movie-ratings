@@ -6,9 +6,9 @@ import { Info } from "lucide-react";
 import type { UserMessage } from "siftcore";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
-import { Button } from "@/components/ui/button";
 import { MultiSelectDropdown } from "@/components/multi-select-dropdown";
 import { API_URL, supportedPlatforms } from "@/lib/constants";
+import styles from "./uninstall-page.module.css";
 
 const platformOptions = supportedPlatforms.map((p) => p.name).sort();
 
@@ -106,43 +106,36 @@ export default function UninstallPage() {
   const [error, setError] = useState("");
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className={styles["page"]}>
       <Header />
-      <main className="flex-1">
-        <div className="container mx-auto px-4 pt-8">
-          <a
-            href="/"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-          >
+      <main>
+        <div className={styles["backContainer"]}>
+          <a href="/" className={styles["backLink"]}>
             &larr; Back to home
           </a>
         </div>
-        <div className="container mx-auto max-w-3xl px-4 pb-16 pt-8">
-          <h1 className="mb-2 text-3xl font-bold tracking-tight text-foreground">
-            Sorry to see you go!
-          </h1>
-          <p className="mb-8 text-muted-foreground">
+        <div className={styles["content"]}>
+          <h1>Sorry to see you go!</h1>
+          <p className={styles["intro"]}>
             Mind sharing why? It helps us fix things.
           </p>
 
           {submitted ? (
-            <div className="rounded-lg border bg-card p-8 text-center">
-              <p className="text-lg font-medium text-foreground">
-                Thank you for your feedback!
-              </p>
-              <p className="mt-2 text-muted-foreground">
-                We'll use it to make Sift better.
-              </p>
+            <div className={styles["thankYou"]}>
+              <p>Thank you for your feedback!</p>
+              <p>We'll use it to make Sift better.</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-2 items-start gap-x-8 gap-y-3">
+            <form onSubmit={handleSubmit} className={styles["form"]}>
+              <div className={styles["reasonGrid"]}>
                 {reasons.map(({ id, desc, note, question }) => {
                   const checked = selectedReasons.has(id);
                   return (
                     <Fragment key={id}>
-                      <div className="uninstall-reason flex items-center gap-2 rounded-lg border has-checked:border-primary has-checked:bg-accent/50">
-                        <label className="px-3 py-2.25 flex flex-1 items-center gap-3 cursor-pointer">
+                      <div
+                        className={`${styles["reason"]} ${checked ? styles["reasonChecked"] : ""}`}
+                      >
+                        <label className={styles["reasonLabel"]}>
                           <input
                             name={`reason-${id}`}
                             type="checkbox"
@@ -154,21 +147,19 @@ export default function UninstallPage() {
                                   : selectedReasons.add(id),
                               )
                             }
-                            className="h-4 w-4 accent-primary"
+                            className={styles["reasonInput"]}
                           />
-                          <span className="text-sm text-foreground">
-                            {desc}
-                          </span>
+                          <span className={styles["reasonText"]}>{desc}</span>
                           {note && (
                             <a
                               href={note.href ?? "#"}
                               target="_blank"
                               rel="noopener noreferrer"
                               aria-label="Read our privacy policy"
-                              className="ml-auto group relative shrink-0 text-muted-foreground hover:text-foreground"
+                              className={styles["noteLink"]}
                             >
-                              <Info className="h-3.5 w-3.5" />
-                              <span className="pointer-events-none absolute right-0 top-full z-30 mt-1 w-64 rounded-md border bg-popover p-2 text-xs font-normal text-popover-foreground opacity-0 shadow-md transition-opacity group-hover:opacity-100">
+                              <Info />
+                              <span className={styles["noteTooltip"]}>
                                 {note.text}
                               </span>
                             </a>
@@ -176,7 +167,7 @@ export default function UninstallPage() {
                         </label>
                       </div>
 
-                      <div className="uninstall-reason-details">
+                      <div className={styles["reasonDetails"]}>
                         {checked &&
                           question &&
                           (question.options ? (
@@ -206,7 +197,7 @@ export default function UninstallPage() {
                               }
                               placeholder={question.text}
                               disabled={question.readOnly}
-                              className="disabled:bg-gray-200 placeholder-gray-400 w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                              className={styles["textInput"]}
                             />
                           ))}
                       </div>
@@ -216,7 +207,7 @@ export default function UninstallPage() {
               </div>
 
               <div>
-                <label className="flex flex-col text-xs font-medium text-gray-400">
+                <label className={styles["emailLabel"]}>
                   <input
                     name="email"
                     autoComplete="on"
@@ -224,24 +215,24 @@ export default function UninstallPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Email"
-                    className="mb-1 w-[calc(50%-1rem)] rounded-md border bg-background px-3 py-2 text-sm text-foreground placeholder:text-gray-400 focus-visible:outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    className={styles["emailInput"]}
                   />
-                  <span className="pl-4">
+                  <span>
                     ^ optional. If you'd like us to inform you when we've fixed
                     the issues you're raising.
                   </span>
                 </label>
               </div>
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
+              {error && <p className={styles["error"]}>{error}</p>}
 
-              <Button
+              <button
                 type="submit"
-                className="block w-[calc(50%-1rem)] disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:bg-primary"
+                className={styles["submit"]}
                 disabled={loading || selectedReasons.size === 0}
               >
                 {loading ? "Submitting..." : "Submit"}
-              </Button>
+              </button>
             </form>
           )}
         </div>

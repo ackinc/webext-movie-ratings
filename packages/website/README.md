@@ -12,7 +12,7 @@ pnpm dev
 
 Open [http://localhost:4321](http://localhost:4321) with your browser. The site has pages at `/`, `/privacy`, and `/uninstall`.
 
-All website source is in `src/`: Astro pages and layout alongside interactive React components.
+All website source is in `src/`: Astro pages and layout alongside interactive React components. Shared styles live in `src/styles/globals.css`; component styles are co-located CSS Modules.
 
 ## Building and Deployment
 

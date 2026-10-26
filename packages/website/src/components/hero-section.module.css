@@ -1,0 +1,143 @@
+.hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  margin-top: -4rem;
+  overflow: hidden;
+  padding-top: 4rem;
+}
+.video {
+  position: absolute;
+  z-index: -2;
+  object-fit: cover;
+}
+.overlay {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: rgb(0 0 0 / 0.65);
+}
+.inner {
+  display: flex;
+  width: min(100% - 2rem, 80rem);
+  min-height: calc(100svh - 4rem);
+  margin: 0 auto;
+  align-items: center;
+}
+.content {
+  max-width: 56rem;
+  margin: 0 auto;
+  text-align: center;
+}
+.badge {
+  display: inline-flex;
+  margin-bottom: 1.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.15);
+  padding: 0.5rem 1rem;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.status {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #22c55e;
+}
+h1 {
+  margin: 0 0 1.5rem;
+  color: white;
+  font-size: 3rem;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+h1 span {
+  color: var(--accent);
+}
+.description {
+  max-width: 42rem;
+  margin: 0 auto 2.5rem;
+  color: rgb(255 255 255 / 0.85);
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+.primaryButton,
+.githubButton {
+  display: inline-flex;
+  width: 13rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 0;
+  padding: 0 2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+.primaryButton {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.primaryButton:hover {
+  background: color-mix(in oklab, var(--primary), black 10%);
+}
+.githubButton {
+  border-color: rgb(255 255 255 / 0.6);
+  background: rgb(0 0 0 / 0.2);
+  color: white;
+}
+.githubButton:hover {
+  background: rgb(255 255 255 / 0.15);
+}
+.browserLogo,
+.githubButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+@media (min-width: 640px) {
+  .actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+@media (min-width: 768px) {
+  h1 {
+    font-size: 4.5rem;
+  }
+  .description {
+    font-size: 1.25rem;
+  }
+}
+@media (min-width: 1024px) {
+  .overlay {
+    background: linear-gradient(to right, #000 0%, #000 20%, transparent 80%);
+  }
+  .content {
+    max-width: 36rem;
+    margin-left: 0;
+    text-align: left;
+  }
+  .description {
+    margin-left: 0;
+  }
+  .actions {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+}

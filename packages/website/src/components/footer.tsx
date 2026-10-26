@@ -1,27 +1,28 @@
 import { Github } from "lucide-react";
+import styles from "./footer.module.css";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border py-12">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-          <div className="flex items-center gap-2">
+    <footer className={styles["footer"]}>
+      <div className={styles["container"]}>
+        <div className={styles["inner"]}>
+          <div className={styles["brand"]}>
             <img
               src="/images/logo128.png"
               alt="Sift logo"
-              className="h-8 w-8 rounded-lg"
+              className={styles["logo"]}
             />
-            <span className="text-lg font-semibold text-foreground">Sift</span>
+            <span>Sift</span>
           </div>
 
-          <div className="text-center text-sm text-muted-foreground">
+          <div className={styles["copy"]}>
             <p>
               IMDB ratings powered by the{" "}
               <a
                 href="https://www.patreon.com/join/omdb"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-foreground hover:text-accent transition-colors"
+                className={styles["omdbLink"]}
               >
                 OMDB API
               </a>
@@ -29,14 +30,14 @@ export function Footer() {
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className={styles["source"]}>
             <a
               href="https://github.com/ackinc/webext-movie-ratings"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className={styles["sourceLink"]}
             >
-              <Github className="h-5 w-5" />
+              <Github />
               <span>Source Code</span>
             </a>
           </div>

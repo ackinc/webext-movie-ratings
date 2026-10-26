@@ -1,0 +1,97 @@
+.section {
+  padding: 4rem 0;
+}
+.container {
+  width: min(100% - 2rem, 80rem);
+  margin: 0 auto;
+}
+.content {
+  max-width: 64rem;
+  margin: 0 auto;
+}
+.heading {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+h2 {
+  margin: 0 0 1rem;
+  color: var(--foreground);
+  font-size: 1.875rem;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+.heading p,
+.card p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 1.125rem;
+}
+.grid {
+  display: grid;
+  gap: 2rem;
+}
+.card {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  background: var(--background);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+.icon {
+  display: inline-flex;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: color-mix(in oklab, var(--accent), transparent 80%);
+  color: var(--accent);
+}
+.icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+h3 {
+  margin: 0 0 0.5rem;
+  color: var(--foreground);
+  font-size: 1.25rem;
+}
+.card p {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.link {
+  display: inline-flex;
+  margin-top: 0.75rem;
+  align-items: center;
+  color: var(--accent);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.link:hover {
+  text-decoration: underline;
+}
+.link svg {
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-left: 0.25rem;
+}
+@media (min-width: 768px) {
+  .section {
+    padding: 6rem 0;
+  }
+  h2 {
+    font-size: 2.25rem;
+  }
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
