@@ -12,7 +12,7 @@ pnpm dev
 
 Open [http://localhost:4321](http://localhost:4321) with your browser. The site has pages at `/`, `/privacy`, and `/uninstall`.
 
-Astro pages and layout are in `src/`; interactive UI remains in the existing React components.
+All website source is in `src/`: Astro pages and layout alongside interactive React components.
 
 ## Building and Deployment
 
