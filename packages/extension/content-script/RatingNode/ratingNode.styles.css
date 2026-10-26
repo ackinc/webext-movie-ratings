@@ -7,6 +7,32 @@
   text-decoration: none;
 }
 
+@keyframes appear-dramatically {
+  0% {
+    opacity: 0;
+    color: white;
+    text-shadow: 0 0 0 transparent;
+  }
+
+  50% {
+    opacity: 0;
+    color: white;
+    text-shadow: 0 0 0 transparent;
+  }
+
+  60% {
+    opacity: 1;
+    color: white;
+    text-shadow: 0 0 5px white;
+  }
+
+  100% {
+    opacity: 1;
+    color: rgb(153, 153, 153);
+    text-shadow: 0 0 0 transparent;
+  }
+}
+
 .sift-imdb-data-content {
   color: #999999;
   font-size: 14px;

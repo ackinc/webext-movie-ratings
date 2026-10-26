@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Ubuntu } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const ubuntu = Ubuntu({
@@ -25,17 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={ubuntu.variable}>
-      <body className="font-sans antialiased" suppressHydrationWarning>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem={false}
-          storageKey="sift-theme"
-        >
-          {children}
-        </ThemeProvider>
-      </body>
+    <html lang="en" className={`${ubuntu.variable} dark`}>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   );
 }
