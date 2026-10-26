@@ -1,0 +1,203 @@
+.page {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  background: var(--background);
+}
+.page main {
+  flex: 1;
+}
+.backContainer,
+.content {
+  width: min(100% - 2rem, 48rem);
+  margin: 0 auto;
+}
+.backContainer {
+  padding-top: 2rem;
+}
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+.backLink:hover {
+  color: var(--foreground);
+}
+.content {
+  padding: 2rem 0 4rem;
+}
+h1 {
+  margin: 0 0 0.5rem;
+  color: var(--foreground);
+  font-size: 1.875rem;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+.intro {
+  margin: 0 0 2rem;
+  color: var(--muted-foreground);
+}
+.thankYou {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  background: var(--card);
+  text-align: center;
+}
+.thankYou p {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+.thankYou p + p {
+  margin-top: 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 1rem;
+  font-weight: 400;
+}
+.form {
+  display: grid;
+  gap: 1.5rem;
+}
+.reasonGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  column-gap: 2rem;
+  row-gap: 0.75rem;
+}
+.reason {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+.reasonChecked {
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--accent), transparent 50%);
+}
+.reasonLabel {
+  display: flex;
+  flex: 1;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5625rem 0.75rem;
+}
+.reasonInput {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--primary);
+}
+.reasonText {
+  color: var(--foreground);
+  font-size: 0.875rem;
+}
+.noteLink {
+  position: relative;
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+.noteLink:hover {
+  color: var(--foreground);
+}
+.noteLink svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.noteTooltip {
+  pointer-events: none;
+  position: absolute;
+  z-index: 30;
+  top: 100%;
+  right: 0;
+  width: 16rem;
+  margin-top: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  font-size: 0.75rem;
+  font-weight: 400;
+  opacity: 0;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  transition: opacity 0.15s;
+}
+.noteLink:hover .noteTooltip {
+  opacity: 1;
+}
+.reasonDetails {
+  min-height: 1px;
+}
+.textInput,
+.emailInput {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 0.875rem;
+}
+.textInput::placeholder,
+.emailInput::placeholder {
+  color: #9ca3af;
+}
+.textInput:disabled {
+  background: #e5e7eb;
+}
+.textInput:focus-visible,
+.emailInput:focus-visible {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring), transparent 50%);
+}
+.emailLabel {
+  display: flex;
+  flex-direction: column;
+  color: #9ca3af;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.emailInput {
+  width: calc(50% - 1rem);
+  margin-bottom: 0.25rem;
+}
+.emailLabel span {
+  padding-left: 1rem;
+}
+.error {
+  margin: 0;
+  color: var(--destructive);
+  font-size: 0.875rem;
+}
+.submit {
+  display: block;
+  width: calc(50% - 1rem);
+  height: 2.5rem;
+  cursor: pointer;
+  border: 0;
+  border-radius: 0.375rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+@media (max-width: 640px) {
+  .reasonGrid {
+    grid-template-columns: 1fr;
+  }
+  .emailInput,
+  .submit {
+    width: 100%;
+  }
+}

@@ -1,0 +1,64 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+.inner {
+  display: flex;
+  height: 4rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+.logo {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+}
+.brandName {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.overlay {
+  border-color: rgb(255 255 255 / 0.2);
+  background: transparent;
+  color: white;
+}
+.overlay .link {
+  color: rgb(255 255 255 / 0.75);
+}
+.overlay .link:hover {
+  color: white;
+}
+.solid {
+  border-color: var(--border);
+  background: rgb(from var(--background) r g b / 0.6);
+  backdrop-filter: blur(8px);
+  color: var(--foreground);
+}
+.solid .link {
+  color: var(--muted-foreground);
+}
+.solid .link:hover {
+  color: var(--foreground);
+}

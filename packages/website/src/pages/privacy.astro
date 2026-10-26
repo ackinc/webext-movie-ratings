@@ -1,0 +1,68 @@
+---
+import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Privacy Policy - Sift"
+  description="Privacy policy for the Sift browser extension"
+>
+  <div class="page">
+    <Header />
+    <main>
+      <div class="content">
+        <a href="/" class="back-link">
+          &larr; Back to home
+        </a>
+
+        <h1>Privacy Policy</h1>
+
+        <div class="sections">
+          <section>
+            <h2>What information does this extension collect?</h2>
+            <p>
+              As a user is browsing movies / shows on an OTT platform's website, this extension scrapes the web page to identify the movies / shows being shown to the user.
+            </p>
+          </section>
+
+          <section>
+            <h2>How is this information used?</h2>
+            <p>
+              Once the movies / shows on the web page have been identified, their IMDB rating and related information is retrieved via a web request to a third-party, and the ratings are displayed to the user next to the movie tile.
+            </p>
+          </section>
+
+          <section>
+            <h2>What information does this extension share with third-parties?</h2>
+            <div class="section-copy">
+              <p>
+                The extension sends a movie's title and year of release to <a href="https://www.omdbapi.com" target="_blank" rel="noopener noreferrer">omdbapi.com</a>, which is an API service providing movie ratings from IMDB and similar providers. omdbapi.com sends the IMDB rating (and some related info) back.
+              </p>
+              <p>
+                If the user explicitly opts-in to error reporting, any errors that occur during use of the extension are reported (along with related details like device, OS, browser, browser dimensions, etc.) to our error reporting platform - <a href="https://sentry.io" target="_blank" rel="noopener noreferrer">sentry.io</a>.
+              </p>
+              <p>A full list of the data collected is shown to the user in the extension's popup, where the user can choose whether or not to opt-in to error reporting.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <Footer />
+  </div>
+</BaseLayout>
+
+<style>
+  .page { display: flex; flex-direction: column; min-height: 100vh; }
+  main { flex: 1; }
+  .content { width: min(100% - 2rem, 48rem); margin: 0 auto; padding: 4rem 0; }
+  .back-link { display: inline-flex; margin-bottom: 2rem; color: var(--muted-foreground); font-size: .875rem; text-decoration: none; }
+  .back-link:hover { color: var(--foreground); }
+  h1 { margin: 0 0 2rem; color: var(--foreground); font-size: 2.25rem; line-height: 1.1; letter-spacing: -.025em; }
+  .sections { display: grid; gap: 2rem; }
+  h2 { margin: 0 0 1rem; color: var(--foreground); font-size: 1.25rem; }
+  p { margin: 0; color: var(--muted-foreground); line-height: 1.625; }
+  .section-copy { display: grid; gap: 1rem; }
+  .section-copy a { color: var(--accent); text-underline-offset: 2px; }
+  .section-copy a:hover { color: var(--foreground); }
+</style>

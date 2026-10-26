@@ -1,0 +1,120 @@
+:root {
+  --font-ubuntu: "Ubuntu";
+  --background: oklch(0.13 0.01 90);
+  --foreground: oklch(0.95 0.01 90);
+  --card: oklch(0.17 0.01 90);
+  --card-foreground: oklch(0.95 0.01 90);
+  --popover: oklch(0.17 0.01 90);
+  --popover-foreground: oklch(0.95 0.01 90);
+  --primary: oklch(0.75 0.18 85);
+  --primary-foreground: oklch(0.13 0 0);
+  --secondary: oklch(0.22 0.01 90);
+  --secondary-foreground: oklch(0.95 0.01 90);
+  --muted: oklch(0.22 0.01 90);
+  --muted-foreground: oklch(0.65 0.01 90);
+  --accent: oklch(0.75 0.18 85);
+  --accent-foreground: oklch(0.13 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.25 0.01 90);
+  --input: oklch(0.22 0.01 90);
+  --ring: oklch(0.75 0.18 85);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  line-height: normal;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-ubuntu), Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+.container {
+  width: min(100% - 2rem, 96rem);
+  margin: 0 auto;
+  padding-inline: 1rem;
+}
+
+.section {
+  padding: 4rem 0;
+}
+
+.section-content {
+  margin: 0 auto;
+}
+
+.section-heading {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.section-title {
+  margin: 0 0 1rem;
+  color: var(--foreground);
+  font-size: 1.875rem;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.section-description {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 1.125rem;
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding: 6rem 0;
+  }
+
+  .section-title {
+    font-size: 2.25rem;
+  }
+}
+
+@keyframes hero-background-pan {
+  from {
+    transform: rotate(-9deg) scale(1.08) translate3d(-12%, 8%, 0);
+  }
+  to {
+    transform: rotate(-9deg) scale(1.08) translate3d(12%, -8%, 0);
+  }
+}
+
+.hero-background-video {
+  top: -30%;
+  left: -30%;
+  width: 160%;
+  height: 160%;
+  max-width: none;
+  transform: rotate(-9deg) scale(1.08);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-background-video {
+    animation: hero-background-pan 24s linear forwards;
+  }
+}

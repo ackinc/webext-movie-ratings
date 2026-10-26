@@ -1,0 +1,39 @@
+---
+import { DemoSection } from "@/components/demo-section";
+import { DownloadSection } from "@/components/download-section";
+import { FeaturesSection } from "@/components/features-section";
+import { Footer } from "@/components/footer";
+import { Header } from "@/components/header";
+import { HeroSection } from "@/components/hero-section";
+import { PlatformsSection } from "@/components/platforms-section";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Sift - IMDB Ratings on Netflix, Prime Video & More"
+  description="Free & open-source browser extension that adds IMDB ratings to Netflix, Prime Video, Disney+, and other streaming platforms. Available for Chrome, Edge, and Firefox."
+>
+  <div class="page">
+    <Header overlay client:load />
+    <main>
+      <HeroSection client:load />
+      <DemoSection />
+      <FeaturesSection />
+      <PlatformsSection />
+      <DownloadSection />
+    </main>
+    <Footer />
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  main {
+    flex: 1;
+  }
+</style>
