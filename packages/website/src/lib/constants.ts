@@ -76,4 +76,9 @@ export const supportedPlatforms = [
     logo: "/images/platformWordmarks/peacocktv.svg",
     url: "https://www.peacocktv.com",
   },
+  {
+    name: "Paramount Plus",
+    logo: "/images/platformWordmarks/paramountplus.svg",
+    url: "https://www.paramountplus.com",
+  },
 ];
