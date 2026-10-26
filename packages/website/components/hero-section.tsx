@@ -44,7 +44,7 @@ export function HeroSection() {
         <source src="/videos/promo.webm" type="video/webm" />
       </video>
       <div
-        className="absolute inset-0 -z-10 bg-black/25 lg:bg-[linear-gradient(to_right,#000_0%,#000_20%,rgb(0_0_0/0%)_80%)]"
+        className="absolute inset-0 -z-10 bg-black/65 lg:bg-black/25 lg:bg-[linear-gradient(to_right,#000_0%,#000_20%,rgb(0_0_0/0%)_80%)]"
         aria-hidden="true"
       />
 
@@ -70,7 +70,7 @@ export function HeroSection() {
               <Button
                 key={browser.name}
                 size="lg"
-                className="gap-2 px-8"
+                className="w-52 gap-2 px-8"
                 asChild
               >
                 <a href={browser.url} target="_blank" rel="noopener noreferrer">
@@ -86,7 +86,7 @@ export function HeroSection() {
             <Button
               size="lg"
               variant="outline"
-              className="gap-2 border-white/60 bg-black/20 px-8 text-white hover:bg-white/15 hover:text-white"
+              className="w-52 gap-2 border-white/60 bg-black/20 px-8 text-white hover:bg-white/15 hover:text-white"
               asChild
             >
               <a

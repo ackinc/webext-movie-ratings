@@ -22,7 +22,7 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full border-b transition-colors ${
+      className={`sticky top-0 z-50 w-full  transition-colors ${
         isOverlayingHero
           ? "border-white/20 bg-transparent text-white"
           : "border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
