@@ -19,9 +19,9 @@
     "siftcore": "workspace:core@*"
   },
   "devDependencies": {
-    "@astrojs/react": "^4.4.2",
+    "@astrojs/react": "^7.1.1",
     "@types/node": "^22",
-    "astro": "^5.16.6",
+    "astro": "^7.4.2",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "husky": "^9.1.7",
