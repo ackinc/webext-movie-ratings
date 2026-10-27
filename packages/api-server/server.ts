@@ -1,5 +1,5 @@
 import "dotenv/config";
-
+import "./otel.ts";
 import Sentry from "./instrument.ts";
 
 import { parseISO } from "date-fns";
