@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 
 import "dotenv/config";
+import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import { addHours, format } from "date-fns";
 import dbService from "../services/dbService.ts";
 import type { RawProgramMatchRecord } from "../types.ts";
 import { sendAdminEmailToUpdateIncorrectMatch } from "../helpers.ts";
 import baseLogger from "../services/logger.ts";
 
+const __filename = path.basename(fileURLToPath(import.meta.url));
 const logger = baseLogger.child({ script: __filename });
 
 const cutoffTime = format(addHours(new Date(), -1), "yyyy-MM-dd HH:mm:ss");
