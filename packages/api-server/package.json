@@ -4,10 +4,10 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.ts",
-    "dev": "tsx watch --include email-templates/* --clear-screen=false server.ts",
+    "start": "node --experimental-import-text server.ts",
+    "dev": "node --experimental-import-text --watch --watch-preserve-output server.ts | pino-pretty",
     "start:crons": "node crons.ts",
-    "dev:crons": "tsx watch --include email-templates/* --clear-screen=false crons.ts",
+    "dev:crons": "node --watch --watch-preserve-output crons.ts | pino-pretty",
     "migrations": "./scripts/runMigrations.ts"
   },
   "keywords": [],
@@ -48,7 +48,6 @@
     "@types/nodemailer": "^8.0.1",
     "@types/yargs": "^17.0.35",
     "pino-pretty": "^13.1.3",
-    "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   }
 }
