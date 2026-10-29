@@ -4,12 +4,16 @@ set -euo pipefail
 
 apt-get update && apt-get upgrade
 apt-get install -y curl sqlite3 tree
+snap install aws-cli --classic
 
 
-# vars
-MEILISEARCH_MASTER_KEY=8lNc7cEcH5QK7BDLkoKxgFx0kbGB8Ij0yPGLlalAl934KQpJ
-GIT_REPO_URL="https://github.com/ackinc/webext-movie-ratings"
+cd /home/ubuntu
+aws ssm get-parameter --name "/sift/env.production" --query "Parameter.Value" --output text > .env
+chown ubuntu:ubuntu ./.env
 
+
+# meilisearch
+MEILISEARCH_MASTER_KEY=$(cat .env | grep MEILISEARCH_MASTER_KEY | cut -d'=' -f2)
 runuser -u ubuntu bash << EOF
   cd ~
   mkdir meilisearch && cd meilisearch
@@ -37,13 +41,21 @@ systemctl start meilisearch.service
 systemctl enable meilisearch.service
 
 
-# nodev24 and pnpm
-curl -fsSL https://deb.nodesource.com/setup_24.x -o nodesource_setup.sh
-bash nodesource_setup.sh
-rm nodesource_setup.sh
-apt-get install nodejs
-npm install --global corepack@latest
-corepack enable pnpm
+# node@26 and pnpm@12
+curl -fsSL https://nodejs.org/dist/v26.13.0/node-v26.13.0-linux-x64.tar.xz -o node-v26.13.0-linux-x64.tar.xz
+tar -xf ./node-v26.13.0-linux-x64.tar.xz
+rm ./node-v26.13.0-linux-x64.tar.xz
+ln -s /home/ubuntu/node-v26.13.0-linux-x64/bin/node /usr/bin/node
+ln -s /home/ubuntu/node-v26.13.0-linux-x64/bin/npm /usr/bin/npm
+ln -s /home/ubuntu/node-v26.13.0-linux-x64/bin/npx /usr/bin/npx
+curl -fsSL https://get.pnpm.io | env PNPM_VERSION=12 sh -
+source /home/ubuntu/.bashrc # exports $PNPM_HOME and puts pnpm in the $PATH
+# since we usually run the deploy script from a nonlogin noninteractive shell
+#   without first ssh-ing into the prod server, .bashrc won't be sourced
+#   when it is running, causing it to fail with a 'cannot find pnpm' error
+#   unless we take special measures like below
+ln -s $PNPM_HOME/bin/pnpm /usr/bin/pnpm # allows 
+ln -s $PNPM_HOME/bin/pnpx /usr/bin/pnpx
 
 # pm2
 npm install -g pm2
@@ -53,10 +65,9 @@ pm2 startup systemd -u ubuntu --hp /home/ubuntu
 pm2 install pm2-logrotate
 
 
-snap install aws-cli --classic
-
 
 # install and run the application server
+GIT_REPO_URL="https://github.com/ackinc/webext-movie-ratings"
 runuser -u ubuntu bash << EOF
   cd ~
   git clone $GIT_REPO_URL sift
@@ -72,8 +83,7 @@ runuser -u ubuntu bash << EOF
   cd node_modules/better-sqlite3 && pnpm run install
 
   cd ~/sift/packages/api-server
-
-  aws ssm get-parameter --name "/sift/env.production" --query "Parameter.Value" --output text > .env
+  mv ~/.env ./
 
   # starts the server and ensures pm2 will resurrect it on system reboot
   pm2 start ecosystem.config.js
