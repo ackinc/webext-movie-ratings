@@ -34,7 +34,10 @@ cron.schedule(
   () =>
     spawn(
       "node",
-      [path.join(__dirname, "./scripts/sendIncorrectMatchEmails.ts")],
+      [
+        "--experimental-import-text",
+        path.join(__dirname, "./scripts/sendIncorrectMatchEmails.ts"),
+      ],
       {
         // we don't want this process to be interrupted if the api-server is restarting
         detached: true,

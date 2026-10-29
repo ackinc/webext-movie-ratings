@@ -1,6 +1,5 @@
 import "dotenv/config";
 
-// initialize Sentry
 import Sentry from "./instrument.ts";
 
 import { parseISO } from "date-fns";

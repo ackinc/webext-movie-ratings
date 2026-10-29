@@ -7,7 +7,8 @@ import nodemailer from "nodemailer";
 import { pick } from "siftutils";
 import Handlebars from "handlebars";
 import logger from "./logger.ts";
-import { emailTemplatesDir } from "../constants.ts";
+
+import templateUpdateIncorrectMatchAdminEmail from "../email-templates/UpdateIncorrectMatchAdminEmail.handlebars" with { type: "text" };
 
 const { APP_ENV, DEV_EMAIL, RESEND_API_KEY } = pick(
   process.env,
@@ -28,10 +29,7 @@ const defaultFromAddress = "Sift <app@getsift.today>";
 
 export const precompiledTemplates = {
   updateIncorrectMatchAdminEmail: Handlebars.compile(
-    fs.readFileSync(
-      path.join(emailTemplatesDir, "UpdateIncorrectMatchAdminEmail.handlebars"),
-      { encoding: "utf-8" },
-    ),
+    templateUpdateIncorrectMatchAdminEmail,
   ),
 };
 
