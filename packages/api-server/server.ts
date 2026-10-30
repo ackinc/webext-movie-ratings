@@ -1,3 +1,4 @@
+import "./initmarker.ts";
 import "dotenv/config";
 import "./otel.ts";
 import Sentry from "./instrument.ts";
@@ -42,6 +43,8 @@ server.listen({ port: +env.PORT! }, function (err, _address) {
   if (err) {
     server.log.error(err);
     process.exit(1);
+  } else {
+    console.log(new Date().toISOString(), "server-ready");
   }
 });
 process.on("SIGINT", cleanup);
