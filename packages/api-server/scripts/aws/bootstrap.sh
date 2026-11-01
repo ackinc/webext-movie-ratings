@@ -98,10 +98,8 @@ EOF
 #   have to write an nginx config file once)
 # WARN: DNS record pointing domain to instance should already be in place
 apt-get remove certbot
-snap install --classic certbot
-ln -s /snap/bin/certbot /usr/local/bin/certbot
-certbot certonly -n --nginx -d api.getsift.today
-echo "0 0 1 3,6,9,12 * root certbot renew -n" | tee -a /etc/crontab
+/home/ubuntu/sift/packages/api-server/scripts/aws/certbot_renew.sh
+echo "0 0 1 * * root /home/ubuntu/sift/packages/api-server/scripts/aws/certbot_renew.sh" | tee -a /etc/crontab
 
 
 # install and configure nginx as reverse-proxy
