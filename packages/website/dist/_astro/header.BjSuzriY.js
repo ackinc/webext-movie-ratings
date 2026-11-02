@@ -1,0 +1,1 @@
+"use client";export{t as Header}from"./header.C3ImtfPi.js";
