@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "date -u +%Y-%m-%dT%H:%M:%S.%3NZ && node --experimental-import-text --experimental-loader=@opentelemetry/instrumentation/hook.mjs server.ts",
-    "dev": "date -u +%Y-%m-%dT%H:%M:%S.%3NZ && node --experimental-import-text --watch --watch-preserve-output --experimental-loader=@opentelemetry/instrumentation/hook.mjs server.ts | pino-pretty",
+    "start": "./scripts/start.sh",
+    "dev": "./scripts/dev.sh",
     "start:crons": "node crons.ts",
     "dev:crons": "node --watch --watch-preserve-output crons.ts | pino-pretty",
     "migrations": "./scripts/runMigrations.ts"
