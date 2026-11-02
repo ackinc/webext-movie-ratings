@@ -8,8 +8,7 @@
     "clean": "rm -r dist/*",
     "start": "astro preview",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "prepare": "husky"
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "immutable": "^5.1.9",
@@ -24,7 +23,6 @@
     "astro": "^7.4.2",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
-    "husky": "^9.1.7",
     "prettier": "^3.8.3",
     "typescript": "5.7.3"
   }

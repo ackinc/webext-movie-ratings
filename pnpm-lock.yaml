@@ -266,9 +266,6 @@ importers:
       astro:
         specifier: ^7.4.2
         version: 7.4.2(@types/node@22.19.17)(esbuild@0.28.1)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.9.1)
-      husky:
-        specifier: ^9.1.7
-        version: 9.1.7
       prettier:
         specifier: ^3.8.3
         version: 3.8.3
