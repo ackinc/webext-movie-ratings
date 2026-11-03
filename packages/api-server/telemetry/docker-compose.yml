@@ -1,3 +1,5 @@
+name: sift-backend-telemetry
+
 services:
   collector:
     image: otel/opentelemetry-collector:latest
