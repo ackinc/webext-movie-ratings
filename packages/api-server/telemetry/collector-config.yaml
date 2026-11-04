@@ -14,6 +14,10 @@ processors:
 exporters:
   debug:
     verbosity: detailed
+
+  otlp_http/jaeger:
+    endpoint: http://jaeger:4318
+
   prometheus:
     endpoint: 0.0.0.0:8889
     namespace: default
@@ -22,7 +26,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [debug]
+      exporters: [debug, otlp_http/jaeger]
     metrics:
       receivers: [otlp]
       exporters: [debug, prometheus]
