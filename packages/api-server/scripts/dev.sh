@@ -4,14 +4,11 @@ set -euo pipefail
 
 # date +%Y-%m-%dT%H:%M:%S.%3NZ
 
-# node \
-#   --experimental-import-text \
-#   --watch \
-#   --watch-preserve-output \
-#   --experimental-loader=@opentelemetry/instrumentation/hook.mjs \
-#   server.ts \
-#   | pino-pretty
+# putting these OTEL-env vars here rather than in .env because
+#   their vals will be different for the crons script
 
+OTEL_SERVICE_NAME=sift-api-server \
+OTEL_NODE_ENABLED_INSTRUMENTATIONS="host-metrics,http" \
 node \
   --experimental-import-text \
   --watch \
