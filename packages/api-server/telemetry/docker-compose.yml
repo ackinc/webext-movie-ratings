@@ -35,6 +35,7 @@ services:
     ports:
       - "127.0.0.1:9099:3000"
     volumes:
+      - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - grafana-storage:/var/lib/grafana
 
 volumes:
