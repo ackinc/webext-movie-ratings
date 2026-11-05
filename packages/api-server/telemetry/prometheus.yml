@@ -29,15 +29,3 @@ scrape_configs:
   #       labels:
   #         app: "prometheus"
   #   scrape_native_histograms: true
-
-  - job_name: "otelcol"
-    static_configs:
-      - targets: ["otelcol:8889"]
-        # The label name is added as a label `label_name=<label_value>` to any timeseries scraped from this config.
-        labels:
-          app: "sift-backend"
-
-    # metrics_path defaults to '/metrics'
-    # scheme defaults to 'http'.
-
-    scrape_native_histograms: true

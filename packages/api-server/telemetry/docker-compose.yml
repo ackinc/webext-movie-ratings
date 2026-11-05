@@ -2,7 +2,7 @@ name: sift-backend-telemetry
 
 services:
   otelcol:
-    image: otel/opentelemetry-collector:latest
+    image: otel/opentelemetry-collector:0.164.0
     ports:
       - "127.0.0.1:4318:4318"
       # - "127.0.0.1:55679:55679"
@@ -10,7 +10,7 @@ services:
       - ./collector-config.yaml:/etc/otelcol/config.yaml
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.16.0
     ports:
       - "127.0.0.1:9090:9090"
     volumes:
@@ -19,9 +19,10 @@ services:
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
+      - --web.enable-remote-write-receiver
 
   jaeger:
-    image: jaegertracing/jaeger
+    image: jaegertracing/jaeger:2.23.0
     ports:
       - "127.0.0.1:16686:16686"
       - "127.0.0.1:4328:4318"
@@ -31,7 +32,7 @@ services:
       - --config=/jaeger/config.yaml
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.3.0
     ports:
       - "127.0.0.1:9099:3000"
     volumes:

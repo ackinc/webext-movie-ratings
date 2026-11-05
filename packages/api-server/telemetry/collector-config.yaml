@@ -18,8 +18,9 @@ exporters:
   otlp_http/jaeger:
     endpoint: http://jaeger:4318
 
-  prometheus:
-    endpoint: 0.0.0.0:8889
+  prometheus_remote_write:
+    http:
+      endpoint: http://prometheus:9090/api/v1/write
     namespace: default
 
 service:
@@ -29,7 +30,7 @@ service:
       exporters: [debug, otlp_http/jaeger]
     metrics:
       receivers: [otlp]
-      exporters: [debug, prometheus]
+      exporters: [debug, prometheus_remote_write]
     logs:
       receivers: [otlp]
       exporters: [debug]
