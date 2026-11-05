@@ -1,15 +1,27 @@
+import "dotenv/config";
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
 import { FastifyOtelInstrumentation } from "@fastify/otel";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-proto";
+import { pick } from "siftutils";
+
+const { OTEL_COLLECTOR_BASE_URL } = pick(
+  process.env,
+  ["OTEL_COLLECTOR_BASE_URL"],
+  true,
+);
 
 const sdk = new NodeSDK({
-  traceExporter: new OTLPTraceExporter(),
+  traceExporter: new OTLPTraceExporter({
+    url: `${OTEL_COLLECTOR_BASE_URL}/v1/traces`,
+  }),
   metricReaders: [
     new PeriodicExportingMetricReader({
-      exporter: new OTLPMetricExporter(),
+      exporter: new OTLPMetricExporter({
+        url: `${OTEL_COLLECTOR_BASE_URL}/v1/metrics`,
+      }),
     }),
   ],
   instrumentations: [
