@@ -7,9 +7,9 @@ import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-proto";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-proto";
 import { pick } from "siftutils";
 
-const { OTEL_COLLECTOR_BASE_URL } = pick(
+const { OTEL_COLLECTOR_BASE_URL, OTEL_METRIC_EXPORT_INTERVAL } = pick(
   process.env,
-  ["OTEL_COLLECTOR_BASE_URL"],
+  ["OTEL_COLLECTOR_BASE_URL", "OTEL_METRIC_EXPORT_INTERVAL"],
   true,
 );
 
@@ -22,6 +22,7 @@ const sdk = new NodeSDK({
       exporter: new OTLPMetricExporter({
         url: `${OTEL_COLLECTOR_BASE_URL}/v1/metrics`,
       }),
+      exportIntervalMillis: +OTEL_METRIC_EXPORT_INTERVAL!,
     }),
   ],
   instrumentations: [

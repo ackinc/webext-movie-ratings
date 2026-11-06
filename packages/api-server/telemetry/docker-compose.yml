@@ -15,7 +15,6 @@ services:
       - "127.0.0.1:9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus-storage:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
@@ -37,8 +36,9 @@ services:
       - "127.0.0.1:9099:3000"
     volumes:
       - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      # we don't want to lose the dashboards we've created when we restart
+      #   the container
       - grafana-storage:/var/lib/grafana
 
 volumes:
-  prometheus-storage: {}
   grafana-storage: {}
