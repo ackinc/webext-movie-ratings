@@ -65,3 +65,9 @@ export interface UserMessageRecord
 }
 
 export interface NotificationRecord extends DbRecord, Notification {}
+
+export interface SuggestedIncorrectRatingCorrectionRecord extends DbRecord {
+  titleId: number;
+  suggestedImdbId: string;
+  ipHash: string;
+}

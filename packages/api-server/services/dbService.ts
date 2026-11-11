@@ -1,7 +1,11 @@
 import Database, { type Database as TDatabase } from "better-sqlite3";
 import { formatISO9075 } from "date-fns";
 import { UTCDate } from "@date-fns/utc";
-import { type UserMessage, type Notification } from "siftcore";
+import {
+  type UserMessage,
+  type Notification,
+  type IndexedImdbTitle,
+} from "siftcore";
 import { pick, shallowEqual } from "siftutils";
 import type {
   DbRecord,
@@ -17,6 +21,7 @@ const env = pick(process.env, ["DB_PATH"], true);
 
 const db: TDatabase = new Database(env.DB_PATH);
 db.pragma("journal_mode = WAL");
+db.pragma("foreign_keys = ON");
 
 const exported = {
   getProgramMatchRecord,
@@ -26,9 +31,11 @@ const exported = {
   createMessageRecord,
   createNotification,
   getNotificationsSince,
+  insertSuggestedRatingCorrectionRecord,
 } as const;
 type Exported = keyof typeof exported;
 
+// allow methods on the TDatabase object to be called as dbService.*
 const proxy = new Proxy(db, {
   get(target, prop, receiver) {
     return prop in exported
@@ -197,4 +204,23 @@ function getRecordById<T extends DbRecord>(
   row.updatedAt = row.updatedAt.replace(" ", "T") + "Z";
 
   return row;
+}
+
+function insertSuggestedRatingCorrectionRecord(
+  titleId: number,
+  ipHash: string,
+  selection: IndexedImdbTitle | null,
+  choices: IndexedImdbTitle[],
+) {
+  db.prepare(
+    `
+    INSERT INTO suggested_irr_corrections (titleId, suggestedImdbId, ipHash, meta)
+    VALUES (?, ?, ?, ?)
+  `,
+  ).run(
+    titleId,
+    selection?.imdbId ?? null,
+    ipHash,
+    JSON.stringify({ choices, selection }),
+  );
 }

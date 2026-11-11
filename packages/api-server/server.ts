@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import Sentry from "./instrument.ts";
 
+import crypto from "node:crypto";
 import { parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
 import cors from "@fastify/cors";
@@ -28,7 +29,6 @@ import {
   getIndexLastUpdatedTime,
   querySearchEngine,
 } from "./services/searchEngineService.ts";
-import { sendAdminEmailToUpdateIncorrectMatch } from "./helpers.ts";
 import type { ProgramMatchQuery } from "./types.ts";
 
 const env = pick(
@@ -493,20 +493,29 @@ async function updateIncorrectMatchReportRequestHandler(
   const { token, suggestedMatches } = rowMeta;
   if (token !== matchToken) return reply.code(200).send({ status: "ok" });
 
+  const ipHash = crypto
+    .createHash("sha1")
+    .update(request.headers["X-Forwarded-For"] as string)
+    .digest("hex");
+
   /* handle case where user/admin selects NOTA */
 
   if (suggestedImdbId === "") {
     if (isRequestByAdmin) throw new HTTPError(501, "NOT_IMPLEMENTED");
 
-    reply.code(200).send({ status: "ok" });
     row = dbService.updateProgramMatchRecord(row.id, {
       meta: JSON.stringify({
         ...rowMeta,
         userSelectedImdbId: "none-of-the-above",
       }),
     });
-    await sendAdminEmailToUpdateIncorrectMatch(row);
-    return;
+    dbService.insertSuggestedRatingCorrectionRecord(
+      row.id,
+      ipHash,
+      null,
+      rowMeta.suggestedMatches,
+    );
+    return reply.code(200).send({ status: "ok" });
   }
 
   /* handle case where user/admin selects a suggestion */
@@ -528,11 +537,11 @@ async function updateIncorrectMatchReportRequestHandler(
   row = dbService.updateProgramMatchRecord(row.id, {
     meta: JSON.stringify({ ...rowMeta, userSelectedImdbId: suggestedImdbId }),
   });
-
-  reply.code(200).send({ status: "ok" });
-
-  await sendAdminEmailToUpdateIncorrectMatch(row);
-  dbService.updateProgramMatchRecord(row.id, {
-    meta: JSON.stringify({ ...JSON.parse(row.meta!), adminEmailSent: true }),
-  });
+  dbService.insertSuggestedRatingCorrectionRecord(
+    row.id,
+    ipHash,
+    bestMatch,
+    rowMeta.suggestedMatches,
+  );
+  return reply.code(200).send({ status: "ok" });
 }
