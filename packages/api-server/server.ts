@@ -22,6 +22,7 @@ import {
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
 import { HTTPError } from "./customErrors.ts";
+import { runElection } from "./helpers.ts";
 import dbService from "./services/dbService.ts";
 import * as emailService from "./services/emailService.ts";
 import logger from "./services/logger.ts";
@@ -30,7 +31,10 @@ import {
   querySearchEngine,
 } from "./services/searchEngineService.ts";
 import { ipToCountry } from "./services/geolookup.ts";
-import type { ProgramMatchQuery } from "./types.ts";
+import type {
+  ProgramMatchCorrectionRecord,
+  ProgramMatchQuery,
+} from "./types.ts";
 
 const env = pick(
   process.env,
@@ -526,4 +530,36 @@ async function updateIncorrectMatchReportRequestHandler(
   );
 
   reply.code(200).send({ status: "ok" });
+
+  // We don't want the admin to be a bottleneck for fixing incorrect matches,
+  //   so if there is consensus among users (who have submitted corrections
+  //   for this programMatchRecord) that the current suggestion is correct,
+  //   we'll go ahead and update the programMatchRecord
+
+  if (suggestedImdbId === "") {
+    // if the user submitting the current correction selected NOTA, don't
+    //   bother checking for consensus
+    return;
+  }
+
+  const correctionRecords = dbService.getRelevantMatchCorrectionRecords(row.id);
+
+  // maybe I'm being too cute with this ...
+  const leader = runElection(correctionRecords, "suggestedImdbId", "ipHash", {
+    isValidVote: (r: ProgramMatchCorrectionRecord) =>
+      r["suggestedImdbId"] !== null,
+    minValidVotes: 3,
+    minVotePercForWin: (n) => (n < 5 ? 100 : 80),
+  });
+  if (!leader) return;
+
+  const { selection } = JSON.parse(
+    correctionRecords.find((cr) => cr.suggestedImdbId === leader)!.meta!,
+  ) as { selection: IndexedImdbTitle };
+  dbService.updateProgramMatchRecord(row.id, {
+    status: "matched",
+    matchedBy: "user-consensus",
+    imdbId: selection.imdbId,
+    meta: JSON.stringify({ bestMatch: selection }),
+  });
 }

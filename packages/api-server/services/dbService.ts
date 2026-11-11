@@ -15,6 +15,7 @@ import type {
   NotificationRecord,
   ProgramMatchQuery,
   RawProgramMatchQuery,
+  ProgramMatchCorrectionRecord,
 } from "../types.ts";
 
 const env = pick(process.env, ["DB_PATH"], true);
@@ -23,6 +24,8 @@ const db: TDatabase = new Database(env.DB_PATH);
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
 
+// allow methods on the TDatabase object to be called as dbService.*
+//   by making the default export a Javascript Proxy
 const exported = {
   getProgramMatchRecord,
   createProgramMatchRecord,
@@ -32,10 +35,9 @@ const exported = {
   createNotification,
   getNotificationsSince,
   insertMatchCorrectionRecord,
+  getRelevantMatchCorrectionRecords,
 } as const;
 type Exported = keyof typeof exported;
-
-// allow methods on the TDatabase object to be called as dbService.*
 const proxy = new Proxy(db, {
   get(target, prop, receiver) {
     return prop in exported
@@ -44,6 +46,8 @@ const proxy = new Proxy(db, {
   },
 }) as TDatabase & typeof exported;
 export default proxy;
+
+// function definitions
 
 function getProgramMatchRecord(
   idOrQuery: number | bigint | ProgramMatchQuery,
@@ -223,4 +227,25 @@ function insertMatchCorrectionRecord(
     ipData.ipHash,
     JSON.stringify({ choices, selection, ipCountry: ipData.ipCountry }),
   );
+}
+
+function getRelevantMatchCorrectionRecords(
+  matchRecordId: number,
+): ProgramMatchCorrectionRecord[] {
+  // deliberately bypassing getRecordById here because it modifies the
+  //   updatedAt string, and we don't want that here
+  const matchRecord = db
+    .prepare<number, RawProgramMatchRecord>(`SELECT * FROM titles WHERE id = ?`)
+    .get(matchRecordId);
+  if (!(matchRecord && matchRecord.status === "reportedIncorrect")) return [];
+
+  // only those matchCorrectionRecords added *after* the matchRecord was
+  //   last reported incorrect are relevant
+  const { id, updatedAt } = matchRecord;
+  return db
+    .prepare<
+      [number, string],
+      ProgramMatchCorrectionRecord
+    >(`SELECT * FROM matchCorrections WHERE titleId = ? AND createdAt > ?`)
+    .all(id, updatedAt);
 }

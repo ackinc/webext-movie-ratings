@@ -25,7 +25,7 @@ export interface RawProgramMatchRecord extends DbRecord {
   site: Sitename;
   status: SiftApiProgramMatching.Status | "reportedIncorrect";
   imdbId: string | null;
-  matchedBy: string | null;
+  matchedBy: "system" | "admin" | "user-consensus" | null;
 }
 
 export type RawProgramMatchQuery = Pick<

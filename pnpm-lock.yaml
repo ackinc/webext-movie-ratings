@@ -53,6 +53,9 @@ importers:
       handlebars:
         specifier: ^4.7.9
         version: 4.7.9
+      immutable:
+        specifier: ^5.1.10
+        version: 5.1.10
       lodash-es:
         specifier: ^4.18.1
         version: 4.18.1
@@ -2590,6 +2593,9 @@ packages:
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
+
+  immutable@5.1.10:
+    resolution: {integrity: sha512-Uu72qZXUtm+n98uML3Xr6pVFHl4xnmeCuAsrm0VqFlQim/Ib6NrPSJLpx6CrZ/G6DnoGaCUgtx8gY+o+ovxnCw==}
 
   immutable@5.1.9:
     resolution: {integrity: sha512-m8nVez3rwrgmWxtLMt1ZYXB2Lv7OKYn/disyxAlSDYAlKSlFoPPfIAmAM/M5xqL4m4C/wAPw7S2/CNaUii1Hxg==}
@@ -6342,6 +6348,8 @@ snapshots:
   idb@8.0.3: {}
 
   ieee754@1.2.1: {}
+
+  immutable@5.1.10: {}
 
   immutable@5.1.9: {}
 
