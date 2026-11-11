@@ -25,7 +25,7 @@ export interface RawProgramMatchRecord extends DbRecord {
   site: Sitename;
   status: SiftApiProgramMatching.Status | "reportedIncorrect";
   imdbId: string | null;
-  matchedBy: string | null;
+  matchedBy: "system" | "admin" | "user-consensus" | null;
 }
 
 export type RawProgramMatchQuery = Pick<
@@ -43,7 +43,6 @@ export type RawProgramMatchQuery = Pick<
 // else if status === 'reportedIncorrect', meta: {
 //   token: string,
 //   suggestedMatches: IndexedImdbTitle[],
-//   userSelectedImdbId: IndexedImdbTitle['imdbId'] | 'none-of-the-above' | null,
 //   adminEmailSent: boolean
 // }
 // else (i.e. status === 'abandoned'), meta: {
@@ -65,3 +64,9 @@ export interface UserMessageRecord
 }
 
 export interface NotificationRecord extends DbRecord, Notification {}
+
+export interface ProgramMatchCorrectionRecord extends DbRecord {
+  titleId: number;
+  suggestedImdbId: string;
+  ipHash: string;
+}

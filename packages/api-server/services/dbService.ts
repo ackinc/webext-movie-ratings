@@ -1,7 +1,11 @@
 import Database, { type Database as TDatabase } from "better-sqlite3";
 import { formatISO9075 } from "date-fns";
 import { UTCDate } from "@date-fns/utc";
-import { type UserMessage, type Notification } from "siftcore";
+import {
+  type UserMessage,
+  type Notification,
+  type IndexedImdbTitle,
+} from "siftcore";
 import { pick, shallowEqual } from "siftutils";
 import type {
   DbRecord,
@@ -11,13 +15,17 @@ import type {
   NotificationRecord,
   ProgramMatchQuery,
   RawProgramMatchQuery,
+  ProgramMatchCorrectionRecord,
 } from "../types.ts";
 
 const env = pick(process.env, ["DB_PATH"], true);
 
 const db: TDatabase = new Database(env.DB_PATH);
 db.pragma("journal_mode = WAL");
+db.pragma("foreign_keys = ON");
 
+// allow methods on the TDatabase object to be called as dbService.*
+//   by making the default export a Javascript Proxy
 const exported = {
   getProgramMatchRecord,
   createProgramMatchRecord,
@@ -26,9 +34,10 @@ const exported = {
   createMessageRecord,
   createNotification,
   getNotificationsSince,
+  insertMatchCorrectionRecord,
+  getRelevantMatchCorrectionRecords,
 } as const;
 type Exported = keyof typeof exported;
-
 const proxy = new Proxy(db, {
   get(target, prop, receiver) {
     return prop in exported
@@ -37,6 +46,8 @@ const proxy = new Proxy(db, {
   },
 }) as TDatabase & typeof exported;
 export default proxy;
+
+// function definitions
 
 function getProgramMatchRecord(
   idOrQuery: number | bigint | ProgramMatchQuery,
@@ -197,4 +208,44 @@ function getRecordById<T extends DbRecord>(
   row.updatedAt = row.updatedAt.replace(" ", "T") + "Z";
 
   return row;
+}
+
+function insertMatchCorrectionRecord(
+  titleId: number,
+  selection: IndexedImdbTitle | null,
+  choices: IndexedImdbTitle[],
+  ipData: { ipHash: string; ipCountry: string | null },
+) {
+  db.prepare(
+    `
+    INSERT INTO matchCorrections (titleId, suggestedImdbId, ipHash, meta)
+    VALUES (?, ?, ?, ?)
+  `,
+  ).run(
+    titleId,
+    selection?.imdbId ?? null,
+    ipData.ipHash,
+    JSON.stringify({ choices, selection, ipCountry: ipData.ipCountry }),
+  );
+}
+
+function getRelevantMatchCorrectionRecords(
+  matchRecordId: number,
+): ProgramMatchCorrectionRecord[] {
+  // deliberately bypassing getRecordById here because it modifies the
+  //   updatedAt string, and we don't want that here
+  const matchRecord = db
+    .prepare<number, RawProgramMatchRecord>(`SELECT * FROM titles WHERE id = ?`)
+    .get(matchRecordId);
+  if (!(matchRecord && matchRecord.status === "reportedIncorrect")) return [];
+
+  // only those matchCorrectionRecords added *after* the matchRecord was
+  //   last reported incorrect are relevant
+  const { id, updatedAt } = matchRecord;
+  return db
+    .prepare<
+      [number, string],
+      ProgramMatchCorrectionRecord
+    >(`SELECT * FROM matchCorrections WHERE titleId = ? AND createdAt > ?`)
+    .all(id, updatedAt);
 }

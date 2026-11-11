@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import Sentry from "./instrument.ts";
 
+import crypto from "node:crypto";
 import { parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
 import cors from "@fastify/cors";
@@ -21,6 +22,7 @@ import {
 import { delayMs, pick } from "siftutils";
 import { extensionIds } from "./constants.ts";
 import { HTTPError } from "./customErrors.ts";
+import { runElection } from "./helpers.ts";
 import dbService from "./services/dbService.ts";
 import * as emailService from "./services/emailService.ts";
 import logger from "./services/logger.ts";
@@ -28,8 +30,11 @@ import {
   getIndexLastUpdatedTime,
   querySearchEngine,
 } from "./services/searchEngineService.ts";
-import { sendAdminEmailToUpdateIncorrectMatch } from "./helpers.ts";
-import type { ProgramMatchQuery } from "./types.ts";
+import { ipToCountry } from "./services/geolookup.ts";
+import type {
+  ProgramMatchCorrectionRecord,
+  ProgramMatchQuery,
+} from "./types.ts";
 
 const env = pick(
   process.env,
@@ -48,7 +53,7 @@ process.on("SIGINT", cleanup);
 process.on("SIGTERM", cleanup);
 
 function createServer() {
-  const fastify = Fastify({ loggerInstance: logger });
+  const fastify = Fastify({ loggerInstance: logger, trustProxy: 1 });
 
   // for simulating longer response times in dev so it's easier
   //   to see some transitional states in the extension
@@ -246,7 +251,6 @@ function createServer() {
           meta: JSON.stringify({
             token,
             suggestedMatches,
-            userSelectedImdbId: null,
             adminEmailSent: false,
           }),
         });
@@ -275,7 +279,6 @@ function createServer() {
           meta: JSON.stringify({
             token,
             suggestedMatches,
-            userSelectedImdbId: null,
             adminEmailSent: false,
           }),
         });
@@ -392,7 +395,7 @@ function createServer() {
         },
         body: notificationSchema,
       },
-      preHandler: ensureAuthorized,
+      preHandler: ensureRequestByAdmin,
     } satisfies RouteShorthandOptions,
     async function (request, reply) {
       try {
@@ -448,9 +451,21 @@ function createServer() {
   return fastify;
 }
 
-async function ensureAuthorized(request: Fastify.FastifyRequest) {
-  const authToken = request.headers.authorization?.replace(/^Bearer /, "");
-  if (authToken !== env.SIFT_API_KEY!) throw new HTTPError(403, "Unauthorized");
+async function checkRequestByAdmin(request: Fastify.FastifyRequest) {
+  if (!env.SIFT_API_KEY)
+    throw new HTTPError(500, "SIFT_API_KEY env var not set");
+
+  const authToken =
+    request.headers.authorization?.replace(/^Bearer /, "") ??
+    (request.query as Record<string, string>)?.["authToken"] ??
+    (request.body as Record<string, string>)?.["authToken"];
+
+  return authToken === env.SIFT_API_KEY;
+}
+
+async function ensureRequestByAdmin(request: Fastify.FastifyRequest) {
+  if (await checkRequestByAdmin(request)) return;
+  throw new HTTPError(403, "Unauthorized");
 }
 
 async function cleanup(signal: "SIGINT" | "SIGTERM") {
@@ -467,20 +482,9 @@ async function updateIncorrectMatchReportRequestHandler(
 ) {
   const requestData = (request.body ??
     request.query) as ProgramMatching.AddSuggestionToIncorrectMatchReportRequest;
-  const { id, token: matchToken, suggestedImdbId, authToken } = requestData;
+  const { id, token: matchToken, suggestedImdbId } = requestData;
 
-  // if admin made this request, the row should be updated differently
-  let isRequestByAdmin = false;
-  try {
-    if (authToken) {
-      isRequestByAdmin = authToken === env.SIFT_API_KEY;
-    } else {
-      await ensureAuthorized(request);
-      isRequestByAdmin = true;
-    }
-  } catch (e) {}
-
-  /* ensure request is valid */
+  /* BEGIN ensure request is valid */
 
   let row = dbService.getProgramMatchRecord(id);
   if (!(row && row.status === "reportedIncorrect"))
@@ -493,46 +497,69 @@ async function updateIncorrectMatchReportRequestHandler(
   const { token, suggestedMatches } = rowMeta;
   if (token !== matchToken) return reply.code(200).send({ status: "ok" });
 
-  /* handle case where user/admin selects NOTA */
+  /* END ensure request is valid */
 
-  if (suggestedImdbId === "") {
-    if (isRequestByAdmin) throw new HTTPError(501, "NOT_IMPLEMENTED");
+  const bestMatch =
+    suggestedMatches.find(({ imdbId }) => imdbId === suggestedImdbId) ?? null;
 
-    reply.code(200).send({ status: "ok" });
-    row = dbService.updateProgramMatchRecord(row.id, {
-      meta: JSON.stringify({
-        ...rowMeta,
-        userSelectedImdbId: "none-of-the-above",
-      }),
-    });
-    await sendAdminEmailToUpdateIncorrectMatch(row);
-    return;
-  }
-
-  /* handle case where user/admin selects a suggestion */
-
-  const bestMatch = suggestedMatches.find(
-    ({ imdbId }) => imdbId === suggestedImdbId,
-  );
-  if (!bestMatch) return reply.code(200).send({ status: "ok" });
-  if (isRequestByAdmin) {
+  if (await checkRequestByAdmin(request)) {
     dbService.updateProgramMatchRecord(row.id, {
-      status: "matched",
+      status: bestMatch ? "matched" : "abandoned",
       matchedBy: "admin",
-      imdbId: bestMatch.imdbId,
-      meta: JSON.stringify({ bestMatch }),
+      imdbId: bestMatch?.imdbId ?? null,
+      meta: JSON.stringify(bestMatch ? { bestMatch } : {}),
     });
     return reply.code(200).send({ status: "ok" });
   }
 
-  row = dbService.updateProgramMatchRecord(row.id, {
-    meta: JSON.stringify({ ...rowMeta, userSelectedImdbId: suggestedImdbId }),
-  });
+  /* request is by a user */
+
+  const { ip } = request;
+  const ipHash = crypto.createHash("sha1").update(ip).digest("hex");
+  let ipCountry: string | null = null;
+  try {
+    ipCountry = await ipToCountry(ip);
+  } catch (e) {
+    Sentry.captureException(e, { tags: { ip } });
+  }
+  dbService.insertMatchCorrectionRecord(
+    row.id,
+    bestMatch,
+    rowMeta.suggestedMatches,
+    { ipCountry, ipHash },
+  );
 
   reply.code(200).send({ status: "ok" });
 
-  await sendAdminEmailToUpdateIncorrectMatch(row);
+  // We don't want the admin to be a bottleneck for fixing incorrect matches,
+  //   so if there is consensus among users (who have submitted corrections
+  //   for this programMatchRecord) that the current suggestion is correct,
+  //   we'll go ahead and update the programMatchRecord
+
+  if (suggestedImdbId === "") {
+    // if the user submitting the current correction selected NOTA, don't
+    //   bother checking for consensus
+    return;
+  }
+
+  const correctionRecords = dbService.getRelevantMatchCorrectionRecords(row.id);
+
+  // maybe I'm being too cute with this ...
+  const leader = runElection(correctionRecords, "suggestedImdbId", "ipHash", {
+    isValidVote: (r: ProgramMatchCorrectionRecord) =>
+      r["suggestedImdbId"] !== null,
+    minValidVotes: 3,
+    minVotePercForWin: (n) => (n < 5 ? 100 : 80),
+  });
+  if (!leader) return;
+
+  const { selection } = JSON.parse(
+    correctionRecords.find((cr) => cr.suggestedImdbId === leader)!.meta!,
+  ) as { selection: IndexedImdbTitle };
   dbService.updateProgramMatchRecord(row.id, {
-    meta: JSON.stringify({ ...JSON.parse(row.meta!), adminEmailSent: true }),
+    status: "matched",
+    matchedBy: "user-consensus",
+    imdbId: selection.imdbId,
+    meta: JSON.stringify({ bestMatch: selection }),
   });
 }
