@@ -28,6 +28,7 @@ import {
   type RatingsService,
 } from "./ratingsService";
 import { DB_NAME, DB_VERSION } from "@common";
+import { differenceInDays } from "date-fns";
 
 let ratingsService: RatingsService;
 let telemetryStore: TelemetryStore;
@@ -60,6 +61,7 @@ async function onStart() {
     //   situation the onInstalled event listener runs for
     await injectUpdatedContentScripts();
 
+    await notificationsService.removeInvalidNotifications();
     if ((await notificationsService.checkForNewNotifications()).length > 0) {
       addBadge("!");
     }

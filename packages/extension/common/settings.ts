@@ -49,6 +49,7 @@ export type ExtensionSettings = BoolExtensionSettings & {
   // "breadcrumbs" automatically dropped by the extension
   extensionInstallTime: number;
   extensionLastUpdateTime: number;
+  notificationsLastCheckTime: number;
   updatedDbVersion: number;
   onboardingStatus: OnboardingStatus;
 

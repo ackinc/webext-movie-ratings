@@ -3,13 +3,21 @@ import {
   type Notification as SiftNotification,
   notificationTargetPages,
 } from "siftcore";
-import { getSetting } from "@common";
+import { getSetting, setSetting } from "@common";
 import * as siftApiService from "./siftApiService";
 import * as storage from "./storage";
 import type { InAppNotification, InAppNotificationStatus } from "./types";
 import { webStoreLink } from "./constants";
 
 export async function checkForNewNotifications(): Promise<InAppNotification[]> {
+  const notificationsLastCheckTime = await getSetting(
+    "notificationsLastCheckTime",
+  );
+  const skipNotifsCheck =
+    notificationsLastCheckTime &&
+    differenceInDays(new Date(), new Date(notificationsLastCheckTime)) < 1;
+  if (skipNotifsCheck) return [];
+
   await removeInvalidNotifications();
 
   const extensionInstallTime =
@@ -39,6 +47,7 @@ export async function checkForNewNotifications(): Promise<InAppNotification[]> {
         : addWeeks(new Date(), -1),
     )
   ).concat(clientSideNotifications);
+  await setSetting("notificationsLastCheckTime", +new Date());
 
   if (newNotifications.length > 0) {
     await storeNotifications(newNotifications);
@@ -150,7 +159,7 @@ export function cmpNotificationsByStatusAndTimestamp(
   );
 }
 
-async function removeInvalidNotifications() {
+export async function removeInvalidNotifications() {
   const allNotifications = await getAllNotifications();
   const toKeep = allNotifications.filter(
     (n) =>
