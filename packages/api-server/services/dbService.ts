@@ -31,7 +31,7 @@ const exported = {
   createMessageRecord,
   createNotification,
   getNotificationsSince,
-  insertSuggestedRatingCorrectionRecord,
+  insertMatchCorrectionRecord,
 } as const;
 type Exported = keyof typeof exported;
 
@@ -206,7 +206,7 @@ function getRecordById<T extends DbRecord>(
   return row;
 }
 
-function insertSuggestedRatingCorrectionRecord(
+function insertMatchCorrectionRecord(
   titleId: number,
   selection: IndexedImdbTitle | null,
   choices: IndexedImdbTitle[],
@@ -214,7 +214,7 @@ function insertSuggestedRatingCorrectionRecord(
 ) {
   db.prepare(
     `
-    INSERT INTO suggested_irr_corrections (titleId, suggestedImdbId, ipHash, meta)
+    INSERT INTO matchCorrections (titleId, suggestedImdbId, ipHash, meta)
     VALUES (?, ?, ?, ?)
   `,
   ).run(

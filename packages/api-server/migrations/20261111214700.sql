@@ -1,4 +1,4 @@
-CREATE TABLE suggested_irr_corrections (
+CREATE TABLE matchCorrections (
   "id" INTEGER NOT NULL,
   "titleId" INTEGER NOT NULL,
   "suggestedImdbId" DEFAULT NULL, -- if user selects NOTA
@@ -10,15 +10,15 @@ CREATE TABLE suggested_irr_corrections (
   FOREIGN KEY (titleId) REFERENCES titles(id)
 );
 
-CREATE TRIGGER update_suggested_irr_corrections_updatedAt
-AFTER UPDATE ON "suggested_irr_corrections"
+CREATE TRIGGER update_matchCorrections_updatedAt
+AFTER UPDATE ON "matchCorrections"
 FOR EACH ROW
 BEGIN
-  UPDATE "suggested_irr_corrections" SET "updatedAt" = CURRENT_TIMESTAMP
+  UPDATE "matchCorrections" SET "updatedAt" = CURRENT_TIMESTAMP
   WHERE "id" = OLD."id";
 END;
 
 /* rollback
-  DROP TRIGGER update_suggested_irr_corrections_updatedAt;
-  DROP TABLE suggested_irr_corrections;
+  DROP TRIGGER update_matchCorrections_updatedAt;
+  DROP TABLE matchCorrections;
 */

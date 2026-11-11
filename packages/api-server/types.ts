@@ -43,7 +43,6 @@ export type RawProgramMatchQuery = Pick<
 // else if status === 'reportedIncorrect', meta: {
 //   token: string,
 //   suggestedMatches: IndexedImdbTitle[],
-//   userSelectedImdbId: IndexedImdbTitle['imdbId'] | 'none-of-the-above' | null,
 //   adminEmailSent: boolean
 // }
 // else (i.e. status === 'abandoned'), meta: {
@@ -66,7 +65,7 @@ export interface UserMessageRecord
 
 export interface NotificationRecord extends DbRecord, Notification {}
 
-export interface SuggestedIncorrectRatingCorrectionRecord extends DbRecord {
+export interface ProgramMatchCorrectionRecord extends DbRecord {
   titleId: number;
   suggestedImdbId: string;
   ipHash: string;

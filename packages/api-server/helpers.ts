@@ -11,14 +11,10 @@ export async function sendAdminEmailToUpdateIncorrectMatch(
   const rowMeta = JSON.parse(record.meta!) as {
     token: string;
     suggestedMatches: IndexedImdbTitle[];
-    userSelectedImdbId: IndexedImdbTitle["imdbId"] | "none-of-the-above" | null;
   };
   const suggestions = rowMeta.suggestedMatches.map((m) => ({
     ...m,
-    notes: [
-      m.imdbId === record.imdbId ? "isPreviousMatch" : null,
-      m.imdbId === rowMeta.userSelectedImdbId ? "isUserSelectedMatch" : null,
-    ]
+    notes: [m.imdbId === record.imdbId ? "isPreviousMatch" : null]
       .filter((x) => x)
       .join(", "),
     pmUpdateLink: `${env.SIFT_API_URL}/update-match-reported-incorrect?authToken=${env.SIFT_API_KEY}&id=${record.id}&token=${rowMeta.token}&suggestedImdbId=${m.imdbId}`,
@@ -30,7 +26,7 @@ export async function sendAdminEmailToUpdateIncorrectMatch(
       searchUrl:
         (supportedSites[record.site as Sitename].search || "#") + record.title,
       suggestions,
-      userIndicatedNOTA: rowMeta.userSelectedImdbId === "none-of-the-above",
+      userIndicatedNOTA: false,
     }),
   });
 }

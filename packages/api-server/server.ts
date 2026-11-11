@@ -247,7 +247,6 @@ function createServer() {
           meta: JSON.stringify({
             token,
             suggestedMatches,
-            userSelectedImdbId: null,
             adminEmailSent: false,
           }),
         });
@@ -276,7 +275,6 @@ function createServer() {
           meta: JSON.stringify({
             token,
             suggestedMatches,
-            userSelectedImdbId: null,
             adminEmailSent: false,
           }),
         });
@@ -393,7 +391,7 @@ function createServer() {
         },
         body: notificationSchema,
       },
-      preHandler: ensureAuthorized,
+      preHandler: ensureRequestByAdmin,
     } satisfies RouteShorthandOptions,
     async function (request, reply) {
       try {
@@ -449,9 +447,21 @@ function createServer() {
   return fastify;
 }
 
-async function ensureAuthorized(request: Fastify.FastifyRequest) {
-  const authToken = request.headers.authorization?.replace(/^Bearer /, "");
-  if (authToken !== env.SIFT_API_KEY!) throw new HTTPError(403, "Unauthorized");
+async function checkRequestByAdmin(request: Fastify.FastifyRequest) {
+  if (!env.SIFT_API_KEY)
+    throw new HTTPError(500, "SIFT_API_KEY env var not set");
+
+  const authToken =
+    request.headers.authorization?.replace(/^Bearer /, "") ??
+    (request.query as Record<string, string>)?.["authToken"] ??
+    (request.body as Record<string, string>)?.["authToken"];
+
+  return authToken === env.SIFT_API_KEY;
+}
+
+async function ensureRequestByAdmin(request: Fastify.FastifyRequest) {
+  if (await checkRequestByAdmin(request)) return;
+  throw new HTTPError(403, "Unauthorized");
 }
 
 async function cleanup(signal: "SIGINT" | "SIGTERM") {
@@ -468,20 +478,9 @@ async function updateIncorrectMatchReportRequestHandler(
 ) {
   const requestData = (request.body ??
     request.query) as ProgramMatching.AddSuggestionToIncorrectMatchReportRequest;
-  const { id, token: matchToken, suggestedImdbId, authToken } = requestData;
+  const { id, token: matchToken, suggestedImdbId } = requestData;
 
-  // if admin made this request, the row should be updated differently
-  let isRequestByAdmin = false;
-  try {
-    if (authToken) {
-      isRequestByAdmin = authToken === env.SIFT_API_KEY;
-    } else {
-      await ensureAuthorized(request);
-      isRequestByAdmin = true;
-    }
-  } catch (e) {}
-
-  /* ensure request is valid */
+  /* BEGIN ensure request is valid */
 
   let row = dbService.getProgramMatchRecord(id);
   if (!(row && row.status === "reportedIncorrect"))
@@ -494,6 +493,23 @@ async function updateIncorrectMatchReportRequestHandler(
   const { token, suggestedMatches } = rowMeta;
   if (token !== matchToken) return reply.code(200).send({ status: "ok" });
 
+  /* END ensure request is valid */
+
+  const bestMatch =
+    suggestedMatches.find(({ imdbId }) => imdbId === suggestedImdbId) ?? null;
+
+  if (await checkRequestByAdmin(request)) {
+    dbService.updateProgramMatchRecord(row.id, {
+      status: bestMatch ? "matched" : "abandoned",
+      matchedBy: "admin",
+      imdbId: bestMatch?.imdbId ?? null,
+      meta: JSON.stringify(bestMatch ? { bestMatch } : {}),
+    });
+    return reply.code(200).send({ status: "ok" });
+  }
+
+  /* request is by a user */
+
   const { ip } = request;
   const ipHash = crypto.createHash("sha1").update(ip).digest("hex");
   let ipCountry: string | null = null;
@@ -502,51 +518,12 @@ async function updateIncorrectMatchReportRequestHandler(
   } catch (e) {
     Sentry.captureException(e, { tags: { ip } });
   }
-
-  /* handle case where user/admin selects NOTA */
-
-  if (suggestedImdbId === "") {
-    if (isRequestByAdmin) throw new HTTPError(501, "NOT_IMPLEMENTED");
-
-    row = dbService.updateProgramMatchRecord(row.id, {
-      meta: JSON.stringify({
-        ...rowMeta,
-        userSelectedImdbId: "none-of-the-above",
-      }),
-    });
-    dbService.insertSuggestedRatingCorrectionRecord(
-      row.id,
-      null,
-      rowMeta.suggestedMatches,
-      { ipCountry, ipHash },
-    );
-    return reply.code(200).send({ status: "ok" });
-  }
-
-  /* handle case where user/admin selects a suggestion */
-
-  const bestMatch = suggestedMatches.find(
-    ({ imdbId }) => imdbId === suggestedImdbId,
-  );
-  if (!bestMatch) return reply.code(200).send({ status: "ok" });
-  if (isRequestByAdmin) {
-    dbService.updateProgramMatchRecord(row.id, {
-      status: "matched",
-      matchedBy: "admin",
-      imdbId: bestMatch.imdbId,
-      meta: JSON.stringify({ bestMatch }),
-    });
-    return reply.code(200).send({ status: "ok" });
-  }
-
-  row = dbService.updateProgramMatchRecord(row.id, {
-    meta: JSON.stringify({ ...rowMeta, userSelectedImdbId: suggestedImdbId }),
-  });
-  dbService.insertSuggestedRatingCorrectionRecord(
+  dbService.insertMatchCorrectionRecord(
     row.id,
     bestMatch,
     rowMeta.suggestedMatches,
     { ipCountry, ipHash },
   );
-  return reply.code(200).send({ status: "ok" });
+
+  reply.code(200).send({ status: "ok" });
 }
