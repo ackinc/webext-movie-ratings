@@ -3,14 +3,20 @@ import {
   type Notification as SiftNotification,
   notificationTargetPages,
 } from "siftcore";
-import { getSetting } from "@common";
+import { getSetting, setSetting } from "@common";
 import * as siftApiService from "./siftApiService";
 import * as storage from "./storage";
 import type { InAppNotification, InAppNotificationStatus } from "./types";
 import { webStoreLink } from "./constants";
 
 export async function checkForNewNotifications(): Promise<InAppNotification[]> {
-  await removeInvalidNotifications();
+  const notificationsLastCheckTime = await getSetting(
+    "notificationsLastCheckTime",
+  );
+  const skipNotifsCheck =
+    notificationsLastCheckTime &&
+    differenceInDays(new Date(), new Date(notificationsLastCheckTime)) < 1;
+  if (skipNotifsCheck) return [];
 
   const extensionInstallTime =
     (await getSetting("extensionInstallTime")) ?? +new Date();
@@ -31,14 +37,14 @@ export async function checkForNewNotifications(): Promise<InAppNotification[]> {
     } as const,
   ].filter((x) => x !== null) satisfies Required<SiftNotification>[];
 
-  const lastReceivedNotif = await getLatestNotification();
   const newNotifications: Required<SiftNotification>[] = (
     await siftApiService.getNotifications(
-      lastReceivedNotif
-        ? new Date(lastReceivedNotif.timestamp)
+      notificationsLastCheckTime
+        ? new Date(notificationsLastCheckTime!)
         : addWeeks(new Date(), -1),
     )
   ).concat(clientSideNotifications);
+  await setSetting("notificationsLastCheckTime", +new Date());
 
   if (newNotifications.length > 0) {
     await storeNotifications(newNotifications);
@@ -51,14 +57,6 @@ async function getAllNotifications(): Promise<InAppNotification[]> {
   const notifications =
     (await storage.get<InAppNotification[]>("notifications")) ?? [];
   return notifications;
-}
-
-async function getLatestNotification(): Promise<InAppNotification | undefined> {
-  return (
-    await getNotificationsBy({}, (a, b) => b.timestamp - a.timestamp, {
-      limit: 1,
-    })
-  )[0];
 }
 
 export async function getNotificationsBy(
@@ -150,7 +148,7 @@ export function cmpNotificationsByStatusAndTimestamp(
   );
 }
 
-async function removeInvalidNotifications() {
+export async function removeInvalidNotifications() {
   const allNotifications = await getAllNotifications();
   const toKeep = allNotifications.filter(
     (n) =>

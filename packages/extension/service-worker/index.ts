@@ -60,6 +60,7 @@ async function onStart() {
     //   situation the onInstalled event listener runs for
     await injectUpdatedContentScripts();
 
+    await notificationsService.removeInvalidNotifications();
     if ((await notificationsService.checkForNewNotifications()).length > 0) {
       addBadge("!");
     }
