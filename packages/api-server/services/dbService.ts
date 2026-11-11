@@ -208,9 +208,9 @@ function getRecordById<T extends DbRecord>(
 
 function insertSuggestedRatingCorrectionRecord(
   titleId: number,
-  ipHash: string,
   selection: IndexedImdbTitle | null,
   choices: IndexedImdbTitle[],
+  ipData: { ipHash: string; ipCountry: string | null },
 ) {
   db.prepare(
     `
@@ -220,7 +220,7 @@ function insertSuggestedRatingCorrectionRecord(
   ).run(
     titleId,
     selection?.imdbId ?? null,
-    ipHash,
-    JSON.stringify({ choices, selection }),
+    ipData.ipHash,
+    JSON.stringify({ choices, selection, ipCountry: ipData.ipCountry }),
   );
 }

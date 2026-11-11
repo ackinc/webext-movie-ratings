@@ -29,6 +29,7 @@ import {
   getIndexLastUpdatedTime,
   querySearchEngine,
 } from "./services/searchEngineService.ts";
+import { ipToCountry } from "./services/geolookup.ts";
 import type { ProgramMatchQuery } from "./types.ts";
 
 const env = pick(
@@ -48,7 +49,7 @@ process.on("SIGINT", cleanup);
 process.on("SIGTERM", cleanup);
 
 function createServer() {
-  const fastify = Fastify({ loggerInstance: logger });
+  const fastify = Fastify({ loggerInstance: logger, trustProxy: 1 });
 
   // for simulating longer response times in dev so it's easier
   //   to see some transitional states in the extension
@@ -493,10 +494,14 @@ async function updateIncorrectMatchReportRequestHandler(
   const { token, suggestedMatches } = rowMeta;
   if (token !== matchToken) return reply.code(200).send({ status: "ok" });
 
-  const ipHash = crypto
-    .createHash("sha1")
-    .update(request.headers["X-Forwarded-For"] as string)
-    .digest("hex");
+  const { ip } = request;
+  const ipHash = crypto.createHash("sha1").update(ip).digest("hex");
+  let ipCountry: string | null = null;
+  try {
+    ipCountry = await ipToCountry(ip);
+  } catch (e) {
+    Sentry.captureException(e, { tags: { ip } });
+  }
 
   /* handle case where user/admin selects NOTA */
 
@@ -511,9 +516,9 @@ async function updateIncorrectMatchReportRequestHandler(
     });
     dbService.insertSuggestedRatingCorrectionRecord(
       row.id,
-      ipHash,
       null,
       rowMeta.suggestedMatches,
+      { ipCountry, ipHash },
     );
     return reply.code(200).send({ status: "ok" });
   }
@@ -539,9 +544,9 @@ async function updateIncorrectMatchReportRequestHandler(
   });
   dbService.insertSuggestedRatingCorrectionRecord(
     row.id,
-    ipHash,
     bestMatch,
     rowMeta.suggestedMatches,
+    { ipCountry, ipHash },
   );
   return reply.code(200).send({ status: "ok" });
 }
