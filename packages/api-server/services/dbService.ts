@@ -218,14 +218,15 @@ function insertMatchCorrectionRecord(
 ) {
   db.prepare(
     `
-    INSERT INTO matchCorrections (titleId, suggestedImdbId, ipHash, meta)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO matchCorrections (titleId, suggestedImdbId, ipHash, ipCountry, meta)
+    VALUES (?, ?, ?, ?, ?)
   `,
   ).run(
     titleId,
     selection?.imdbId ?? null,
     ipData.ipHash,
-    JSON.stringify({ choices, selection, ipCountry: ipData.ipCountry }),
+    ipData.ipCountry,
+    JSON.stringify({ selection, choices }),
   );
 }
 

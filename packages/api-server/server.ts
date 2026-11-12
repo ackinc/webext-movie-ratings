@@ -2,7 +2,6 @@ import "dotenv/config";
 
 import Sentry from "./instrument.ts";
 
-import crypto from "node:crypto";
 import { parseISO } from "date-fns";
 import Fastify, { type RouteShorthandOptions } from "fastify";
 import cors from "@fastify/cors";
@@ -30,7 +29,7 @@ import {
   getIndexLastUpdatedTime,
   querySearchEngine,
 } from "./services/searchEngineService.ts";
-import { ipToCountry } from "./services/geolookup.ts";
+import { ipToCountry, ipToHash } from "./services/ipService.ts";
 import type {
   ProgramMatchCorrectionRecord,
   ProgramMatchQuery,
@@ -515,7 +514,7 @@ async function updateIncorrectMatchReportRequestHandler(
   /* request is by a user */
 
   const { ip } = request;
-  const ipHash = crypto.createHash("sha1").update(ip).digest("hex");
+  const ipHash = ipToHash(ip);
   let ipCountry: string | null = null;
   try {
     ipCountry = await ipToCountry(ip);
