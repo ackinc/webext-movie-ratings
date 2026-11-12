@@ -1,4 +1,13 @@
 import crypto from "node:crypto";
+import * as fs from "node:fs";
+import { saltFilepath } from "../constants.ts";
+import { regenerateSalt } from "../helpers.ts";
+
+try {
+  fs.accessSync(saltFilepath);
+} catch (e) {
+  regenerateSalt();
+}
 
 export async function ipToCountry(ip: string): Promise<string> {
   const resp = await fetch(`https://api.country.is/${ip}`);
@@ -9,5 +18,9 @@ export async function ipToCountry(ip: string): Promise<string> {
 }
 
 export function ipToHash(ip: string): string {
-  return crypto.createHash("sha1").update(ip).digest("hex");
+  const salt = fs.readFileSync(saltFilepath, "utf-8");
+  return crypto
+    .createHash("sha1")
+    .update(salt + ip)
+    .digest("hex");
 }

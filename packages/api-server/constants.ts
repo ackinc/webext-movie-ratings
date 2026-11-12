@@ -20,3 +20,8 @@ export const emailTemplatesDir = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
   "./email-templates",
 );
+
+export const saltFilepath = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  ".salt",
+);
