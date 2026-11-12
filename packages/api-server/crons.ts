@@ -7,6 +7,7 @@ import { spawn } from "node:child_process";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import cron from "node-cron";
+import { regenerateSalt } from "./helpers.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -17,6 +18,11 @@ cron.schedule(
       detached: true,
       stdio: "inherit",
     }).unref(),
+);
+
+cron.schedule(
+  "0 0 * * *", // every day
+  regenerateSalt,
 );
 
 cron.schedule(

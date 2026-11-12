@@ -1,6 +1,7 @@
 node_modules
 .env
 .env.*
+.salt
 tmp
 **/*.log
 **/*.tsbuildinfo

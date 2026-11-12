@@ -1,7 +1,10 @@
+import crypto from "node:crypto";
+import * as fs from "node:fs";
 import { Map as ImmutableMap, Set as ImmutableSet } from "immutable";
 import * as emailService from "./services/emailService.ts";
 import { supportedSites, type Sitename, type IndexedImdbTitle } from "siftcore";
 import { pick } from "siftutils";
+import { saltFilepath } from "./constants.ts";
 import type { ProgramMatchRecord, RawProgramMatchRecord } from "./types.ts";
 
 const env = pick(process.env, ["SIFT_API_URL", "SIFT_API_KEY"], true);
@@ -101,4 +104,9 @@ export function runElection<
   if (nVotesForLeader < minVotesForWin) return null;
 
   return leader;
+}
+
+export function regenerateSalt() {
+  const salt = crypto.randomBytes(16).toString("hex");
+  fs.writeFileSync(saltFilepath, salt);
 }
