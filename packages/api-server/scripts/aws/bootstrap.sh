@@ -100,6 +100,7 @@ EOF
 apt-get remove certbot
 /home/ubuntu/sift/packages/api-server/scripts/aws/certbot_renew.sh
 echo "0 0 1 * * root /home/ubuntu/sift/packages/api-server/scripts/aws/certbot_renew.sh" | tee -a /etc/crontab
+echo "0 0 * * * root /home/ubuntu/sift/packages/api-server/scripts/aws/update_nginx_realip_conf.sh" | tee -a /etc/crontab
 
 
 # install and configure nginx as reverse-proxy
