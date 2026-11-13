@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+set -eu
+
+printHelpAndExit() {
+  echo "USAGE" >&2
+  echo "    $(basename "$0") [OPTIONS]" >&2
+  echo "OPTIONS" >&2
+  echo "    --extensionTarget=chrome|firefox|edge" >&2
+  echo "    --help" >&2
+  exit 1
+}
+
+extensionTarget="chrome"
+
+# parse the extensionTarget option if provided
+if [ "$#" -gt 0 ]; then
+  case "$1" in
+    --help)
+      printHelpAndExit
+      ;;
+    --extensionTarget=*)
+      extensionTarget="${1#*=}"
+      case "$extensionTarget" in
+        chrome|firefox|edge) ;;
+        *)
+          printHelpAndExit
+          ;;
+      esac
+      ;;
+    *)
+      printHelpAndExit
+      ;;
+  esac
+fi
+
+concurrently --names tsc,extension,api,website \
+  'tsc -b --noEmit --watch --preserveWatchOutput' \
+  "pnpm --filter ./packages/extension run build:dev --target=$extensionTarget" \
+  'pnpm --filter ./packages/api-server run dev' \
+  'pnpm --filter ./packages/website run dev'
