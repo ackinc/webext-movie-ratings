@@ -34,8 +34,10 @@ if [ "$#" -gt 0 ]; then
   esac
 fi
 
-concurrently --names tsc,extension,api,website \
+trap 'docker compose -f ./geoip/docker-compose.yml down' EXIT
+concurrently -k --names tsc,extension,api,website,geoip \
   'tsc -b --noEmit --watch --preserveWatchOutput' \
   "pnpm --filter ./packages/extension run build:dev --target=$extensionTarget" \
   'pnpm --filter ./packages/api-server run dev' \
-  'pnpm --filter ./packages/website run dev'
+  'pnpm --filter ./packages/website run dev' \
+  'docker compose -f ./geoip/docker-compose.yml up'
