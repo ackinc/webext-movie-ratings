@@ -152,6 +152,7 @@ const ctx = await esbuild.context(config);
 await ctx.watch();
 
 process.on("SIGINT", cleanup);
+process.on("SIGTERM", cleanup);
 
 // helpers
 

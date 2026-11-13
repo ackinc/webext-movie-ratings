@@ -1,0 +1,14 @@
+services:
+  country:
+    image: anirudhnimmagadda/lineofflight-country
+    pull_policy: always
+    ports:
+      - "3002:3000"
+    environment:
+      ACCOUNT_ID: ${MAXMIND_ACCOUNT_ID}
+      LICENSE_KEY: ${MAXMIND_LICENSE_KEY}
+    volumes:
+      - country-data:/app/data
+
+volumes:
+  country-data:
