@@ -2,6 +2,7 @@ services:
   country:
     image: anirudhnimmagadda/lineofflight-country
     pull_policy: always
+    restart: unless-stopped
     ports:
       - "3002:3000"
     environment:
