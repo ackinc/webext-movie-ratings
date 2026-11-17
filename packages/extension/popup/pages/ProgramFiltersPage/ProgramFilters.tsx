@@ -1,11 +1,5 @@
 import { useEffect, useState } from "preact/hooks";
-import {
-  getSetting,
-  setSetting,
-  MessageType,
-  defaultProgramFilterSettings,
-  sendMessageToAllTabs,
-} from "@common";
+import { getSetting, setSetting, defaultProgramFilterSettings } from "@common";
 import type { ProgramFilterSettings } from "@common";
 import Slider from "@popup/components/Slider";
 import CheckboxInput from "@common/components/Inputs/CheckboxInput/CheckboxInput";
@@ -100,14 +94,6 @@ function ProgramFilters() {
 
     // persist the change in storage
     await setSetting("programFiltersSettings", updatedSettings);
-
-    // let relevant tabs know that the filter settings have changed
-    // bundling the updated settings into the message saves the content
-    //   scripts a lookup from storage
-    await sendMessageToAllTabs({
-      type: MessageType.filterSettingsChange,
-      data: updatedSettings,
-    });
   }
 }
 

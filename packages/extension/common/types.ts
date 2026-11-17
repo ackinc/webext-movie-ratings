@@ -138,12 +138,6 @@ export type Message =
   | {
       // Sent from popup to ISOLATED world content scripts in all relevant
       //   tabs
-      type: MessageType.filterSettingsChange;
-      data: ProgramFilterSettings;
-    }
-  | {
-      // Sent from popup to ISOLATED world content scripts in all relevant
-      //   tabs
       type: MessageType.settingsChanged;
       data: {
         settingName: keyof ExtensionSettings;

@@ -11,6 +11,7 @@ import {
   MessageType,
   CssClasses,
   mainFnInvocationDelayMs,
+  type ExtensionSettings,
 } from "../common";
 import { SWError } from "../common/customErrors";
 import { captureException } from "../common/errorReporter";
@@ -348,8 +349,6 @@ function handleMessage(
     }
   } else if (type === MessageType.urlChange) {
     handleUrlChange();
-  } else if (type === MessageType.filterSettingsChange) {
-    handleFilterSettingsChange(msg.data);
   } else if (type === MessageType.healthCheck) {
     if (sendResponse) sendResponse("ok");
   } else if (type === MessageType.getSelectProgramModeState) {
@@ -360,10 +359,7 @@ function handleMessage(
     schedulePageProcessing("onMessageFromServiceWorker", undefined, true);
   } else if (type === MessageType.settingsChanged) {
     const { settingName, newValue } = msg.data;
-    if (settingName === "onlyShowRatingsOnHover") {
-      if (newValue === true) page.cleanup();
-      schedulePageProcessing("onSettingsChange");
-    }
+    handleSettingsChange(settingName, newValue);
   }
 }
 
@@ -372,8 +368,20 @@ function handleUrlChange() {
   schedulePageProcessing("onUrlChange");
 }
 
-function handleFilterSettingsChange(updatedSettings: ProgramFilterSettings) {
-  programFilterSettings = updatedSettings;
-  updateFilteredOutProgramNodeStyles(programFilterSettings);
-  schedulePageProcessing("onFiltersChange");
+function handleSettingsChange(
+  settingName: keyof ExtensionSettings,
+  newValue: unknown,
+) {
+  if (settingName === "onlyShowRatingsOnHover") {
+    if (newValue === true) page.cleanup();
+    schedulePageProcessing("onSettingsChange");
+    return;
+  }
+
+  if (settingName === "programFiltersSettings") {
+    programFilterSettings = newValue as ProgramFilterSettings;
+    updateFilteredOutProgramNodeStyles(programFilterSettings);
+    schedulePageProcessing("onFiltersChange");
+    return;
+  }
 }
