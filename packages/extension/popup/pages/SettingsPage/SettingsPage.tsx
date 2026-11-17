@@ -19,6 +19,10 @@ export default function SettingsPage() {
       <SiteChooserForm />
 
       <Separator />
+      <SettingToggle
+        name="onlyShowRatingsOnHover"
+        label={boolSettings.onlyShowRatingsOnHover.label}
+      />
       <ErrorReportingOptIn
         onClickShowDetails={() => setCurPage("pitchErrorReporting")}
       />

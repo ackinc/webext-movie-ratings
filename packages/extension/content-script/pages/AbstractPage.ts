@@ -91,7 +91,11 @@ export default class AbstractPage {
 
   findPrograms({
     swallowDataExtractionErrors = false,
-  }: { swallowDataExtractionErrors?: boolean } = {}): Program[] {
+    onlyFindOnHoverNodes = false,
+  }: {
+    swallowDataExtractionErrors?: boolean;
+    onlyFindOnHoverNodes?: boolean;
+  } = {}): Program[] {
     const programContainerNodes = this.#findProgramContainerNodes();
     const programContainers = programContainerNodes
       .map(dataExtractionErrorHandlingWrapper(this.#createProgramContainer))

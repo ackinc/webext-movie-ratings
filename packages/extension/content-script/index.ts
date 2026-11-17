@@ -190,10 +190,14 @@ function removeListeners() {
 
 async function findProgramsAndAddRatings(fullRefresh: boolean = false) {
   try {
+    const [throwDataExtractionErrors, onlyShowRatingsOnHover] =
+      await Promise.all([
+        getSetting("throwDataExtractionErrors"),
+        getSetting("onlyShowRatingsOnHover"),
+      ]);
     const programs = page.findPrograms({
-      swallowDataExtractionErrors: !(await getSetting(
-        "throwDataExtractionErrors",
-      )),
+      swallowDataExtractionErrors: !throwDataExtractionErrors,
+      onlyFindOnHoverNodes: !!onlyShowRatingsOnHover,
     });
 
     const results = await Promise.allSettled<Program>(
@@ -354,6 +358,12 @@ function handleMessage(
     page.toggleSelectProgramMode();
   } else if (type === MessageType.refreshRatingsOnPage) {
     schedulePageProcessing("onMessageFromServiceWorker", undefined, true);
+  } else if (type === MessageType.settingsChanged) {
+    const { settingName, newValue } = msg.data;
+    if (settingName === "onlyShowRatingsOnHover") {
+      if (newValue === true) page.cleanup();
+      schedulePageProcessing("onSettingsChange");
+    }
   }
 }
 

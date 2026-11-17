@@ -6,6 +6,7 @@ import type {
   ProgramFilterSettings,
   SWMessageResponse,
 } from "./types";
+import { sendMessageToAllTabs } from "./helpers";
 import { SWError } from "./customErrors";
 
 export const boolSettings = {
@@ -13,6 +14,11 @@ export const boolSettings = {
     for: "user",
     default: false,
     label: "Opt-in to error reporting?",
+  },
+  onlyShowRatingsOnHover: {
+    for: "user",
+    default: false,
+    label: "Only show rating when hovering over a program?",
   },
 
   outdatedSelectorDetectionEnabled: {
@@ -68,4 +74,8 @@ export async function setSetting<K extends keyof ExtensionSettings>(
   value: ExtensionSettings[K],
 ): Promise<void> {
   await storage.set(key, value);
+  await sendMessageToAllTabs({
+    type: MessageType.settingsChanged,
+    data: { settingName: key, newValue: value },
+  });
 }

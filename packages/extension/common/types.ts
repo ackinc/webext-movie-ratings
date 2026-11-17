@@ -1,5 +1,6 @@
 import type { Notification as SiftNotification, Sitename } from "siftcore";
 import { MessageType } from "./constants";
+import type { ExtensionSettings } from "./settings";
 
 export type ProgramContainerData = {
   title: string;
@@ -141,6 +142,15 @@ export type Message =
       data: ProgramFilterSettings;
     }
   | {
+      // Sent from popup to ISOLATED world content scripts in all relevant
+      //   tabs
+      type: MessageType.settingsChanged;
+      data: {
+        settingName: keyof ExtensionSettings;
+        newValue: ExtensionSettings[keyof ExtensionSettings];
+      };
+    }
+  | {
       // Sent from new ISO content-script to old ISO content-script
       //   just after extension update to induce cleanup of old ISO content
       //   script
@@ -275,4 +285,5 @@ export type SchedulePageProcessingReason =
   | "onMutation"
   | "onUrlChange"
   | "onFiltersChange"
-  | "onMessageFromServiceWorker";
+  | "onMessageFromServiceWorker"
+  | "onSettingsChange";
