@@ -41,6 +41,7 @@ import ratingNodeStyles from "../RatingNode/ratingNode.styles.css";
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
 
+  inOnlyShowRatingsOnHoverMode: boolean = false;
   inSelectProgramMode: boolean = false;
   stylesheets: Record<"page" | "imdbNode", CSSStyleSheet> = {
     imdbNode: cssStyleSheetFromText(ratingNodeStyles),
@@ -71,7 +72,12 @@ export default class AbstractPage {
     this.isValidProgram = this.isValidProgram.bind(this);
   }
 
-  async initialize() {
+  async initialize({
+    inOnlyShowRatingsOnHoverMode,
+  }: {
+    inOnlyShowRatingsOnHoverMode: boolean;
+  }) {
+    this.inOnlyShowRatingsOnHoverMode = inOnlyShowRatingsOnHoverMode;
     await Promise.all([this.injectStyles(), this.#pruneOutdatedSelectors()]);
     return this;
   }
@@ -91,10 +97,8 @@ export default class AbstractPage {
 
   findPrograms({
     swallowDataExtractionErrors = false,
-    onlyFindOnHoverNodes = false,
   }: {
     swallowDataExtractionErrors?: boolean;
-    onlyFindOnHoverNodes?: boolean;
   } = {}): Program[] {
     const programContainerNodes = this.#findProgramContainerNodes();
     const programContainers = programContainerNodes
@@ -299,7 +303,9 @@ valid containers:\n\t${programContainers
   #findProgramNodesInProgramContainer = (
     pContainer: ProgramContainer,
   ): Omit<Program, keyof ProgramData>[] => {
-    const selectors = this.getProgramNodeSelectors(pContainer);
+    const selectors = this.inOnlyShowRatingsOnHoverMode
+      ? this.getOnHoverProgramNodeSelectors()
+      : this.getProgramNodeSelectors(pContainer);
     const results = selectors.map((sel) =>
       Array.from(pContainer.node.querySelectorAll<HTMLElement>(sel)).filter(
         this.#ctor.ProgramNode.isMovieOrSeries,

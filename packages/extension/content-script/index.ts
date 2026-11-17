@@ -171,7 +171,10 @@ async function initializePage() {
     throw new Error("Page not recognized");
   }
 
-  return await page.initialize();
+  const onlyShowRatingsOnHover = await getSetting("onlyShowRatingsOnHover");
+  return await page.initialize({
+    inOnlyShowRatingsOnHoverMode: !!onlyShowRatingsOnHover,
+  });
 }
 
 function addListeners() {
@@ -191,14 +194,11 @@ function removeListeners() {
 
 async function findProgramsAndAddRatings(fullRefresh: boolean = false) {
   try {
-    const [throwDataExtractionErrors, onlyShowRatingsOnHover] =
-      await Promise.all([
-        getSetting("throwDataExtractionErrors"),
-        getSetting("onlyShowRatingsOnHover"),
-      ]);
+    const [throwDataExtractionErrors] = await Promise.all([
+      getSetting("throwDataExtractionErrors"),
+    ]);
     const programs = page.findPrograms({
       swallowDataExtractionErrors: !throwDataExtractionErrors,
-      onlyFindOnHoverNodes: !!onlyShowRatingsOnHover,
     });
 
     const results = await Promise.allSettled<Program>(
@@ -368,11 +368,12 @@ function handleUrlChange() {
   schedulePageProcessing("onUrlChange");
 }
 
-function handleSettingsChange(
-  settingName: keyof ExtensionSettings,
-  newValue: unknown,
+function handleSettingsChange<T extends keyof ExtensionSettings>(
+  settingName: T,
+  newValue: ExtensionSettings[T],
 ) {
   if (settingName === "onlyShowRatingsOnHover") {
+    page.inOnlyShowRatingsOnHoverMode = newValue as boolean;
     if (newValue === true) page.cleanup();
     schedulePageProcessing("onSettingsChange");
     return;
