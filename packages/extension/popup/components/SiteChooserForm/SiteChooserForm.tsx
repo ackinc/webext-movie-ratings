@@ -20,6 +20,7 @@ import { captureException } from "@common/errorReporter";
 import SiteChooserFormControl from "@popup/components/SiteChooserFormControl";
 import LoadingIndicator from "@common/components/Icons/Loading";
 import "./SiteChooserForm.css";
+import ExternalLinkIcon from "@common/components/Icons/ExternalLink";
 
 // We want to wait for the user to stop interacting with the form before
 //   we disrupt the UX by triggering the permissions-grant dialog (which
@@ -131,6 +132,7 @@ export default function SiteChooserForm() {
         return (
           <div
             key={site}
+            className="site-chooser-form-control-container"
             style={{ display: "flex", alignItems: "center", gap: "8px" }}
           >
             <SiteChooserFormControl
@@ -140,7 +142,17 @@ export default function SiteChooserForm() {
               disabled={["toDisable"].includes(siteStatuses[site])}
               onToggle={toggleSite}
             />
-            {loading ? <LoadingIndicator className="inline-icon" /> : null}
+            {loading ? (
+              <LoadingIndicator className="inline-icon" />
+            ) : (
+              <a
+                href={`https://${supportedSites[site].hostNames[0]}`}
+                target="_blank"
+                className="site-link"
+              >
+                <ExternalLinkIcon className="inline-icon" />
+              </a>
+            )}
           </div>
         );
       })}
