@@ -12,6 +12,18 @@ form.site-chooser-form p.error {
   font-size: var(--secondary-font-size);
 }
 
-form.site-chooser-form img.loading-indicator {
-  height: 14px;
+.site-chooser-form-control-container .site-link {
+  visibility: hidden;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.site-chooser-form-control-container:hover .site-link {
+  visibility: visible;
+}
+
+.site-chooser-form-control-container .site-link svg {
+  stroke: #454545;
 }
