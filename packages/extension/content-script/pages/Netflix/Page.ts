@@ -222,6 +222,9 @@ export default class NetflixPage extends AbstractPage {
   }
 
   protected override getOnHoverProgramNodeSelectors(): string[] {
-    return ["div.previewModal--container.mini-modal"];
+    return [
+      "div.previewModal--container.mini-modal",
+      "div.previewModal--container:not(.mini-modal)",
+    ];
   }
 }
