@@ -14,18 +14,28 @@ export default class PlexPage extends AbstractPage {
   }
 
   protected override getProgramContainerNodeSelectors(): string[] {
+    if (location.pathname.includes("/live-tv/")) {
+      return [];
+    }
+
     return [
+      'main:has(> div[class*="FullBleed-module"])',
       'div[class*="FullBleed-module"]',
       'main:has(> div[class*="MaxLineWidthContainer-module"])',
-      'div[data-testid="searchResults"]',
+      'div[data-testid="searchZeroState"]',
+      'ul[aria-label^="Search Results for"]',
     ];
   }
 
   protected override getTitleFromProgramContainerNode(
     pContainerNode: HTMLElement,
   ): string {
+    if (pContainerNode.matches('main:has(> div[class*="FullBleed-module"])')) {
+      return pContainerNode.querySelector("h1")!.textContent;
+    }
+
     if (pContainerNode.matches('div[class*="FullBleed-module"]')) {
-      return pContainerNode.querySelector("h2")!.textContent;
+      return pContainerNode.querySelector("h2")!.innerText.split("\n").at(-1)!;
     }
 
     if (
@@ -36,7 +46,15 @@ export default class PlexPage extends AbstractPage {
       return pContainerNode.querySelector("h1")!.textContent;
     }
 
-    if (pContainerNode.matches('div[data-testid="searchResults"]')) {
+    if (
+      ['div[data-testid="searchZeroState"]'].some((x) =>
+        pContainerNode.matches(x),
+      )
+    ) {
+      return "Pre-search popular suggestions";
+    }
+
+    if (pContainerNode.matches('ul[aria-label^="Search Results for"]')) {
       return "Search results";
     }
 
@@ -48,10 +66,14 @@ export default class PlexPage extends AbstractPage {
   ): boolean {
     if (
       [
+        "Browse Films & TV Shows",
         "Browse Movies & TV Shows",
         "What's On Now",
+        "Popular Discussions",
+        "Popular Lists",
         "More Fans to Follow",
         "Featured Videos",
+        "Frequently Asked Questions",
       ].includes(pContainer.title)
     ) {
       return false;
@@ -63,6 +85,10 @@ export default class PlexPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (selector === 'main:has(> div[class*="FullBleed-module"])') {
+      return ['figure:has(a[data-id^="tv.plex.provider.vod"][aria-label])'];
+    }
+
     if (selector === 'div[class*="FullBleed-module"]') {
       return [
         'figure:has(a[data-id^="tv.plex.provider.epg"][aria-label])',
@@ -80,10 +106,14 @@ export default class PlexPage extends AbstractPage {
       ];
     }
 
-    if (selector === 'div[data-testid="searchResults"]') {
+    if (selector === 'div[data-testid="searchZeroState"]') {
       return [
-        'div[class*="SearchPopover-module"] div:has(> span[title]:nth-child(2))',
+        'figure:has(a[data-id^="tv.plex.provider.discover"][aria-label])',
       ];
+    }
+
+    if (selector === 'ul[aria-label^="Search Results for"]') {
+      return ['li[data-testid="searchResult"]'];
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);

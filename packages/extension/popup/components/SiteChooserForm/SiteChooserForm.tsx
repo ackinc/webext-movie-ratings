@@ -142,14 +142,17 @@ export default function SiteChooserForm() {
               disabled={["toDisable"].includes(siteStatuses[site])}
               onToggle={toggleSite}
             />
-            <a
-              href={`https://${supportedSites[site].hostNames[0]}`}
-              target="_blank"
-              className="site-link"
-            >
-              <ExternalLinkIcon className="inline-icon" />
-            </a>
-            {loading ? <LoadingIndicator className="inline-icon" /> : null}
+            {loading ? (
+              <LoadingIndicator className="inline-icon" />
+            ) : (
+              <a
+                href={`https://${supportedSites[site].hostNames[0]}`}
+                target="_blank"
+                className="site-link"
+              >
+                <ExternalLinkIcon className="inline-icon" />
+              </a>
+            )}
           </div>
         );
       })}

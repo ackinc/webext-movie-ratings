@@ -31,13 +31,15 @@ export default class ProgramNode extends AbstractProgramNode {
         'figure:has(a[data-id^="tv.plex.provider.vod"][aria-label])',
       )
     ) {
-      const titleNode = programNode.querySelector(
-        "figcaption > span:first-child",
+      const labelNode = programNode.querySelector(
+        'a[data-id^="tv.plex.provider.vod"][aria-label]',
       )!;
-      title = titleNode.textContent;
+      const label = labelNode.getAttribute("aria-label")!;
+      title = label.split("(")[0]!.trim()!;
+      year = Number(label.match(/\((\d{4})\)$/)?.[1]) || undefined;
 
       const typeNode = programNode.querySelector(
-        "figcaption > span:nth-child(2)",
+        "figcaption:nth-child(2) > span",
       );
       if (typeNode?.textContent.match(/season/i)) type = "series";
       else if (typeNode?.textContent.match(/^\d+$/)) type = "movie";
@@ -46,15 +48,12 @@ export default class ProgramNode extends AbstractProgramNode {
         'figure:has(a[data-id^="tv.plex.provider.discover"][aria-label])',
       )
     ) {
-      const titleNode = programNode.querySelector(
-        "figcaption > span:first-child",
+      const labelNode = programNode.querySelector(
+        'a[data-id^="tv.plex.provider.discover"][aria-label]',
       )!;
-      title = titleNode.textContent;
-
-      const yearNode = programNode.querySelector(
-        "figcaption > span:nth-child(2)",
-      );
-      if (yearNode?.textContent.match(/\d+/)) year = +yearNode.textContent;
+      const label = labelNode.getAttribute("aria-label")!;
+      title = label.split("(")[0]!.trim()!;
+      year = Number(label.match(/\((\d{4})\)$/)?.[1]) || undefined;
     } else if (
       programNode.matches('li:has(div[class*="LumaPopularReviewActivityCard"])')
     ) {
@@ -64,19 +63,18 @@ export default class ProgramNode extends AbstractProgramNode {
           ":scope > div:nth-child(2) > span[title]",
         )!;
       title = titleNode.textContent;
-    } else if (
-      programNode.matches(
-        'div[class*="SearchPopover-module"] div:has(> span[title]:nth-child(2))',
-      )
-    ) {
-      const titleNode = programNode.querySelector("span[title]:first-child")!;
-      title = titleNode.textContent;
+    } else if (programNode.matches('li[data-testid="searchResult"]')) {
+      title = programNode
+        .querySelector("a[aria-label]:first-child")!
+        .getAttribute("aria-label")!;
 
-      const typeAndYearNode = programNode.querySelector(
-        "span[title]:nth-child(2)",
-      )!;
-      type = typeAndYearNode.textContent.includes("Movie") ? "movie" : "series";
-      year = +typeAndYearNode.textContent.split(" ").at(-1)!;
+      const metadataNode = Array.from(
+        programNode.querySelectorAll("span"),
+      ).find((node) => node.textContent.match(/^\d{4}.+?(Film|Show)$/));
+      if (metadataNode) {
+        type = metadataNode.textContent.endsWith("Film") ? "movie" : "series";
+        year = Number(metadataNode.textContent.split(" ")[0]) ?? undefined;
+      }
     }
 
     return {
@@ -104,30 +102,6 @@ export default class ProgramNode extends AbstractProgramNode {
     }
 
     if (
-      programNode.matches(
-        'figure:has(a[data-id^="tv.plex.provider.vod"][aria-label])',
-      )
-    ) {
-      const titleNode = programNode.querySelector(
-        "figcaption > span:first-child",
-      )!;
-      titleNode?.insertAdjacentElement("afterend", imdbNode);
-      return;
-    }
-
-    if (
-      programNode.matches(
-        'figure:has(a[data-id^="tv.plex.provider.discover"][aria-label])',
-      )
-    ) {
-      const titleNode = programNode.querySelector(
-        "figcaption > span:first-child",
-      )!;
-      titleNode?.insertAdjacentElement("afterend", imdbNode);
-      return;
-    }
-
-    if (
       programNode.matches('li:has(div[class*="LumaPopularReviewActivityCard"])')
     ) {
       const titleNode = programNode
@@ -139,13 +113,11 @@ export default class ProgramNode extends AbstractProgramNode {
       return;
     }
 
-    if (
-      programNode.matches(
-        'div[class*="SearchPopover-module"] div:has(> span[title]:nth-child(2))',
-      )
-    ) {
-      const titleNode = programNode.querySelector("span[title]:first-child")!;
-      titleNode?.parentElement?.appendChild(imdbNode);
+    if (programNode.matches('li[data-testid="searchResult"]')) {
+      const metadataNode = Array.from(
+        programNode.querySelectorAll("span"),
+      ).find((node) => node.textContent.match(/^\d{4}.+?(Film|Show)$/));
+      metadataNode?.insertAdjacentElement("afterend", imdbNode);
       return;
     }
 
