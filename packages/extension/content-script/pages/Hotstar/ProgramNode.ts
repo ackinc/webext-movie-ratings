@@ -79,7 +79,7 @@ export default class ProgramNode extends AbstractProgramNode {
       const type: ProgramData["type"] =
         typeNode === null
           ? undefined
-          : /^\d+h \d+m$/.test(typeNode.textContent)
+          : /^\d+h( \d+m)?$/.test(typeNode.textContent)
             ? "movie"
             : /season/i.test(typeNode.textContent)
               ? "series"
