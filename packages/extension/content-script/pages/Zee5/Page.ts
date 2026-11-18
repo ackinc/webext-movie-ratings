@@ -23,6 +23,9 @@ export default class Zee5Page extends AbstractPage {
       // movies collections page
       "div.viewAllMovie",
 
+      // collections page
+      'div[data-testid="collectionsContainer"]',
+
       // single program page
       'div[data-testid="reco-container"]',
 
@@ -54,6 +57,10 @@ export default class Zee5Page extends AbstractPage {
 
     if (pContainerNode.matches("div.viewAllMovie")) {
       return pContainerNode.querySelector("h1")!.textContent;
+    }
+
+    if (pContainerNode.matches('div[data-testid="collectionsContainer"]')) {
+      return pContainerNode.querySelector("h2")!.textContent;
     }
 
     if (pContainerNode.matches('div[data-testid="reco-container"]')) {
@@ -104,13 +111,13 @@ export default class Zee5Page extends AbstractPage {
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
     if (selector === 'div[aria-label="Featured banners"]') {
-      return ['div[data-testid$="active_carousel"]'];
+      return ['main[id="hero-banner"]'];
     }
 
     if (selector === 'div[data-testid$="rail-container"]') {
       return [
-        ".keen-slider__slide .card-and-title-wrapper",
-        ".keen-slider__slide .card-and-title-wrapper .hover-panel",
+        ".card-and-title-wrapper",
+        ".card-and-title-wrapper .hover-panel",
       ];
     }
 
@@ -123,6 +130,13 @@ export default class Zee5Page extends AbstractPage {
 
     if (selector === "div.viewAllMovie") {
       return ["div.movieCard"];
+    }
+
+    if (selector === 'div[data-testid="collectionsContainer"]') {
+      return [
+        ".card-and-title-wrapper",
+        ".card-and-title-wrapper .hover-panel",
+      ];
     }
 
     if (selector === 'div[data-testid="reco-container"]') {

@@ -11,14 +11,23 @@ export default class ProgramNode extends AbstractProgramNode {
     let type: "movie" | "series" | null = null;
     let year: number | null = null;
 
-    if (programNode.matches('div[data-testid$="active_carousel"]')) {
-      const titleNode =
-        programNode.firstElementChild!.lastElementChild!.firstElementChild!
-          .firstElementChild!;
-      title = titleNode.textContent;
-    } else if (
-      programNode.matches(".keen-slider__slide .card-and-title-wrapper")
-    ) {
+    if (programNode.matches('main[id="hero-banner"]')) {
+      const titleNode = programNode.querySelector('img[id="hero-title"][alt]')!;
+      title = titleNode.getAttribute("alt")!;
+
+      const metadataNode = programNode.querySelector(
+        'div[id="hero-metadata-container"]',
+      )!;
+      const metadata = Array.from(metadataNode.querySelectorAll("span"))
+        .map((node) => node.textContent)
+        .filter((text) => !!text);
+      year = Number(metadata.find((x) => /\d{4}/.test(x))) || null;
+
+      const tmp = metadata
+        .find((x) => /movie|series|show/i.test(x))
+        ?.toLowerCase();
+      type = !tmp ? null : tmp === "movie" ? "movie" : "series";
+    } else if (programNode.matches(".card-and-title-wrapper")) {
       const titleNode = programNode.querySelector(".hover-panel h3[title]")!;
       title = titleNode.textContent;
 
@@ -29,11 +38,7 @@ export default class ProgramNode extends AbstractProgramNode {
       year =
         Number(metadataNode?.textContent.match(/\b(\d{4})\b/)?.[1]) ??
         undefined;
-    } else if (
-      programNode.matches(
-        ".keen-slider__slide .card-and-title-wrapper .hover-panel",
-      )
-    ) {
+    } else if (programNode.matches(".card-and-title-wrapper .hover-panel")) {
       const titleNode = programNode.querySelector("h3[title]")!;
       title = titleNode.textContent;
 
@@ -71,19 +76,15 @@ export default class ProgramNode extends AbstractProgramNode {
     programNode: HTMLElement,
     imdbNode: HTMLElement,
   ) {
-    if (programNode.matches('div[data-testid$="active_carousel"]')) {
-      const titleNode =
-        programNode.firstElementChild!.lastElementChild!.firstElementChild!
-          .firstElementChild!;
-      titleNode.insertAdjacentElement("afterend", imdbNode);
+    if (programNode.matches('main[id="hero-banner"]')) {
+      const metadataNode = programNode.querySelector(
+        'div[id="hero-metadata-container"]',
+      );
+      metadataNode?.insertAdjacentElement("afterend", imdbNode);
       return;
     }
 
-    if (
-      programNode.matches(
-        ".keen-slider__slide .card-and-title-wrapper .hover-panel",
-      )
-    ) {
+    if (programNode.matches(".card-and-title-wrapper .hover-panel")) {
       const titleNode = programNode.querySelector("h3[title]")!;
       titleNode.insertAdjacentElement("afterend", imdbNode);
       return;
