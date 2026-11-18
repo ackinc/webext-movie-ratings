@@ -92,11 +92,16 @@ export default class Zee5Page extends AbstractPage {
         "Z Live TV Channels",
         /^Live News/i,
         /^Live Entertainment/i,
+        /^Live Channels/i,
         /^Lights, Camera, Entertainment!/i,
         "Explore on FREE5",
         /^Browse by/,
         /^FIFA/,
         "Related Videos",
+        /Episodes/i,
+        /\bTV Ep\b/i,
+        /Free Previews/i,
+        /Behind The Scenes/i,
       ].some((x) =>
         x instanceof RegExp ? x.test(pContainer.title) : x === pContainer.title,
       )
