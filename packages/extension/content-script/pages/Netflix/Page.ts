@@ -161,6 +161,10 @@ export default class NetflixPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      return this.getOnHoverProgramNodeSelectors();
+    }
+
     if (selector === "div.billboard") {
       return ["div.info.meta-layer"];
     }
@@ -222,6 +226,9 @@ export default class NetflixPage extends AbstractPage {
   }
 
   protected override getOnHoverProgramNodeSelectors(): string[] {
-    return ["div.previewModal--container.mini-modal"];
+    return [
+      "div.previewModal--container.mini-modal",
+      "div.previewModal--container:not(.mini-modal)",
+    ];
   }
 }

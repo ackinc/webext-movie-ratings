@@ -79,6 +79,12 @@ export default class YoutubeMoviesPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      // do nothing; this site does not have on-hover program nodes, so if
+      //   we restrict ourselved to on-hover program selectors here, no
+      //   ratings will show up at all
+    }
+
     if (selector === 'ytd-browse[role="main"] ytd-item-section-renderer') {
       return ["ytd-grid-movie-renderer"];
     }

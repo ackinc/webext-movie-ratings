@@ -53,7 +53,7 @@ export const enum MessageType {
   userSelectedASuggestedMatchForProgram = "sift:userSelectedASuggestedMatchForProgram",
   userRejectedSuggestedMatchesForProgram = "sift:userRejectedSuggestedMatchesForProgram",
   urlChange = "sift:urlchange",
-  filterSettingsChange = "sift:filterSettingsChange",
+  settingsChanged = "sift:settingsChanged",
   orphanCheck = "sift:orphanCheck",
   cleanup = "sift:cleanup",
   removeUrlChangeDispatcher = "sift:removeUrlChangeDispatcher",

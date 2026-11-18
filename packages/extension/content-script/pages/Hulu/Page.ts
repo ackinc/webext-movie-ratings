@@ -182,6 +182,10 @@ export default class HuluPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      // TODO
+    }
+
     if (selector === "div.StandardSliderCollectionSimple") {
       return [
         'div[data-testid="seh-tile-container"]',

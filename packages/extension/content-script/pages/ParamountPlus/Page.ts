@@ -86,6 +86,10 @@ export default class ParamountPlusPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      // TODO
+    }
+
     if (selector === "div.carousel:has(h2.video-section-title)") {
       return ["a.link"];
     }

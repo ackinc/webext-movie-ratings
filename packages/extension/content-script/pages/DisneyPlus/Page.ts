@@ -71,6 +71,10 @@ export default class DisneyPlusPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      // TODO
+    }
+
     if (selector === 'div[data-testid^="collection"]') {
       return [
         'li[data-testid^="collection-tile"]:has(> figure:first-child)',

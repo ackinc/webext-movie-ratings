@@ -91,6 +91,10 @@ class SonyLivPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      return this.getOnHoverProgramNodeSelectors();
+    }
+
     if (selector === "div.layout-main-container:has(> div.listView)") {
       return ["a.portrait-link"];
     }

@@ -41,6 +41,7 @@ import ratingNodeStyles from "../RatingNode/ratingNode.styles.css";
 export default class AbstractPage {
   static ProgramNode = AbstractProgramNode;
 
+  discreetRatingsMode: boolean = false;
   inSelectProgramMode: boolean = false;
   stylesheets: Record<"page" | "imdbNode", CSSStyleSheet> = {
     imdbNode: cssStyleSheetFromText(ratingNodeStyles),
@@ -71,7 +72,8 @@ export default class AbstractPage {
     this.isValidProgram = this.isValidProgram.bind(this);
   }
 
-  async initialize() {
+  async initialize({ discreetRatingsMode }: { discreetRatingsMode: boolean }) {
+    this.discreetRatingsMode = discreetRatingsMode;
     await Promise.all([this.injectStyles(), this.#pruneOutdatedSelectors()]);
     return this;
   }
@@ -91,7 +93,9 @@ export default class AbstractPage {
 
   findPrograms({
     swallowDataExtractionErrors = false,
-  }: { swallowDataExtractionErrors?: boolean } = {}): Program[] {
+  }: {
+    swallowDataExtractionErrors?: boolean;
+  } = {}): Program[] {
     const programContainerNodes = this.#findProgramContainerNodes();
     const programContainers = programContainerNodes
       .map(dataExtractionErrorHandlingWrapper(this.#createProgramContainer))
