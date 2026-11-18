@@ -30,9 +30,7 @@ export default class Zee5Page extends AbstractPage {
       'div[data-testid="reco-container"]',
 
       // search results page
-      "div.tray-container",
-      // search previews
-      'div[data-testid="recent-search"] div.keen-slider',
+      'div[data-test-id^="search-rail-"]',
     ];
   }
 
@@ -69,8 +67,8 @@ export default class Zee5Page extends AbstractPage {
       )!.textContent;
     }
 
-    if (pContainerNode.matches("div.tray-container")) {
-      return pContainerNode.querySelector("div.trayHeader")!.textContent;
+    if (pContainerNode.matches('div[data-test-id^="search-rail-"]')) {
+      return pContainerNode.querySelector("h2")!.textContent;
     }
 
     if (
@@ -93,6 +91,8 @@ export default class Zee5Page extends AbstractPage {
       [
         "Z Live TV Channels",
         /^Live News/i,
+        /^Live Entertainment/i,
+        /^Lights, Camera, Entertainment!/i,
         "Explore on FREE5",
         /^Browse by/,
         /^FIFA/,
@@ -143,8 +143,11 @@ export default class Zee5Page extends AbstractPage {
       return ['div[data-testid^="recommended-thumbnail"'];
     }
 
-    if (selector === "div.tray-container") {
-      return ["div.movieCard"];
+    if (selector === 'div[data-test-id^="search-rail-"]') {
+      return [
+        ".card-and-title-wrapper",
+        ".card-and-title-wrapper .hover-panel",
+      ];
     }
 
     if (selector === 'div[data-testid="recent-search"] div.keen-slider') {
@@ -155,6 +158,6 @@ export default class Zee5Page extends AbstractPage {
   }
 
   protected override getOnHoverProgramNodeSelectors(): string[] {
-    return [".keen-slider__slide .card-and-title-wrapper .hover-panel"];
+    return [".card-and-title-wrapper .hover-panel"];
   }
 }
