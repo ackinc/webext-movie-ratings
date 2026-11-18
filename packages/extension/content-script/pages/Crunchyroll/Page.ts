@@ -127,6 +127,10 @@ export default class CrunchyrollPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      return this.getOnHoverProgramNodeSelectors();
+    }
+
     if (selector === 'section.cr-browse-section[data-t="browse-section"]') {
       return ['div[data-t="carousel-card-wrapper"]'];
     }
@@ -186,5 +190,16 @@ export default class CrunchyrollPage extends AbstractPage {
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
+  }
+
+  protected override getOnHoverProgramNodeSelectors(): string[] {
+    return [
+      'div[class^="browse-card-hover"][data-t="hover-component"]',
+      'div[class^="playable-card-hover"][data-t="hover-component"]',
+      'div[data-t="release-episode-card-stack-hover"]',
+      'div[class^="horizontal-card-hover"][data-t="hover-component"]',
+      'div[class^="search-show-card-hover"][data-t="hover-component"]',
+      'div[class^="search-episode-card-hover"][data-t="hover-component"]',
+    ];
   }
 }

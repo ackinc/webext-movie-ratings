@@ -96,6 +96,10 @@ export default class PrimeVideoPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      return this.getOnHoverProgramNodeSelectors();
+    }
+
     if (
       [
         '[data-testid="standard-carousel"]',

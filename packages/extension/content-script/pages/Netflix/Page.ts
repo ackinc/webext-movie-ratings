@@ -161,6 +161,10 @@ export default class NetflixPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      return this.getOnHoverProgramNodeSelectors();
+    }
+
     if (selector === "div.billboard") {
       return ["div.info.meta-layer"];
     }

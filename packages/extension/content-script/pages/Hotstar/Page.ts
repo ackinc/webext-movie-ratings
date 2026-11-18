@@ -97,6 +97,10 @@ export default class HotstarPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      return this.getOnHoverProgramNodeSelectors();
+    }
+
     if (selector === "div.tray-container") {
       return ['div[data-testid="tray-card-default"]'];
     }

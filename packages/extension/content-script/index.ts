@@ -173,7 +173,7 @@ async function initializePage() {
 
   const onlyShowRatingsOnHover = await getSetting("onlyShowRatingsOnHover");
   return await page.initialize({
-    inOnlyShowRatingsOnHoverMode: !!onlyShowRatingsOnHover,
+    discreetRatingsMode: !!onlyShowRatingsOnHover,
   });
 }
 
@@ -373,7 +373,7 @@ function handleSettingsChange<T extends keyof ExtensionSettings>(
   newValue: ExtensionSettings[T],
 ) {
   if (settingName === "onlyShowRatingsOnHover") {
-    page.inOnlyShowRatingsOnHoverMode = newValue as boolean;
+    page.discreetRatingsMode = newValue as boolean;
     if (newValue === true) page.cleanup();
     schedulePageProcessing("onSettingsChange");
     return;

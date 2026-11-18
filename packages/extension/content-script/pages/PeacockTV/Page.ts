@@ -160,6 +160,10 @@ export default class PeacockTVPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      // TODO
+    }
+
     if (selector === 'div[data-testid="highlights-carousel"]') {
       return ['a[data-testid="tile-link"]'];
     }

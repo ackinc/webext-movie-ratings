@@ -175,6 +175,10 @@ export default class HBOMaxPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      // TODO
+    }
+
     if (selector === "section.content-tray-section-parent") {
       // NOTE WHY_EXTRA_QUALIFIER
       // qualifying the a-clause in the selector below ensures

@@ -85,6 +85,12 @@ export default class PlexPage extends AbstractPage {
   protected override getProgramNodeSelectors({
     selector,
   }: Pick<ProgramContainer, "selector">): string[] {
+    if (this.discreetRatingsMode) {
+      // do nothing; this site does not have on-hover program nodes, so if
+      //   we restrict ourselved to on-hover program selectors here, no
+      //   ratings will show up at all
+    }
+
     if (selector === 'main:has(> div[class*="FullBleed-module"])') {
       return ['figure:has(a[data-id^="tv.plex.provider.vod"][aria-label])'];
     }
