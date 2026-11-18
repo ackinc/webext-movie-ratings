@@ -108,7 +108,10 @@ export default class Zee5Page extends AbstractPage {
     }
 
     if (selector === 'div[data-testid$="rail-container"]') {
-      return ["div.keen-slider__slide article"];
+      return [
+        ".keen-slider__slide .card-and-title-wrapper",
+        ".keen-slider__slide .card-and-title-wrapper .hover-panel",
+      ];
     }
 
     if (
@@ -135,5 +138,9 @@ export default class Zee5Page extends AbstractPage {
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
+  }
+
+  protected override getOnHoverProgramNodeSelectors(): string[] {
+    return [".keen-slider__slide .card-and-title-wrapper .hover-panel"];
   }
 }

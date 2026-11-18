@@ -16,6 +16,34 @@ export default class ProgramNode extends AbstractProgramNode {
         programNode.firstElementChild!.lastElementChild!.firstElementChild!
           .firstElementChild!;
       title = titleNode.textContent;
+    } else if (
+      programNode.matches(".keen-slider__slide .card-and-title-wrapper")
+    ) {
+      const titleNode = programNode.querySelector(".hover-panel h3[title]")!;
+      title = titleNode.textContent;
+
+      const metadataNode = titleNode.nextElementSibling;
+      type = metadataNode?.textContent.split("•")[0]?.match(/\d+h( \d+m)/)
+        ? "movie"
+        : "series";
+      year =
+        Number(metadataNode?.textContent.match(/\b(\d{4})\b/)?.[1]) ??
+        undefined;
+    } else if (
+      programNode.matches(
+        ".keen-slider__slide .card-and-title-wrapper .hover-panel",
+      )
+    ) {
+      const titleNode = programNode.querySelector("h3[title]")!;
+      title = titleNode.textContent;
+
+      const metadataNode = titleNode.nextElementSibling;
+      type = metadataNode?.textContent.split("•")[0]?.match(/\d+h( \d+m)/)
+        ? "movie"
+        : "series";
+      year =
+        Number(metadataNode?.textContent.match(/\b(\d{4})\b/)?.[1]) ??
+        undefined;
     } else if (programNode.matches("div.keen-slider__slide article")) {
       const titleNode = programNode.querySelector("img")!;
       title = titleNode.getAttribute("alt")!;
@@ -47,6 +75,16 @@ export default class ProgramNode extends AbstractProgramNode {
       const titleNode =
         programNode.firstElementChild!.lastElementChild!.firstElementChild!
           .firstElementChild!;
+      titleNode.insertAdjacentElement("afterend", imdbNode);
+      return;
+    }
+
+    if (
+      programNode.matches(
+        ".keen-slider__slide .card-and-title-wrapper .hover-panel",
+      )
+    ) {
+      const titleNode = programNode.querySelector("h3[title]")!;
       titleNode.insertAdjacentElement("afterend", imdbNode);
       return;
     }
