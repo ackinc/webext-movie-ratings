@@ -22,3 +22,17 @@ div.keen-slider__slide article:has(footer) .sift-imdb-data {
 div.movieCard .sift-imdb-data {
   margin: 4px 0 0 4px;
 }
+
+.card-and-title-wrapper > .sift-imdb-data {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+
+  border-radius: 8px;
+  padding: 4px 8px;
+  background-color: #2a2a2a;
+}
+
+div.sift-imdb-data-content[data-program-selector='div[aria-label="Featured banners"] main[id="hero-banner"]'] {
+  color: #ccccd9;
+}

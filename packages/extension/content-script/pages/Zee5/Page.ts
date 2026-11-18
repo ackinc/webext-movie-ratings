@@ -23,13 +23,14 @@ export default class Zee5Page extends AbstractPage {
       // movies collections page
       "div.viewAllMovie",
 
+      // collections page
+      'div[data-testid="collectionsContainer"]',
+
       // single program page
       'div[data-testid="reco-container"]',
 
       // search results page
-      "div.tray-container",
-      // search previews
-      'div[data-testid="recent-search"] div.keen-slider',
+      'div[data-test-id^="search-rail-"]',
     ];
   }
 
@@ -56,14 +57,18 @@ export default class Zee5Page extends AbstractPage {
       return pContainerNode.querySelector("h1")!.textContent;
     }
 
+    if (pContainerNode.matches('div[data-testid="collectionsContainer"]')) {
+      return pContainerNode.querySelector("h2")!.textContent;
+    }
+
     if (pContainerNode.matches('div[data-testid="reco-container"]')) {
       return pContainerNode.querySelector(
         'h2[data-testid="recommended-contents-title"]',
       )!.textContent;
     }
 
-    if (pContainerNode.matches("div.tray-container")) {
-      return pContainerNode.querySelector("div.trayHeader")!.textContent;
+    if (pContainerNode.matches('div[data-test-id^="search-rail-"]')) {
+      return pContainerNode.querySelector("h2")!.textContent;
     }
 
     if (
@@ -86,10 +91,17 @@ export default class Zee5Page extends AbstractPage {
       [
         "Z Live TV Channels",
         /^Live News/i,
+        /^Live Entertainment/i,
+        /^Live Channels/i,
+        /^Lights, Camera, Entertainment!/i,
         "Explore on FREE5",
         /^Browse by/,
         /^FIFA/,
         "Related Videos",
+        /Episodes/i,
+        /\bTV Ep\b/i,
+        /Free Previews/i,
+        /Behind The Scenes/i,
       ].some((x) =>
         x instanceof RegExp ? x.test(pContainer.title) : x === pContainer.title,
       )
@@ -108,11 +120,14 @@ export default class Zee5Page extends AbstractPage {
     }
 
     if (selector === 'div[aria-label="Featured banners"]') {
-      return ['div[data-testid$="active_carousel"]'];
+      return ['main[id="hero-banner"]'];
     }
 
     if (selector === 'div[data-testid$="rail-container"]') {
-      return ["div.keen-slider__slide article"];
+      return [
+        ".card-and-title-wrapper",
+        ".card-and-title-wrapper .hover-panel",
+      ];
     }
 
     if (
@@ -126,12 +141,22 @@ export default class Zee5Page extends AbstractPage {
       return ["div.movieCard"];
     }
 
+    if (selector === 'div[data-testid="collectionsContainer"]') {
+      return [
+        ".card-and-title-wrapper",
+        ".card-and-title-wrapper .hover-panel",
+      ];
+    }
+
     if (selector === 'div[data-testid="reco-container"]') {
       return ['div[data-testid^="recommended-thumbnail"'];
     }
 
-    if (selector === "div.tray-container") {
-      return ["div.movieCard"];
+    if (selector === 'div[data-test-id^="search-rail-"]') {
+      return [
+        ".card-and-title-wrapper",
+        ".card-and-title-wrapper .hover-panel",
+      ];
     }
 
     if (selector === 'div[data-testid="recent-search"] div.keen-slider') {
@@ -139,5 +164,9 @@ export default class Zee5Page extends AbstractPage {
     }
 
     throw new Error(ErrorMessage.unrecognizedProgramContainerNode);
+  }
+
+  protected override getOnHoverProgramNodeSelectors(): string[] {
+    return [".card-and-title-wrapper .hover-panel"];
   }
 }
