@@ -1,5 +1,9 @@
 # Changelog
 
+## v10.2.0
+
+- Added a 'discreet ratings' mode where, on supported sites, ratings are only displayed when hovering over a program tile
+
 ## v10.1.0
 
 - Fixed issues with different ratings being shown for the same movie/series in the main webpage and in the more-info popup that some sites bring up when hovering over a program
