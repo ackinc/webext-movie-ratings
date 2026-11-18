@@ -71,7 +71,9 @@ export default class YoutubeMoviesPage extends AbstractPage {
   protected override isValidProgramContainer(
     pContainer: ProgramContainer,
   ): boolean {
-    return !!pContainer.title;
+    return (
+      !!pContainer.title && ![/channels/i].some((x) => x.test(pContainer.title))
+    );
   }
 
   protected override getProgramNodeSelectors({

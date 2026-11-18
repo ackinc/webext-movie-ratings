@@ -488,7 +488,7 @@ valid containers:\n\t${programContainers
       node: programNode,
       selector: matchingSelector!,
     });
-    console.log(program);
+    console.log("#showProgramInfo:program", program);
 
     const response = await browser.runtime.sendMessage<
       Message,
@@ -502,7 +502,7 @@ valid containers:\n\t${programContainers
     });
 
     if ("error" in response) throw new SWError(response.error);
-    console.log(response.data);
+    console.log("#showProgramInfo:cachedImdbData", response.data);
 
     function findAncestor(startEl: Element, selectors: string[]) {
       const node = startEl.closest<HTMLElement>(selectors.join(","));
