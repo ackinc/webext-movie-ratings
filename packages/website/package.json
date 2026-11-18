@@ -20,7 +20,7 @@
   "devDependencies": {
     "@astrojs/react": "^7.1.1",
     "@types/node": "^22",
-    "astro": "^7.4.2",
+    "astro": "^7.4.7",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "prettier": "^3.8.3",
